@@ -216,10 +216,11 @@
     function markenZeichnen() {
       marken.replaceChildren();
       for (const c of stand.zeichen) {
-        const m = el('span', 't-marke', c.art === '=' ? '=' : '×');
+        const m = el('span', 't-marke', c.art === '=' ? '=' : '✕');
         const z = zeileVon(c.a);
         const s2 = spalteVon(c.a);
         const waagerecht = c.b === c.a + 1;
+        m.dataset.richtung = waagerecht ? 'quer' : 'hoch';
         m.style.left = ((s2 + (waagerecht ? 1 : 0.5)) / N * 100) + '%';
         m.style.top = ((z + (waagerecht ? 0.5 : 1)) / N * 100) + '%';
         marken.append(m);

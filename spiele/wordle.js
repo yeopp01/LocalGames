@@ -171,6 +171,12 @@
         ? [...stand.wort].map((c, i) => (i < stand.verraten ? c : '·')).join(' ')
         : '';
 
+      // Der Tipp gehört zum Wort: neues Wort, neuer (oder kein) Tipp.
+      tippKasten.hidden = !stand.beschreibung || vorbei();
+      tippKasten.textContent = stand.beschreibung
+        ? TIPP_ZU[stand.wort] || 'Zu diesem Wort gibt es keine Beschreibung.'
+        : '';
+
       knopfBeschreibung.disabled = stand.beschreibung || vorbei();
       knopfBuchstabe.disabled = stand.verraten >= LAENGE - 1 || vorbei();
       knopfVorschlag.disabled = vorbei();
@@ -270,8 +276,6 @@
     function beschreibungZeigen() {
       stand.beschreibung = true;
       sichern();
-      tippKasten.hidden = false;
-      tippKasten.textContent = TIPP_ZU[stand.wort] || 'Zu diesem Wort gibt es keine Beschreibung.';
       zeichnen();
     }
 
@@ -365,10 +369,6 @@
     }
     window.addEventListener('keydown', taste);
 
-    if (stand.beschreibung) {
-      tippKasten.hidden = false;
-      tippKasten.textContent = TIPP_ZU[stand.wort] || '';
-    }
     sichern();
     zeichnen();
 

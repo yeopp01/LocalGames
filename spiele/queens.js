@@ -234,6 +234,8 @@
     const el = s.el;
     let stand = laden();
     let uhr = null;
+    let zieht = null;          // Streichen statt Tippen
+    let gemaltGerade = false;  // merkt sich, dass gestrichen wurde
 
     function frisch(stufe) {
       const r = raetselBauen(stufe) || raetselBauen('leicht');
@@ -246,6 +248,7 @@
         verbraucht: 0,
         seit: Date.now(),
         hilfen: 0,
+        autoKreuze: true,
         fertig: false,
       };
     }
@@ -278,10 +281,17 @@
     const leiste = el('div', 'leiste');
     wurzel.append(kopf, gitter, endeKasten, leiste);
 
+    const autoKnopf = el('button', 'knopf knopf--still', 'Kreuze automatisch');
+    autoKnopf.type = 'button';
+    autoKnopf.addEventListener('click', () => {
+      stand.autoKreuze = !stand.autoKreuze;
+      sichern();
+      zeichnen();
+    });
     const hinweisKnopf = el('button', 'knopf knopf--still', 'Hinweis');
     hinweisKnopf.type = 'button';
     hinweisKnopf.addEventListener('click', hinweis);
-    leiste.append(hinweisKnopf);
+    leiste.append(autoKnopf, hinweisKnopf);
 
     s.werkzeuge([
       { label: 'Anleitung', symbol: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01" stroke-linecap="round"/>', tun: anleitung },
@@ -308,17 +318,80 @@
         if (sp < k - 1 && stand.gebiet[i] !== stand.gebiet[i + 1]) f.dataset.grenzeRechts = 'ja';
         if (z < k - 1 && stand.gebiet[i] !== stand.gebiet[i + k]) f.dataset.grenzeUnten = 'ja';
         const nr = i;
-        f.addEventListener('click', () => weiterschalten(nr));
+        // Tippen schaltet weiter, Streichen malt Kreuze. Unterschieden wird
+        // erst beim Loslassen: Wer nie ein zweites Feld berührt hat, hat getippt.
+        f.addEventListener('pointerdown', () => {
+          zieht = { start: nr, wert: stand.feld[nr] === KREUZ ? LEER : KREUZ };
+        });
+        f.addEventListener('pointerenter', () => {
+          if (!zieht) return;
+          if (!gemaltGerade) {
+            gemaltGerade = true;
+            malen(zieht.start, zieht.wert);
+          }
+          malen(nr, zieht.wert);
+        });
+        // Das Weiterschalten hängt bewusst am Klick und nicht am Loslassen:
+        // so funktionieren auch Tastatur und Vorlesehilfen weiter.
+        f.addEventListener('click', () => {
+          if (gemaltGerade) { gemaltGerade = false; return; }
+          weiterschalten(nr);
+        });
         gitter.append(f);
         felder.push(f);
       }
     }
 
+    /* Beim Streichen werden nur leere Felder und Kreuze angefasst –
+       eine gesetzte Dame überfährt man nicht aus Versehen. */
+    function malen(i, wert) {
+      if (stand.fertig) return;
+      if (stand.feld[i] === DAME) return;
+      if (stand.feld[i] === wert) return;
+      stand.feld[i] = wert;
+      sichern();
+      zeichnen();
+    }
+
+    const losgelassen = () => { zieht = null; };
+    window.addEventListener('pointerup', losgelassen);
+    window.addEventListener('pointercancel', () => { zieht = null; });
+
     /* ---------------------------------------------------------------- Zug */
+
+    /* Welche leeren Felder scheiden aus, weil eine gesetzte Dame sie abdeckt?
+       Das wird bei jedem Zeichnen neu ausgerechnet und nirgends gespeichert –
+       darum verschwinden diese Kreuze sofort wieder, wenn die Dame weicht,
+       die sie verursacht hat. Eine falsch gesetzte Dame hinterlässt also
+       keinen Scherbenhaufen. */
+    function abgedeckt() {
+      const k = stand.kanten;
+      const raus = new Set();
+      if (!stand.autoKreuze) return raus;
+
+      for (let i = 0; i < k * k; i += 1) {
+        if (stand.feld[i] !== DAME) continue;
+        const z = Math.floor(i / k);
+        const sp = i % k;
+        for (let j = 0; j < k * k; j += 1) {
+          if (j === i || stand.feld[j] === DAME) continue;
+          const jz = Math.floor(j / k);
+          const jsp = j % k;
+          const beruehrt = Math.abs(jz - z) <= 1 && Math.abs(jsp - sp) <= 1;
+          if (jz === z || jsp === sp || stand.gebiet[j] === stand.gebiet[i] || beruehrt) {
+            raus.add(j);
+          }
+        }
+      }
+      return raus;
+    }
 
     function weiterschalten(i) {
       if (stand.fertig) return;
-      stand.feld[i] = stand.feld[i] === LEER ? KREUZ : stand.feld[i] === KREUZ ? DAME : LEER;
+      // Ist das Feld ohnehin schon automatisch ausgekreuzt, wäre ein eigenes
+      // Kreuz nur ein überflüssiger Zwischenschritt.
+      if (stand.feld[i] === LEER && abgedeckt().has(i)) stand.feld[i] = DAME;
+      else stand.feld[i] = stand.feld[i] === LEER ? KREUZ : stand.feld[i] === KREUZ ? DAME : LEER;
       sichern();
       zeichnen();
       pruefenObFertig();
@@ -356,45 +429,186 @@
       return raus;
     }
 
+    /* Wo könnte überhaupt noch eine Dame stehen? Ausgeschlossen ist ein Feld,
+       das schon ausgekreuzt ist, dessen Zeile, Spalte oder Gebiet bereits eine
+       Dame trägt, oder das eine gesetzte Dame berührt. */
+    function moegliche() {
+      const k = stand.kanten;
+      const damen = [];
+      for (let i = 0; i < k * k; i += 1) if (stand.feld[i] === DAME) damen.push(i);
+
+      const zeilenBelegt = new Set(damen.map((i) => Math.floor(i / k)));
+      const spaltenBelegt = new Set(damen.map((i) => i % k));
+      const gebieteBelegt = new Set(damen.map((i) => stand.gebiet[i]));
+
+      const geht = new Array(k * k).fill(false);
+      for (let i = 0; i < k * k; i += 1) {
+        if (stand.feld[i] !== LEER) continue;
+        const z = Math.floor(i / k);
+        const sp = i % k;
+        if (zeilenBelegt.has(z) || spaltenBelegt.has(sp) || gebieteBelegt.has(stand.gebiet[i])) continue;
+        if (damen.some((dd) => Math.abs(Math.floor(dd / k) - z) <= 1 && Math.abs((dd % k) - sp) <= 1)) continue;
+        geht[i] = true;
+      }
+      return { geht, damen, zeilenBelegt, spaltenBelegt, gebieteBelegt };
+    }
+
+    /* Lässt sich das Rätsel mit den gesetzten Damen überhaupt noch lösen?
+       Eigene Kreuze bleiben außen vor – die sind nur Notizen. */
+    function nochLoesbar() {
+      const k = stand.kanten;
+      const feste = new Map();
+      for (let i = 0; i < k * k; i += 1) if (stand.feld[i] === DAME) feste.set(Math.floor(i / k), i % k);
+      if (new Set(feste.values()).size !== feste.size) return false;
+
+      const spalten = new Set();
+      const gebiete = new Set();
+      const gesetzt = [];
+      const weiter = (z) => {
+        if (z === k) return true;
+        const nurDiese = feste.has(z) ? [feste.get(z)] : [...Array(k).keys()];
+        for (const sp of nurDiese) {
+          if (spalten.has(sp)) continue;
+          const g = stand.gebiet[z * k + sp];
+          if (gebiete.has(g)) continue;
+          if (z > 0 && Math.abs(gesetzt[z - 1] - sp) <= 1) continue;
+          spalten.add(sp); gebiete.add(g); gesetzt[z] = sp;
+          if (weiter(z + 1)) return true;
+          spalten.delete(sp); gebiete.delete(g);
+        }
+        return false;
+      };
+      return weiter(0);
+    }
+
+    const platzName = (i) => 'Zeile ' + (Math.floor(i / stand.kanten) + 1)
+      + ', Spalte ' + ((i % stand.kanten) + 1);
+
+    /* Der Hinweis schaut ausdrücklich nicht in die Lösung, sondern sucht einen
+       Schluss, den man auch selbst ziehen könnte – und nennt ihn. */
     function hinweis() {
       if (stand.fertig) return;
       const k = stand.kanten;
 
-      // Steht schon eine Dame falsch, hat weiteres Grübeln keinen Zweck.
-      const falsch = stand.feld.map((w, i) => (w === DAME && stand.damen[Math.floor(i / k)] !== i % k ? i : -1))
-        .filter((i) => i >= 0);
-      if (falsch.length) {
-        stand.hilfen += 1;
-        sichern();
-        const i = falsch[0];
+      if (fehlerhaft().size) {
         s.blatt({
-          titel: 'Diese Dame steht falsch',
-          inhalt: 'Zeile ' + (Math.floor(i / k) + 1) + ', Spalte ' + ((i % k) + 1) + ' gehört nicht zur Lösung. '
-            + 'Nimm sie weg, sonst führt alles Weitere in die Irre.',
-          aktionen: [
-            { text: 'Wegnehmen', tun: () => { stand.feld[i] = LEER; sichern(); zeichnen(); } },
-            { text: 'Selbst machen', art: 'still' },
-          ],
+          titel: 'Zwei Damen stören sich',
+          inhalt: 'Die rot umrandeten Damen stehen in derselben Zeile, Spalte oder Farbe – oder sie berühren sich. Räum das zuerst weg.',
+          aktionen: [{ text: 'Mach ich' }],
         });
         return;
       }
 
-      // Sonst die nächste noch fehlende Dame verraten.
-      for (let z = 0; z < k; z += 1) {
-        const i = z * k + stand.damen[z];
-        if (stand.feld[i] === DAME) continue;
+      if (!nochLoesbar()) {
         stand.hilfen += 1;
         sichern();
         s.blatt({
-          titel: 'Eine Dame gehört hierhin',
-          inhalt: 'In Zeile ' + (z + 1) + ' steht die Dame in Spalte ' + (stand.damen[z] + 1) + '.',
-          aktionen: [
-            { text: 'Setzen', tun: () => { stand.feld[i] = DAME; sichern(); zeichnen(); pruefenObFertig(); } },
-            { text: 'Selbst machen', art: 'still' },
-          ],
+          titel: 'So geht es nicht mehr auf',
+          inhalt: 'Mit den Damen, die gerade stehen, lässt sich das Rätsel nicht mehr zu Ende bringen – '
+            + 'eine davon muss falsch sein. Welche, verrate ich nicht: Das lässt sich herausfinden, '
+            + 'indem du für jede Dame durchspielst, was danach noch übrig bliebe.',
+          aktionen: [{ text: 'Verstanden' }],
         });
         return;
       }
+
+      const { geht } = moegliche();
+      const felderVon = (pruef) => [...Array(k * k).keys()].filter((i) => geht[i] && pruef(i));
+      const zeigen = (titel, text, kreuze, dame) => {
+        stand.hilfen += 1;
+        sichern();
+        s.blatt({
+          titel,
+          inhalt: text,
+          aktionen: [
+            {
+              text: dame !== undefined ? 'Dame setzen' : 'Kreuze setzen',
+              tun: () => {
+                if (dame !== undefined) stand.feld[dame] = DAME;
+                else for (const i of kreuze) stand.feld[i] = KREUZ;
+                sichern();
+                zeichnen();
+                pruefenObFertig();
+              },
+            },
+            { text: 'Selbst machen', art: 'still' },
+          ],
+        });
+      };
+
+      // 1. Bleibt in einer Zeile, Spalte oder Farbe nur ein Feld übrig?
+      const einheiten = [];
+      for (let z = 0; z < k; z += 1) einheiten.push({ text: 'Zeile ' + (z + 1), pruef: (i) => Math.floor(i / k) === z });
+      for (let sp = 0; sp < k; sp += 1) einheiten.push({ text: 'Spalte ' + (sp + 1), pruef: (i) => i % k === sp });
+      for (const g of new Set(stand.gebiet)) {
+        einheiten.push({ text: 'diesem Farbgebiet', pruef: (i) => stand.gebiet[i] === g, gebiet: g });
+      }
+      for (const e of einheiten) {
+        const belegt = stand.feld.some((w, i) => w === DAME && e.pruef(i));
+        if (belegt) continue;
+        const frei = felderVon(e.pruef);
+        if (frei.length === 1) {
+          zeigen('Nur ein Feld bleibt übrig',
+            'In ' + e.text + ' ist noch kein Platz vergeben, und von allen Feldern dort kommt nur '
+            + platzName(frei[0]) + ' in Frage. Alles andere ist durch bereits gesetzte Damen, '
+            + 'deine Kreuze oder die Nachbarschaftsregel ausgeschlossen.',
+            null, frei[0]);
+          return;
+        }
+      }
+
+      /* 2. Der allgemeine Ausschluss: Wenn ein Feld von JEDER noch möglichen
+            Stelle einer Einheit abgedeckt würde, kann dort keine Dame stehen –
+            ganz gleich, wie sich die Einheit am Ende entscheidet. Daraus folgen
+            die geläufigen Fälle von selbst: eine Farbe, die ganz in einer Zeile
+            steckt, räumt diese Zeile; eine Zeile, die ganz in einer Farbe
+            liegt, räumt diese Farbe. */
+      const deckt = (p, x) => {
+        if (p === x) return false;
+        const pz = Math.floor(p / k);
+        const ps = p % k;
+        const xz = Math.floor(x / k);
+        const xs = x % k;
+        return pz === xz || ps === xs || stand.gebiet[p] === stand.gebiet[x]
+          || (Math.abs(pz - xz) <= 1 && Math.abs(ps - xs) <= 1);
+      };
+
+      for (const e of einheiten) {
+        const belegt = stand.feld.some((w, i) => w === DAME && e.pruef(i));
+        if (belegt) continue;
+        const frei = felderVon(e.pruef);
+        if (frei.length < 2) continue;
+
+        const raus = felderVon((x) => !e.pruef(x) && frei.every((p) => deckt(p, x)));
+        if (!raus.length) continue;
+
+        // Für den Text: liegt die Einheit zufällig ganz in einer Zeile,
+        // Spalte oder Farbe, lässt sich das viel anschaulicher sagen.
+        const zeilen = new Set(frei.map((i) => Math.floor(i / k)));
+        const spalten = new Set(frei.map((i) => i % k));
+        const gebiete = new Set(frei.map((i) => stand.gebiet[i]));
+        let grund;
+        if (zeilen.size === 1) grund = 'liegen alle in Zeile ' + ([...zeilen][0] + 1);
+        else if (spalten.size === 1) grund = 'liegen alle in Spalte ' + ([...spalten][0] + 1);
+        else if (gebiete.size === 1) grund = 'liegen alle in derselben Farbe';
+        else grund = 'decken zusammen diese Felder ab';
+
+        zeigen('Das fällt so oder so weg',
+          'Die ' + frei.length + ' noch möglichen Stellen für die Dame von ' + e.text + ' ' + grund + '. '
+          + 'Wo auch immer sie am Ende steht: ' + (raus.length === 1 ? 'dieses Feld' : 'diese ' + raus.length + ' Felder')
+          + ' wird sie in jedem Fall abdecken – ' + (raus.length === 1 ? 'es kann' : 'sie können')
+          + ' also keine Dame tragen.',
+          raus);
+        return;
+      }
+
+      s.blatt({
+        titel: 'Hier sehe ich nichts Zwingendes',
+        inhalt: 'Mit den einfachen Schlüssen – nur ein Feld übrig, Farbe steckt ganz in einer Zeile oder Spalte '
+          + 'und umgekehrt – komme ich gerade nicht weiter. Kreuze erst aus, was die gesetzten Damen abdecken; '
+          + 'danach findet sich meist wieder etwas.',
+        aktionen: [{ text: 'Verstanden' }],
+      });
     }
 
     function pruefenObFertig() {
@@ -421,13 +635,16 @@
 
     function zeichnen() {
       const fehler = fehlerhaft();
+      const auto = abgedeckt();
       for (let i = 0; i < felder.length; i += 1) {
         const f = felder[i];
         const w = stand.feld[i];
-        f.textContent = w === DAME ? '♛' : w === KREUZ ? '×' : '';
-        f.dataset.wert = w === DAME ? 'dame' : w === KREUZ ? 'kreuz' : 'leer';
+        const vonAllein = w === LEER && auto.has(i);
+        f.textContent = w === DAME ? '♛' : (w === KREUZ || vonAllein) ? '×' : '';
+        f.dataset.wert = w === DAME ? 'dame' : w === KREUZ ? 'kreuz' : vonAllein ? 'auto' : 'leer';
         if (fehler.has(i)) f.dataset.fehler = 'ja'; else delete f.dataset.fehler;
       }
+      autoKnopf.className = 'knopf ' + (stand.autoKreuze ? 'knopf--voll' : 'knopf--still');
       kopfZeichnen();
       endeZeichnen();
       leiste.hidden = stand.fertig;
@@ -483,9 +700,10 @@
       const d = el('div');
       d.append(el('p', 'notiz', 'Setze in jede Zeile, jede Spalte und jedes Farbgebiet genau eine Dame ♛.'));
       d.append(el('p', 'notiz', 'Zwei Damen dürfen sich nicht berühren – auch nicht über Eck. Anders als im Schach schlagen sie aber nicht über die ganze Diagonale; nur die acht direkten Nachbarfelder sind verboten.'));
-      d.append(el('p', 'notiz', 'Tippen schaltet weiter: leer → × → Dame → leer. Das × ist nur für dich, um auszuschließen, was nicht geht – der eigentliche Weg zur Lösung.'));
+      d.append(el('p', 'notiz', 'Tippen schaltet weiter: leer → × → Dame → leer. Über mehrere Felder zu streichen setzt dort Kreuze – das geht deutlich schneller als einzeln zu tippen.'));
+      d.append(el('p', 'notiz', 'Mit „Kreuze automatisch" kreuzt die App alles aus, was durch eine gesetzte Dame ohnehin wegfällt. Diese blassen Kreuze sind nur abgeleitet und nirgends gespeichert: Nimmst du eine falsch gesetzte Dame wieder weg, verschwinden sie im selben Moment mit. Deine eigenen Kreuze bleiben davon unberührt.'));
       d.append(el('p', 'notiz', 'Was sich in die Quere kommt, färbt sich rot.'));
-      d.append(el('p', 'notiz', 'Guter Anfang: Ein Farbgebiet, das nur in einer einzigen Zeile liegt, belegt diese Zeile – in allen anderen Feldern dieser Zeile kann dann keine Dame mehr stehen.'));
+      d.append(el('p', 'notiz', 'Guter Anfang: Ein Farbgebiet, das nur in einer einzigen Zeile liegt, belegt diese Zeile – in allen anderen Feldern dieser Zeile kann dann keine Dame mehr stehen. Genau nach solchen Schlüssen sucht auch der Hinweis; er schaut nie in die Lösung.'));
       s.blatt({ titel: 'Damen', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
 
@@ -501,6 +719,7 @@
       ende: () => {
         clearInterval(uhr);
         window.removeEventListener('resize', beiGroesse);
+        window.removeEventListener('pointerup', losgelassen);
         if (!stand.fertig) sichern();
       },
     };

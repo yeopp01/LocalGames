@@ -907,11 +907,13 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   position: relative;
   display: grid;
   grid-template-columns: repeat(6, 1fr);
+  /* Zeilen ausdrücklich gleich hoch: die Marken werden in Prozent gesetzt und
+     dürfen nicht davon abhängen, wie hoch der Inhalt einer Zeile gerade ist. */
+  grid-template-rows: repeat(6, 1fr);
   width: min(330px, 88vw);
   aspect-ratio: 1;
   border: 2px solid var(--tinte);
   border-radius: 8px;
-  overflow: visible;
   background: var(--karte);
 }
 .t-feld {
@@ -919,7 +921,7 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   place-items: center;
   border: 1px solid var(--karte-rand);
   background: transparent;
-  font-size: clamp(18px, 6vw, 26px);
+  font-size: clamp(20px, 6.5vw, 28px);
   line-height: 1;
   cursor: pointer;
   padding: 0;
@@ -929,20 +931,22 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .t-feld[data-fest='ja'] { background: color-mix(in srgb, var(--tinte-still) 16%, transparent); }
 .t-feld[data-fehler='ja'] { background: color-mix(in srgb, var(--rost) 40%, transparent); }
 
-.t-marken { position: absolute; inset: 0; pointer-events: none; }
+.t-marken { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
 .t-marke {
   position: absolute;
   transform: translate(-50%, -50%);
-  width: 16px;
-  height: 16px;
+  width: 21px;
+  height: 21px;
   display: grid;
   place-items: center;
   border-radius: 50%;
   background: var(--papier);
-  border: 1px solid var(--tinte);
-  font-size: 11px;
-  font-weight: 700;
+  border: 2px solid var(--tinte);
+  color: var(--tinte);
+  font-size: 13px;
+  font-weight: 800;
   line-height: 1;
+  font-family: 'DM Mono', monospace;
 }
 
 /* ============================================================== 10. Damen */
@@ -1024,3 +1028,23 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   pointer-events: none;
 }
 .p-linie polyline { stroke: color-mix(in srgb, #4573B8 70%, transparent); }
+
+/* Automatisch abgeleitete Kreuze sind blasser als die selbst gesetzten */
+.q-feld[data-wert='auto'] { font-size: calc(var(--zelle) * .34); opacity: .35; }
+
+/* Zwei kurze Stummel links und rechts bzw. oben und unten zeigen, welches
+   Paar gemeint ist – sonst sieht ein senkrechtes Zeichen aus wie ein
+   waagerechtes. Sie liegen neben der Marke, nicht darunter: die Marke setzt
+   durch ihr transform einen eigenen Stapelkontext, gegen den kein z-index
+   von innen ankommt. */
+.t-marke::before,
+.t-marke::after {
+  content: '';
+  position: absolute;
+  background: var(--tinte);
+  border-radius: 2px;
+}
+.t-marke[data-richtung='quer']::before { top: 50%; height: 3px; width: 9px; left: -10px; transform: translateY(-50%); }
+.t-marke[data-richtung='quer']::after  { top: 50%; height: 3px; width: 9px; right: -10px; transform: translateY(-50%); }
+.t-marke[data-richtung='hoch']::before { left: 50%; width: 3px; height: 9px; top: -10px; transform: translateX(-50%); }
+.t-marke[data-richtung='hoch']::after  { left: 50%; width: 3px; height: 9px; bottom: -10px; transform: translateX(-50%); }
