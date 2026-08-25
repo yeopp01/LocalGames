@@ -80,6 +80,17 @@ const Rahmen = (() => {
 
   const prozent = (a, b) => (b ? Math.round((a / b) * 100) + ' %' : '–');
 
+  /* Eine Zeile bei GoatCounter, mehr nicht: kein Cookie, keine Kennung,
+     nichts aus der Statistik. Fehlt das Script (offline, Blocker, Datei
+     per Doppelklick), passiert einfach gar nichts. */
+  function zaehlen(pfad, titel) {
+    try {
+      if (window.goatcounter && window.goatcounter.count) {
+        window.goatcounter.count({ path: pfad, title: titel, event: true });
+      }
+    } catch (e) { /* egal */ }
+  }
+
   /* --------------------------------------------------------------- Register */
 
   const spiele = [];
@@ -592,6 +603,10 @@ const Rahmen = (() => {
       document.getElementById('sheet-einstellungen').hidden = true;
       gehe({ name: 'auswahl' });
       toast('Alles gelöscht.');
+    });
+
+    window.addEventListener('appinstalled', () => {
+      zaehlen('app-installiert', 'Installation');
     });
 
     window.addEventListener('beforeinstallprompt', (e) => {

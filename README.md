@@ -54,6 +54,19 @@ statt zu ersetzen: jede Partie trägt eine Kennung, und schon vorhandene werden
 Laufende Partien (halb gelöstes Sudoku, angefangenes Wort) sind bewusst *nicht*
 Teil der Sicherung – die gehören zum Gerät.
 
+## Zählung
+
+Eine einzige Sache verlässt das Gerät: beim Öffnen meldet
+[GoatCounter](https://www.goatcounter.com) einen Aufruf an
+`yeopp01.goatcounter.com`, und beim Ablegen auf dem Startbildschirm ein
+Ereignis `app-installiert`. Kein Cookie, keine Kennung, keine IP-Speicherung –
+und nichts aus der Statistik oder aus laufenden Partien. Das Script hängt
+unten in `index.html`, das Ereignis in `app.js` neben `beforeinstallprompt`.
+
+Wer offline vom Icon spielt, wird nicht gezählt; das lässt sich nicht ändern
+und ist auch nicht schlimm. Wer gar nicht zählen will, löscht die zwei Zeilen
+in `index.html` – die App läuft unverändert weiter.
+
 ## Was wo steht
 
 | Datei | Inhalt |
