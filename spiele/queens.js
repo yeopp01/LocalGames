@@ -320,8 +320,18 @@
         const nr = i;
         // Tippen schaltet weiter, Streichen malt Kreuze. Unterschieden wird
         // erst beim Loslassen: Wer nie ein zweites Feld berührt hat, hat getippt.
-        f.addEventListener('pointerdown', () => {
+        f.addEventListener('pointerdown', (e) => {
           zieht = { start: nr, wert: stand.feld[nr] === KREUZ ? LEER : KREUZ };
+          // Muss hier zurückgesetzt werden, nicht erst beim Klick: Endet ein
+          // Streichzug auf einer anderen Zelle als er begann, landet der Klick
+          // beim Gitter statt bei einer Zelle – das Flag bliebe sonst hängen
+          // und der nächste Streichzug würde sein erstes Feld auslassen.
+          gemaltGerade = false;
+          // Bei Berührung fängt der Browser den Zeiger sonst beim Startfeld ab,
+          // dann käme kein pointerenter mehr bei den Nachbarn an.
+          if (e.pointerId !== undefined && f.hasPointerCapture(e.pointerId)) {
+            f.releasePointerCapture(e.pointerId);
+          }
         });
         f.addEventListener('pointerenter', () => {
           if (!zieht) return;

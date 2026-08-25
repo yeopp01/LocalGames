@@ -245,14 +245,25 @@
 
       gitter.replaceChildren();
       felder = [];
+      const mitte = Math.floor(k / 2) - 1;
       for (let i = 0; i < k * k; i += 1) {
         const f = el('button', 'n-feld');
         f.type = 'button';
-        f.dataset.zeile = String(Math.floor(i / k));
-        f.dataset.spalte = String(i % k);
+        const zeile = Math.floor(i / k);
+        const spalte = i % k;
+        f.dataset.zeile = String(zeile);
+        f.dataset.spalte = String(spalte);
+        // Eine einzige Zählhilfe in der Mitte – halbiert die Reihe beim Abzählen.
+        if (spalte === mitte) f.classList.add('n-feld--raster-x');
+        if (zeile === mitte) f.classList.add('n-feld--raster-y');
         const nr = i;
         f.addEventListener('pointerdown', (e) => {
           e.preventDefault();
+          // Sonst fängt der Browser den Zeiger beim Startfeld ab, und die
+          // Nachbarn bekommen beim Wischen kein pointerenter mehr.
+          if (e.pointerId !== undefined && f.hasPointerCapture(e.pointerId)) {
+            f.releasePointerCapture(e.pointerId);
+          }
           const neuerWert = naechsterWert(stand.feld[nr]);
           ziehen = neuerWert;
           setzen(nr, neuerWert);

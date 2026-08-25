@@ -121,10 +121,6 @@ Sie darf gern wachsen: neue Wörter kommen einfach in das Feld `WEITERE` in
 `spiele/woerter.js` — fünf Zeichen, groß geschrieben, sonst nichts zu beachten.
 Ein Lösungswort braucht zusätzlich seinen Tipp und gehört nach `LOESUNGEN`.
 
-**Wort des Tages.** Aus dem Datum gerechnet, für jedes Gerät gleich. Die
-Schrittweite 101 ist teilerfremd zur Listenlänge, darum läuft die Liste einmal
-komplett durch, bevor sich ein Wort wiederholt. Daneben gibt es das freie Spiel.
-
 **Die drei Hilfen.**
 
 * *Tipp* zeigt die Umschreibung des gesuchten Wortes.

@@ -21,15 +21,7 @@
     ['ENTER', ...'YXCVBNM', 'WEG'],
   ];
 
-  /* Wort des Tages: läuft die Liste einmal komplett durch, bevor sich etwas
-     wiederholt – Schrittweite 101 ist teilerfremd zur Listenlänge. */
-  function tagesWort(datum) {
-    const tage = Math.floor(Date.parse(datum + 'T00:00:00Z') / 86400000);
-    return LOESUNGEN[((tage * 101 + 37) % LOESUNGEN.length + LOESUNGEN.length) % LOESUNGEN.length][0];
-  }
-
   const zufallsWort = () => LOESUNGEN[Math.floor(Math.random() * LOESUNGEN.length)][0];
-  const heute = () => new Date().toISOString().slice(0, 10);
 
   function starten(wurzel, s) {
     const el = s.el;
@@ -40,11 +32,9 @@
 
     /* --------------------------------------------------------- Spielstand */
 
-    function frisch(modus) {
+    function frisch() {
       return {
-        modus,
-        tag: heute(),
-        wort: modus === 'tag' ? tagesWort(heute()) : zufallsWort(),
+        wort: zufallsWort(),
         versuche: [],
         verraten: 0,
         beschreibung: false,
@@ -56,9 +46,7 @@
 
     function laden() {
       const alt = s.erinnert();
-      if (!alt || !alt.wort || !Array.isArray(alt.versuche)) return frisch('tag');
-      // Ein neuer Tag bringt ein neues Tageswort.
-      if (alt.modus === 'tag' && alt.tag !== heute()) return frisch('tag');
+      if (!alt || !alt.wort || !Array.isArray(alt.versuche)) return frisch();
       return alt;
     }
 
@@ -181,9 +169,7 @@
       knopfBuchstabe.disabled = stand.verraten >= LAENGE - 1 || vorbei();
       knopfVorschlag.disabled = vorbei();
 
-      s.unter(stand.modus === 'tag'
-        ? 'Wort des Tages · ' + stand.tag
-        : 'Freies Spiel');
+      s.unter(LAENGE + ' Buchstaben · ' + ZEILEN + ' Versuche');
 
       tafel.hidden = vorbei();
       hilfeLeiste.hidden = vorbei();
@@ -203,7 +189,7 @@
       const leiste = el('div', 'leiste');
       const nochmal = el('button', 'knopf knopf--voll', 'Noch ein Wort');
       nochmal.type = 'button';
-      nochmal.addEventListener('click', () => { stand = frisch('frei'); sichern(); zeichnen(); });
+      nochmal.addEventListener('click', () => { stand = frisch(); sichern(); zeichnen(); });
       leiste.append(nochmal);
 
       const zurueck = el('button', 'knopf knopf--still', 'Zur Auswahl');
@@ -265,7 +251,6 @@
         dauer: Date.now() - stand.begonnen,
         zuege: stand.versuche.length,
         hilfen: (stand.beschreibung ? 1 : 0) + stand.verraten + stand.vorschlaege,
-        modus: stand.modus,
         wort: stand.wort,
       });
       sichern();
@@ -337,14 +322,20 @@
     /* --------------------------------------------------------------- Menü */
 
     function neuFragen() {
-      s.blatt({
-        titel: 'Neues Wort',
-        inhalt: 'Das Wort des Tages ist für alle gleich und wechselt um Mitternacht. Im freien Spiel wird jedes Mal neu gezogen.',
-        aktionen: [
-          { text: 'Frei spielen', tun: () => { stand = frisch('frei'); sichern(); zeichnen(); } },
-          { text: 'Wort des Tages', art: 'still', tun: () => { stand = frisch('tag'); sichern(); zeichnen(); } },
-        ],
-      });
+      if (!vorbei() && stand.versuche.length) {
+        s.blatt({
+          titel: 'Neues Wort',
+          inhalt: 'Der angefangene Versuch geht dabei verloren.',
+          aktionen: [
+            { text: 'Neues Wort', tun: () => { stand = frisch(); sichern(); zeichnen(); } },
+            { text: 'Weiterspielen', art: 'still' },
+          ],
+        });
+        return;
+      }
+      stand = frisch();
+      sichern();
+      zeichnen();
     }
 
     function regelnZeigen() {

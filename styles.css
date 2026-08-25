@@ -795,9 +795,9 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   display: grid;
   place-items: center;
 }
-/* Jede fünfte Linie kräftiger – so bleibt das Zählen leicht. */
-.n-feld[data-spalte='4'], .n-feld[data-spalte='9'] { border-right: 2px solid var(--tinte); }
-.n-feld[data-zeile='4'], .n-feld[data-zeile='9'] { border-bottom: 2px solid var(--tinte); }
+/* Eine Mittellinie, nur leicht abgesetzt – Zählhilfe, kein gefülltes Feld. */
+.n-feld--raster-x { border-right-color: var(--tinte-still); }
+.n-feld--raster-y { border-bottom-color: var(--tinte-still); }
 .n-feld[data-stand='voll'] { background: var(--tinte); }
 .n-feld[data-stand='leer'] { background: var(--karte); }
 
