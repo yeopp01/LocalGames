@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>LocalGames</title>
+<meta name="description" content="Kleine Spiele. Auf dem Gerät, ohne Konto.">
+<meta name="theme-color" content="#F4F1EC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12100E" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="LocalGames">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar" id="topbar">
+  <div class="topbar-row">
+    <button type="button" class="icon-button" id="btn-zurueck" aria-label="Zurück zur Auswahl" hidden>
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="wordmark">
+      <span class="wordmark-name" id="kopf-titel">LocalGames</span>
+      <span class="wordmark-unter" id="kopf-unter"></span>
+    </div>
+    <div class="topbar-werkzeuge" id="kopf-werkzeuge"></div>
+    <button type="button" class="icon-button" id="btn-statistik" aria-label="Statistik">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M5 19V11M12 19V5M19 19v-5" stroke-linecap="round"/>
+      </svg>
+    </button>
+    <button type="button" class="icon-button" id="btn-einstellungen" aria-label="Einstellungen">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <circle cx="12" cy="6" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="18" r="1.9"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<main id="buehne" class="buehne" tabindex="-1"></main>
+
+<div class="toast" id="toast" role="status" aria-live="polite" hidden>
+  <span class="toast-text" id="toast-text"></span>
+</div>
+
+<!-- Blatt: Einstellungen und Sicherung -->
+<div class="sheet-huelle" id="sheet-einstellungen" hidden>
+  <div class="sheet-schatten" data-schliessen></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-einst-titel">
+    <div class="sheet-griff"></div>
+    <h2 class="sheet-titel" id="sheet-einst-titel">Einstellungen</h2>
+
+    <p class="notiz" id="bestand-notiz"></p>
+
+    <div class="sheet-liste">
+      <button type="button" class="zeile" id="btn-export">
+        <span class="zeile-text">
+          <span class="zeile-titel">Statistik sichern</span>
+          <span class="zeile-unter">Lädt eine Datei mit allen Partien und Bestwerten.</span>
+        </span>
+      </button>
+      <button type="button" class="zeile" id="btn-import">
+        <span class="zeile-text">
+          <span class="zeile-titel">Statistik einlesen</span>
+          <span class="zeile-unter">Führt eine Sicherungsdatei mit dem Bestand zusammen.</span>
+        </span>
+      </button>
+      <button type="button" class="zeile" id="btn-installieren" hidden>
+        <span class="zeile-text">
+          <span class="zeile-titel">Auf dem Startbildschirm ablegen</span>
+          <span class="zeile-unter">Dann startet alles mit eigenem Icon, auch offline.</span>
+        </span>
+      </button>
+      <button type="button" class="zeile zeile--gefahr" id="btn-alles-loeschen">
+        <span class="zeile-text">
+          <span class="zeile-titel">Alles löschen</span>
+          <span class="zeile-unter">Entfernt Statistik und laufende Partien von diesem Gerät.</span>
+        </span>
+      </button>
+    </div>
+
+    <p class="notiz notiz--fuss">Alles liegt nur auf diesem Gerät. Kein Konto, kein Server. Wenn du den Browser-Speicher löschst oder das Handy wechselst, brauchst du die Sicherung.</p>
+
+    <div class="sheet-aktionen">
+      <button type="button" class="knopf knopf--voll" data-schliessen>Fertig</button>
+    </div>
+    <input type="file" id="import-datei" accept="application/json,.json" hidden>
+  </div>
+</div>
+
+<!-- Blatt: allgemeiner Dialog, den die Spiele füllen -->
+<div class="sheet-huelle" id="sheet-spiel" hidden>
+  <div class="sheet-schatten" data-schliessen></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-spiel-titel">
+    <div class="sheet-griff"></div>
+    <h2 class="sheet-titel" id="sheet-spiel-titel"></h2>
+    <div id="sheet-spiel-inhalt"></div>
+    <div class="sheet-aktionen" id="sheet-spiel-aktionen"></div>
+  </div>
+</div>
+
+<script src="spiele/woerter.js"></script>
+<script src="spiele/loeser.js"></script>
+<script src="app.js"></script>
+<script src="spiele/wordle.js"></script>
+<script src="spiele/sudoku.js"></script>
+<script src="spiele/minen.js"></script>
+<script>Rahmen.los();</script>
+</body>
+</html>

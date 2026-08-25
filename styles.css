@@ -1,0 +1,613 @@
+/* LocalGames – Aussehen.
+
+   Aufbau: erst die Farben und Maße, dann der Rahmen (Kopf, Kacheln, Blätter),
+   danach je ein Abschnitt pro Spiel. Helle und dunkle Fassung über Tokens.
+*/
+
+/* ------------------------------------------------------------------ Farben */
+
+:root {
+  --papier: #F4F1EC;
+  --karte: #FFFFFF;
+  --karte-rand: #E3DDD2;
+  --tinte: #1B1815;
+  --tinte-leise: #6E665C;
+  --tinte-still: #9C9388;
+  --schatten: 0 1px 2px rgba(30, 24, 16, .06), 0 6px 20px rgba(30, 24, 16, .07);
+  --schatten-hoch: 0 -2px 40px rgba(30, 24, 16, .18);
+
+  --gruen: #4E8A54;
+  --gelb: #C9A227;
+  --grau: #8C8479;
+  --rost: #B45B3E;
+
+  --rund: 16px;
+  --rund-klein: 10px;
+  --lueftung: max(14px, env(safe-area-inset-left));
+  --kopf-hoehe: 62px;
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --papier: #12100E;
+    --karte: #1C1917;
+    --karte-rand: #2E2A26;
+    --tinte: #F2EEE8;
+    --tinte-leise: #A79E92;
+    --tinte-still: #736B61;
+    --schatten: 0 1px 2px rgba(0, 0, 0, .4), 0 6px 20px rgba(0, 0, 0, .35);
+    --schatten-hoch: 0 -2px 40px rgba(0, 0, 0, .6);
+
+    --gruen: #5E9E64;
+    --gelb: #C4A63C;
+    --grau: #56504A;
+    --rost: #C56A4B;
+  }
+}
+
+/* ------------------------------------------------------------------ Grund */
+
+* { box-sizing: border-box; }
+
+/* Muss vor allen display-Regeln stehen: sonst überstimmt ein eigenes
+   display:flex das hidden-Attribut, und verborgene Blätter stehen offen. */
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--papier);
+  color: var(--tinte);
+  font-family: 'Bricolage Grotesque', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 17px;
+  line-height: 1.45;
+  -webkit-text-size-adjust: 100%;
+  overscroll-behavior: none;
+}
+
+body {
+  min-height: 100dvh;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+button { font: inherit; color: inherit; }
+
+/* ------------------------------------------------------------------- Kopf */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: max(10px, env(safe-area-inset-top)) var(--lueftung) 10px;
+  background: color-mix(in srgb, var(--papier) 88%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid transparent;
+}
+body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
+
+.topbar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+}
+
+.wordmark {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.15;
+}
+.wordmark-name {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+}
+.wordmark-unter {
+  font-size: 13px;
+  color: var(--tinte-leise);
+  font-family: 'DM Mono', ui-monospace, monospace;
+  min-height: 1.1em;
+}
+
+.topbar-werkzeuge { display: flex; gap: 4px; }
+
+.icon-button {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  cursor: pointer;
+}
+.icon-button:active { background: var(--karte-rand); }
+.icon-button svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+}
+/* Nur die drei Punkte im Menüknopf sind gefüllt – andere Kreise bleiben Umriss. */
+#btn-einstellungen svg circle { fill: currentColor; stroke: none; }
+.icon-button[data-marke='an'] { color: var(--rost); }
+
+/* ----------------------------------------------------------------- Bühne */
+
+.buehne {
+  padding: 10px var(--lueftung) 40px;
+  max-width: 560px;
+  margin: 0 auto;
+  outline: none;
+}
+
+/* -------------------------------------------------------- Auswahl/Kacheln */
+
+.kacheln {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.kachel {
+  --ton: var(--tinte-leise);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 14px 12px;
+  min-height: 148px;
+  text-align: left;
+  border: 1px solid var(--karte-rand);
+  border-radius: var(--rund);
+  background: var(--karte);
+  box-shadow: var(--schatten);
+  cursor: pointer;
+  transition: transform .12s ease;
+}
+.kachel:active { transform: scale(.98); }
+
+.kachel-marke {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--ton) 16%, transparent);
+  color: var(--ton);
+  margin-bottom: 6px;
+}
+.kachel-marke svg {
+  width: 22px; height: 22px;
+  fill: none; stroke: currentColor; stroke-width: 1.9;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+
+.kachel-text { display: flex; flex-direction: column; flex: 1 1 auto; }
+.kachel-name { font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
+.kachel-unter { font-size: 13.5px; color: var(--tinte-leise); line-height: 1.3; }
+.kachel-fuss {
+  margin-top: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11.5px;
+  color: var(--tinte-still);
+}
+
+.ueberblick {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  width: 100%;
+  margin-top: 16px;
+  padding: 14px 8px;
+  border: 1px solid var(--karte-rand);
+  border-radius: var(--rund);
+  background: transparent;
+  cursor: pointer;
+}
+.zahlblock { display: flex; flex-direction: column; align-items: center; }
+.zahlblock-wert { font-size: 20px; font-weight: 700; }
+.zahlblock-label { font-size: 11px; color: var(--tinte-leise); }
+
+/* -------------------------------------------------------------- Statistik */
+
+.block {
+  --ton: var(--tinte-leise);
+  margin: 18px 0;
+  padding: 16px 14px;
+  border: 1px solid var(--karte-rand);
+  border-radius: var(--rund);
+  background: var(--karte);
+}
+.block-titel {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  color: var(--tinte-leise);
+}
+.block-titel--marke {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--tinte);
+  text-transform: none;
+  letter-spacing: -.01em;
+  font-size: 18px;
+}
+.block-marke {
+  width: 26px; height: 26px;
+  display: grid; place-items: center;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--ton) 16%, transparent);
+  color: var(--ton);
+}
+.block-marke svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.kennzahlen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(74px, 1fr));
+  gap: 10px 6px;
+}
+.kennzahl { display: flex; flex-direction: column; }
+.kennzahl-wert { font-size: 21px; font-weight: 700; letter-spacing: -.02em; }
+.kennzahl-label { font-size: 11.5px; color: var(--tinte-leise); }
+
+.kalender {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-top: 16px;
+  max-width: 220px;
+}
+.kalender-tag { aspect-ratio: 1; border-radius: 4px; background: var(--karte-rand); }
+.kalender-tag[data-stufe='1'] { background: color-mix(in srgb, var(--gruen) 40%, var(--karte-rand)); }
+.kalender-tag[data-stufe='2'] { background: color-mix(in srgb, var(--gruen) 70%, var(--karte-rand)); }
+.kalender-tag[data-stufe='3'] { background: var(--gruen); }
+
+/* Balken für die Verteilung (Wördle) */
+.verteilung { margin-top: 14px; display: grid; gap: 5px; }
+.verteilung-zeile { display: flex; align-items: center; gap: 8px; font-family: 'DM Mono', monospace; font-size: 12px; }
+.verteilung-nr { width: 12px; color: var(--tinte-leise); }
+.verteilung-balken {
+  height: 20px;
+  min-width: 22px;
+  border-radius: 5px;
+  background: var(--grau);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 6px;
+}
+.verteilung-zeile[data-hell='ja'] .verteilung-balken { background: var(--gruen); }
+
+/* ---------------------------------------------------------------- Knöpfe */
+
+.knopf {
+  border: 0;
+  border-radius: 12px;
+  padding: 13px 18px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.knopf--voll { background: var(--tinte); color: var(--papier); }
+.knopf--still { background: var(--karte-rand); color: var(--tinte); }
+.knopf--gefahr { background: transparent; color: var(--rost); width: 100%; margin-top: 6px; }
+.knopf:active { opacity: .8; }
+
+/* ----------------------------------------------------------------- Blätter */
+
+.sheet-huelle { position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end; justify-content: center; }
+.sheet-schatten { position: absolute; inset: 0; background: rgba(10, 8, 6, .45); }
+.sheet {
+  position: relative;
+  width: min(520px, 100%);
+  max-height: 88dvh;
+  overflow-y: auto;
+  padding: 8px var(--lueftung) calc(18px + env(safe-area-inset-bottom));
+  background: var(--papier);
+  border-radius: 22px 22px 0 0;
+  box-shadow: var(--schatten-hoch);
+  animation: hoch .22s ease;
+}
+@keyframes hoch { from { transform: translateY(14%); } }
+.sheet-griff { width: 38px; height: 4px; border-radius: 2px; background: var(--karte-rand); margin: 4px auto 12px; }
+.sheet-titel { margin: 0 0 10px; font-size: 22px; font-weight: 800; letter-spacing: -.02em; }
+.sheet-liste { display: grid; gap: 2px; margin: 14px 0; }
+.zeile {
+  display: flex;
+  width: 100%;
+  text-align: left;
+  padding: 12px 12px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--karte);
+  cursor: pointer;
+}
+.zeile:active { background: var(--karte-rand); }
+.zeile-text { display: flex; flex-direction: column; }
+.zeile-titel { font-weight: 700; font-size: 15.5px; }
+.zeile-unter { font-size: 13px; color: var(--tinte-leise); }
+.zeile--gefahr .zeile-titel { color: var(--rost); }
+.sheet-aktionen { display: flex; gap: 8px; margin-top: 14px; }
+.sheet-aktionen .knopf { flex: 1 1 auto; }
+.sheet-aktionen--frei { margin: 22px 0 10px; }
+
+.notiz { margin: 8px 0; font-size: 14px; color: var(--tinte-leise); line-height: 1.5; }
+.notiz--fuss { font-size: 12.5px; margin-top: 16px; }
+.notiz--mitte { text-align: center; margin: 40px auto; max-width: 30ch; }
+
+/* ------------------------------------------------------------------ Toast */
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(22px + env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 16px;
+  border-radius: 999px;
+  background: var(--tinte);
+  color: var(--papier);
+  font-size: 14.5px;
+  font-weight: 500;
+  box-shadow: var(--schatten);
+  max-width: calc(100vw - 32px);
+}
+
+/* ------------------------------------------------------------- Spielboden */
+
+.spielboden { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+
+.leiste {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+}
+.leiste .knopf { padding: 9px 12px; font-size: 13.5px; border-radius: 999px; }
+
+.ende-kasten {
+  width: 100%;
+  padding: 14px;
+  border-radius: var(--rund);
+  background: var(--karte);
+  border: 1px solid var(--karte-rand);
+  text-align: center;
+}
+.ende-titel { font-size: 19px; font-weight: 800; margin: 0 0 4px; }
+
+/* ============================================================== 1. Wördle */
+
+.w-gitter {
+  display: grid;
+  grid-template-rows: repeat(6, 1fr);
+  gap: 5px;
+  width: min(320px, 82vw);
+}
+.w-zeile { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+
+.w-feld {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--karte-rand);
+  border-radius: 6px;
+  font-size: clamp(20px, 7vw, 30px);
+  font-weight: 800;
+  text-transform: uppercase;
+  background: transparent;
+  transition: transform .1s ease;
+}
+.w-feld[data-voll='ja'] { border-color: var(--tinte-still); transform: scale(1.04); }
+.w-feld[data-stufe='2'] { background: var(--gruen); border-color: var(--gruen); color: #fff; }
+.w-feld[data-stufe='1'] { background: var(--gelb); border-color: var(--gelb); color: #fff; }
+.w-feld[data-stufe='0'] { background: var(--grau); border-color: var(--grau); color: #fff; }
+.w-feld[data-verraten='ja'] { border-color: var(--gruen); border-style: dashed; color: var(--gruen); }
+
+.w-zeile[data-falsch='ja'] { animation: ruettel .4s; }
+@keyframes ruettel {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(6px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+}
+
+.w-tafel {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  max-width: 480px;
+  margin-top: 4px;
+}
+.w-reihe { display: flex; gap: 4px; justify-content: center; }
+.w-taste {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 50px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--karte-rand);
+  font-size: 15px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.w-taste--breit { flex: 1.6 1 auto; font-size: 12px; }
+.w-taste[data-stufe='2'] { background: var(--gruen); color: #fff; }
+.w-taste[data-stufe='1'] { background: var(--gelb); color: #fff; }
+.w-taste[data-stufe='0'] { background: var(--grau); color: color-mix(in srgb, #fff 70%, transparent); }
+.w-taste:active { opacity: .7; }
+
+.w-tipp {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--rund-klein);
+  background: color-mix(in srgb, var(--gelb) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--gelb) 35%, transparent);
+  font-size: 14.5px;
+  line-height: 1.45;
+}
+.w-verraten {
+  font-family: 'DM Mono', monospace;
+  letter-spacing: .3em;
+  font-size: 15px;
+  color: var(--gruen);
+  min-height: 1.2em;
+}
+
+.vorschlag {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 9px 4px;
+  border-bottom: 1px solid var(--karte-rand);
+}
+.vorschlag:last-child { border-bottom: 0; }
+.vorschlag-wort {
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  font-size: 17px;
+  letter-spacing: .12em;
+}
+.vorschlag-rest { font-size: 12.5px; color: var(--tinte-leise); margin-left: auto; text-align: right; }
+.vorschlag-marke { font-size: 11px; color: var(--gruen); font-weight: 700; }
+
+/* ============================================================== 2. Sudoku */
+
+.s-gitter {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  width: min(330px, 86vw);
+  aspect-ratio: 1;
+  border: 2px solid var(--tinte);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--karte);
+}
+.s-feld {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--karte-rand);
+  background: transparent;
+  font-size: clamp(18px, 6.5vw, 26px);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+/* Blockgrenzen: Blöcke sind 3 breit und 2 hoch. */
+.s-feld[data-spalte='2'], .s-feld[data-spalte='5'] { border-right-width: 2px; border-right-color: var(--tinte); }
+.s-feld[data-zeile='1'], .s-feld[data-zeile='3'] { border-bottom-width: 2px; border-bottom-color: var(--tinte); }
+.s-feld[data-fest='ja'] { font-weight: 800; }
+.s-feld[data-fest='nein'] { color: var(--rost); }
+.s-feld[data-gewaehlt='ja'] { background: color-mix(in srgb, var(--gelb) 26%, transparent); }
+.s-feld[data-verwandt='ja'] { background: color-mix(in srgb, var(--tinte-still) 14%, transparent); }
+.s-feld[data-gleich='ja'] { background: color-mix(in srgb, var(--gruen) 22%, transparent); }
+.s-feld[data-fehler='ja'] { color: #fff; background: var(--rost); }
+
+.s-notizen {
+  position: absolute;
+  inset: 2px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  font-size: 9px;
+  font-family: 'DM Mono', monospace;
+  color: var(--tinte-leise);
+  font-weight: 400;
+  pointer-events: none;
+}
+.s-notiz { display: grid; place-items: center; }
+
+.s-pad {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  width: min(420px, 94vw);
+  margin-top: 6px;
+}
+.s-taste {
+  aspect-ratio: 1;
+  border: 1px solid var(--karte-rand);
+  border-radius: 10px;
+  background: var(--karte);
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+}
+.s-taste[data-fertig='ja'] { color: var(--tinte-still); background: transparent; }
+.s-taste svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.s-taste:active { background: var(--karte-rand); }
+.s-taste[data-an='ja'] { background: var(--tinte); color: var(--papier); border-color: var(--tinte); }
+
+/* ============================================================ 3. Minenfeld */
+
+.m-rahmen { width: min(400px, 96vw); overflow-x: auto; }
+.m-gitter {
+  display: grid;
+  gap: 2px;
+  margin: 0 auto;
+  width: fit-content;
+}
+.m-feld {
+  width: var(--kachel);
+  height: var(--kachel);
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 4px;
+  background: var(--karte-rand);
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  font-size: calc(var(--kachel) * .56);
+  cursor: pointer;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.m-feld[data-offen='ja'] { background: color-mix(in srgb, var(--karte-rand) 40%, transparent); cursor: default; }
+.m-feld[data-zahl='1'] { color: #4573B8; }
+.m-feld[data-zahl='2'] { color: var(--gruen); }
+.m-feld[data-zahl='3'] { color: var(--rost); }
+.m-feld[data-zahl='4'] { color: #6A4FA3; }
+.m-feld[data-zahl='5'] { color: #8A5A2B; }
+.m-feld[data-zahl='6'] { color: #2E8B8B; }
+.m-feld[data-zahl='7'], .m-feld[data-zahl='8'] { color: var(--tinte); }
+.m-feld[data-mine='ja'] { background: var(--rost); color: #fff; }
+.m-feld[data-fahne='ja'] { color: var(--rost); }
+
+.m-kopf {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+  font-family: 'DM Mono', monospace;
+  font-size: 15px;
+  color: var(--tinte-leise);
+}
+.m-kopf b { color: var(--tinte); font-weight: 500; }
+
+/* ------------------------------------------------------------ Bewegung aus */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; }
+}
