@@ -21,6 +21,11 @@
   --grau: #8C8479;
   --rost: #B45B3E;
 
+  /* Tango: warme Sonne gegen kühlen Mond, beide gleich kräftig, damit keines
+     der Zeichen im Gitter mehr Gewicht bekommt als das andere. */
+  --t-sonne: #C97E1E;
+  --t-mond: #4E5FA8;
+
   --rund: 16px;
   --rund-klein: 10px;
   --lueftung: max(14px, env(safe-area-inset-left));
@@ -44,6 +49,9 @@
     --gelb: #C4A63C;
     --grau: #56504A;
     --rost: #C56A4B;
+
+    --t-sonne: #E0A54A;
+    --t-mond: #8A98DC;
   }
 }
 
@@ -910,43 +918,85 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   /* Zeilen ausdrücklich gleich hoch: die Marken werden in Prozent gesetzt und
      dürfen nicht davon abhängen, wie hoch der Inhalt einer Zeile gerade ist. */
   grid-template-rows: repeat(6, 1fr);
-  width: min(330px, 88vw);
+  width: min(348px, 90vw);
   aspect-ratio: 1;
-  border: 2px solid var(--tinte);
-  border-radius: 8px;
+  /* Der Rahmen ist ruhiger als bei den anderen Gittern: die Zeichen tragen das
+     Bild, das Gitter hält sich zurück. */
+  border: 1px solid var(--karte-rand);
+  border-radius: 14px;
   background: var(--karte);
+  box-shadow: var(--schatten);
+  overflow: hidden;
 }
 .t-feld {
   display: grid;
   place-items: center;
-  border: 1px solid var(--karte-rand);
+  /* Nur rechts und unten eine Linie – so bleibt jede Trennlinie einen Strich
+     dünn statt zwei aneinanderstoßende, und außen schließt das Gitter glatt. */
+  border: 0;
+  border-right: 1px solid var(--karte-rand);
+  border-bottom: 1px solid var(--karte-rand);
   background: transparent;
-  font-size: clamp(20px, 6.5vw, 28px);
-  line-height: 1;
   cursor: pointer;
   padding: 0;
+  transition: background-color .15s ease;
 }
-.t-feld[data-wert='sonne'] { color: #D89A2A; }
-.t-feld[data-wert='mond'] { color: #5C6BB8; }
-.t-feld[data-fest='ja'] { background: color-mix(in srgb, var(--tinte-still) 16%, transparent); }
-.t-feld[data-fehler='ja'] { background: color-mix(in srgb, var(--rost) 40%, transparent); }
+.t-feld:nth-child(6n) { border-right: 0; }
+.t-feld:nth-child(n + 31) { border-bottom: 0; }
+
+.t-bild { width: 62%; height: 62%; display: block; }
+.t-bild-sonne,
+.t-bild-mond {
+  opacity: 0;
+  transform: scale(.55);
+  transform-origin: 50% 50%;
+  transition: opacity .12s ease, transform .12s ease;
+}
+.t-bild-sonne { fill: var(--t-sonne); stroke: var(--t-sonne); stroke-width: 2; }
+.t-bild-mond { fill: var(--t-mond); }
+
+.t-feld[data-wert='sonne'] { background: color-mix(in srgb, var(--t-sonne) 9%, transparent); }
+.t-feld[data-wert='mond'] { background: color-mix(in srgb, var(--t-mond) 9%, transparent); }
+.t-feld[data-wert='sonne'] .t-bild-sonne,
+.t-feld[data-wert='mond'] .t-bild-mond { opacity: 1; transform: none; }
+/* Vorgaben sind nicht grau hinterlegt, sondern schlicht satt: sie wirken
+   gedruckt, während die eigenen Zeichen einen Hauch leichter stehen. Jede
+   Regel muss den Wert mitnennen – sonst hellt sie auch das Zeichen auf, das
+   in diesem Feld gerade nicht gemeint ist, und beide stehen übereinander. */
+.t-feld[data-fest='ja'] { cursor: default; }
+.t-feld[data-fest='nein'][data-wert='sonne'] .t-bild-sonne,
+.t-feld[data-fest='nein'][data-wert='mond'] .t-bild-mond { opacity: .82; }
+
+@media (hover: hover) {
+  .t-feld[data-fest='nein']:hover { background: color-mix(in srgb, var(--tinte) 6%, transparent); }
+  .t-feld[data-fest='nein'][data-wert='sonne']:hover { background: color-mix(in srgb, var(--t-sonne) 16%, transparent); }
+  .t-feld[data-fest='nein'][data-wert='mond']:hover { background: color-mix(in srgb, var(--t-mond) 16%, transparent); }
+}
+.t-feld[data-fest='nein']:active .t-bild { transform: scale(.92); }
+
+/* Ein Verstoß wird getönt, nicht übermalt: das Zeichen bleibt lesbar. */
+.t-feld[data-fehler='ja'],
+.t-feld[data-fehler='ja']:hover { background: color-mix(in srgb, var(--rost) 22%, transparent); }
+.t-feld[data-fehler='ja'][data-wert='sonne'] .t-bild-sonne,
+.t-feld[data-fehler='ja'][data-wert='mond'] .t-bild-mond { opacity: 1; }
 
 .t-marken { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
 .t-marke {
   position: absolute;
   transform: translate(-50%, -50%);
-  width: 21px;
-  height: 21px;
+  width: 19px;
+  height: 19px;
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: var(--papier);
-  border: 2px solid var(--tinte);
+  background: var(--karte);
+  border: 1.5px solid var(--tinte-leise);
   color: var(--tinte);
-  font-size: 13px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 700;
   line-height: 1;
   font-family: 'DM Mono', monospace;
+  box-shadow: 0 0 0 3px var(--karte);
 }
 
 /* ============================================================== 10. Damen */
@@ -1041,13 +1091,13 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .t-marke::after {
   content: '';
   position: absolute;
-  background: var(--tinte);
+  background: var(--tinte-leise);
   border-radius: 2px;
 }
-.t-marke[data-richtung='quer']::before { top: 50%; height: 3px; width: 9px; left: -10px; transform: translateY(-50%); }
-.t-marke[data-richtung='quer']::after  { top: 50%; height: 3px; width: 9px; right: -10px; transform: translateY(-50%); }
-.t-marke[data-richtung='hoch']::before { left: 50%; width: 3px; height: 9px; top: -10px; transform: translateX(-50%); }
-.t-marke[data-richtung='hoch']::after  { left: 50%; width: 3px; height: 9px; bottom: -10px; transform: translateX(-50%); }
+.t-marke[data-richtung='quer']::before { top: 50%; height: 2px; width: 7px; left: -9px; transform: translateY(-50%); }
+.t-marke[data-richtung='quer']::after  { top: 50%; height: 2px; width: 7px; right: -9px; transform: translateY(-50%); }
+.t-marke[data-richtung='hoch']::before { left: 50%; width: 2px; height: 7px; top: -9px; transform: translateX(-50%); }
+.t-marke[data-richtung='hoch']::after  { left: 50%; width: 2px; height: 7px; bottom: -9px; transform: translateX(-50%); }
 
 /* Beim Streichen über das Damenbrett soll die Seite nicht mitscrollen. */
 .q-gitter { touch-action: none; }

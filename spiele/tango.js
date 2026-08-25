@@ -18,6 +18,19 @@
   const SONNE = 1;
   const MOND = 2;
 
+  /* Sonne und Mond werden gezeichnet, nicht getippt: die Schriftzeichen ☀ und ☾
+     kommen je nach Gerät als buntes Emoji, in ganz anderer Größe oder gar nicht.
+     Beide Formen liegen immer im Feld, sichtbar ist über CSS nur die gefragte. */
+  const ZEICHNUNG = '<svg class="t-bild" viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+    + '<g class="t-bild-sonne">'
+    + '<circle cx="12" cy="12" r="5"/>'
+    + '<g stroke-linecap="round">'
+    + '<path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2"/>'
+    + '<path d="M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4L17 7M7 17l-1.6 1.6"/>'
+    + '</g></g>'
+    + '<path class="t-bild-mond" d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/>'
+    + '</svg>';
+
   const zeileVon = (i) => Math.floor(i / N);
   const spalteVon = (i) => i % N;
 
@@ -203,6 +216,7 @@
     for (let i = 0; i < N * N; i += 1) {
       const f = el('button', 't-feld');
       f.type = 'button';
+      f.innerHTML = ZEICHNUNG;
       const nr = i;
       f.addEventListener('click', () => weiterschalten(nr));
       gitter.append(f);
@@ -342,7 +356,8 @@
         f.dataset.wert = w === SONNE ? 'sonne' : w === MOND ? 'mond' : 'leer';
         f.dataset.fest = stand.vorgabe[i] ? 'ja' : 'nein';
         if (fehler.has(i)) f.dataset.fehler = 'ja'; else delete f.dataset.fehler;
-        f.textContent = w === SONNE ? '☀' : w === MOND ? '☾' : '';
+        f.setAttribute('aria-label', 'Zeile ' + (zeileVon(i) + 1) + ', Spalte ' + (spalteVon(i) + 1)
+          + ': ' + (w === SONNE ? 'Sonne' : w === MOND ? 'Mond' : 'leer'));
       }
       markenZeichnen();
       kopfZeichnen();
@@ -397,7 +412,7 @@
 
     function anleitung() {
       const d = el('div');
-      d.append(el('p', 'notiz', 'Fülle das Feld mit Sonne ☀ und Mond ☾. Tippen schaltet weiter: leer → Sonne → Mond → leer.'));
+      d.append(el('p', 'notiz', 'Fülle das Feld mit Sonne und Mond. Tippen schaltet weiter: leer → Sonne → Mond → leer.'));
       d.append(el('p', 'notiz', 'Regel 1: In jeder Zeile und jeder Spalte stehen genau drei Sonnen und drei Monde.'));
       d.append(el('p', 'notiz', 'Regel 2: Nie drei gleiche direkt nebeneinander oder untereinander.'));
       d.append(el('p', 'notiz', 'Regel 3: Steht zwischen zwei Feldern ein =, tragen beide dasselbe Zeichen. Steht dort ein ×, tragen sie verschiedene.'));
