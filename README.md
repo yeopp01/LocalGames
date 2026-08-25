@@ -85,6 +85,7 @@ in `index.html` – die App läuft unverändert weiter.
 | `spiele/*.js` | je Datei ein Spiel |
 | `sw.js` | Der Offline-Speicher |
 | `icons/` | App-Icons |
+| `schriften/` | Die beiden Schriften samt Lizenztexten |
 
 ### Änderungen ausrollen
 
@@ -125,8 +126,8 @@ Was die Sitzung bietet:
 
 ## Wördle im Detail
 
-**Wortschatz.** 274 Lösungswörter, jedes mit einer Umschreibung, dazu 1165
-weitere erlaubte Rateworte — zusammen 1439 gültige Eingaben. Alles genau fünf
+**Wortschatz.** 396 Lösungswörter, jedes mit einer Umschreibung, dazu 1226
+weitere erlaubte Rateworte — zusammen 1622 gültige Eingaben. Alles genau fünf
 Zeichen, Ä/Ö/Ü zählen als ein Zeichen und haben eigene Tasten, ß steht als SS
 (`GROSS`, `SPASS`).
 
@@ -166,7 +167,7 @@ Ein Lösungswort braucht zusätzlich seinen Tipp und gehört nach `LOESUNGEN`.
 Das ist der Informationsgehalt (Entropie) eines Zuges, nur in der Form
 „so viele Wörter bleiben danach übrig". Gemessen an der eigenen Wortliste
 löst diese Strategie in im Schnitt **2,8 Zügen**, schlechtester Fall 5.
-Der aufwendigste Aufruf – noch nichts geraten, alle 274 Kandidaten offen –
+Der aufwendigste Aufruf – noch nichts geraten, alle 396 Kandidaten offen –
 braucht rund 210 ms.
 
 ## Mini-Sudoku im Detail
@@ -225,7 +226,18 @@ MIT – siehe [LICENSE](LICENSE). Kurz: nutzen, ändern, weitergeben, auch
 kommerziell, ohne Rückfrage. Einzige Bedingung ist, dass der Lizenztext mit
 der Copyright-Zeile beim Weitergeben dabeibleibt. Ohne Gewähr.
 
-Alles im Repo ist selbst geschrieben, auch die Wortliste – es hängt keine
-fremde Lizenz daran. Die Schriften (Bricolage Grotesque, DM Mono) werden zur
-Laufzeit von Google Fonts geladen und liegen nicht im Repo; sie stehen unter
-der SIL Open Font License.
+Der Code und die Wortliste sind selbst geschrieben – daran hängt keine fremde
+Lizenz.
+
+Die beiden Schriften liegen in [`schriften/`](schriften/) und werden von dort
+geladen, nicht von Google. Sie stehen unter der **SIL Open Font License 1.1**,
+die verlangt, dass ihr Lizenztext mitgeliefert wird; er liegt als
+`OFL-Bricolage-Grotesque.txt` und `OFL-DM-Mono.txt` daneben. Die OFL steckt
+das Projekt nicht an: Sie gilt für die Schriftdateien, nicht für den Code
+drumherum. Der bleibt MIT.
+
+Warum überhaupt lokal: Wer die Seite öffnet, soll nicht nebenbei Google
+begegnen. Nach dem Umzug spricht die App beim Laden mit genau zwei Stellen –
+GitHub, das die Dateien ausliefert, und dem Zähler oben. Bricolage ist eine
+variable Schrift, eine Datei deckt die Gewichte 400 bis 800 ab; zusammen mit
+DM Mono sind es 153 kB, die einmal geladen und dann offline vorgehalten werden.

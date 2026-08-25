@@ -1,6 +1,6 @@
 /* Service Worker: legt die App auf dem Gerät ab, damit sie offline startet.
    Beim Ausrollen einer neuen Fassung die Zahl in LAGER hochzählen. */
-const LAGER = 'localgames-v7';
+const LAGER = 'localgames-v8';
 
 const GRUNDBESTAND = [
   './',
@@ -25,6 +25,12 @@ const GRUNDBESTAND = [
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
   './icons/apple-touch-icon.png',
+  './schriften/bricolage-400-800-latin-ext.woff2',
+  './schriften/bricolage-400-800-latin.woff2',
+  './schriften/dm-mono-400-latin-ext.woff2',
+  './schriften/dm-mono-400-latin.woff2',
+  './schriften/dm-mono-500-latin-ext.woff2',
+  './schriften/dm-mono-500-latin.woff2',
 ];
 
 self.addEventListener('install', (e) => {
@@ -49,21 +55,6 @@ self.addEventListener('fetch', (e) => {
   if (anfrage.method !== 'GET') return;
 
   const url = new URL(anfrage.url);
-
-  // Schriften von Google: einmal holen, danach aus dem Lager.
-  if (url.hostname.endsWith('googleapis.com') || url.hostname.endsWith('gstatic.com')) {
-    e.respondWith(
-      caches.match(anfrage).then((treffer) =>
-        treffer ||
-        fetch(anfrage).then((antwort) => {
-          const kopie = antwort.clone();
-          caches.open(LAGER).then((lager) => lager.put(anfrage, kopie)).catch(() => {});
-          return antwort;
-        }).catch(() => new Response('', { status: 504 }))
-      )
-    );
-    return;
-  }
 
   if (url.origin !== self.location.origin) return;
 
