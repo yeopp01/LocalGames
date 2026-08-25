@@ -1,6 +1,6 @@
 /* Service Worker: legt die App auf dem Gerät ab, damit sie offline startet.
    Beim Ausrollen einer neuen Fassung die Zahl in LAGER hochzählen. */
-const LAGER = 'localgames-v1';
+const LAGER = 'localgames-v2';
 
 const GRUNDBESTAND = [
   './',
@@ -12,6 +12,9 @@ const GRUNDBESTAND = [
   './spiele/wordle.js',
   './spiele/sudoku.js',
   './spiele/minen.js',
+  './spiele/zweitausend.js',
+  './spiele/galgen.js',
+  './spiele/viergewinnt.js',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',

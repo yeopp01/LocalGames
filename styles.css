@@ -611,3 +611,113 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; }
 }
+
+/* ================================================================ 4. 2048 */
+
+.z-brett {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  width: min(340px, 88vw);
+  aspect-ratio: 1;
+  padding: 6px;
+  border-radius: 12px;
+  background: var(--karte-rand);
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.z-feld {
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--karte) 55%, transparent);
+  font-weight: 800;
+  font-size: clamp(16px, 6vw, 28px);
+  letter-spacing: -.03em;
+  color: #2B2118;
+  transition: background .1s ease;
+}
+.z-feld[data-wert='0'] { color: transparent; }
+.z-feld[data-wert='2'] { background: #EDE4D6; }
+.z-feld[data-wert='4'] { background: #EBD9B8; }
+.z-feld[data-wert='8'] { background: #E9B77C; color: #fff; }
+.z-feld[data-wert='16'] { background: #E39B5E; color: #fff; }
+.z-feld[data-wert='32'] { background: #DE7F52; color: #fff; }
+.z-feld[data-wert='64'] { background: #D4603A; color: #fff; }
+.z-feld[data-wert='128'] { background: #D8B84A; color: #fff; font-size: clamp(14px, 5vw, 24px); }
+.z-feld[data-wert='256'] { background: #D4AE33; color: #fff; font-size: clamp(14px, 5vw, 24px); }
+.z-feld[data-wert='512'] { background: #CFA41C; color: #fff; font-size: clamp(14px, 5vw, 24px); }
+.z-feld[data-wert='1024'] { background: #4E8A54; color: #fff; font-size: clamp(12px, 4.2vw, 20px); }
+.z-feld[data-wert='2048'] { background: #3E7A46; color: #fff; font-size: clamp(12px, 4.2vw, 20px); }
+.z-feld:not([data-wert='0']):not([data-wert='2']):not([data-wert='4']):not([data-wert='8']):not([data-wert='16']):not([data-wert='32']):not([data-wert='64']):not([data-wert='128']):not([data-wert='256']):not([data-wert='512']):not([data-wert='1024']):not([data-wert='2048']) {
+  background: #2E6B8B; color: #fff; font-size: clamp(11px, 3.8vw, 18px);
+}
+
+/* ====================================================== 5. Galgenmännchen */
+
+.g-bild { width: min(220px, 60vw); }
+.g-bild svg {
+  width: 100%;
+  height: auto;
+  fill: none;
+  stroke: var(--tinte);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+.g-wort { display: flex; gap: 6px; }
+.g-buchstabe {
+  width: clamp(32px, 11vw, 44px);
+  height: clamp(40px, 13vw, 54px);
+  display: grid;
+  place-items: center;
+  border-bottom: 3px solid var(--tinte-still);
+  font-size: clamp(20px, 7vw, 30px);
+  font-weight: 800;
+}
+.g-buchstabe[data-verpasst='ja'] { color: var(--rost); }
+
+.g-tafel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(34px, 1fr));
+  gap: 5px;
+  width: 100%;
+  max-width: 440px;
+}
+.g-taste {
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 8px;
+  background: var(--karte-rand);
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+}
+.g-taste[data-stand='treffer'] { background: var(--gruen); color: #fff; }
+.g-taste[data-stand='daneben'] { background: transparent; color: var(--tinte-still); text-decoration: line-through; }
+.g-taste:disabled { cursor: default; }
+
+/* ========================================================= 6. Vier gewinnt */
+
+.v-brett {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  width: min(360px, 94vw);
+  padding: 7px;
+  border-radius: 12px;
+  background: #4A6B9A;
+}
+.v-feld {
+  aspect-ratio: 1;
+  border: 0;
+  border-radius: 50%;
+  background: var(--papier);
+  cursor: pointer;
+  padding: 0;
+  position: relative;
+}
+.v-feld[data-wer='ich'] { background: #C64B3A; }
+.v-feld[data-wer='er'] { background: #E0B33C; }
+.v-feld[data-sieg='ja'] { box-shadow: 0 0 0 3px var(--tinte) inset; }
+.v-feld[data-wer='leer']:active { background: color-mix(in srgb, var(--papier) 70%, #000); }
