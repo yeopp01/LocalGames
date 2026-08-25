@@ -390,7 +390,7 @@
     }
     const ohneHilfe = partien.filter((p) => p.gewonnen && !p.hilfen).length;
     return [
-      { wert: String(schnitt), label: 'Züge im Schnitt' },
+      { wert: String(schnitt), label: 'Züge je Sieg' },
       { wert: String(beste), label: 'Siege in Folge' },
       { wert: String(ohneHilfe), label: 'ohne Hilfe' },
     ];

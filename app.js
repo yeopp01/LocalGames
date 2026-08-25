@@ -163,6 +163,25 @@ const Rahmen = (() => {
     return zaehler;
   }
 
+  /* Kennzahlen, die jedes Spiel bekommt, das die Felder mitschreibt.
+     So muss kein Spiel dieselbe Rechnung noch einmal aufschreiben. */
+  function allgemeineKennzahlen(partien) {
+    const raus = [];
+    const mittel = (werte) =>
+      (werte.reduce((s, w) => s + w, 0) / werte.length).toFixed(1).replace('.', ',');
+
+    const zuege = partien.filter((p) => typeof p.zuege === 'number').map((p) => p.zuege);
+    if (zuege.length) raus.push({ wert: mittel(zuege), label: 'Züge im Schnitt' });
+
+    const hilfen = partien.filter((p) => typeof p.hilfen === 'number').map((p) => p.hilfen);
+    if (hilfen.length) {
+      const gesamt = hilfen.reduce((s, w) => s + w, 0);
+      raus.push({ wert: mittel(hilfen), label: 'Hinweise je Partie' });
+      raus.push({ wert: String(gesamt), label: 'Hinweise gesamt' });
+    }
+    return raus;
+  }
+
   function beste(partien, feld) {
     const werte = partien.filter((p) => p.gewonnen && p[feld] > 0).map((p) => p[feld]);
     return werte.length ? Math.min(...werte) : 0;
@@ -373,7 +392,8 @@ const Rahmen = (() => {
       const werte = el('div', 'kennzahlen');
       werte.append(kennzahl(String(p.length), 'Partien'));
       werte.append(kennzahl(prozent(p.filter((x) => x.gewonnen).length, p.length), 'gewonnen'));
-      for (const k of (s.auswertung ? s.auswertung(p, { dauerText, beste, prozent }) : [])) {
+      const eigene = s.auswertung ? s.auswertung(p, { dauerText, beste, prozent }) : [];
+      for (const k of [...eigene, ...allgemeineKennzahlen(p)]) {
         werte.append(kennzahl(k.wert, k.label));
       }
       block.append(werte);

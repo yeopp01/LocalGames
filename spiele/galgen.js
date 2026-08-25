@@ -105,6 +105,7 @@
         gewonnen: ausgang === 'sieg',
         dauer: Date.now() - stand.begonnen,
         fehler: fehler().length,
+        zuege: stand.geraten.length,
         buchstaben: stand.geraten.length,
         hilfen: stand.beschreibung ? 1 : 0,
         wort: stand.wort,

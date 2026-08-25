@@ -721,3 +721,137 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .v-feld[data-wer='er'] { background: #E0B33C; }
 .v-feld[data-sieg='ja'] { box-shadow: 0 0 0 3px var(--tinte) inset; }
 .v-feld[data-wer='leer']:active { background: color-mix(in srgb, var(--papier) 70%, #000); }
+
+/* =========================================================== 7. Nonogramm */
+
+.n-rahmen {
+  --kanten: 5;
+  --zelle: 34px;
+  --rand: 60px;
+  display: grid;
+  grid-template-columns: var(--rand) calc(var(--zelle) * var(--kanten));
+  grid-template-rows: auto calc(var(--zelle) * var(--kanten));
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.n-ecke { grid-area: 1 / 1; }
+
+.n-oben {
+  grid-area: 1 / 2;
+  display: grid;
+  grid-template-columns: repeat(var(--kanten), var(--zelle));
+}
+.n-links {
+  grid-area: 2 / 1;
+  display: grid;
+  grid-template-rows: repeat(var(--kanten), var(--zelle));
+}
+.n-gitter {
+  grid-area: 2 / 2;
+  display: grid;
+  grid-template-columns: repeat(var(--kanten), var(--zelle));
+  border-top: 2px solid var(--tinte);
+  border-left: 2px solid var(--tinte);
+}
+
+.n-hinweis {
+  display: flex;
+  font-family: 'DM Mono', monospace;
+  font-size: clamp(10px, calc(var(--zelle) * .38), 14px);
+  color: var(--tinte-leise);
+  line-height: 1.15;
+}
+.n-hinweis--oben {
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 4px;
+  min-height: 46px;
+}
+.n-hinweis--links {
+  justify-content: flex-end;
+  align-items: center;
+  gap: 5px;
+  padding-right: 6px;
+}
+
+.n-feld {
+  width: var(--zelle);
+  height: var(--zelle);
+  border: 0;
+  border-right: 1px solid var(--karte-rand);
+  border-bottom: 1px solid var(--karte-rand);
+  background: var(--karte);
+  padding: 0;
+  cursor: pointer;
+  font-size: calc(var(--zelle) * .5);
+  color: var(--tinte-still);
+  display: grid;
+  place-items: center;
+}
+/* Jede fünfte Linie kräftiger – so bleibt das Zählen leicht. */
+.n-feld[data-spalte='4'], .n-feld[data-spalte='9'] { border-right: 2px solid var(--tinte); }
+.n-feld[data-zeile='4'], .n-feld[data-zeile='9'] { border-bottom: 2px solid var(--tinte); }
+.n-feld[data-stand='voll'] { background: var(--tinte); }
+.n-feld[data-stand='leer'] { background: var(--karte); }
+
+/* ========================================================= 8. Zahlencode */
+
+.k-liste { display: grid; gap: 5px; width: min(320px, 88vw); }
+.k-zeile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px;
+  border-radius: 10px;
+  background: var(--karte);
+  border: 1px solid var(--karte-rand);
+}
+.k-zeile[data-aktiv='ja'] { border-color: var(--tinte-still); border-style: dashed; }
+.k-felder { display: flex; gap: 5px; flex: 1 1 auto; }
+.k-feld {
+  width: clamp(30px, 9vw, 38px);
+  height: clamp(34px, 10vw, 42px);
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: var(--karte-rand);
+  font-family: 'DM Mono', monospace;
+  font-size: 18px;
+  font-weight: 500;
+}
+.k-marken {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 3px;
+  width: 26px;
+  flex: 0 0 auto;
+}
+.k-marke {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid var(--karte-rand);
+}
+.k-marke--voll { background: var(--tinte); border-color: var(--tinte); }
+.k-marke--halb { background: transparent; border-color: var(--tinte); }
+
+.k-pad {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 5px;
+  width: min(420px, 94vw);
+  margin-top: 6px;
+}
+.k-taste {
+  aspect-ratio: 1;
+  border: 1px solid var(--karte-rand);
+  border-radius: 10px;
+  background: var(--karte);
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.k-taste--ok { background: var(--gruen); color: #fff; border-color: var(--gruen); }
+.k-taste:active { opacity: .75; }
