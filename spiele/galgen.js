@@ -5,7 +5,10 @@
 */
 
 (() => {
-  const ALPHABET = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ'];
+  /* Die Tafel folgt dem QWERTZ-Muster, damit die Finger dort suchen, wo sie
+     es von der Tastatur gewohnt sind. */
+  const TAFEL = ['QWERTZUIOPÜ', 'ASDFGHJKLÖÄ', 'YXCVBNM'];
+  const ALPHABET = [...TAFEL.join('')];
 
   /* Die Teile in der Reihenfolge, in der sie gezeichnet werden. Ihre Anzahl
      ist zugleich die Zahl der erlaubten Fehler. */
@@ -64,12 +67,16 @@
     wurzel.append(bild, wortZeile, tippKasten, endeKasten, tafel, leiste);
 
     const tasten = new Map();
-    for (const c of ALPHABET) {
-      const t = el('button', 'g-taste', c);
-      t.type = 'button';
-      t.addEventListener('click', () => raten(c));
-      tafel.append(t);
-      tasten.set(c, t);
+    for (const reihe of TAFEL) {
+      const r = el('div', 'g-reihe');
+      for (const c of reihe) {
+        const t = el('button', 'g-taste', c);
+        t.type = 'button';
+        t.addEventListener('click', () => raten(c));
+        r.append(t);
+        tasten.set(c, t);
+      }
+      tafel.append(r);
     }
 
     const tippKnopf = el('button', 'knopf knopf--still', 'Tipp');

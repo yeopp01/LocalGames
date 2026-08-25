@@ -8,8 +8,16 @@ Enthalten sind bisher:
 | Spiel | Kurz |
 | --- | --- |
 | **Wördle** | Fünf Buchstaben, sechs Versuche. Mit Tipp, Buchstaben-Hilfe und einem Rechner für den besten nächsten Zug. |
-| **Mini-Sudoku** | 6 × 6 mit den Ziffern 1 bis 6, drei Schwierigkeitsstufen, Notizen. |
+| **Mini-Sudoku** | 6 × 6 mit den Ziffern 1 bis 6, drei Stufen, Notizen, begründende Hinweise. |
 | **Minenfeld** | Minesweeper in drei Größen, erster Klick immer sicher. |
+| **2048** | Zahlen zusammenschieben, per Wischgeste oder Pfeiltaste. |
+| **Galgenmännchen** | Buchstabe für Buchstabe, elf Fehler sind erlaubt. |
+| **Vier gewinnt** | Gegen den Rechner, drei Stufen, Minimax mit Alpha-Beta. |
+| **Nonogramm** | Aus Zahlen wird ein Bild, 5 × 5 bis 10 × 10. |
+| **Zahlencode** | Mastermind mit Ziffern, mit rechnendem Vorschlag. |
+| **Tango** | Sonne und Mond im Gleichgewicht, 6 × 6. |
+| **Damen** | Eine Dame je Zeile, Spalte und Farbgebiet. |
+| **Weg** | Ein Zug durch jedes Feld, die Zahlen der Reihe nach. |
 
 Über allem liegt ein Dashboard mit der Spielauswahl und eine gemeinsame
 Statistik über alle Partien, samt Sicherung zum Mitnehmen.
@@ -55,9 +63,7 @@ Teil der Sicherung – die gehören zum Gerät.
 | `app.js` | Der Rahmen: Auswahl, Navigation, Speicher, Statistik, Sicherung |
 | `spiele/woerter.js` | Wortschatz für Wördle samt Tipps |
 | `spiele/loeser.js` | Die Rechnung hinter dem Zug-Vorschlag |
-| `spiele/wordle.js` | Spiel 1 |
-| `spiele/sudoku.js` | Spiel 2 |
-| `spiele/minen.js` | Spiel 3 |
+| `spiele/*.js` | je Datei ein Spiel |
 | `sw.js` | Der Offline-Speicher |
 | `icons/` | App-Icons |
 

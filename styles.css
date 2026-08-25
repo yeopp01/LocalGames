@@ -678,13 +678,18 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .g-buchstabe[data-verpasst='ja'] { color: var(--rost); }
 
 .g-tafel {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(34px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 5px;
   width: 100%;
   max-width: 440px;
 }
+.g-reihe { display: flex; gap: 5px; justify-content: center; }
 .g-taste {
+  /* Alle Reihen rechnen mit elf Spalten, damit die Tasten überall gleich
+     breit sind – auch in der kurzen dritten Reihe. */
+  flex: 0 0 auto;
+  width: calc((100% - 50px) / 11);
   aspect-ratio: 1;
   border: 0;
   border-radius: 8px;
@@ -895,3 +900,127 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 }
 .legende-punkt[data-art='ohne']::before { background: var(--gruen); }
 .legende-punkt[data-art='mit']::before { background: var(--grau); }
+
+/* ============================================================== 9. Tango */
+
+.t-gitter {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  width: min(330px, 88vw);
+  aspect-ratio: 1;
+  border: 2px solid var(--tinte);
+  border-radius: 8px;
+  overflow: visible;
+  background: var(--karte);
+}
+.t-feld {
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--karte-rand);
+  background: transparent;
+  font-size: clamp(18px, 6vw, 26px);
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+.t-feld[data-wert='sonne'] { color: #D89A2A; }
+.t-feld[data-wert='mond'] { color: #5C6BB8; }
+.t-feld[data-fest='ja'] { background: color-mix(in srgb, var(--tinte-still) 16%, transparent); }
+.t-feld[data-fehler='ja'] { background: color-mix(in srgb, var(--rost) 40%, transparent); }
+
+.t-marken { position: absolute; inset: 0; pointer-events: none; }
+.t-marke {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--papier);
+  border: 1px solid var(--tinte);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+/* ============================================================== 10. Damen */
+
+.q-gitter {
+  --kanten: 6;
+  --zelle: 48px;
+  display: grid;
+  grid-template-columns: repeat(var(--kanten), var(--zelle));
+  border: 2px solid var(--tinte);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.q-feld {
+  width: var(--zelle);
+  height: var(--zelle);
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-right: 1px solid rgba(0, 0, 0, .18);
+  border-bottom: 1px solid rgba(0, 0, 0, .18);
+  background: var(--gebiet);
+  color: #16120E;
+  font-size: calc(var(--zelle) * .55);
+  line-height: 1;
+  cursor: pointer;
+  padding: 0;
+}
+.q-feld[data-grenze-rechts='ja'] { border-right: 3px solid var(--tinte); }
+.q-feld[data-grenze-unten='ja'] { border-bottom: 3px solid var(--tinte); }
+.q-feld[data-wert='kreuz'] { font-size: calc(var(--zelle) * .4); opacity: .75; }
+.q-feld[data-fehler='ja'] { box-shadow: 0 0 0 3px var(--rost) inset; }
+
+/* ================================================================ 11. Weg */
+
+.p-buehne {
+  --kanten: 5;
+  --zelle: 60px;
+  position: relative;
+  width: calc(var(--zelle) * var(--kanten));
+  height: calc(var(--zelle) * var(--kanten));
+  touch-action: none;
+}
+.p-gitter {
+  display: grid;
+  grid-template-columns: repeat(var(--kanten), var(--zelle));
+  border: 2px solid var(--tinte);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--karte);
+}
+.p-feld {
+  width: var(--zelle);
+  height: var(--zelle);
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--karte-rand);
+  background: transparent;
+  font-family: 'DM Mono', monospace;
+  font-size: calc(var(--zelle) * .38);
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+}
+.p-feld[data-zahl='ja'] {
+  background: var(--tinte);
+  color: var(--papier);
+  border-radius: 50%;
+  font-weight: 500;
+}
+.p-feld[data-besucht='ja']:not([data-zahl='ja']) {
+  background: color-mix(in srgb, #4573B8 22%, transparent);
+}
+.p-feld[data-spitze='ja'] { box-shadow: 0 0 0 2px #4573B8 inset; }
+
+.p-linie {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.p-linie polyline { stroke: color-mix(in srgb, #4573B8 70%, transparent); }
