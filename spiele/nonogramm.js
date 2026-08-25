@@ -153,6 +153,7 @@
     let markierModus = false;
     let uhr = null;
     let ziehen = null;          // beim Wischen über mehrere Felder
+    let druckUhr = null;        // langes Drücken setzt ein Kreuz
 
     function frisch(stufe) {
       const r = raetselBauen(stufe) || raetselBauen('klein');
@@ -255,8 +256,25 @@
           const neuerWert = naechsterWert(stand.feld[nr]);
           ziehen = neuerWert;
           setzen(nr, neuerWert);
+          // Lange drücken heißt „das hier bleibt leer" – ohne den Modus zu wechseln.
+          clearTimeout(druckUhr);
+          druckUhr = setTimeout(() => {
+            ziehen = null;
+            setzen(nr, stand.feld[nr] === LEER ? UNKLAR : LEER);
+          }, 400);
         });
-        f.addEventListener('pointerenter', () => { if (ziehen !== null) setzen(nr, ziehen); });
+        f.addEventListener('pointerenter', () => {
+          clearTimeout(druckUhr);
+          if (ziehen !== null) setzen(nr, ziehen);
+        });
+        for (const art of ['pointerup', 'pointerleave', 'pointercancel']) {
+          f.addEventListener(art, () => clearTimeout(druckUhr));
+        }
+        // Am Rechner setzt die rechte Maustaste das Kreuz.
+        f.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          setzen(nr, stand.feld[nr] === LEER ? UNKLAR : LEER);
+        });
         gitter.append(f);
         felder.push(f);
       }
@@ -430,7 +448,8 @@
       d.append(el('p', 'notiz', 'Die Zahlen am Rand sagen, wie viele Felder in dieser Zeile oder Spalte am Stück gefüllt sind – in genau dieser Reihenfolge, mit mindestens einer Lücke dazwischen.'));
       d.append(el('p', 'notiz', '„3 1" in einer Zeile mit acht Feldern heißt also: erst drei gefüllte am Stück, dann irgendwo danach noch ein einzelnes. Eine 0 bedeutet: diese Reihe bleibt ganz leer.'));
       d.append(el('p', 'notiz', 'Tippen füllt ein Feld, nochmal tippen macht es wieder frei. Über mehrere Felder zu wischen füllt sie alle.'));
-      d.append(el('p', 'notiz', 'Mit „Kreuze setzen" markierst du stattdessen Felder, die sicher leer bleiben. Das ist der eigentliche Trick: Erst die Kreuze machen die vollen Felder sichtbar.'));
+      d.append(el('p', 'notiz', 'Für „das bleibt bestimmt leer" gibt es drei Wege: den Knopf „Kreuze setzen" einschalten, lange auf ein Feld drücken, oder am Rechner rechts klicken. Nochmal dasselbe nimmt das Kreuz wieder weg.'));
+      d.append(el('p', 'notiz', 'Die Kreuze sind der eigentliche Trick – erst sie machen sichtbar, wo die vollen Felder liegen müssen.'));
       d.append(el('p', 'notiz', 'Anfangen lohnt sich bei den größten Zahlen – bei einer 8 in einer 10er-Zeile liegen die mittleren sechs Felder in jedem Fall fest, egal wie weit der Block rutscht.'));
       s.blatt({ titel: 'Nonogramm', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
@@ -446,6 +465,7 @@
     return {
       ende: () => {
         clearInterval(uhr);
+        clearTimeout(druckUhr);
         window.removeEventListener('resize', beiGroesse);
         if (!stand.fertig) sichern();
       },
@@ -459,12 +479,10 @@
       const zeiten = partien.filter((p) => p.gewonnen && p.stufe === stufe && p.dauer > 0).map((p) => p.dauer);
       return zeiten.length ? hilfe.dauerText(Math.min(...zeiten)) : '–';
     };
-    const sauber = partien.filter((p) => p.gewonnen && !p.hilfen).length;
     return [
       { wert: bestzeit('klein'), label: 'Bestzeit klein' },
       { wert: bestzeit('mittel'), label: 'Bestzeit mittel' },
       { wert: bestzeit('gross'), label: 'Bestzeit groß' },
-      { wert: String(sauber), label: 'ohne Hinweis' },
     ];
   }
 

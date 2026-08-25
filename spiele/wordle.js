@@ -380,7 +380,7 @@
   function auswertung(partien, hilfe) {
     const siege = partien.filter((p) => p.gewonnen);
     const schnitt = siege.length
-      ? (siege.reduce((s, p) => s + (p.zuege || 0), 0) / siege.length).toFixed(1)
+      ? (siege.reduce((s, p) => s + (p.zuege || 0), 0) / siege.length).toFixed(1).replace(String.fromCharCode(46), String.fromCharCode(44))
       : '–';
     let serie = 0;
     let beste = 0;
@@ -388,28 +388,56 @@
       serie = p.gewonnen ? serie + 1 : 0;
       if (serie > beste) beste = serie;
     }
-    const ohneHilfe = partien.filter((p) => p.gewonnen && !p.hilfen).length;
     return [
       { wert: String(schnitt), label: 'Züge je Sieg' },
       { wert: String(beste), label: 'Siege in Folge' },
-      { wert: String(ohneHilfe), label: 'ohne Hilfe' },
     ];
   }
 
+  /* In wie vielen Zügen gelöst – und dabei getrennt, was aus eigener Kraft
+     kam und was mit Hilfe. Das ist die Zahl, die einen wirklich interessiert. */
   function zusatz(partien, { el }) {
-    const nach = [0, 0, 0, 0, 0, 0];
-    for (const p of partien) if (p.gewonnen && p.zuege >= 1 && p.zuege <= 6) nach[p.zuege - 1] += 1;
-    const hoechste = Math.max(1, ...nach);
+    const ohne = [0, 0, 0, 0, 0, 0];
+    const mit = [0, 0, 0, 0, 0, 0];
+    for (const p of partien) {
+      if (!p.gewonnen || !(p.zuege >= 1 && p.zuege <= 6)) continue;
+      (p.hilfen ? mit : ohne)[p.zuege - 1] += 1;
+    }
+    const hoechste = Math.max(1, ...ohne.map((n, i) => n + mit[i]));
+
     const kasten = el('div', 'verteilung');
-    nach.forEach((n, i) => {
+    for (let i = 0; i < 6; i += 1) {
+      const gesamt = ohne[i] + mit[i];
       const zeile = el('div', 'verteilung-zeile');
-      if (n === hoechste && n > 0) zeile.dataset.hell = 'ja';
       zeile.append(el('span', 'verteilung-nr', String(i + 1)));
-      const balken = el('span', 'verteilung-balken', String(n));
-      balken.style.width = Math.max(8, (n / hoechste) * 100) + '%';
+
+      const balken = el('span', 'verteilung-balken');
+      balken.style.width = Math.max(9, (gesamt / hoechste) * 100) + '%';
+      if (ohne[i]) {
+        const teil = el('span', 'verteilung-teil', String(ohne[i]));
+        teil.dataset.art = 'ohne';
+        teil.style.flexGrow = String(ohne[i]);
+        balken.append(teil);
+      }
+      if (mit[i]) {
+        const teil = el('span', 'verteilung-teil', String(mit[i]));
+        teil.dataset.art = 'mit';
+        teil.style.flexGrow = String(mit[i]);
+        balken.append(teil);
+      }
       zeile.append(balken);
       kasten.append(zeile);
-    });
+    }
+
+    const legende = el('div', 'legende');
+    const eintrag = (art, text) => {
+      const e = el('span', 'legende-punkt', text);
+      e.dataset.art = art;
+      legende.append(e);
+    };
+    eintrag('ohne', 'ohne Hilfe');
+    eintrag('mit', 'mit Hilfe');
+    kasten.append(legende);
     return kasten;
   }
 

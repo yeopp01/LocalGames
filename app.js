@@ -170,14 +170,20 @@ const Rahmen = (() => {
     const mittel = (werte) =>
       (werte.reduce((s, w) => s + w, 0) / werte.length).toFixed(1).replace('.', ',');
 
+    // Die wichtigste Zahl zuerst: aus eigener Kraft gelöst.
+    const gewonnen = partien.filter((p) => p.gewonnen);
+    const kenntHilfen = partien.some((p) => typeof p.hilfen === 'number');
+    if (kenntHilfen && gewonnen.length) {
+      const ohne = gewonnen.filter((p) => !p.hilfen).length;
+      raus.push({ wert: ohne + '/' + gewonnen.length, label: 'Siege ohne Hinweis' });
+    }
+
     const zuege = partien.filter((p) => typeof p.zuege === 'number').map((p) => p.zuege);
     if (zuege.length) raus.push({ wert: mittel(zuege), label: 'Züge im Schnitt' });
 
     const hilfen = partien.filter((p) => typeof p.hilfen === 'number').map((p) => p.hilfen);
     if (hilfen.length) {
-      const gesamt = hilfen.reduce((s, w) => s + w, 0);
-      raus.push({ wert: mittel(hilfen), label: 'Hinweise je Partie' });
-      raus.push({ wert: String(gesamt), label: 'Hinweise gesamt' });
+      raus.push({ wert: String(hilfen.reduce((s, w) => s + w, 0)), label: 'Hinweise gesamt' });
     }
     return raus;
   }
@@ -217,7 +223,7 @@ const Rahmen = (() => {
     laufend = null;
     ansicht = ziel;
     const hash = ziel.name === 'auswahl' ? '#/'
-      : ziel.name === 'statistik' ? '#/statistik'
+      : ziel.name === 'statistik' ? (ziel.spiel ? '#/statistik/' + ziel.spiel : '#/statistik')
       : '#/spiel/' + ziel.spiel;
     if (location.hash !== hash) history.pushState(null, '', hash);
     zeichnen();
@@ -228,6 +234,10 @@ const Rahmen = (() => {
     if (h.startsWith('/spiel/')) {
       const id = h.slice('/spiel/'.length);
       if (nachId(id)) return { name: 'spiel', spiel: id };
+    }
+    if (h.startsWith('/statistik/')) {
+      const id = h.slice('/statistik/'.length);
+      if (nachId(id)) return { name: 'statistik', spiel: id };
     }
     if (h === '/statistik') return { name: 'statistik' };
     return { name: 'auswahl' };
@@ -350,7 +360,82 @@ const Rahmen = (() => {
 
   /* ---------------------------------------------------- Ansicht: Statistik */
 
+  /* Ein Spiel als Block. Mit anklickbarer Überschrift, wenn er in der
+     Gesamtübersicht steht – dann führt er auf die Einzelansicht. */
+  function spielBlock(s, p, verlinkt) {
+    const block = el('section', 'block');
+    block.style.setProperty('--ton', s.farbe);
+
+    const titel = el(verlinkt ? 'button' : 'h2', 'block-titel block-titel--marke');
+    if (verlinkt) {
+      titel.type = 'button';
+      titel.classList.add('block-titel--knopf');
+      titel.addEventListener('click', () => gehe({ name: 'statistik', spiel: s.id }));
+    }
+    const marke = el('span', 'block-marke');
+    marke.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + s.symbol + '</svg>';
+    titel.append(marke, el('span', null, s.name));
+    block.append(titel);
+
+    if (!p.length) {
+      block.append(el('p', 'notiz', 'Noch nicht gespielt.'));
+      return block;
+    }
+
+    const werte = el('div', 'kennzahlen');
+    werte.append(kennzahl(String(p.length), 'Partien'));
+    werte.append(kennzahl(prozent(p.filter((x) => x.gewonnen).length, p.length), 'gewonnen'));
+    const eigene = s.auswertung ? s.auswertung(p, { dauerText, beste, prozent }) : [];
+    for (const k of [...eigene, ...allgemeineKennzahlen(p)]) {
+      werte.append(kennzahl(k.wert, k.label));
+    }
+    block.append(werte);
+
+    if (s.zusatz) {
+      const extra = s.zusatz(p, { el });
+      if (extra) block.append(extra);
+    }
+    return block;
+  }
+
+  /* Statistik zu einem einzelnen Spiel. */
+  function zeichneSpielStatistik(wurzel, s) {
+    document.body.dataset.ansicht = 'statistik';
+    kopfSetzen(s.name, 'Statistik', []);
+
+    const p = partienVon(s.id);
+    if (!p.length) {
+      wurzel.append(el('p', 'notiz notiz--mitte',
+        'Noch keine Partie beendet. Sobald du eine durchspielst, steht sie hier.'));
+    } else {
+      const kopf = el('section', 'block');
+      kopf.append(el('h2', 'block-titel', 'Überblick'));
+      const gitter = el('div', 'kennzahlen');
+      gitter.append(kennzahl(zeitspanne(p.reduce((s2, x) => s2 + (x.dauer || 0), 0)), 'gespielt'));
+      gitter.append(kennzahl(String(serie(p)), serie(p) === 1 ? 'Tag in Folge' : 'Tage in Folge'));
+      gitter.append(kennzahl(String(p.filter((x) => tagVon(x.ende) === heute()).length), 'heute'));
+      kopf.append(gitter);
+      kopf.append(kalenderStreifen(p));
+      wurzel.append(kopf);
+      wurzel.append(spielBlock(s, p, false));
+    }
+
+    const fuss = el('div', 'sheet-aktionen sheet-aktionen--frei');
+    const zurueckKnopf = el('button', 'knopf knopf--voll', 'Weiterspielen');
+    zurueckKnopf.type = 'button';
+    zurueckKnopf.addEventListener('click', () => gehe({ name: 'spiel', spiel: s.id }));
+    const alleKnopf = el('button', 'knopf knopf--still', 'Alle Spiele');
+    alleKnopf.type = 'button';
+    alleKnopf.addEventListener('click', () => gehe({ name: 'statistik' }));
+    fuss.append(zurueckKnopf, alleKnopf);
+    wurzel.append(fuss);
+  }
+
   function zeichneStatistik(wurzel) {
+    if (ansicht.spiel) {
+      const s = nachId(ansicht.spiel);
+      if (s) { zeichneSpielStatistik(wurzel, s); return; }
+    }
     document.body.dataset.ansicht = 'statistik';
     kopfSetzen('Statistik', 'Alles, was du gespielt hast', []);
 
@@ -367,42 +452,12 @@ const Rahmen = (() => {
     gitter.append(kennzahl(String(alle.length), 'Partien'));
     gitter.append(kennzahl(prozent(alle.filter((p) => p.gewonnen).length, alle.length), 'gewonnen'));
     gitter.append(kennzahl(zeitspanne(spielzeit), 'gespielt'));
-    gitter.append(kennzahl(String(serie(alle)), 'Tage in Folge'));
+    gitter.append(kennzahl(String(serie(alle)), serie(alle) === 1 ? 'Tag in Folge' : 'Tage in Folge'));
     kopf.append(gitter);
     kopf.append(kalenderStreifen(alle));
     wurzel.append(kopf);
 
-    for (const s of spiele) {
-      const p = partienVon(s.id);
-      const block = el('section', 'block');
-      block.style.setProperty('--ton', s.farbe);
-
-      const titel = el('h2', 'block-titel block-titel--marke');
-      const marke = el('span', 'block-marke');
-      marke.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + s.symbol + '</svg>';
-      titel.append(marke, el('span', null, s.name));
-      block.append(titel);
-
-      if (!p.length) {
-        block.append(el('p', 'notiz', 'Noch nicht gespielt.'));
-        wurzel.append(block);
-        continue;
-      }
-
-      const werte = el('div', 'kennzahlen');
-      werte.append(kennzahl(String(p.length), 'Partien'));
-      werte.append(kennzahl(prozent(p.filter((x) => x.gewonnen).length, p.length), 'gewonnen'));
-      const eigene = s.auswertung ? s.auswertung(p, { dauerText, beste, prozent }) : [];
-      for (const k of [...eigene, ...allgemeineKennzahlen(p)]) {
-        werte.append(kennzahl(k.wert, k.label));
-      }
-      block.append(werte);
-      if (s.zusatz) {
-        const extra = s.zusatz(p, { el });
-        if (extra) block.append(extra);
-      }
-      wurzel.append(block);
-    }
+    for (const s of spiele) wurzel.append(spielBlock(s, partienVon(s.id), true));
 
     const fuss = el('div', 'sheet-aktionen sheet-aktionen--frei');
     const sichernKnopf = el('button', 'knopf knopf--still', 'Statistik sichern');
@@ -506,8 +561,12 @@ const Rahmen = (() => {
 
     document.getElementById('btn-zurueck')
       .addEventListener('click', () => gehe({ name: 'auswahl' }));
-    document.getElementById('btn-statistik')
-      .addEventListener('click', () => gehe({ name: 'statistik' }));
+    document.getElementById('btn-statistik').addEventListener('click', () => {
+      // Aus einem Spiel heraus führt der Knopf auf dessen eigene Zahlen.
+      gehe(ansicht.name === 'spiel'
+        ? { name: 'statistik', spiel: ansicht.spiel }
+        : { name: 'statistik' });
+    });
     document.getElementById('btn-einstellungen')
       .addEventListener('click', einstellungenZeigen);
 

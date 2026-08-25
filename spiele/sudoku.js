@@ -540,12 +540,10 @@
       const zeiten = partien.filter((p) => p.gewonnen && p.stufe === stufe && p.dauer > 0).map((p) => p.dauer);
       return zeiten.length ? hilfe.dauerText(Math.min(...zeiten)) : '–';
     };
-    const sauber = partien.filter((p) => p.gewonnen && !p.hilfen).length;
     return [
       { wert: bestzeit('leicht'), label: 'Bestzeit leicht' },
       { wert: bestzeit('mittel'), label: 'Bestzeit mittel' },
       { wert: bestzeit('schwer'), label: 'Bestzeit schwer' },
-      { wert: String(sauber), label: 'ohne Hinweis' },
     ];
   }
 
