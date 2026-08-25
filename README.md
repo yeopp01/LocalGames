@@ -1,7 +1,9 @@
 # LocalGames
 
-Kleine Spiele für zwischendurch. Kein Konto, kein Login, kein Server – alles
-liegt im Speicher des Geräts, auf dem die App läuft.
+Kleine Spiele für zwischendurch. Kein Konto, keine Anmeldung, kein fremder
+Rechner, auf dem deine Partien liegen – die stehen im Speicher des Geräts, auf
+dem die App läuft, und verlassen es nicht. Nach draußen geht einzig ein
+anonymer Aufrufzähler; was der zählt, steht unten unter *Zählung*.
 
 Enthalten sind bisher:
 

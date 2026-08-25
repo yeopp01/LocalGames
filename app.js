@@ -5,7 +5,9 @@
    sich mit Rahmen.anmelden({...}) an und bekommt beim Start eine Sitzung –
    darüber läuft alles, was ein Spiel vom Rahmen braucht.
 
-   Alles liegt in localStorage. Kein Konto, kein Server, kein Netz.
+   Alle Daten liegen in localStorage: kein Konto, keine Anmeldung, nichts davon
+   verlässt das Gerät. Das Netz wird an genau einer Stelle berührt – der
+   anonyme Aufrufzähler weiter unten in dieser Datei.
 */
 
 const Rahmen = (() => {
