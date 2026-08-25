@@ -222,7 +222,7 @@ erst ein ganzer ausgelassener Tag beendet sie.
 
 ## Lizenz
 
-MIT – siehe [LICENSE](LICENSE). Kurz: nutzen, ändern, weitergeben, auch
+MIT – siehe [LICENSE](LICENSE), Herkunft aller Bestandteile in [NOTICE](NOTICE). Kurz: nutzen, ändern, weitergeben, auch
 kommerziell, ohne Rückfrage. Einzige Bedingung ist, dass der Lizenztext mit
 der Copyright-Zeile beim Weitergeben dabeibleibt. Ohne Gewähr.
 

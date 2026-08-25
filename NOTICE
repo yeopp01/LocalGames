@@ -1,0 +1,32 @@
+LocalGames – Herkunft der Bestandteile
+=======================================
+
+Code, Wortliste, Icons und Gestaltung stehen unter der MIT-Lizenz, siehe
+LICENSE.
+
+Nicht davon erfasst sind die Schriftdateien im Ordner schriften/:
+
+  Bricolage Grotesque
+  Copyright 2022 The Bricolage Grotesque Project Authors
+  https://github.com/ateliertriay/bricolage
+  SIL Open Font License 1.1 – Lizenztext: schriften/OFL-Bricolage-Grotesque.txt
+
+  DM Mono
+  Copyright 2020 The DM Mono Project Authors
+  https://github.com/googlefonts/dm-mono
+  SIL Open Font License 1.1 – Lizenztext: schriften/OFL-DM-Mono.txt
+
+Beide Schriften tragen keinen Reserved Font Name. Die hier abgelegten
+woff2-Dateien sind auf die lateinischen Zeichensätze beschnittene Fassungen
+und dürfen unter dem Originalnamen weitergegeben werden. Wer sie weitergibt,
+muss den jeweiligen Lizenztext mitgeben – deshalb liegt er daneben.
+
+Die Open Font License bindet die Schriftdateien, nicht den Code daneben. Sie
+sagt das selbst: "this license does not apply to any document created using
+the Font Software."
+
+---
+
+English summary: The MIT license in LICENSE covers the code of this project.
+The font files in schriften/ are licensed under the SIL Open Font License 1.1;
+their license texts sit next to them and must accompany any redistribution.
