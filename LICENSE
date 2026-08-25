@@ -19,3 +19,18 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+---
+
+Scope of this license / Geltungsbereich
+
+The MIT license above covers the code of this project. It does not cover the
+font files in `schriften/`: Bricolage Grotesque and DM Mono are licensed under
+the SIL Open Font License, Version 1.1. Their license texts are stored next to
+them as `OFL-Bricolage-Grotesque.txt` and `OFL-DM-Mono.txt` and must be kept
+with the font files when they are redistributed.
+
+Die MIT-Lizenz oben gilt für den Code dieses Projekts, nicht für die
+Schriftdateien in `schriften/`. Bricolage Grotesque und DM Mono stehen unter
+der SIL Open Font License 1.1; ihre Lizenztexte liegen im selben Ordner und
+müssen beim Weitergeben der Schriften dabeibleiben.
