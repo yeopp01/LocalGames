@@ -63,6 +63,10 @@ Ereignis `app-installiert`. Kein Cookie, keine Kennung, keine IP-Speicherung –
 und nichts aus der Statistik oder aus laufenden Partien. Das Script hängt
 unten in `index.html`, das Ereignis in `app.js` neben `beforeinstallprompt`.
 
+Dazu meldet jeder Spielstart ein Ereignis `spiel/<id>` – die einzige Zahl, die
+verrät, was hier eigentlich gespielt wird. Auch die ohne Bezug zu einem Gerät:
+gezählt wird, *dass* Damen gestartet wurde, nicht *von wem*.
+
 Wer offline vom Icon spielt, wird nicht gezählt; das lässt sich nicht ändern
 und ist auch nicht schlimm. Wer gar nicht zählen will, löscht die zwei Zeilen
 in `index.html` – die App läuft unverändert weiter.

@@ -367,6 +367,7 @@ const Rahmen = (() => {
     const boden = el('div', 'spielboden');
     wurzel.append(boden);
     laufend = s.starten(boden, sitzung) || null;
+    zaehlen('spiel/' + s.id, s.name);
   }
 
   /* ---------------------------------------------------- Ansicht: Statistik */
