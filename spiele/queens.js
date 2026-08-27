@@ -598,12 +598,43 @@
 
       const { geht } = moegliche();
       const felderVon = (pruef) => [...Array(k * k).keys()].filter((i) => geht[i] && pruef(i));
-      const zeigen = (titel, text, kreuze, dame) => {
+
+      /* Ein kleines Abbild des Bretts im Hinweisblatt. Ohne das müsste man
+         die genannten Felder erst selbst zusammensuchen. */
+      const miniBrett = ({ kandidaten, kreuze, dame }) => {
+        const g = el('div', 'q-mini');
+        g.style.setProperty('--kanten', String(k));
+        g.style.setProperty('--zelle', Math.floor(Math.min(280, window.innerWidth - 80) / k) + 'px');
+        for (let i = 0; i < k * k; i += 1) {
+          const f = el('div', 'q-mini-feld');
+          f.style.setProperty('--gebiet', FARBEN[stand.gebiet[i] % FARBEN.length]);
+          const z = Math.floor(i / k);
+          const sp = i % k;
+          if (sp < k - 1 && stand.gebiet[i] !== stand.gebiet[i + 1]) f.dataset.grenzeRechts = 'ja';
+          if (z < k - 1 && stand.gebiet[i] !== stand.gebiet[i + k]) f.dataset.grenzeUnten = 'ja';
+          if (stand.feld[i] === DAME) f.textContent = '♛';
+          else if (stand.feld[i] === KREUZ) { f.textContent = '×'; f.dataset.rolle = 'schon'; }
+          if (kandidaten && kandidaten.includes(i)) { f.textContent = '♛'; f.dataset.rolle = 'kandidat'; }
+          if (kreuze && kreuze.includes(i)) { f.textContent = '×'; f.dataset.rolle = 'raus'; }
+          if (dame === i) { f.textContent = '♛'; f.dataset.rolle = 'ziel'; }
+          g.append(f);
+        }
+        return g;
+      };
+
+      const zeigen = (titel, text, kreuze, dame, kandidaten) => {
         stand.hilfen += 1;
         sichern();
+        const inhalt = el('div');
+        inhalt.append(el('p', 'notiz', text), miniBrett({ kandidaten, kreuze, dame }));
+        const beine = [];
+        if (kandidaten && kandidaten.length) beine.push('blasse Damen: die noch möglichen Stellen');
+        if (kreuze && kreuze.length) beine.push('rote Kreuze: die Felder, die deshalb wegfallen');
+        if (dame !== undefined) beine.push('umrandete Dame: das Feld, um das es geht');
+        inhalt.append(el('p', 'notiz notiz--klein', beine.join(' · ')));
         s.blatt({
           titel,
-          inhalt: text,
+          inhalt,
           aktionen: [
             {
               text: dame !== undefined ? 'Dame setzen' : 'Kreuze setzen',
@@ -622,10 +653,10 @@
 
       // 1. Bleibt in einer Zeile, Spalte oder Farbe nur ein Feld übrig?
       const einheiten = [];
-      for (let z = 0; z < k; z += 1) einheiten.push({ text: 'Zeile ' + (z + 1), pruef: (i) => Math.floor(i / k) === z });
-      for (let sp = 0; sp < k; sp += 1) einheiten.push({ text: 'Spalte ' + (sp + 1), pruef: (i) => i % k === sp });
+      for (let z = 0; z < k; z += 1) einheiten.push({ art: 'zeile', text: 'Zeile ' + (z + 1), pruef: (i) => Math.floor(i / k) === z });
+      for (let sp = 0; sp < k; sp += 1) einheiten.push({ art: 'spalte', text: 'Spalte ' + (sp + 1), pruef: (i) => i % k === sp });
       for (const g of new Set(stand.gebiet)) {
-        einheiten.push({ text: 'diesem Farbgebiet', pruef: (i) => stand.gebiet[i] === g, gebiet: g });
+        einheiten.push({ art: 'gebiet', text: 'diesem Farbgebiet', pruef: (i) => stand.gebiet[i] === g, gebiet: g });
       }
       for (const e of einheiten) {
         const belegt = stand.feld.some((w, i) => w === DAME && e.pruef(i));
@@ -636,7 +667,7 @@
             'In ' + e.text + ' ist noch kein Platz vergeben, und von allen Feldern dort kommt nur '
             + platzName(frei[0]) + ' in Frage. Alles andere ist durch bereits gesetzte Damen, '
             + 'deine Kreuze oder die Nachbarschaftsregel ausgeschlossen.',
-            null, frei[0]);
+            null, frei[0], null);
           return;
         }
       }
@@ -671,18 +702,24 @@
         const zeilen = new Set(frei.map((i) => Math.floor(i / k)));
         const spalten = new Set(frei.map((i) => i % k));
         const gebiete = new Set(frei.map((i) => stand.gebiet[i]));
-        let grund;
-        if (zeilen.size === 1) grund = 'liegen alle in Zeile ' + ([...zeilen][0] + 1);
-        else if (spalten.size === 1) grund = 'liegen alle in Spalte ' + ([...spalten][0] + 1);
-        else if (gebiete.size === 1) grund = 'liegen alle in derselben Farbe';
-        else grund = 'decken zusammen diese Felder ab';
+        // Nur nennen, was die Einheit nicht ohnehin schon sagt: Dass die
+        // Stellen der Dame von Zeile 2 alle in Zeile 2 liegen, ist keine
+        // Beobachtung.
+        let grund = null;
+        if (zeilen.size === 1 && e.art !== 'zeile') grund = 'liegen alle in Zeile ' + ([...zeilen][0] + 1);
+        else if (spalten.size === 1 && e.art !== 'spalte') grund = 'liegen alle in Spalte ' + ([...spalten][0] + 1);
+        else if (gebiete.size === 1 && e.art !== 'gebiet') grund = 'liegen alle in derselben Farbe';
+
+        const einleitung = grund
+          ? 'Die ' + frei.length + ' noch möglichen Stellen für die Dame von ' + e.text + ' ' + grund + '.'
+          : 'Für die Dame von ' + e.text + ' kommen noch ' + frei.length + ' Felder in Frage.';
 
         zeigen('Das fällt so oder so weg',
-          'Die ' + frei.length + ' noch möglichen Stellen für die Dame von ' + e.text + ' ' + grund + '. '
-          + 'Wo auch immer sie am Ende steht: ' + (raus.length === 1 ? 'dieses Feld' : 'diese ' + raus.length + ' Felder')
+          einleitung + ' Wo auch immer sie am Ende steht: '
+          + (raus.length === 1 ? 'das rot gekreuzte Feld' : 'die ' + raus.length + ' rot gekreuzten Felder')
           + ' wird sie in jedem Fall abdecken – ' + (raus.length === 1 ? 'es kann' : 'sie können')
           + ' also keine Dame tragen.',
-          raus);
+          raus, undefined, frei);
         return;
       }
 

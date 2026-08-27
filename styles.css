@@ -416,6 +416,7 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .notiz { margin: 8px 0; font-size: 14px; color: var(--tinte-leise); line-height: 1.5; }
 .notiz--fuss { font-size: 12.5px; margin-top: 16px; }
 .notiz--mitte { text-align: center; margin: 40px auto; max-width: 30ch; }
+.notiz--klein { font-size: 12.5px; text-align: center; margin-top: 0; }
 
 /* ------------------------------------------------------------------ Toast */
 
@@ -1099,6 +1100,47 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .q-feld[data-grenze-unten='ja'] { border-bottom: 3px solid var(--tinte); }
 .q-feld[data-wert='kreuz'] { font-size: calc(var(--zelle) * .4); opacity: .75; }
 .q-feld[data-fehler='ja'] { box-shadow: 0 0 0 3px var(--rost) inset; }
+
+/* Das kleine Brett im Hinweisblatt. Es zeigt, von welchen Feldern die Rede
+   ist – der Text allein lässt einen sonst suchen. */
+.q-mini {
+  --kanten: 6;
+  --zelle: 40px;
+  display: grid;
+  grid-template-columns: repeat(var(--kanten), var(--zelle));
+  border: 2px solid var(--tinte);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 14px auto 6px;
+  width: max-content;
+}
+.q-mini-feld {
+  width: var(--zelle);
+  height: var(--zelle);
+  display: grid;
+  place-items: center;
+  border-right: 1px solid rgba(0, 0, 0, .18);
+  border-bottom: 1px solid rgba(0, 0, 0, .18);
+  background: var(--gebiet);
+  color: #16120E;
+  font-size: calc(var(--zelle) * .55);
+  line-height: 1;
+}
+.q-mini-feld[data-grenze-rechts='ja'] { border-right: 3px solid var(--tinte); }
+.q-mini-feld[data-grenze-unten='ja'] { border-bottom: 3px solid var(--tinte); }
+/* Nur das Zeichen wird blass, nicht die Gebietsfarbe darunter. */
+.q-mini-feld[data-rolle='schon'] {
+  font-size: calc(var(--zelle) * .4);
+  color: color-mix(in srgb, #16120E 45%, transparent);
+}
+.q-mini-feld[data-rolle='kandidat'] { color: color-mix(in srgb, #16120E 40%, transparent); }
+.q-mini-feld[data-rolle='raus'] {
+  background: var(--rost);
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 0 0 2px var(--tinte) inset;
+}
+.q-mini-feld[data-rolle='ziel'] { box-shadow: 0 0 0 3px var(--tinte) inset; }
 
 /* ================================================================ 11. Weg */
 
