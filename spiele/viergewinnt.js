@@ -154,12 +154,14 @@
         begonnen: Date.now(),
         fertig: null,            // null | 'sieg' | 'pleite' | 'remis'
         siegfelder: null,
+        verlauf: [],             // { i, wer } je gelegtem Stein, fürs Zurücknehmen
       };
     }
 
     function laden() {
       const alt = s.erinnert();
       if (alt && Array.isArray(alt.brett) && alt.brett.length === SPALTEN * ZEILEN && !alt.fertig) {
+        if (!Array.isArray(alt.verlauf)) alt.verlauf = [];   // Partien von früher
         return alt;
       }
       return frisch('mittel', MENSCH);
@@ -174,7 +176,13 @@
     const brettKasten = el('div', 'v-brett');
     const endeKasten = el('div', 'ende-kasten');
     endeKasten.hidden = true;
-    wurzel.append(kopf, brettKasten, endeKasten);
+    const leiste = el('div', 'leiste');
+    wurzel.append(kopf, brettKasten, endeKasten, leiste);
+
+    const zurueckKnopf = el('button', 'knopf knopf--still', 'Zug zurück');
+    zurueckKnopf.type = 'button';
+    zurueckKnopf.addEventListener('click', zurueck);
+    leiste.append(zurueckKnopf);
 
     const felder = [];
     for (let z = 0; z < ZEILEN; z += 1) {
@@ -210,7 +218,9 @@
     }
 
     function setzen(z, spalte, wer) {
-      stand.brett[feld(z, spalte)] = wer;
+      const i = feld(z, spalte);
+      stand.brett[i] = wer;
+      stand.verlauf.push({ i, wer });
       stand.zuege += 1;
 
       const sieg = sieger(stand.brett);
@@ -240,6 +250,29 @@
       }, 220);
     }
 
+    /* Zurück heißt: der eigene Zug und die Antwort des Rechners darauf. Ein
+       halber Schritt brächte nichts – man stünde vor demselben Brett, nur
+       wäre der Rechner am Zug.
+
+       Nur während der Partie: Ist sie vorbei, steht sie schon in der
+       Statistik; die liesse sich nicht sauber zurückdrehen. */
+    function zurueck() {
+      if (vorbei() || denkt || stand.amZug !== MENSCH) return;
+      const n = stand.verlauf.length;
+      if (n < 2) return;
+      const letzter = stand.verlauf[n - 1];
+      const vorletzter = stand.verlauf[n - 2];
+      if (letzter.wer !== RECHNER || vorletzter.wer !== MENSCH) return;
+
+      for (const zug of [letzter, vorletzter]) {
+        stand.brett[zug.i] = LEER;
+        stand.zuege -= 1;
+        stand.verlauf.pop();
+      }
+      sichern();
+      zeichnen();
+    }
+
     function abschluss(ausgang) {
       stand.fertig = ausgang;
       s.notieren({
@@ -260,6 +293,10 @@
         if (stand.siegfelder && stand.siegfelder.includes(i)) felder[i].dataset.sieg = 'ja';
         else delete felder[i].dataset.sieg;
       }
+      const n = stand.verlauf.length;
+      zurueckKnopf.disabled = vorbei() || denkt || stand.amZug !== MENSCH || n < 2
+        || stand.verlauf[n - 1].wer !== RECHNER || stand.verlauf[n - 2].wer !== MENSCH;
+      leiste.hidden = vorbei();
       kopfZeichnen();
       endeZeichnen();
     }
@@ -322,6 +359,7 @@
       d.append(el('p', 'notiz', 'Tippe eine Spalte an – dein Stein fällt bis auf den Boden oder auf den obersten Stein, der dort schon liegt.'));
       d.append(el('p', 'notiz', 'Gewonnen hat, wer zuerst vier eigene Steine in eine Reihe bekommt: waagerecht, senkrecht oder schräg. Ist das Feld voll, endet es unentschieden.'));
       d.append(el('p', 'notiz', 'Der Rechner spielt Minimax: er denkt je nach Stufe zwei bis sieben Züge voraus und unterstellt dir dabei immer die beste Antwort. Auf „leicht" greift er absichtlich manchmal daneben – einen sicheren Sieg lässt er sich aber auch dort nicht entgehen.'));
+      d.append(el('p', 'notiz', '„Zug zurück" nimmt deinen letzten Stein samt der Antwort des Rechners wieder vom Brett. Das geht nur, solange die Partie läuft – eine beendete steht schon in der Statistik.'));
       d.append(el('p', 'notiz', 'Die Mitte ist mehr wert als der Rand: durch die mittlere Spalte laufen die meisten möglichen Viererreihen.'));
       s.blatt({ titel: 'Vier gewinnt', inhalt: d, aktionen: [{ text: 'Los' }] });
     }

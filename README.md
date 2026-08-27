@@ -14,10 +14,10 @@ Enthalten sind bisher:
 | **Minenfeld** | Minesweeper in drei Größen, erster Klick immer sicher. |
 | **2048** | Zahlen zusammenschieben, per Wischgeste oder Pfeiltaste. |
 | **Galgenmännchen** | Buchstabe für Buchstabe, elf Fehler sind erlaubt. |
-| **Vier gewinnt** | Gegen den Rechner, drei Stufen, Minimax mit Alpha-Beta. |
+| **Vier gewinnt** | Gegen den Rechner, drei Stufen, Minimax mit Alpha-Beta, Zug zurück. |
 | **Nonogramm** | Aus Zahlen wird ein Bild, 5 × 5 bis 10 × 10. |
 | **Zahlencode** | Mastermind mit Ziffern, mit rechnendem Vorschlag. |
-| **Tango** | Sonne und Mond im Gleichgewicht, 6 × 6. |
+| **Tango** | Sonne und Mond im Gleichgewicht, 6 × 6, immer ohne Raten lösbar. |
 | **Damen** | Eine Dame je Zeile, Spalte und Farbgebiet, immer ohne Raten lösbar. |
 | **Weg** | Ein Zug durch jedes Feld, die Zahlen der Reihe nach. |
 
