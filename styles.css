@@ -1190,6 +1190,8 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   pointer-events: none;
 }
 .p-linie polyline { stroke: color-mix(in srgb, #4573B8 70%, transparent); }
+/* Mauern liegen zwischen zwei Feldern und sind kraeftiger als die Gitterlinien. */
+.p-linie .p-mauer { stroke: var(--tinte); }
 
 /* Automatisch abgeleitete Kreuze sind blasser als die selbst gesetzten */
 .q-feld[data-wert='auto'] { font-size: calc(var(--zelle) * .34); opacity: .35; }

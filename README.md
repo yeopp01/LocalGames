@@ -19,7 +19,7 @@ Enthalten sind bisher:
 | **Zahlencode** | Mastermind mit Ziffern, mit rechnendem Vorschlag. |
 | **Tango** | Sonne und Mond im Gleichgewicht, 6 × 6, immer ohne Raten lösbar. |
 | **Damen** | Eine Dame je Zeile, Spalte und Farbgebiet, immer ohne Raten lösbar. |
-| **Weg** | Ein Zug durch jedes Feld, die Zahlen der Reihe nach. |
+| **Weg** | Ein Zug durch jedes Feld, die Zahlen der Reihe nach, auf „schwer" mit Mauern. |
 
 Über allem liegt ein Dashboard mit der Spielauswahl und eine gemeinsame
 Statistik über alle Partien, samt Sicherung zum Mitnehmen.

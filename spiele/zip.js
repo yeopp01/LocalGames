@@ -10,9 +10,9 @@
 
 (() => {
   const STUFEN = {
-    leicht: { name: 'leicht', kanten: 5, ziele: 4 },
-    mittel: { name: 'mittel', kanten: 6, ziele: 6 },
-    schwer: { name: 'schwer', kanten: 7, ziele: 12 },
+    leicht: { name: 'leicht', kanten: 5, ziele: 4, mauern: 0 },
+    mittel: { name: 'mittel', kanten: 6, ziele: 6, mauern: 0 },
+    schwer: { name: 'schwer', kanten: 7, ziele: 10, mauern: 6 },
   };
 
   const mischen = (feld) => {
@@ -23,7 +23,11 @@
     return feld;
   };
 
-  const nachbarnVon = (i, k) => {
+  /* Eine Mauer sitzt zwischen zwei Feldern, nicht auf einem – sie wird also
+     über das Paar benannt, immer kleinere Zahl zuerst. */
+  const kante = (a, b) => (a < b ? a + ':' + b : b + ':' + a);
+
+  const nachbarnVon = (i, k, mauern) => {
     const z = Math.floor(i / k);
     const s = i % k;
     const raus = [];
@@ -31,8 +35,24 @@
     if (z < k - 1) raus.push(i + k);
     if (s > 0) raus.push(i - 1);
     if (s < k - 1) raus.push(i + 1);
-    return raus;
+    return mauern && mauern.size ? raus.filter((j) => !mauern.has(kante(i, j))) : raus;
   };
+
+  /* Mauern dürfen überall stehen, nur nicht auf dem gesuchten Weg. Damit ist
+     auch gesagt, dass sie das Brett nie zerschneiden: der Weg kommt ja nach
+     wie vor überall hin. */
+  function mauernWaehlen(k, weg, anzahl) {
+    if (!anzahl) return new Set();
+    const benutzt = new Set();
+    for (let n = 0; n + 1 < weg.length; n += 1) benutzt.add(kante(weg[n], weg[n + 1]));
+
+    const alle = [];
+    for (let i = 0; i < k * k; i += 1) {
+      if (i % k < k - 1) alle.push(kante(i, i + 1));
+      if (Math.floor(i / k) < k - 1) alle.push(kante(i, i + k));
+    }
+    return new Set(mischen(alle.filter((e) => !benutzt.has(e))).slice(0, anzahl));
+  }
 
   /* Ein Weg über alle Felder. Der Trick ist die Reihenfolge: Nachbarn mit
      den wenigsten freien Anschlüssen zuerst – so laufen wir uns selten fest. */
@@ -70,7 +90,7 @@
 
   /* Zählt Wege, die alle Felder berühren und die Zahlen der Reihe nach
      mitnehmen – Abbruch bei der zweiten Lösung. */
-  function loesungen(k, zahlAn, hoechste) {
+  function loesungen(k, zahlAn, hoechste, mauern) {
     const anzahl = k * k;
     const start = zahlAn.indexOf(1);
     const ziel = zahlAn.indexOf(hoechste);
@@ -88,7 +108,7 @@
       const stapel = [von];
       while (stapel.length) {
         const i = stapel.pop();
-        for (const j of nachbarnVon(i, k)) {
+        for (const j of nachbarnVon(i, k, mauern)) {
           if (besucht[j] || gesehen.has(j)) continue;
           gesehen.add(j);
           stapel.push(j);
@@ -112,7 +132,7 @@
         return;
       }
 
-      for (const j of nachbarnVon(i, k)) {
+      for (const j of nachbarnVon(i, k, mauern)) {
         if (besucht[j]) continue;
         const zahl = zahlAn[j];
         if (zahl && zahl !== naechsteZahl) continue;      // Zahlen nur der Reihe nach
@@ -135,10 +155,11 @@
   }
 
   function raetselBauen(stufe) {
-    const { kanten: k, ziele } = STUFEN[stufe];
+    const { kanten: k, ziele, mauern: mauerZahl } = STUFEN[stufe];
     for (let versuch = 0; versuch < 30; versuch += 1) {
       const weg = wegSuchen(k);
       if (!weg) continue;
+      const mauern = mauernWaehlen(k, weg, mauerZahl);
 
       // Zahlen auf dem Weg verteilen: Anfang, Ende und dazwischen verteilt.
       const stellen = new Set([0, weg.length - 1]);
@@ -152,7 +173,7 @@
 
       // Solange nachschärfen, bis genau ein Weg übrig bleibt.
       let versuche = 0;
-      while (loesungen(k, zahlAn, sortiert.length) !== 1 && versuche < 8) {
+      while (loesungen(k, zahlAn, sortiert.length, mauern) !== 1 && versuche < 8) {
         const frei = [...Array(weg.length).keys()].filter((p) => !stellen.has(p));
         if (!frei.length) break;
         stellen.add(frei[Math.floor(Math.random() * frei.length)]);
@@ -162,8 +183,14 @@
         versuche += 1;
       }
 
-      if (loesungen(k, zahlAn, sortiert.length) === 1) {
-        return { kanten: k, zahlAn, hoechste: sortiert.length, loesung: weg };
+      if (loesungen(k, zahlAn, sortiert.length, mauern) === 1) {
+        return {
+          kanten: k,
+          zahlAn,
+          hoechste: sortiert.length,
+          loesung: weg,
+          mauern: [...mauern],
+        };
       }
     }
     return null;
@@ -176,6 +203,9 @@
     let stand = laden();
     let zieht = null;       // Zeiger-Nummer, solange gewischt wird
     let uhr = null;
+    let mauern = new Set();   // Nachschlagewerk zum Feld stand.mauern
+
+    const mauernUebernehmen = () => { mauern = new Set(stand.mauern || []); };
 
     function frisch(stufe) {
       const r = raetselBauen(stufe) || raetselBauen('leicht');
@@ -185,6 +215,7 @@
         zahlAn: r.zahlAn,
         hoechste: r.hoechste,
         loesung: r.loesung,
+        mauern: r.mauern || [],
         pfad: [],
         verbraucht: 0,
         seit: Date.now(),
@@ -197,10 +228,13 @@
       const alt = s.erinnert();
       if (alt && Array.isArray(alt.pfad) && alt.kanten && !alt.fertig) {
         alt.seit = Date.now();
+        if (!Array.isArray(alt.mauern)) alt.mauern = [];   // Rätsel von früher
         return alt;
       }
       return frisch('leicht');
     }
+
+    mauernUebernehmen();
 
     const zeitJetzt = () => stand.verbraucht + (stand.fertig ? 0 : Date.now() - stand.seit);
 
@@ -298,7 +332,7 @@
       const pfad = stand.pfad;
       const k = stand.kanten;
       const letzter = pfad.length ? pfad[pfad.length - 1] : -1;
-      if (letzter >= 0 && !nachbarnVon(letzter, k).includes(i)) {
+      if (letzter >= 0 && !nachbarnVon(letzter, k, mauern).includes(i)) {
         const z1 = Math.floor(letzter / k); const s1 = letzter % k;
         const z2 = Math.floor(i / k); const s2 = i % k;
         if (z1 === z2 && Math.abs(s1 - s2) === 2) anfassen(z1 * k + (s1 + s2) / 2);
@@ -357,7 +391,10 @@
         return;
       }
 
-      if (!nachbarnVon(letzter, stand.kanten).includes(i)) return;
+      if (!nachbarnVon(letzter, stand.kanten, mauern).includes(i)) {
+        if (nachbarnVon(letzter, stand.kanten).includes(i)) s.toast('Da ist eine Mauer dazwischen.');
+        return;
+      }
       if (pfad.includes(i)) return;
 
       const zahl = stand.zahlAn[i];
@@ -443,6 +480,25 @@
 
       // Der Weg als eine durchgehende Linie über dem Gitter.
       linie.replaceChildren();
+
+      // Mauern zuerst, damit der eigene Weg darüber liegt.
+      for (const e of mauern) {
+        const [a, b] = e.split(':').map(Number);
+        const z = Math.floor(a / k);
+        const sp = a % k;
+        const strich = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        if (b === a + 1) {
+          strich.setAttribute('x1', String(sp + 1)); strich.setAttribute('y1', String(z));
+          strich.setAttribute('x2', String(sp + 1)); strich.setAttribute('y2', String(z + 1));
+        } else {
+          strich.setAttribute('x1', String(sp)); strich.setAttribute('y1', String(z + 1));
+          strich.setAttribute('x2', String(sp + 1)); strich.setAttribute('y2', String(z + 1));
+        }
+        strich.setAttribute('class', 'p-mauer');
+        strich.setAttribute('stroke-width', '0.14');
+        strich.setAttribute('stroke-linecap', 'round');
+        linie.append(strich);
+      }
       if (stand.pfad.length > 1) {
         const zug = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
         zug.setAttribute('points', stand.pfad
@@ -491,6 +547,7 @@
     function neu(stufe) {
       const bauen = () => {
         stand = frisch(stufe);
+        mauernUebernehmen();
         gitterBauen();
         sichern();
         zeichnen();
@@ -520,6 +577,7 @@
       d.append(el('p', 'notiz', 'Ziehe einen Weg, der bei der 1 beginnt und die Zahlen der Reihe nach abklappert – 1, dann 2, dann 3 und so fort.'));
       d.append(el('p', 'notiz', 'Der Weg muss am Ende jedes einzelne Feld genau einmal berührt haben und bei der höchsten Zahl enden. Kein Feld bleibt frei, keines wird zweimal betreten.'));
       d.append(el('p', 'notiz', 'Gezogen wird mit dem Finger oder der Maus über benachbarte Felder – nur waagerecht und senkrecht, nicht über Eck. Auf das vorletzte Feld zurückziehen nimmt einen Schritt zurück.'));
+      d.append(el('p', 'notiz', 'Auf „schwer" stehen dicke Striche zwischen manchen Feldern: Da ist eine Mauer, dort kommt der Weg nicht durch. Sie verraten mehr, als sie verbieten – deshalb braucht die schwere Stufe weniger Zahlen als früher.'));
       d.append(el('p', 'notiz', 'Guter Anfang: Ecken und Ränder. Ein Eckfeld hat nur zwei Nachbarn, der Weg muss dort also fast zwangsläufig durch.'));
       s.blatt({ titel: 'Weg', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
