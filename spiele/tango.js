@@ -8,8 +8,10 @@
        ×  die beiden sind verschieden
 
    Der Generator baut erst ein gültiges Feld, streut dann ein paar Zeichen
-   zwischen die Felder und gibt so lange einzelne Felder vor, bis die Lösung
-   eindeutig ist – danach wird jede entbehrliche Vorgabe wieder entfernt.
+   zwischen die Felder und gibt so lange einzelne Felder vor, bis sich das
+   Rätsel Schritt für Schritt herleiten lässt – danach wird jede entbehrliche
+   Vorgabe wieder entfernt. Womit hergeleitet wird, steht bei
+   ohneRatenLoesbar; Eindeutigkeit allein wäre zu wenig.
 */
 
 (() => {
@@ -106,6 +108,127 @@
     return bauen(0) ? feld : null;
   }
 
+  /* Die Linien, in die je drei Sonnen und drei Monde gehören: sechs Zeilen,
+     sechs Spalten. */
+  const LINIEN = (() => {
+    const raus = [];
+    for (let z = 0; z < N; z += 1) raus.push([...Array(N).keys()].map((s2) => z * N + s2));
+    for (let s2 = 0; s2 < N; s2 += 1) raus.push([...Array(N).keys()].map((z) => z * N + s2));
+    return raus;
+  })();
+
+  const andersAls = (w) => (w === SONNE ? MOND : SONNE);
+
+  /* Die drei Schlüsse, die ohne Ausprobieren auskommen:
+       · Ein Zeichen zwischen zwei Feldern gibt das eine aus dem anderen.
+       · Zwei gleiche nebeneinander erzwingen daneben das andere, und zwischen
+         zwei gleichen mit Lücke steht immer das andere.
+       · Sind in einer Linie schon drei gleiche, ist der Rest festgelegt.
+     Gibt true zurück, wenn sich etwas getan hat. */
+  function einfacheSchluesse(feld, zeichen) {
+    let bewegung = false;
+
+    for (const c of zeichen) {
+      const gleich = c.art === '=';
+      if (feld[c.a] && !feld[c.b]) {
+        feld[c.b] = gleich ? feld[c.a] : andersAls(feld[c.a]);
+        bewegung = true;
+      } else if (feld[c.b] && !feld[c.a]) {
+        feld[c.a] = gleich ? feld[c.b] : andersAls(feld[c.b]);
+        bewegung = true;
+      }
+    }
+
+    for (const linie of LINIEN) {
+      for (let p = 0; p + 2 < N; p += 1) {
+        const [a, b, c] = [linie[p], linie[p + 1], linie[p + 2]];
+        if (feld[a] && feld[a] === feld[b] && !feld[c]) { feld[c] = andersAls(feld[a]); bewegung = true; }
+        else if (feld[b] && feld[b] === feld[c] && !feld[a]) { feld[a] = andersAls(feld[b]); bewegung = true; }
+        else if (feld[a] && feld[a] === feld[c] && !feld[b]) { feld[b] = andersAls(feld[a]); bewegung = true; }
+      }
+
+      let sonnen = 0;
+      let monde = 0;
+      for (const i of linie) {
+        if (feld[i] === SONNE) sonnen += 1;
+        else if (feld[i] === MOND) monde += 1;
+      }
+      const voll = sonnen >= HALB ? MOND : monde >= HALB ? SONNE : 0;
+      if (voll) {
+        for (const i of linie) if (!feld[i]) { feld[i] = voll; bewegung = true; }
+      }
+    }
+    return bewegung;
+  }
+
+  /* Der stärkere Schluss, den man am Brett auch von Hand zieht: eine einzelne
+     Zeile oder Spalte einmal ganz durchspielen. Bei sechs Feldern sind das
+     höchstens 64 Möglichkeiten. Steht in allen zulässigen dasselbe Zeichen an
+     einer Stelle, ist es dort sicher – ohne dass man den Rest des Bretts
+     anfassen müsste. */
+  function linieDurchspielen(feld, zeichen) {
+    let bewegung = false;
+
+    for (const linie of LINIEN) {
+      const leer = linie.filter((i) => !feld[i]);
+      if (!leer.length) continue;
+
+      // Zeichen, die diese Linie betreffen: beide Enden drin, oder ein Ende
+      // draußen und dort schon bekannt.
+      const drin = new Set(linie);
+      const regeln = zeichen.filter((c) => drin.has(c.a) || drin.has(c.b));
+
+      const treffer = new Map(leer.map((i) => [i, null]));
+      let anzahl = 0;
+
+      for (let muster = 0; muster < (1 << leer.length); muster += 1) {
+        const probe = feld.slice();
+        leer.forEach((i, n) => { probe[i] = (muster >> n) & 1 ? SONNE : MOND; });
+
+        let sonnen = 0;
+        for (const i of linie) if (probe[i] === SONNE) sonnen += 1;
+        if (sonnen !== HALB) continue;
+
+        let gut = true;
+        for (let p = 0; p + 2 < N && gut; p += 1) {
+          if (probe[linie[p]] === probe[linie[p + 1]] && probe[linie[p]] === probe[linie[p + 2]]) gut = false;
+        }
+        for (const c of regeln) {
+          if (!gut) break;
+          if (!probe[c.a] || !probe[c.b]) continue;   // Partner draußen, noch offen
+          if (c.art === '=' ? probe[c.a] !== probe[c.b] : probe[c.a] === probe[c.b]) gut = false;
+        }
+        if (!gut) continue;
+
+        anzahl += 1;
+        for (const i of leer) {
+          if (treffer.get(i) === null) treffer.set(i, probe[i]);
+          else if (treffer.get(i) !== probe[i]) treffer.set(i, 0);
+        }
+      }
+
+      if (!anzahl) return 'sackgasse';
+      for (const [i, wert] of treffer) {
+        if (wert) { feld[i] = wert; bewegung = true; }
+      }
+    }
+    return bewegung;
+  }
+
+  /* Lässt sich das Rätsel allein mit diesen Schlüssen zu Ende bringen? Bleibt
+     der Kessel vorher stehen, käme man nur noch durchs Probieren weiter. */
+  function ohneRatenLoesbar(vorgabe, zeichen) {
+    const feld = vorgabe.slice();
+    for (let runde = 0; runde < N * N * 2; runde += 1) {
+      if (feld.every((w) => w)) return true;
+      if (einfacheSchluesse(feld, zeichen)) continue;
+      const aus = linieDurchspielen(feld, zeichen);
+      if (aus === 'sackgasse') return false;
+      if (!aus) return false;
+    }
+    return feld.every((w) => w);
+  }
+
   function raetselBauen(anzahlZeichen) {
     const loesung = vollesFeld();
     if (!loesung) return null;
@@ -120,23 +243,26 @@
       a, b, art: loesung[a] === loesung[b] ? '=' : 'x',
     }));
 
-    // So lange Felder vorgeben, bis nur noch eine Lösung möglich ist.
+    /* So lange Felder vorgeben, bis sich das Rätsel Schritt für Schritt
+       herleiten lässt. Eindeutigkeit allein genügt nicht: Ein eindeutiges
+       Rätsel kann trotzdem eine Stelle haben, an der nur noch Probieren
+       weiterhilft. Wer sich herleiten lässt, ist ohnehin eindeutig. */
     const vorgabe = new Array(N * N).fill(0);
     const reihenfolge = mischen([...Array(N * N).keys()]);
     let zeiger = 0;
-    while (loesungen(vorgabe.slice(), zeichen) > 1 && zeiger < reihenfolge.length) {
+    while (!ohneRatenLoesbar(vorgabe, zeichen) && zeiger < reihenfolge.length) {
       const i = reihenfolge[zeiger];
       vorgabe[i] = loesung[i];
       zeiger += 1;
     }
-    if (loesungen(vorgabe.slice(), zeichen) !== 1) return null;
+    if (!ohneRatenLoesbar(vorgabe, zeichen)) return null;
 
     // Und jetzt wieder wegnehmen, was sich auch so ergibt.
     for (const i of mischen([...Array(N * N).keys()])) {
       if (!vorgabe[i]) continue;
       const gemerkt = vorgabe[i];
       vorgabe[i] = 0;
-      if (loesungen(vorgabe.slice(), zeichen) !== 1) vorgabe[i] = gemerkt;
+      if (!ohneRatenLoesbar(vorgabe, zeichen)) vorgabe[i] = gemerkt;
     }
 
     return { loesung, vorgabe, zeichen };
