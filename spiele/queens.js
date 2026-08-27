@@ -663,9 +663,14 @@
         if (belegt) continue;
         const frei = felderVon(e.pruef);
         if (frei.length === 1) {
+          // Innerhalb einer Zeile genügt die Spalte, um das Feld zu benennen –
+          // sonst stünde die Zeile zweimal im selben Satz.
+          const wo = e.art === 'zeile' ? 'Spalte ' + ((frei[0] % k) + 1)
+            : e.art === 'spalte' ? 'Zeile ' + (Math.floor(frei[0] / k) + 1)
+            : platzName(frei[0]);
           zeigen('Nur ein Feld bleibt übrig',
             'In ' + e.text + ' ist noch kein Platz vergeben, und von allen Feldern dort kommt nur '
-            + platzName(frei[0]) + ' in Frage. Alles andere ist durch bereits gesetzte Damen, '
+            + 'das Feld in ' + wo + ' in Frage. Alles andere ist durch bereits gesetzte Damen, '
             + 'deine Kreuze oder die Nachbarschaftsregel ausgeschlossen.',
             null, frei[0], null);
           return;
