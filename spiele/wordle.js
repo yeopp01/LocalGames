@@ -27,7 +27,11 @@
     const el = s.el;
 
     let stand = laden();
-    let eingabe = '';
+    /* Die Eingabe hat feste Plätze statt einer wachsenden Kette: Wer schon
+       weiß, dass hinten ein E steht, tippt es gleich dorthin. Der Schreibplatz
+       sagt, wo der nächste Buchstabe landet. */
+    let eingabe = new Array(LAENGE).fill('');
+    let platz = 0;
     let ruettelt = false;
 
     /* --------------------------------------------------------- Spielstand */
@@ -73,6 +77,12 @@
       const reihe = [];
       for (let i = 0; i < LAENGE; i += 1) {
         const f = el('div', 'w-feld');
+        const stelle = i;
+        f.addEventListener('click', () => {
+          if (vorbei() || z !== stand.versuche.length) return;
+          platz = stelle;
+          zeichnen();
+        });
         zeile.append(f);
         reihe.push(f);
       }
@@ -120,11 +130,15 @@
           delete f.dataset.stufe;
           delete f.dataset.voll;
           delete f.dataset.verraten;
+          delete f.dataset.platz;
+          delete f.dataset.tippbar;
           if (versuch) {
             f.textContent = [...versuch.wort][i];
             f.dataset.stufe = String(versuch.stufen[i]);
           } else if (z === stand.versuche.length && !vorbei()) {
-            const zeichen = [...eingabe][i];
+            f.dataset.tippbar = 'ja';
+            if (i === platz) f.dataset.platz = 'ja';
+            const zeichen = eingabe[i];
             if (zeichen) {
               f.textContent = zeichen;
               f.dataset.voll = 'ja';
@@ -207,24 +221,43 @@
       if (vorbei()) return;
       if (zeichen === 'ENTER') { pruefen(); return; }
       if (zeichen === 'WEG') {
-        eingabe = [...eingabe].slice(0, -1).join('');
+        // Steht am Schreibplatz etwas, geht das weg; sonst das davor.
+        if (eingabe[platz]) eingabe[platz] = '';
+        else {
+          let i = platz;
+          while (i > 0 && !eingabe[i - 1]) i -= 1;
+          if (i > 0) { platz = i - 1; eingabe[platz] = ''; }
+          else platz = 0;
+        }
         zeichnen();
         return;
       }
       if (!ALPHABET.includes(zeichen)) return;
-      if ([...eingabe].length >= LAENGE) return;
-      eingabe += zeichen;
+      eingabe[platz] = zeichen;
+      platz = naechsteLuecke(platz);
       zeichnen();
     }
 
+    /* Der nächste noch leere Platz hinter dem gerade beschriebenen. Ist
+       hinten alles voll, wird vorne weitergesucht; ist die Zeile ganz voll,
+       bleibt der Schreibplatz stehen. */
+    function naechsteLuecke(von) {
+      for (let n = 1; n <= LAENGE; n += 1) {
+        const i = (von + n) % LAENGE;
+        if (!eingabe[i]) return i;
+      }
+      return von;
+    }
+
     function pruefen() {
-      const wort = eingabe;
-      if ([...wort].length < LAENGE) { melden('Noch nicht genug Buchstaben.'); return; }
+      const wort = eingabe.join('');
+      if (eingabe.some((c) => !c)) { melden('Noch nicht genug Buchstaben.'); return; }
       if (!ALLE_WOERTER.includes(wort)) { melden('Das Wort kenne ich nicht.'); return; }
 
       const stufen = Loeser.musterStufen(wort, stand.wort);
       stand.versuche.push({ wort, stufen });
-      eingabe = '';
+      eingabe = new Array(LAENGE).fill('');
+      platz = 0;
 
       if (wort === stand.wort) abschluss('sieg');
       else if (stand.versuche.length >= ZEILEN) abschluss('pleite');
@@ -343,6 +376,7 @@
       d.append(el('p', 'notiz', 'Rate ein Wort mit fünf Buchstaben. Nach jedem Versuch färben sich die Felder:'));
       d.append(el('p', 'notiz', 'Grün – der Buchstabe steht an der richtigen Stelle. Gelb – er kommt vor, aber woanders. Grau – er kommt nicht vor.'));
       d.append(el('p', 'notiz', 'Ä, Ö und Ü haben eigene Tasten. Sechs Versuche.'));
+      d.append(el('p', 'notiz', 'Getippt wird dort, wo der dunkle Rahmen steht. Wer schon weiß, dass hinten ein E gehört, tippt das Feld an und schreibt es gleich dorthin – der Rahmen springt danach auf die nächste Lücke. Am PC gehen auch die Pfeiltasten.'));
       d.append(el('p', 'notiz', 'Tipp zeigt eine Umschreibung, Buchstabe deckt den nächsten verdeckten Buchstaben auf, Vorschlag rechnet den besten nächsten Zug aus.'));
       s.blatt({ titel: 'Wördle', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
@@ -355,6 +389,8 @@
       const k = e.key;
       if (k === 'Enter') { e.preventDefault(); tippen('ENTER'); return; }
       if (k === 'Backspace') { e.preventDefault(); tippen('WEG'); return; }
+      if (k === 'ArrowLeft') { e.preventDefault(); platz = (platz + LAENGE - 1) % LAENGE; zeichnen(); return; }
+      if (k === 'ArrowRight') { e.preventDefault(); platz = (platz + 1) % LAENGE; zeichnen(); return; }
       const gross = k.toUpperCase();
       if (gross.length === 1 && ALPHABET.includes(gross)) { e.preventDefault(); tippen(gross); }
     }

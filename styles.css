@@ -489,6 +489,14 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .w-feld[data-stufe='0'] { background: var(--grau); border-color: var(--grau); color: #fff; }
 .w-feld[data-verraten='ja'] { border-color: var(--gruen); border-style: dashed; color: var(--gruen); }
 
+/* Der Schreibplatz: hier landet der nächste Buchstabe. Ein Tippen auf ein
+   anderes Feld der laufenden Zeile setzt ihn dorthin. */
+.w-feld[data-platz='ja'] {
+  border-color: var(--tinte);
+  box-shadow: 0 0 0 2px var(--tinte) inset;
+}
+.w-feld[data-tippbar='ja'] { cursor: pointer; }
+
 .w-zeile[data-falsch='ja'] { animation: ruettel .4s; }
 @keyframes ruettel {
   0%, 100% { transform: translateX(0); }
