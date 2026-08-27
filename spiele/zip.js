@@ -174,7 +174,7 @@
   function starten(wurzel, s) {
     const el = s.el;
     let stand = laden();
-    let zieht = false;
+    let zieht = null;       // Zeiger-Nummer, solange gewischt wird
     let uhr = null;
 
     function frisch(stufe) {
@@ -268,14 +268,59 @@
         const f = el('button', 'p-feld');
         f.type = 'button';
         const nr = i;
-        f.addEventListener('pointerdown', (e) => { e.preventDefault(); zieht = true; anfassen(nr); });
-        f.addEventListener('pointerenter', () => { if (zieht) anfassen(nr); });
+        f.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          /* Beim Finger fängt der Browser den Zeiger sonst am Startfeld ein.
+             Danach bekämen die übrigen Felder vom Darüberfahren nichts mehr
+             mit – deshalb geben wir ihn gleich wieder frei. */
+          if (f.hasPointerCapture(e.pointerId)) f.releasePointerCapture(e.pointerId);
+          zieht = e.pointerId;
+          letztesFeld = nr;
+          anfassen(nr);
+        });
         gitter.append(f);
         felder.push(f);
       }
     }
 
-    const beiLoslassen = () => { zieht = false; };
+    /* Welches Feld liegt unter dem Zeiger? Über den Punkt statt über
+       pointerenter, weil das mit dem Finger zuverlässiger ist. */
+    const feldUnter = (e) => {
+      const ziel = document.elementFromPoint(e.clientX, e.clientY);
+      const feld = ziel && ziel.closest ? ziel.closest('.p-feld') : null;
+      return feld ? felder.indexOf(feld) : -1;
+    };
+
+    /* Beim schnellen Wischen kann ein Feld übersprungen werden. Liegt genau
+       eines gerade zwischen dem letzten und dem neuen, wird es nachgeholt;
+       über Eck bleibt es liegen, da wären zwei Wege denkbar. */
+    function nachziehen(i) {
+      const pfad = stand.pfad;
+      const k = stand.kanten;
+      const letzter = pfad.length ? pfad[pfad.length - 1] : -1;
+      if (letzter >= 0 && !nachbarnVon(letzter, k).includes(i)) {
+        const z1 = Math.floor(letzter / k); const s1 = letzter % k;
+        const z2 = Math.floor(i / k); const s2 = i % k;
+        if (z1 === z2 && Math.abs(s1 - s2) === 2) anfassen(z1 * k + (s1 + s2) / 2);
+        else if (s1 === s2 && Math.abs(z1 - z2) === 2) anfassen(((z1 + z2) / 2) * k + s1);
+      }
+      anfassen(i);
+    }
+
+    /* Innerhalb eines Feldes kommen viele Meldungen. Ohne dieses Gedächtnis
+       würde ein unerlaubtes Feld bei jeder einzelnen davon meckern. */
+    let letztesFeld = -1;
+
+    const beiBewegung = (e) => {
+      if (zieht === null || e.pointerId !== zieht) return;
+      const i = feldUnter(e);
+      if (i < 0 || i === letztesFeld) return;
+      letztesFeld = i;
+      nachziehen(i);
+    };
+
+    const beiLoslassen = () => { zieht = null; letztesFeld = -1; };
+    window.addEventListener('pointermove', beiBewegung);
     window.addEventListener('pointerup', beiLoslassen);
     window.addEventListener('pointercancel', beiLoslassen);
 
@@ -491,6 +536,7 @@
       ende: () => {
         clearInterval(uhr);
         window.removeEventListener('resize', beiGroesse);
+        window.removeEventListener('pointermove', beiBewegung);
         window.removeEventListener('pointerup', beiLoslassen);
         window.removeEventListener('pointercancel', beiLoslassen);
         if (!stand.fertig) sichern();
