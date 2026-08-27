@@ -6,7 +6,10 @@
    direkten Nachbarfelder sind tabu.
 
    Der Generator setzt erst die Damen, lässt dann von jeder Dame aus ein
-   Farbgebiet wachsen und prüft, ob die Aufgabe damit eindeutig ist.
+   Farbgebiet wachsen und prüft, ob die Aufgabe damit eindeutig ist. Danach
+   muss sie noch eine zweite Hürde nehmen: Sie muss sich Schritt für Schritt
+   herleiten lassen, ohne dass man irgendwo probieren müsste. Womit, steht bei
+   ohneRatenLoesbar.
 */
 
 (() => {
@@ -212,20 +215,91 @@
     return false;
   }
 
+  /* Der Prüfer für „ohne Raten lösbar“. Er kennt genau die beiden Schlüsse,
+     die auch der Hinweis anbietet, und wendet sie an, bis sich nichts mehr
+     rührt (Constraint-Propagation bis zum Fixpunkt):
+
+       1. Einziger Platz: Bleibt in einer Zeile, Spalte oder Farbe nur noch
+          ein mögliches Feld, steht dort die Dame.
+       2. Gemeinsame Abdeckung: Wird ein Feld von JEDEM noch möglichen Platz
+          einer Einheit abgedeckt, kann dort keine Dame stehen. Daraus fallen
+          die geläufigen Fälle von selbst ab – eine Farbe, die ganz in einer
+          Zeile liegt, räumt diese Zeile, und umgekehrt.
+
+     Bleibt der Kessel stehen, bevor alle k Damen stehen, käme man nur noch
+     durchs Probieren weiter – so ein Rätsel lassen wir gar nicht erst zu. */
+  function ohneRatenLoesbar(k, gebiet) {
+    const geht = new Array(k * k).fill(true);
+    const damen = [];
+
+    const deckt = (p, x) => {
+      if (p === x) return false;
+      const pz = Math.floor(p / k); const ps = p % k;
+      const xz = Math.floor(x / k); const xs = x % k;
+      return pz === xz || ps === xs || gebiet[p] === gebiet[x]
+        || (Math.abs(pz - xz) <= 1 && Math.abs(ps - xs) <= 1);
+    };
+
+    const setzen = (d) => {
+      damen.push(d);
+      for (let x = 0; x < k * k; x += 1) if (x === d || deckt(d, x)) geht[x] = false;
+    };
+
+    /* Zeilen, Spalten und Farben – die Einheiten, in die je eine Dame gehört. */
+    const einheiten = [];
+    for (let z = 0; z < k; z += 1) einheiten.push((i) => Math.floor(i / k) === z);
+    for (let sp = 0; sp < k; sp += 1) einheiten.push((i) => i % k === sp);
+    for (const g of new Set(gebiet)) einheiten.push((i) => gebiet[i] === g);
+
+    const felderVon = (pruef) => {
+      const raus = [];
+      for (let i = 0; i < k * k; i += 1) if (geht[i] && pruef(i)) raus.push(i);
+      return raus;
+    };
+
+    while (damen.length < k) {
+      let bewegung = false;
+
+      for (const pruef of einheiten) {
+        if (damen.some(pruef)) continue;
+        const frei = felderVon(pruef);
+        if (!frei.length) return false;           // Sackgasse, dürfte nicht sein
+        if (frei.length === 1) { setzen(frei[0]); bewegung = true; }
+      }
+      if (bewegung) continue;
+
+      for (const pruef of einheiten) {
+        if (damen.some(pruef)) continue;
+        const frei = felderVon(pruef);
+        if (frei.length < 2) continue;
+        for (let x = 0; x < k * k; x += 1) {
+          if (!geht[x] || pruef(x)) continue;
+          if (frei.every((p) => deckt(p, x))) { geht[x] = false; bewegung = true; }
+        }
+        if (bewegung) break;
+      }
+      if (!bewegung) return false;                // nur noch Raten hülfe weiter
+    }
+    return true;
+  }
+
   function raetselBauen(stufe) {
     const k = STUFEN[stufe].kanten;
-    for (let versuch = 0; versuch < 40; versuch += 1) {
+    let notnagel = null;               // eindeutig, aber nur mit Probieren
+
+    for (let versuch = 0; versuch < 120; versuch += 1) {
       const damen = stellungSuchen(k);
       if (!damen) continue;
       for (let wuchs = 0; wuchs < 6; wuchs += 1) {
         const gebiet = gebieteWachsen(k, damen);
         if (!gebiet) continue;
-        if (eindeutigMachen(k, gebiet, damen) && loesungen(k, gebiet) === 1) {
-          return { kanten: k, gebiet, damen };
-        }
+        if (!eindeutigMachen(k, gebiet, damen) || loesungen(k, gebiet) !== 1) continue;
+        const fertig = { kanten: k, gebiet, damen };
+        if (ohneRatenLoesbar(k, gebiet)) return fertig;
+        if (!notnagel) notnagel = fertig;
       }
     }
-    return null;
+    return notnagel;                   // besser als gar kein Rätsel
   }
 
   /* ------------------------------------------------------------------ Spiel */

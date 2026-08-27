@@ -18,7 +18,7 @@ Enthalten sind bisher:
 | **Nonogramm** | Aus Zahlen wird ein Bild, 5 × 5 bis 10 × 10. |
 | **Zahlencode** | Mastermind mit Ziffern, mit rechnendem Vorschlag. |
 | **Tango** | Sonne und Mond im Gleichgewicht, 6 × 6. |
-| **Damen** | Eine Dame je Zeile, Spalte und Farbgebiet. |
+| **Damen** | Eine Dame je Zeile, Spalte und Farbgebiet, immer ohne Raten lösbar. |
 | **Weg** | Ein Zug durch jedes Feld, die Zahlen der Reihe nach. |
 
 Über allem liegt ein Dashboard mit der Spielauswahl und eine gemeinsame
