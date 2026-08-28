@@ -806,6 +806,20 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .v-feld[data-sieg='ja'] { box-shadow: 0 0 0 3px var(--tinte) inset; }
 .v-feld[data-wer='leer']:active { background: color-mix(in srgb, var(--papier) 70%, #000); }
 
+/* Zu zweit: wer dran ist, faerbt den Rand des Brettes und den Punkt im Kopf. */
+.v-brett[data-dran='ich'] { box-shadow: 0 0 0 3px #C64B3A; }
+.v-brett[data-dran='er'] { box-shadow: 0 0 0 3px #E0B33C; }
+.v-punkt {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  margin-right: 6px;
+  border-radius: 50%;
+  vertical-align: baseline;
+}
+.v-punkt[data-wer='ich'] { background: #C64B3A; }
+.v-punkt[data-wer='er'] { background: #E0B33C; }
+
 /* =========================================================== 7. Nonogramm */
 
 .n-rahmen {

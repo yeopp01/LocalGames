@@ -1,4 +1,4 @@
-/* Vier gewinnt – gegen den Rechner.
+/* Vier gewinnt – gegen den Rechner oder zu zweit an einem Gerät.
 
    Der Gegner sucht seinen Zug mit Minimax und Alpha-Beta-Schnitt: er spielt
    alle Züge gedanklich durch, unterstellt dir dabei jeweils die beste Antwort
@@ -14,6 +14,10 @@
   const LEER = 0;
   const MENSCH = 1;
   const RECHNER = 2;
+
+  /* Zu zweit heißen die beiden nicht „du“ und „Rechner“, sondern schlicht nach
+     ihrer Steinfarbe. */
+  const FARBE = { [MENSCH]: 'Rot', [RECHNER]: 'Gelb' };
 
   const STUFEN = {
     leicht: { name: 'leicht', tiefe: 2, schludert: 0.35 },
@@ -145,8 +149,9 @@
     let stand = laden();
     let denkt = false;
 
-    function frisch(stufe, anfang) {
+    function frisch(stufe, anfang, modus) {
       return {
+        modus: modus || 'rechner',   // 'rechner' | 'zwei' (zu zweit an einem Gerät)
         stufe: stufe || (stand && stand.stufe) || 'mittel',
         brett: new Array(SPALTEN * ZEILEN).fill(LEER),
         amZug: anfang || MENSCH,
@@ -162,13 +167,15 @@
       const alt = s.erinnert();
       if (alt && Array.isArray(alt.brett) && alt.brett.length === SPALTEN * ZEILEN && !alt.fertig) {
         if (!Array.isArray(alt.verlauf)) alt.verlauf = [];   // Partien von früher
+        if (alt.modus !== 'zwei') alt.modus = 'rechner';
         return alt;
       }
-      return frisch('mittel', MENSCH);
+      return frisch('mittel', MENSCH, 'rechner');
     }
 
     const sichern = () => s.merken(stand);
     const vorbei = () => stand.fertig !== null;
+    const zuZweit = () => stand.modus === 'zwei';
 
     /* ------------------------------------------------------------- Aufbau */
 
@@ -205,16 +212,19 @@
     /* ---------------------------------------------------------------- Zug */
 
     function werfen(spalte) {
-      if (vorbei() || denkt || stand.amZug !== MENSCH) return;
+      if (vorbei() || denkt) return;
+      if (!zuZweit() && stand.amZug !== MENSCH) return;
       const z = freieZeile(stand.brett, spalte);
       if (z < 0) { s.toast('Diese Spalte ist voll.'); return; }
 
-      setzen(z, spalte, MENSCH);
+      const wer = stand.amZug;
+      setzen(z, spalte, wer);
       if (vorbei()) return;
 
-      stand.amZug = RECHNER;
+      stand.amZug = wer === MENSCH ? RECHNER : MENSCH;
+      sichern();
       zeichnen();
-      denkenLassen();
+      if (!zuZweit()) denkenLassen();
     }
 
     function setzen(z, spalte, wer) {
@@ -250,15 +260,32 @@
       }, 220);
     }
 
-    /* Zurück heißt: der eigene Zug und die Antwort des Rechners darauf. Ein
+    /* Zu zweit reicht ein einzelner Stein: das Gerät wandert ohnehin hin und
+       her, wer danebengetippt hat, nimmt den Wurf gleich zurück und ist wieder
+       dran.
+
+       Gegen den Rechner heißt zurück: der eigene Zug und die Antwort darauf. Ein
        halber Schritt brächte nichts – man stünde vor demselben Brett, nur
        wäre der Rechner am Zug.
 
        Nur während der Partie: Ist sie vorbei, steht sie schon in der
        Statistik; die liesse sich nicht sauber zurückdrehen. */
     function zurueck() {
-      if (vorbei() || denkt || stand.amZug !== MENSCH) return;
+      if (vorbei() || denkt) return;
       const n = stand.verlauf.length;
+
+      if (zuZweit()) {
+        if (!n) return;
+        const letzter = stand.verlauf.pop();
+        stand.brett[letzter.i] = LEER;
+        stand.zuege -= 1;
+        stand.amZug = letzter.wer;
+        sichern();
+        zeichnen();
+        return;
+      }
+
+      if (stand.amZug !== MENSCH) return;
       if (n < 2) return;
       const letzter = stand.verlauf[n - 1];
       const vorletzter = stand.verlauf[n - 2];
@@ -275,6 +302,10 @@
 
     function abschluss(ausgang) {
       stand.fertig = ausgang;
+      // Partien zu zweit bleiben draußen: die Statistik erzählt, wie du gegen
+      // den Rechner stehst – ein Sieg gegen den Menschen neben dir passt dort
+      // nicht hinein.
+      if (zuZweit()) return;
       s.notieren({
         gewonnen: ausgang === 'sieg',
         remis: ausgang === 'remis',
@@ -294,8 +325,14 @@
         else delete felder[i].dataset.sieg;
       }
       const n = stand.verlauf.length;
-      zurueckKnopf.disabled = vorbei() || denkt || stand.amZug !== MENSCH || n < 2
-        || stand.verlauf[n - 1].wer !== RECHNER || stand.verlauf[n - 2].wer !== MENSCH;
+      zurueckKnopf.disabled = vorbei() || denkt || (zuZweit()
+        ? n < 1
+        : stand.amZug !== MENSCH || n < 2
+          || stand.verlauf[n - 1].wer !== RECHNER || stand.verlauf[n - 2].wer !== MENSCH);
+      // Zu zweit färbt der Rand des Brettes, wer gerade legen darf.
+      brettKasten.dataset.dran = zuZweit() && !vorbei()
+        ? (stand.amZug === MENSCH ? 'ich' : 'er')
+        : 'aus';
       leiste.hidden = vorbei();
       kopfZeichnen();
       endeZeichnen();
@@ -303,13 +340,24 @@
 
     function kopfZeichnen() {
       kopf.replaceChildren();
-      kopf.append(el('span', null, STUFEN[stand.stufe].name));
+      kopf.append(el('span', null, zuZweit() ? 'zu zweit' : STUFEN[stand.stufe].name));
       const wer = el('span', null, '');
-      wer.append(el('b', null, vorbei() ? '–' : stand.amZug === MENSCH ? 'du' : 'Rechner'));
+      if (zuZweit() && !vorbei()) {
+        const punkt = el('span', 'v-punkt');
+        punkt.dataset.wer = stand.amZug === MENSCH ? 'ich' : 'er';
+        wer.append(punkt);
+      }
+      wer.append(el('b', null, vorbei() ? '–'
+        : zuZweit() ? FARBE[stand.amZug]
+          : stand.amZug === MENSCH ? 'du' : 'Rechner'));
       wer.append(document.createTextNode(' am Zug'));
       kopf.append(wer);
       kopf.append(el('span', null, stand.zuege + ' Steine'));
-      if (!denkt) s.unter(vorbei() ? '' : 'Spalte antippen');
+      if (!denkt) {
+        s.unter(vorbei() ? ''
+          : zuZweit() ? FARBE[stand.amZug] + ' ist dran – Spalte antippen'
+            : 'Spalte antippen');
+      }
     }
 
     function endeZeichnen() {
@@ -317,39 +365,65 @@
       endeKasten.hidden = !vorbei();
       if (!vorbei()) return;
       endeKasten.append(el('p', 'ende-titel',
-        stand.fertig === 'sieg' ? 'Du gewinnst.'
-          : stand.fertig === 'remis' ? 'Unentschieden.' : 'Der Rechner gewinnt.'));
-      endeKasten.append(el('p', 'notiz',
-        'Stufe ' + STUFEN[stand.stufe].name + ', ' + stand.zuege + ' Steine.'
-        + (stand.fertig === 'pleite' && stand.stufe !== 'leicht' ? ' Eine Stufe tiefer ist keine Schande.' : '')));
+        stand.fertig === 'remis' ? 'Unentschieden.'
+          : zuZweit() ? FARBE[stand.fertig === 'sieg' ? MENSCH : RECHNER] + ' gewinnt.'
+            : stand.fertig === 'sieg' ? 'Du gewinnst.' : 'Der Rechner gewinnt.'));
+      endeKasten.append(el('p', 'notiz', zuZweit()
+        ? 'Zu zweit, ' + stand.zuege + ' Steine. Partien zu zweit stehen nicht in der Statistik.'
+        : 'Stufe ' + STUFEN[stand.stufe].name + ', ' + stand.zuege + ' Steine.'
+          + (stand.fertig === 'pleite' && stand.stufe !== 'leicht' ? ' Eine Stufe tiefer ist keine Schande.' : '')));
 
       const l = el('div', 'leiste');
-      for (const stufe of Object.keys(STUFEN)) {
-        const b = el('button', 'knopf ' + (stufe === stand.stufe ? 'knopf--voll' : 'knopf--still'),
-          'Neu, ' + STUFEN[stufe].name);
-        b.type = 'button';
-        // Wer verloren hat, darf anfangen.
-        b.addEventListener('click', () => neu(stufe, stand.fertig === 'pleite' ? MENSCH : RECHNER));
-        l.append(b);
+      if (zuZweit()) {
+        // Wer verloren hat, fängt an; nach einem Unentschieden wieder Rot.
+        const anfang = stand.fertig === 'sieg' ? RECHNER : MENSCH;
+        const noch = el('button', 'knopf knopf--voll', 'Noch eine');
+        noch.type = 'button';
+        noch.addEventListener('click', () => neu(stand.stufe, anfang, 'zwei'));
+        const gegen = el('button', 'knopf knopf--still', 'Gegen den Rechner');
+        gegen.type = 'button';
+        gegen.addEventListener('click', () => neu(stand.stufe, MENSCH, 'rechner'));
+        l.append(noch, gegen);
+      } else {
+        for (const stufe of Object.keys(STUFEN)) {
+          const b = el('button', 'knopf ' + (stufe === stand.stufe ? 'knopf--voll' : 'knopf--still'),
+            'Neu, ' + STUFEN[stufe].name);
+          b.type = 'button';
+          // Wer verloren hat, darf anfangen.
+          b.addEventListener('click', () => neu(stufe, stand.fertig === 'pleite' ? MENSCH : RECHNER, 'rechner'));
+          l.append(b);
+        }
       }
       endeKasten.append(l);
     }
 
-    function neu(stufe, anfang) {
-      stand = frisch(stufe, anfang);
+    function neu(stufe, anfang, modus) {
+      stand = frisch(stufe, anfang, modus);
       sichern();
       zeichnen();
-      if (stand.amZug === RECHNER) denkenLassen();
+      if (!zuZweit() && stand.amZug === RECHNER) denkenLassen();
     }
 
     function neuFragen() {
+      const d = el('div');
+      d.append(el('p', 'notiz', 'Leicht greift ab und zu daneben, mittel rechnet fünf Züge weit, schwer sieben – da muss man schon sehr gut sein.'));
+
+      const l = el('div', 'leiste');
+      const zwei = el('button', 'knopf knopf--still', 'Zu zweit an einem Gerät');
+      zwei.type = 'button';
+      zwei.addEventListener('click', () => { s.blattZu(); neu(stand.stufe, MENSCH, 'zwei'); });
+      l.append(zwei);
+      d.append(l);
+
+      d.append(el('p', 'notiz', 'Zu zweit legen Rot und Gelb abwechselnd auf demselben Gerät – ihr reicht es euch hin und her. Wer dran ist, steht oben und färbt den Rand des Brettes.'));
+
       s.blatt({
         titel: 'Neue Partie',
-        inhalt: 'Leicht greift ab und zu daneben, mittel rechnet fünf Züge weit, schwer sieben – da muss man schon sehr gut sein.',
+        inhalt: d,
         aktionen: [
-          { text: 'Leicht', tun: () => neu('leicht', MENSCH) },
-          { text: 'Mittel', art: 'still', tun: () => neu('mittel', MENSCH) },
-          { text: 'Schwer', art: 'still', tun: () => neu('schwer', MENSCH) },
+          { text: 'Leicht', tun: () => neu('leicht', MENSCH, 'rechner') },
+          { text: 'Mittel', art: 'still', tun: () => neu('mittel', MENSCH, 'rechner') },
+          { text: 'Schwer', art: 'still', tun: () => neu('schwer', MENSCH, 'rechner') },
         ],
       });
     }
@@ -359,7 +433,8 @@
       d.append(el('p', 'notiz', 'Tippe eine Spalte an – dein Stein fällt bis auf den Boden oder auf den obersten Stein, der dort schon liegt.'));
       d.append(el('p', 'notiz', 'Gewonnen hat, wer zuerst vier eigene Steine in eine Reihe bekommt: waagerecht, senkrecht oder schräg. Ist das Feld voll, endet es unentschieden.'));
       d.append(el('p', 'notiz', 'Der Rechner spielt Minimax: er denkt je nach Stufe zwei bis sieben Züge voraus und unterstellt dir dabei immer die beste Antwort. Auf „leicht" greift er absichtlich manchmal daneben – einen sicheren Sieg lässt er sich aber auch dort nicht entgehen.'));
-      d.append(el('p', 'notiz', '„Zug zurück" nimmt deinen letzten Stein samt der Antwort des Rechners wieder vom Brett. Das geht nur, solange die Partie läuft – eine beendete steht schon in der Statistik.'));
+      d.append(el('p', 'notiz', 'Unter „Neue Partie“ könnt ihr statt gegen den Rechner zu zweit an einem Gerät spielen: Rot und Gelb legen abwechselnd, das Handy wandert hin und her. Wer dran ist, steht oben – mit farbigem Punkt – und färbt den Rand des Brettes. Solche Partien zählen nicht in die Statistik.'));
+      d.append(el('p', 'notiz', '„Zug zurück“ nimmt deinen letzten Stein samt der Antwort des Rechners wieder vom Brett; zu zweit nur den letzten Stein, dann ist wieder derselbe dran. Das geht nur, solange die Partie läuft – eine beendete steht schon in der Statistik.'));
       d.append(el('p', 'notiz', 'Die Mitte ist mehr wert als der Rand: durch die mittlere Spalte laufen die meisten möglichen Viererreihen.'));
       s.blatt({ titel: 'Vier gewinnt', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
@@ -391,7 +466,7 @@
   Rahmen.anmelden({
     id: 'viergewinnt',
     name: 'Vier gewinnt',
-    unter: 'Gegen den Rechner.',
+    unter: 'Gegen den Rechner oder zu zweit.',
     farbe: '#6A4FA3',
     symbol: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="10" r="1.8"/><circle cx="15.5" cy="10" r="1.8"/><circle cx="12" cy="15" r="1.8"/>',
     starten,
