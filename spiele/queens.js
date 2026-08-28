@@ -323,6 +323,7 @@
         seit: Date.now(),
         hilfen: 0,
         autoKreuze: true,
+        verlauf: [],
         fertig: false,
       };
     }
@@ -331,6 +332,8 @@
       const alt = s.erinnert();
       if (alt && Array.isArray(alt.feld) && alt.kanten && !alt.fertig) {
         alt.seit = Date.now();
+        // Ein Stand aus einer älteren Fassung kennt den Verlauf noch nicht.
+        if (!Array.isArray(alt.verlauf)) alt.verlauf = [];
         return alt;
       }
       return frisch('leicht');
@@ -362,10 +365,13 @@
       sichern();
       zeichnen();
     });
+    const zurueckKnopf = el('button', 'knopf knopf--still', 'Rückgängig');
+    zurueckKnopf.type = 'button';
+    zurueckKnopf.addEventListener('click', zurueckNehmen);
     const hinweisKnopf = el('button', 'knopf knopf--still', 'Hinweis');
     hinweisKnopf.type = 'button';
     hinweisKnopf.addEventListener('click', hinweis);
-    leiste.append(autoKnopf, hinweisKnopf);
+    leiste.append(zurueckKnopf, autoKnopf, hinweisKnopf);
 
     s.werkzeuge([
       { label: 'Anleitung', symbol: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01" stroke-linecap="round"/>', tun: anleitung },
@@ -426,12 +432,34 @@
       }
     }
 
+    /* ---------------------------------------------------- Rückgängig */
+
+    /* Vor jedem Zug wird das Brett weggelegt. Ein Streichzug legt nur einen
+       einzigen Stand weg – ein schief geratener Wisch soll mit einem Druck
+       verschwinden und nicht Feld für Feld. Tiefer als ein paar Dutzend
+       Schritte muss der Stapel nicht sein; er liegt im gespeicherten Stand,
+       damit er ein Neuladen übersteht. */
+    const VERLAUF_TIEFE = 60;
+
+    function schrittMerken() {
+      stand.verlauf.push(stand.feld.slice());
+      if (stand.verlauf.length > VERLAUF_TIEFE) stand.verlauf.shift();
+    }
+
+    function zurueckNehmen() {
+      if (stand.fertig || !stand.verlauf.length) return;
+      stand.feld = stand.verlauf.pop();
+      sichern();
+      zeichnen();
+    }
+
     /* Beim Streichen werden nur leere Felder und Kreuze angefasst –
        eine gesetzte Dame überfährt man nicht aus Versehen. */
     function malen(i, wert) {
       if (stand.fertig) return;
       if (stand.feld[i] === DAME) return;
       if (stand.feld[i] === wert) return;
+      if (zieht && !zieht.gemerkt) { zieht.gemerkt = true; schrittMerken(); }
       stand.feld[i] = wert;
       sichern();
       zeichnen();
@@ -472,6 +500,7 @@
 
     function weiterschalten(i) {
       if (stand.fertig) return;
+      schrittMerken();
       // Ist das Feld ohnehin schon automatisch ausgekreuzt, wäre ein eigenes
       // Kreuz nur ein überflüssiger Zwischenschritt.
       if (stand.feld[i] === LEER && abgedeckt().has(i)) stand.feld[i] = DAME;
@@ -683,6 +712,7 @@
             {
               text: 'Wegnehmen',
               tun: () => {
+                schrittMerken();
                 for (const i of [...falsch.damen, ...falsch.kreuze]) stand.feld[i] = LEER;
                 sichern();
                 zeichnen();
@@ -727,6 +757,7 @@
             {
               text: dame !== undefined ? 'Dame setzen' : 'Kreuze setzen',
               tun: () => {
+                schrittMerken();
                 if (dame !== undefined) stand.feld[dame] = DAME;
                 else for (const i of kreuze) stand.feld[i] = KREUZ;
                 sichern();
@@ -859,6 +890,7 @@
         if (fehler.has(i)) f.dataset.fehler = 'ja'; else delete f.dataset.fehler;
       }
       autoKnopf.className = 'knopf ' + (stand.autoKreuze ? 'knopf--voll' : 'knopf--still');
+      zurueckKnopf.disabled = !stand.verlauf.length;
       kopfZeichnen();
       endeZeichnen();
       leiste.hidden = stand.fertig;
@@ -917,6 +949,7 @@
       d.append(el('p', 'notiz', 'Tippen schaltet weiter: leer → × → Dame → leer. Über mehrere Felder zu streichen setzt dort Kreuze – das geht deutlich schneller als einzeln zu tippen.'));
       d.append(el('p', 'notiz', 'Mit „Kreuze automatisch" kreuzt die App alles aus, was durch eine gesetzte Dame ohnehin wegfällt. Diese blassen Kreuze sind nur abgeleitet und nirgends gespeichert: Nimmst du eine falsch gesetzte Dame wieder weg, verschwinden sie im selben Moment mit. Deine eigenen Kreuze bleiben davon unberührt.'));
       d.append(el('p', 'notiz', 'Was sich in die Quere kommt, färbt sich rot.'));
+      d.append(el('p', 'notiz', '„Rückgängig“ nimmt den letzten Zug zurück – ein Streichzug zählt dabei als einer, ein schief geratener Wisch ist also mit einem Druck weg.'));
       d.append(el('p', 'notiz', 'Guter Anfang: Ein Farbgebiet, das nur in einer einzigen Zeile liegt, belegt diese Zeile – in allen anderen Feldern dieser Zeile kann dann keine Dame mehr stehen. Genau nach solchen Schlüssen sucht auch der Hinweis; er schaut nie in die Lösung. Steht dagegen schon eine Dame oder ein Kreuz nachweislich falsch, sagt er zuerst das – sonst führt jeder weitere Schluss in die Irre.'));
       s.blatt({ titel: 'Damen', inhalt: d, aktionen: [{ text: 'Los' }] });
     }

@@ -374,6 +374,8 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .knopf--still { background: var(--karte-rand); color: var(--tinte); }
 .knopf--gefahr { background: transparent; color: var(--rost); width: 100%; margin-top: 6px; }
 .knopf:active { opacity: .8; }
+/* Ein Knopf, der gerade nichts zu tun hat – etwa Rückgängig ohne Verlauf. */
+.knopf:disabled { opacity: .4; cursor: default; }
 
 /* ----------------------------------------------------------------- Blätter */
 
@@ -1112,7 +1114,10 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 }
 .q-feld[data-grenze-rechts='ja'] { border-right: 3px solid var(--tinte); }
 .q-feld[data-grenze-unten='ja'] { border-bottom: 3px solid var(--tinte); }
-.q-feld[data-wert='kreuz'] { font-size: calc(var(--zelle) * .4); opacity: .75; }
+/* Blass wird nur das Zeichen, nie das Feld: opacity auf dem Knopf zieht die
+   Gebietsfarbe mit ins Helle, und dann lassen sich zwei ähnliche Farben nicht
+   mehr auseinanderhalten. */
+.q-feld[data-wert='kreuz'] { font-size: calc(var(--zelle) * .4); color: color-mix(in srgb, #16120E 78%, transparent); }
 .q-feld[data-fehler='ja'] { box-shadow: 0 0 0 3px var(--rost) inset; }
 
 /* Das kleine Brett im Hinweisblatt. Es zeigt, von welchen Feldern die Rede
@@ -1211,7 +1216,7 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .p-linie .p-mauer { stroke: var(--tinte); }
 
 /* Automatisch abgeleitete Kreuze sind blasser als die selbst gesetzten */
-.q-feld[data-wert='auto'] { font-size: calc(var(--zelle) * .34); opacity: .35; }
+.q-feld[data-wert='auto'] { font-size: calc(var(--zelle) * .34); color: color-mix(in srgb, #16120E 42%, transparent); }
 
 /* Zwei kurze Stummel links und rechts bzw. oben und unten zeigen, welches
    Paar gemeint ist – sonst sieht ein senkrechtes Zeichen aus wie ein
