@@ -103,17 +103,18 @@ const Rahmen = (() => {
     if (bereit) zeichnen();
   }
 
-  /* Manche Spiele kennen kein Gewinnen: eine Runde „Wer am ehesten" hat kein
-     Ergebnis, das sich in richtig und falsch teilen ließe. Ihre Partien sollen
-     die Siegquote weder heben noch drücken – sie fallen überall dort heraus,
-     wo gezählt wird, und die Kachel zeigt bei ihnen nur die Zahl der Runden.
-     Ein Spiel meldet das mit ohneSiege: true bei der Anmeldung an. */
+  /* Nicht jede Partie lässt sich in gewonnen und verloren teilen. Eine Runde
+     „Wer am ehesten" hat gar keinen Sieger, und bei Vier gewinnt zu zweit
+     gewinnt zwar jemand, aber niemand, den das Gerät kennt.
+
+     Solche Partien lassen das Feld gewonnen einfach weg. Sie zählen als
+     gespielt – in der Spielzeit, im Kalender, in der Tagesserie – aber nicht
+     in der Quote. Das ist feiner als eine Angabe am Spiel, weil dasselbe Spiel
+     beides können darf: gegen den Rechner mit Urteil, zu zweit ohne. */
+  const mitUrteil = (liste) => liste.filter((p) => typeof p.gewonnen === 'boolean');
   const siegquote = (liste) => {
-    const zaehlt = liste.filter((p) => {
-      const s = nachId(p.spiel);
-      return !s || !s.ohneSiege;
-    });
-    return prozent(zaehlt.filter((p) => p.gewonnen).length, zaehlt.length);
+    const u = mitUrteil(liste);
+    return prozent(u.filter((p) => p.gewonnen).length, u.length);
   };
 
   /* ------------------------------------------------------------------ Toast */
@@ -288,7 +289,6 @@ const Rahmen = (() => {
     const gitter = el('div', 'kacheln');
     for (const s of spiele) {
       const p = partienVon(s.id);
-      const gewonnen = p.filter((x) => x.gewonnen).length;
 
       const karte = el('button', 'kachel');
       karte.type = 'button';
@@ -302,10 +302,12 @@ const Rahmen = (() => {
       text.append(el('span', 'kachel-name', s.name));
       text.append(el('span', 'kachel-unter', s.unter));
 
+      const urteil = mitUrteil(p);
       const fuss = el('span', 'kachel-fuss',
         !p.length ? 'Noch nie gespielt'
-          : s.ohneSiege ? p.length + (p.length === 1 ? ' Runde' : ' Runden')
-          : p.length + (p.length === 1 ? ' Partie · ' : ' Partien · ') + prozent(gewonnen, p.length) + ' gewonnen');
+          : !urteil.length ? p.length + (p.length === 1 ? ' Runde' : ' Runden')
+          : p.length + (p.length === 1 ? ' Partie · ' : ' Partien · ')
+            + prozent(urteil.filter((x) => x.gewonnen).length, urteil.length) + ' gewonnen');
 
       karte.append(marke, text, fuss);
       gitter.append(karte);
@@ -412,8 +414,9 @@ const Rahmen = (() => {
 
     const werte = el('div', 'kennzahlen');
     werte.append(kennzahl(String(p.length), s.ohneSiege ? 'Runden' : 'Partien'));
-    if (!s.ohneSiege) {
-      werte.append(kennzahl(prozent(p.filter((x) => x.gewonnen).length, p.length), 'gewonnen'));
+    const urteil = mitUrteil(p);
+    if (!s.ohneSiege && urteil.length) {
+      werte.append(kennzahl(prozent(urteil.filter((x) => x.gewonnen).length, urteil.length), 'gewonnen'));
     }
     const eigene = s.auswertung ? s.auswertung(p, { dauerText, beste, prozent }) : [];
     for (const k of [...eigene, ...allgemeineKennzahlen(p)]) {

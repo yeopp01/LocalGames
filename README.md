@@ -119,10 +119,26 @@ Dann noch das `<script>` in `index.html` und den Pfad in `sw.js` ergänzen –
 mehr nicht. Das Dashboard, die Statistik und die Sicherung nehmen das Spiel
 von allein auf.
 
-Kennt ein Spiel kein Gewinnen – bei „Wer am ehesten" gibt es keinen Sieger,
-sondern nur ein Ergebnis –, kommt `ohneSiege: true` dazu. Dann lässt die
-Statistik die Siegquote weg, statt eine auszurechnen, die nichts bedeutet, und
-solche Partien zählen auch in der Gesamtquote nicht mit.
+### Partien ohne Urteil
+
+Nicht jede Partie lässt sich in gewonnen und verloren teilen. Eine Runde
+„Wer am ehesten" hat gar keinen Sieger, und bei Vier gewinnt zu zweit gewinnt
+zwar jemand, aber niemand, den das Gerät kennt.
+
+Solche Partien **lassen das Feld `gewonnen` einfach weg**. Sie zählen dann als
+gespielt – in der Spielzeit, im Kalender, in der Tagesserie – aber nicht in der
+Siegquote, weder beim Spiel noch in der Gesamtzahl.
+
+Das hängt an der einzelnen Partie und nicht am Spiel, weil dasselbe Spiel
+beides können darf: Vier gewinnt gegen den Rechner mit Urteil, zu zweit ohne.
+`gewonnen` ist damit dreiwertig – `true`, `false` oder gar nicht gesetzt – und
+alles, was zählt, prüft auf `typeof p.gewonnen === 'boolean'`.
+
+Dazu kommt `ohneSiege: true` bei der Anmeldung für Spiele, bei denen es
+*grundsätzlich* nichts zu gewinnen gibt. Das ist nur eine Frage der Anzeige:
+die Kachel schreibt dann „12 Runden" statt „12 Partien", und die Siegquote
+taucht auch dann nicht auf, wenn aus alten Sicherungen doch einmal ein Urteil
+hereinkommt.
 
 Was die Sitzung bietet:
 
@@ -317,10 +333,11 @@ Namen, dann werden alle Stimmen auf einmal aufgedeckt. Sich selbst kann niemand
 wählen.
 
 45 Fragen liegen bereit, harmlose und freche; innerhalb eines Abends kommt
-keine zweimal. Es gibt keinen Sieger – deshalb meldet sich das Spiel mit
-`ohneSiege` an, und eine „Partie" ist hier der ganze Abend und nicht die
-einzelne Frage. Sonst stünden nach einer Viertelstunde vierzig Einträge in der
-Statistik.
+keine zweimal. Es gibt keinen Sieger – das Spiel notiert deshalb kein
+`gewonnen` und meldet sich mit `ohneSiege` an; siehe *Partien ohne Urteil*.
+
+Eine „Partie" ist hier der ganze Abend und nicht die einzelne Frage. Sonst
+stünden nach einer Viertelstunde vierzig Einträge in der Statistik.
 
 ## Statistik
 

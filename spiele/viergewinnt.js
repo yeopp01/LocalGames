@@ -302,17 +302,23 @@
 
     function abschluss(ausgang) {
       stand.fertig = ausgang;
-      // Partien zu zweit bleiben draußen: die Statistik erzählt, wie du gegen
-      // den Rechner stehst – ein Sieg gegen den Menschen neben dir passt dort
-      // nicht hinein.
-      if (zuZweit()) return;
-      s.notieren({
-        gewonnen: ausgang === 'sieg',
+      const partie = {
         remis: ausgang === 'remis',
         dauer: Date.now() - stand.begonnen,
-        stufe: stand.stufe,
         zuege: stand.zuege,
-      });
+      };
+
+      /* Zu zweit gewinnt zwar jemand, aber nicht gegen den Rechner – und
+         genau davon erzählt die Siegquote. Ohne das Feld gewonnen bleibt die
+         Partie aus der Quote heraus und wird trotzdem mitgezählt: als
+         Spielzeit, im Kalender und als Runde zu zweit. */
+      if (zuZweit()) {
+        partie.modus = 'zwei';
+      } else {
+        partie.gewonnen = ausgang === 'sieg';
+        partie.stufe = stand.stufe;
+      }
+      s.notieren(partie);
     }
 
     /* ------------------------------------------------------------ Zeichnen */
@@ -369,7 +375,7 @@
           : zuZweit() ? FARBE[stand.fertig === 'sieg' ? MENSCH : RECHNER] + ' gewinnt.'
             : stand.fertig === 'sieg' ? 'Du gewinnst.' : 'Der Rechner gewinnt.'));
       endeKasten.append(el('p', 'notiz', zuZweit()
-        ? 'Zu zweit, ' + stand.zuege + ' Steine. Partien zu zweit stehen nicht in der Statistik.'
+        ? 'Zu zweit, ' + stand.zuege + ' Steine. Zählt als Runde, nicht als Sieg.'
         : 'Stufe ' + STUFEN[stand.stufe].name + ', ' + stand.zuege + ' Steine.'
           + (stand.fertig === 'pleite' && stand.stufe !== 'leicht' ? ' Eine Stufe tiefer ist keine Schande.' : '')));
 
@@ -433,7 +439,7 @@
       d.append(el('p', 'notiz', 'Tippe eine Spalte an – dein Stein fällt bis auf den Boden oder auf den obersten Stein, der dort schon liegt.'));
       d.append(el('p', 'notiz', 'Gewonnen hat, wer zuerst vier eigene Steine in eine Reihe bekommt: waagerecht, senkrecht oder schräg. Ist das Feld voll, endet es unentschieden.'));
       d.append(el('p', 'notiz', 'Der Rechner spielt Minimax: er denkt je nach Stufe zwei bis sieben Züge voraus und unterstellt dir dabei immer die beste Antwort. Auf „leicht" greift er absichtlich manchmal daneben – einen sicheren Sieg lässt er sich aber auch dort nicht entgehen.'));
-      d.append(el('p', 'notiz', 'Unter „Neue Partie“ könnt ihr statt gegen den Rechner zu zweit an einem Gerät spielen: Rot und Gelb legen abwechselnd, das Handy wandert hin und her. Wer dran ist, steht oben – mit farbigem Punkt – und färbt den Rand des Brettes. Solche Partien zählen nicht in die Statistik.'));
+      d.append(el('p', 'notiz', 'Unter „Neue Partie“ könnt ihr statt gegen den Rechner zu zweit an einem Gerät spielen: Rot und Gelb legen abwechselnd, das Handy wandert hin und her. Wer dran ist, steht oben – mit farbigem Punkt – und färbt den Rand des Brettes. Solche Partien stehen als Runde in der Statistik, aber nicht in der Siegquote: die erzählt, wie du gegen den Rechner stehst.'));
       d.append(el('p', 'notiz', '„Zug zurück“ nimmt deinen letzten Stein samt der Antwort des Rechners wieder vom Brett; zu zweit nur den letzten Stein, dann ist wieder derselbe dran. Das geht nur, solange die Partie läuft – eine beendete steht schon in der Statistik.'));
       d.append(el('p', 'notiz', 'Die Mitte ist mehr wert als der Rand: durch die mittlere Spalte laufen die meisten möglichen Viererreihen.'));
       s.blatt({ titel: 'Vier gewinnt', inhalt: d, aktionen: [{ text: 'Los' }] });
@@ -455,12 +461,20 @@
       return p.filter((x) => x.gewonnen).length + '/' + p.length;
     };
     const remis = partien.filter((p) => p.remis).length;
-    return [
+    const zweit = partien.filter((p) => p.modus === 'zwei').length;
+
+    /* Die drei Stufen zählen nur Partien mit stufe – die zu zweit haben keine
+       und fallen von selbst heraus. */
+    const raus = [
       { wert: je('leicht'), label: 'Siege leicht' },
       { wert: je('mittel'), label: 'Siege mittel' },
       { wert: je('schwer'), label: 'Siege schwer' },
       { wert: String(remis), label: 'Unentschieden' },
     ];
+    if (zweit) {
+      raus.push({ wert: String(zweit), label: zweit === 1 ? 'Runde zu zweit' : 'Runden zu zweit' });
+    }
+    return raus;
   }
 
   Rahmen.anmelden({
