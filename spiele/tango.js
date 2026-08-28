@@ -77,22 +77,6 @@
     return true;
   }
 
-  /* Zählt Lösungen, hört bei der zweiten auf. */
-  function loesungen(feld, zeichen, ab = 0, gefunden = 0) {
-    let i = ab;
-    while (i < N * N && feld[i]) i += 1;
-    if (i === N * N) return gefunden + 1;
-
-    for (const wert of [SONNE, MOND]) {
-      if (!erlaubt(feld, i, wert, zeichen)) continue;
-      feld[i] = wert;
-      gefunden = loesungen(feld, zeichen, i + 1, gefunden);
-      feld[i] = 0;
-      if (gefunden > 1) return gefunden;
-    }
-    return gefunden;
-  }
-
   function vollesFeld() {
     const feld = new Array(N * N).fill(0);
     const bauen = (i) => {
@@ -109,75 +93,120 @@
   }
 
   /* Die Linien, in die je drei Sonnen und drei Monde gehören: sechs Zeilen,
-     sechs Spalten. */
+     sechs Spalten. Jede weiß, wie sie heißt und wie man eine Stelle in ihr
+     benennt – innerhalb der Zeile 3 genügt die Spalte. */
   const LINIEN = (() => {
     const raus = [];
-    for (let z = 0; z < N; z += 1) raus.push([...Array(N).keys()].map((s2) => z * N + s2));
-    for (let s2 = 0; s2 < N; s2 += 1) raus.push([...Array(N).keys()].map((z) => z * N + s2));
+    for (let z = 0; z < N; z += 1) {
+      raus.push({
+        name: 'Zeile ' + (z + 1),
+        felder: [...Array(N).keys()].map((s2) => z * N + s2),
+        kurz: (i) => 'Spalte ' + (spalteVon(i) + 1),
+      });
+    }
+    for (let s2 = 0; s2 < N; s2 += 1) {
+      raus.push({
+        name: 'Spalte ' + (s2 + 1),
+        felder: [...Array(N).keys()].map((z) => z * N + s2),
+        kurz: (i) => 'Zeile ' + (zeileVon(i) + 1),
+      });
+    }
     return raus;
   })();
 
   const andersAls = (w) => (w === SONNE ? MOND : SONNE);
+  const platzName = (i) => 'Zeile ' + (zeileVon(i) + 1) + ', Spalte ' + (spalteVon(i) + 1);
+  const zeichenName = (w) => (w === SONNE ? 'die Sonne' : 'der Mond');
+  const mehrzahl = (w) => (w === SONNE ? 'Sonnen' : 'Monde');
 
-  /* Die drei Schlüsse, die ohne Ausprobieren auskommen:
-       · Ein Zeichen zwischen zwei Feldern gibt das eine aus dem anderen.
-       · Zwei gleiche nebeneinander erzwingen daneben das andere, und zwischen
-         zwei gleichen mit Lücke steht immer das andere.
-       · Sind in einer Linie schon drei gleiche, ist der Rest festgelegt.
-     Gibt true zurück, wenn sich etwas getan hat. */
-  function einfacheSchluesse(feld, zeichen) {
-    let bewegung = false;
+  /* Der nächste Schluss, der sich ohne Probieren ziehen lässt – mitsamt
+     Begründung. Der Hinweis im Spiel gibt genau das weiter, und der Prüfer
+     beim Bauen fragt dieselbe Stelle: Was der Hinweis nicht erklären könnte,
+     soll gar nicht erst als Rätsel herauskommen.
 
+     Die Reihenfolge ist die, in der man selbst schaut: erst die Zeichen
+     zwischen den Feldern, dann die Dreier, dann die ausgezählte Linie – und
+     erst wenn nichts davon greift, wird eine einzelne Linie durchgespielt.
+
+     Zurück kommt { zuege, titel, text } oder null. */
+  function naechsterSchluss(feld, zeichen) {
+    // 1. Ein Zeichen zwischen zwei Feldern, von denen eines schon steht.
     for (const c of zeichen) {
+      const bekannt = feld[c.a] ? c.a : feld[c.b] ? c.b : -1;
+      if (bekannt < 0) continue;
+      const offen = bekannt === c.a ? c.b : c.a;
+      if (feld[offen]) continue;
       const gleich = c.art === '=';
-      if (feld[c.a] && !feld[c.b]) {
-        feld[c.b] = gleich ? feld[c.a] : andersAls(feld[c.a]);
-        bewegung = true;
-      } else if (feld[c.b] && !feld[c.a]) {
-        feld[c.a] = gleich ? feld[c.b] : andersAls(feld[c.b]);
-        bewegung = true;
+      const wert = gleich ? feld[bekannt] : andersAls(feld[bekannt]);
+      return {
+        zuege: [{ i: offen, wert }],
+        titel: gleich ? 'Das Gleichheitszeichen' : 'Das Kreuz',
+        text: 'Zwischen ' + platzName(c.a) + ' und ' + platzName(c.b) + ' steht ein '
+          + (gleich ? '=' : '×') + ': die beiden sind ' + (gleich ? 'gleich' : 'verschieden') + '. '
+          + 'Auf ' + platzName(bekannt) + ' liegt ' + zeichenName(feld[bekannt]) + ', also gehört auf '
+          + platzName(offen) + ' ' + zeichenName(wert) + '.',
+      };
+    }
+
+    // 2. Drei gleiche am Stück verhindern.
+    for (const linie of LINIEN) {
+      const f = linie.felder;
+      for (let p = 0; p + 2 < N; p += 1) {
+        const a = f[p];
+        const b = f[p + 1];
+        const c = f[p + 2];
+        const machen = (einer, anderer, offen, luecke) => ({
+          zuege: [{ i: offen, wert: andersAls(feld[einer]) }],
+          titel: 'Drei am Stück sind verboten',
+          text: 'In ' + linie.name + ' liegen auf ' + linie.kurz(einer) + ' und ' + linie.kurz(anderer)
+            + ' zwei ' + mehrzahl(feld[einer])
+            + (luecke ? ' mit einer Lücke dazwischen. Käme in die Lücke noch eine, '
+              : ' nebeneinander. Käme daneben noch eine, ')
+            + 'wären es drei am Stück. Auf ' + linie.kurz(offen) + ' gehört also '
+            + zeichenName(andersAls(feld[einer])) + '.',
+        });
+        if (feld[a] && feld[a] === feld[b] && !feld[c]) return machen(a, b, c, false);
+        if (feld[b] && feld[b] === feld[c] && !feld[a]) return machen(b, c, a, false);
+        if (feld[a] && feld[a] === feld[c] && !feld[b]) return machen(a, c, b, true);
       }
     }
 
+    // 3. Sind von einem Zeichen schon drei da, ist der Rest festgelegt.
     for (const linie of LINIEN) {
-      for (let p = 0; p + 2 < N; p += 1) {
-        const [a, b, c] = [linie[p], linie[p + 1], linie[p + 2]];
-        if (feld[a] && feld[a] === feld[b] && !feld[c]) { feld[c] = andersAls(feld[a]); bewegung = true; }
-        else if (feld[b] && feld[b] === feld[c] && !feld[a]) { feld[a] = andersAls(feld[b]); bewegung = true; }
-        else if (feld[a] && feld[a] === feld[c] && !feld[b]) { feld[b] = andersAls(feld[a]); bewegung = true; }
-      }
-
       let sonnen = 0;
       let monde = 0;
-      for (const i of linie) {
+      for (const i of linie.felder) {
         if (feld[i] === SONNE) sonnen += 1;
         else if (feld[i] === MOND) monde += 1;
       }
-      const voll = sonnen >= HALB ? MOND : monde >= HALB ? SONNE : 0;
-      if (voll) {
-        for (const i of linie) if (!feld[i]) { feld[i] = voll; bewegung = true; }
-      }
+      const voll = sonnen >= HALB ? SONNE : monde >= HALB ? MOND : 0;
+      if (!voll) continue;
+      const rest = linie.felder.filter((i) => !feld[i]);
+      if (!rest.length) continue;
+      const wert = andersAls(voll);
+      return {
+        zuege: rest.map((i) => ({ i, wert })),
+        titel: 'Die Linie ist ausgezählt',
+        text: 'In ' + linie.name + ' liegen schon drei ' + mehrzahl(voll) + '. Mehr dürfen es nicht sein – '
+          + 'von jedem Zeichen gehören genau drei in jede Zeile und jede Spalte. '
+          + (rest.length === 1
+            ? 'Das letzte freie Feld ist also ' + zeichenName(wert) + '.'
+            : 'Die übrigen ' + rest.length + ' Felder sind also alle ' + mehrzahl(wert) + '.'),
+      };
     }
-    return bewegung;
-  }
 
-  /* Der stärkere Schluss, den man am Brett auch von Hand zieht: eine einzelne
-     Zeile oder Spalte einmal ganz durchspielen. Bei sechs Feldern sind das
-     höchstens 64 Möglichkeiten. Steht in allen zulässigen dasselbe Zeichen an
-     einer Stelle, ist es dort sicher – ohne dass man den Rest des Bretts
-     anfassen müsste. */
-  function linieDurchspielen(feld, zeichen) {
-    let bewegung = false;
-
+    /* 4. Der stärkere Schluss, den man am Brett auch von Hand zieht: eine
+          einzelne Zeile oder Spalte einmal ganz durchspielen. Bei sechs
+          Feldern sind das höchstens 64 Möglichkeiten. Steht in allen
+          zulässigen dasselbe Zeichen an einer Stelle, ist es dort sicher –
+          ohne dass man den Rest des Bretts anfassen müsste. */
     for (const linie of LINIEN) {
-      const leer = linie.filter((i) => !feld[i]);
+      const f = linie.felder;
+      const leer = f.filter((i) => !feld[i]);
       if (!leer.length) continue;
 
-      // Zeichen, die diese Linie betreffen: beide Enden drin, oder ein Ende
-      // draußen und dort schon bekannt.
-      const drin = new Set(linie);
+      const drin = new Set(f);
       const regeln = zeichen.filter((c) => drin.has(c.a) || drin.has(c.b));
-
       const treffer = new Map(leer.map((i) => [i, null]));
       let anzahl = 0;
 
@@ -186,12 +215,12 @@
         leer.forEach((i, n) => { probe[i] = (muster >> n) & 1 ? SONNE : MOND; });
 
         let sonnen = 0;
-        for (const i of linie) if (probe[i] === SONNE) sonnen += 1;
+        for (const i of f) if (probe[i] === SONNE) sonnen += 1;
         if (sonnen !== HALB) continue;
 
         let gut = true;
         for (let p = 0; p + 2 < N && gut; p += 1) {
-          if (probe[linie[p]] === probe[linie[p + 1]] && probe[linie[p]] === probe[linie[p + 2]]) gut = false;
+          if (probe[f[p]] === probe[f[p + 1]] && probe[f[p]] === probe[f[p + 2]]) gut = false;
         }
         for (const c of regeln) {
           if (!gut) break;
@@ -206,27 +235,43 @@
           else if (treffer.get(i) !== probe[i]) treffer.set(i, 0);
         }
       }
+      if (!anzahl) return null;                      // Sackgasse, dürfte nicht sein
 
-      if (!anzahl) return 'sackgasse';
-      for (const [i, wert] of treffer) {
-        if (wert) { feld[i] = wert; bewegung = true; }
-      }
+      const sicher = [...treffer].filter(([, wert]) => wert).map(([i, wert]) => ({ i, wert }));
+      if (!sicher.length) continue;
+
+      return {
+        zuege: sicher,
+        titel: 'Diese Linie einmal durchspielen',
+        text: 'Spiel ' + linie.name + ' einmal ganz durch: drei Sonnen, drei Monde, keine drei gleichen '
+          + 'am Stück, dazu die Zeichen ringsum. Dann '
+          + (anzahl === 1 ? 'bleibt genau eine Möglichkeit' : 'bleiben nur ' + anzahl + ' Möglichkeiten')
+          + ' – und '
+          + (sicher.length === 1
+            ? 'auf ' + linie.kurz(sicher[0].i) + ' steht dabei immer ' + zeichenName(sicher[0].wert) + '.'
+            : 'an ' + sicher.length + ' Stellen steht immer dasselbe: '
+              + sicher.map((z) => linie.kurz(z.i) + ' ' + zeichenName(z.wert)).join(', ') + '.'),
+      };
     }
-    return bewegung;
+
+    return null;
   }
 
   /* Lässt sich das Rätsel allein mit diesen Schlüssen zu Ende bringen? Bleibt
      der Kessel vorher stehen, käme man nur noch durchs Probieren weiter. */
   function ohneRatenLoesbar(vorgabe, zeichen) {
     const feld = vorgabe.slice();
-    for (let runde = 0; runde < N * N * 2; runde += 1) {
-      if (feld.every((w) => w)) return true;
-      if (einfacheSchluesse(feld, zeichen)) continue;
-      const aus = linieDurchspielen(feld, zeichen);
-      if (aus === 'sackgasse') return false;
-      if (!aus) return false;
+    let offen = feld.filter((w) => !w).length;
+    while (offen > 0) {
+      const schluss = naechsterSchluss(feld, zeichen);
+      if (!schluss) return false;
+      for (const zug of schluss.zuege) {
+        if (feld[zug.i]) continue;
+        feld[zug.i] = zug.wert;
+        offen -= 1;
+      }
     }
-    return feld.every((w) => w);
+    return true;
   }
 
   function raetselBauen(anzahlZeichen) {
@@ -417,6 +462,10 @@
       return raus;
     }
 
+    /* Der Hinweis schaut nicht in die Lösung, sondern sucht einen Schluss,
+       den man auch selbst ziehen könnte – und nennt ihn. Es ist derselbe
+       Schluss, an dem sich beim Bauen entscheidet, ob ein Rätsel überhaupt
+       zugelassen wird. */
     function hinweis() {
       if (stand.fertig) return;
 
@@ -430,31 +479,35 @@
         return;
       }
 
-      // Ein Feld suchen, das sich zwingend ergibt: das andere Zeichen führt
-      // in einen Widerspruch.
-      for (const i of [...Array(N * N).keys()]) {
-        if (stand.feld[i]) continue;
-        const richtig = stand.loesung[i];
-        const anderes = richtig === SONNE ? MOND : SONNE;
-        const probe = stand.feld.slice();
-        probe[i] = anderes;
-        if (loesungen(probe, stand.zeichen) === 0) {
-          stand.hilfen += 1;
-          sichern();
-          s.blatt({
-            titel: 'Hier geht nur eines',
-            inhalt: 'Zeile ' + (zeileVon(i) + 1) + ', Spalte ' + (spalteVon(i) + 1) + ': '
-              + 'Mit dem anderen Zeichen lässt sich das Rätsel nicht mehr zu Ende bringen. '
-              + 'Dort gehört ' + (richtig === SONNE ? 'die Sonne' : 'der Mond') + ' hin.',
-            aktionen: [
-              { text: 'Eintragen', tun: () => { stand.feld[i] = richtig; sichern(); zeichnen(); pruefenObFertig(); } },
-              { text: 'Selbst machen', art: 'still' },
-            ],
-          });
-          return;
-        }
+      const schluss = naechsterSchluss(stand.feld, stand.zeichen);
+      if (!schluss) {
+        s.blatt({
+          titel: 'Hier sehe ich nichts Zwingendes',
+          inhalt: 'Mit den einfachen Schlüssen komme ich gerade nicht weiter. Bei einem frisch gebauten '
+            + 'Rätsel sollte das nicht vorkommen – trag erst einmal nach, was sich ohnehin schon ergibt.',
+          aktionen: [{ text: 'Verstanden' }],
+        });
+        return;
       }
-      s.toast('Hier hilft gerade nur Ausprobieren.');
+
+      stand.hilfen += 1;
+      sichern();
+      s.blatt({
+        titel: schluss.titel,
+        inhalt: schluss.text,
+        aktionen: [
+          {
+            text: schluss.zuege.length === 1 ? 'Eintragen' : 'Alle eintragen',
+            tun: () => {
+              for (const zug of schluss.zuege) if (!stand.feld[zug.i]) stand.feld[zug.i] = zug.wert;
+              sichern();
+              zeichnen();
+              pruefenObFertig();
+            },
+          },
+          { text: 'Selbst machen', art: 'still' },
+        ],
+      });
     }
 
     function pruefenObFertig() {
@@ -542,7 +595,8 @@
       d.append(el('p', 'notiz', 'Regel 1: In jeder Zeile und jeder Spalte stehen genau drei Sonnen und drei Monde.'));
       d.append(el('p', 'notiz', 'Regel 2: Nie drei gleiche direkt nebeneinander oder untereinander.'));
       d.append(el('p', 'notiz', 'Regel 3: Steht zwischen zwei Feldern ein =, tragen beide dasselbe Zeichen. Steht dort ein ×, tragen sie verschiedene.'));
-      d.append(el('p', 'notiz', 'Was gegen eine Regel verstößt, färbt sich sofort rot. Geraten werden muss nie – jedes Rätsel hat genau eine Lösung.'));
+      d.append(el('p', 'notiz', 'Was gegen eine Regel verstößt, färbt sich sofort rot. Geraten werden muss nie: Jedes Rätsel lässt sich Schritt für Schritt herleiten, sonst kommt es gar nicht erst vor.'));
+      d.append(el('p', 'notiz', 'Der Hinweis schaut dafür nie in die Lösung. Er sucht den nächsten Schluss, den du auch selbst ziehen könntest, und sagt dir, worauf er beruht.'));
       d.append(el('p', 'notiz', 'Guter Anfang: Stehen zwei gleiche nebeneinander, muss links und rechts davon das andere Zeichen stehen.'));
       s.blatt({ titel: 'Tango', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
