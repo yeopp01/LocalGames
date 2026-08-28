@@ -1116,8 +1116,15 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .q-feld[data-grenze-unten='ja'] { border-bottom: 3px solid var(--tinte); }
 /* Blass wird nur das Zeichen, nie das Feld: opacity auf dem Knopf zieht die
    Gebietsfarbe mit ins Helle, und dann lassen sich zwei ähnliche Farben nicht
-   mehr auseinanderhalten. */
-.q-feld[data-wert='kreuz'] { font-size: calc(var(--zelle) * .4); color: color-mix(in srgb, #16120E 78%, transparent); }
+   mehr auseinanderhalten. Die Gebietsfarben sind alle dunkel und satt, darum
+   bekommt das schwarze Kreuz einen hellen Hauch als Unterlage: es bleibt
+   schwarz, hebt sich aber ab, ohne die Farbe aufzuhellen. */
+.q-feld[data-wert='kreuz'] {
+  font-size: calc(var(--zelle) * .44);
+  font-weight: 700;
+  color: #16120E;
+  text-shadow: 0 0 4px rgba(255, 255, 255, .6);
+}
 .q-feld[data-fehler='ja'] { box-shadow: 0 0 0 3px var(--rost) inset; }
 
 /* Das kleine Brett im Hinweisblatt. Es zeigt, von welchen Feldern die Rede
@@ -1147,12 +1154,17 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 }
 .q-mini-feld[data-grenze-rechts='ja'] { border-right: 3px solid var(--tinte); }
 .q-mini-feld[data-grenze-unten='ja'] { border-bottom: 3px solid var(--tinte); }
-/* Nur das Zeichen wird blass, nicht die Gebietsfarbe darunter. */
+/* Nur das Zeichen wird blass, nicht die Gebietsfarbe darunter – und wie auf
+   dem großen Brett hebt ein heller Hauch das Schwarz vom dunklen Grund ab. */
 .q-mini-feld[data-rolle='schon'] {
-  font-size: calc(var(--zelle) * .4);
-  color: color-mix(in srgb, #16120E 45%, transparent);
+  font-size: calc(var(--zelle) * .42);
+  color: color-mix(in srgb, #16120E 70%, transparent);
+  text-shadow: 0 0 3px rgba(255, 255, 255, .45);
 }
-.q-mini-feld[data-rolle='kandidat'] { color: color-mix(in srgb, #16120E 40%, transparent); }
+.q-mini-feld[data-rolle='kandidat'] {
+  color: color-mix(in srgb, #16120E 62%, transparent);
+  text-shadow: 0 0 3px rgba(255, 255, 255, .45);
+}
 .q-mini-feld[data-rolle='raus'] {
   background: var(--rost);
   color: #fff;
@@ -1216,7 +1228,13 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .p-linie .p-mauer { stroke: var(--tinte); }
 
 /* Automatisch abgeleitete Kreuze sind blasser als die selbst gesetzten */
-.q-feld[data-wert='auto'] { font-size: calc(var(--zelle) * .34); color: color-mix(in srgb, #16120E 42%, transparent); }
+/* Die abgeleiteten Kreuze bleiben eine Spur zurückhaltender als die eigenen –
+   deutlich genug, um sie auf dunklem Grund zu sehen, aber unterscheidbar. */
+.q-feld[data-wert='auto'] {
+  font-size: calc(var(--zelle) * .38);
+  color: color-mix(in srgb, #16120E 72%, transparent);
+  text-shadow: 0 0 4px rgba(255, 255, 255, .45);
+}
 
 /* Zwei kurze Stummel links und rechts bzw. oben und unten zeigen, welches
    Paar gemeint ist – sonst sieht ein senkrechtes Zeichen aus wie ein
