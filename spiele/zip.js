@@ -89,32 +89,65 @@
   }
 
   /* Zählt Wege, die alle Felder berühren und die Zahlen der Reihe nach
-     mitnehmen – Abbruch bei der zweiten Lösung. */
+     mitnehmen – Abbruch bei der zweiten Lösung.
+
+     Der Suchbaum ist riesig, deshalb wird an drei Stellen gespart:
+     die Nachbarschaft steht vorher fest statt bei jedem Schritt neu,
+     ein Ast wird verworfen, sobald ein freies Feld nicht mehr betreten
+     und wieder verlassen werden könnte, und probiert wird zuerst dort,
+     wo die wenigsten Anschlüsse übrig sind. */
   function loesungen(k, zahlAn, hoechste, mauern) {
     const anzahl = k * k;
     const start = zahlAn.indexOf(1);
     const ziel = zahlAn.indexOf(hoechste);
     if (start < 0 || ziel < 0) return 0;
 
-    const besucht = new Array(anzahl).fill(false);
+    // Millionenfach gebraucht – jedes Mal ein frisches Feld zu bauen kostete
+    // mehr als die Suche selbst.
+    const nachbarn = [];
+    for (let i = 0; i < anzahl; i += 1) nachbarn.push(nachbarnVon(i, k, mauern));
+
+    const besucht = new Uint8Array(anzahl);
+    const marke = new Int32Array(anzahl);      // Lauf-Nummer statt Set zum Leeren
+    const stapel = new Int32Array(anzahl + 1);
+    let laufNr = 0;
+
     let gefunden = 0;
     let schritte = 0;
     let abgebrochen = false;
-    let offen = anzahl;                 // mitgezählt statt jedes Mal neu ermittelt
+    let offen = anzahl;
 
-    /* Bleibt alles Unbesuchte noch erreichbar? Sonst ist der Ast tot. */
-    const zusammenhaengend = (von) => {
-      const gesehen = new Set([von]);
-      const stapel = [von];
-      while (stapel.length) {
-        const i = stapel.pop();
-        for (const j of nachbarnVon(i, k, mauern)) {
-          if (besucht[j] || gesehen.has(j)) continue;
-          gesehen.add(j);
-          stapel.push(j);
+    /* Ein Ast ist tot, wenn nicht mehr alle freien Felder erreichbar sind –
+       oder wenn eines von ihnen weniger als zwei Anschlüsse hat. Es müsste ja
+       betreten und wieder verlassen werden; nur das Zielfeld darf mit einem
+       auskommen, dort hört der Weg auf. Beides in einem Durchgang. */
+    const restTaugt = (kopf) => {
+      laufNr += 1;
+      let gesehen = 0;
+      let oben = 0;
+      marke[kopf] = laufNr;
+      stapel[oben] = kopf;
+      oben += 1;
+      while (oben) {
+        oben -= 1;
+        const i = stapel[oben];
+        for (const j of nachbarn[i]) {
+          if (besucht[j] || marke[j] === laufNr) continue;
+          marke[j] = laufNr;
+          gesehen += 1;
+          stapel[oben] = j;
+          oben += 1;
         }
       }
-      return gesehen.size >= offen;
+      if (gesehen !== offen) return false;
+
+      for (let v = 0; v < anzahl; v += 1) {
+        if (besucht[v]) continue;
+        let grad = 0;
+        for (const w of nachbarn[v]) if (!besucht[w] || w === kopf) grad += 1;
+        if (grad < (v === ziel ? 1 : 2)) return false;
+      }
+      return true;
     };
 
     const weiter = (i, tiefe, naechsteZahl) => {
@@ -122,31 +155,41 @@
       schritte += 1;
       // Harte Bremse: lieber "nicht eindeutig" melden als hängen bleiben.
       if (schritte > 120000) { abgebrochen = true; return; }
-      besucht[i] = true;
+      besucht[i] = 1;
       offen -= 1;
 
       if (tiefe === anzahl) {
         if (i === ziel && naechsteZahl > hoechste) gefunden += 1;
-        besucht[i] = false;
+        besucht[i] = 0;
         offen += 1;
         return;
       }
 
-      for (const j of nachbarnVon(i, k, mauern)) {
+      // Erst sammeln, dann nach Enge sortieren: Wo es nur noch einen Ausgang
+      // gibt, entscheidet sich der Ast am schnellsten.
+      const zuege = [];
+      for (const j of nachbarn[i]) {
         if (besucht[j]) continue;
         const zahl = zahlAn[j];
         if (zahl && zahl !== naechsteZahl) continue;      // Zahlen nur der Reihe nach
         if (!zahl && naechsteZahl > hoechste && j === ziel) continue;
-        besucht[j] = true;
+        besucht[j] = 1;
         offen -= 1;
-        const geht = zusammenhaengend(j);
-        besucht[j] = false;
+        const geht = restTaugt(j);
+        besucht[j] = 0;
         offen += 1;
         if (!geht) continue;
+        let eng = 0;
+        for (const w of nachbarn[j]) if (!besucht[w]) eng += 1;
+        zuege.push([eng, j, zahl]);
+      }
+      zuege.sort((a, b) => a[0] - b[0]);
+
+      for (const [, j, zahl] of zuege) {
         weiter(j, tiefe + 1, zahl ? naechsteZahl + 1 : naechsteZahl);
         if (gefunden > 1 || abgebrochen) break;
       }
-      besucht[i] = false;
+      besucht[i] = 0;
       offen += 1;
     };
 
