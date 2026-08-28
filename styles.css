@@ -1155,6 +1155,9 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   box-shadow: 0 0 0 2px var(--tinte) inset;
 }
 .q-mini-feld[data-rolle='ziel'] { box-shadow: 0 0 0 3px var(--tinte) inset; }
+/* Was nachweislich falsch liegt: das eigene Zeichen bleibt stehen, nur rot
+   umrandet – man soll sehen, was man da gesetzt hat. */
+.q-mini-feld[data-rolle='falsch'] { box-shadow: 0 0 0 3px var(--rost) inset; }
 
 /* ================================================================ 11. Weg */
 

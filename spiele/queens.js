@@ -565,6 +565,52 @@
       return weiter(0);
     }
 
+    /* Alle Lösungen des Rätsels – ohne Rücksicht auf das, was auf dem Brett
+       liegt. Gesucht wird jedes Mal neu, statt in stand.damen nachzusehen:
+       so stimmt die Antwort auch bei einem Notnagel-Rätsel mit mehreren
+       Lösungen, und der Hinweis kennt weiterhin keine „richtige“ Lösung. */
+    function alleLoesungen() {
+      const k = stand.kanten;
+      const gefunden = [];
+      const spalten = new Set();
+      const gebiete = new Set();
+      const gesetzt = [];
+      const weiter = (z) => {
+        if (z === k) { gefunden.push(gesetzt.slice()); return; }
+        for (let sp = 0; sp < k; sp += 1) {
+          if (spalten.has(sp)) continue;
+          const g = stand.gebiet[z * k + sp];
+          if (gebiete.has(g)) continue;
+          if (z > 0 && Math.abs(gesetzt[z - 1] - sp) <= 1) continue;
+          spalten.add(sp); gebiete.add(g); gesetzt[z] = sp;
+          weiter(z + 1);
+          spalten.delete(sp); gebiete.delete(g);
+        }
+      };
+      weiter(0);
+      return gefunden;
+    }
+
+    /* Was liegt nachweislich falsch? Auf einem Feld, das in keiner Lösung
+       eine Dame trägt, steht die Dame falsch; auf einem Feld, das in jeder
+       Lösung eine Dame trägt, ist das Kreuz falsch. Beides folgt aus dem
+       Rätsel selbst – anders als eine gesetzte Dame ist ein Kreuz sonst nur
+       eine Notiz und fällt nirgends auf, obwohl es genauso in die Irre führt. */
+    function falscheMarken() {
+      const k = stand.kanten;
+      const loes = alleLoesungen();
+      const damen = [];
+      const kreuze = [];
+      if (!loes.length) return { damen, kreuze };
+      const wieOft = new Array(k * k).fill(0);
+      for (const l of loes) for (let z = 0; z < k; z += 1) wieOft[z * k + l[z]] += 1;
+      for (let i = 0; i < k * k; i += 1) {
+        if (stand.feld[i] === DAME && wieOft[i] === 0) damen.push(i);
+        if (stand.feld[i] === KREUZ && wieOft[i] === loes.length) kreuze.push(i);
+      }
+      return { damen, kreuze };
+    }
+
     const platzName = (i) => 'Zeile ' + (Math.floor(i / stand.kanten) + 1)
       + ', Spalte ' + ((i % stand.kanten) + 1);
 
@@ -583,25 +629,9 @@
         return;
       }
 
-      if (!nochLoesbar()) {
-        stand.hilfen += 1;
-        sichern();
-        s.blatt({
-          titel: 'So geht es nicht mehr auf',
-          inhalt: 'Mit den Damen, die gerade stehen, lässt sich das Rätsel nicht mehr zu Ende bringen – '
-            + 'eine davon muss falsch sein. Welche, verrate ich nicht: Das lässt sich herausfinden, '
-            + 'indem du für jede Dame durchspielst, was danach noch übrig bliebe.',
-          aktionen: [{ text: 'Verstanden' }],
-        });
-        return;
-      }
-
-      const { geht } = moegliche();
-      const felderVon = (pruef) => [...Array(k * k).keys()].filter((i) => geht[i] && pruef(i));
-
       /* Ein kleines Abbild des Bretts im Hinweisblatt. Ohne das müsste man
          die genannten Felder erst selbst zusammensuchen. */
-      const miniBrett = ({ kandidaten, kreuze, dame }) => {
+      const miniBrett = ({ kandidaten, kreuze, dame, falsch }) => {
         const g = el('div', 'q-mini');
         g.style.setProperty('--kanten', String(k));
         g.style.setProperty('--zelle', Math.floor(Math.min(280, window.innerWidth - 80) / k) + 'px');
@@ -617,10 +647,68 @@
           if (kandidaten && kandidaten.includes(i)) { f.textContent = '♛'; f.dataset.rolle = 'kandidat'; }
           if (kreuze && kreuze.includes(i)) { f.textContent = '×'; f.dataset.rolle = 'raus'; }
           if (dame === i) { f.textContent = '♛'; f.dataset.rolle = 'ziel'; }
+          // Zuletzt, damit die rote Umrandung jede andere Rolle sticht.
+          if (falsch && falsch.includes(i)) f.dataset.rolle = 'falsch';
           g.append(f);
         }
         return g;
       };
+
+      const falsch = falscheMarken();
+      if (falsch.damen.length || falsch.kreuze.length) {
+        stand.hilfen += 1;
+        sichern();
+        const stuecke = [];
+        if (falsch.damen.length) {
+          stuecke.push(falsch.damen.length === 1
+            ? 'eine Dame steht auf einem Feld, auf dem in keiner Lösung eine steht'
+            : falsch.damen.length + ' Damen stehen auf Feldern, auf denen in keiner Lösung eine steht');
+        }
+        if (falsch.kreuze.length) {
+          stuecke.push(falsch.kreuze.length === 1
+            ? 'ein Kreuz liegt auf einem Feld, auf dem am Ende eine Dame stehen muss'
+            : falsch.kreuze.length + ' Kreuze liegen auf Feldern, auf denen am Ende Damen stehen müssen');
+        }
+        const inhalt = el('div');
+        inhalt.append(
+          el('p', 'notiz', 'Rot umrandet: ' + stuecke.join(', und ') + '. Solange das so liegt, '
+            + 'führt jeder weitere Schluss in die Irre – warum es falsch ist, findest du heraus, '
+            + 'indem du durchspielst, was danach noch übrig bliebe.'),
+          miniBrett({ falsch: [...falsch.damen, ...falsch.kreuze] }),
+        );
+        s.blatt({
+          titel: 'Da liegt etwas falsch',
+          inhalt,
+          aktionen: [
+            {
+              text: 'Wegnehmen',
+              tun: () => {
+                for (const i of [...falsch.damen, ...falsch.kreuze]) stand.feld[i] = LEER;
+                sichern();
+                zeichnen();
+              },
+            },
+            { text: 'Lass ich noch', art: 'still' },
+          ],
+        });
+        return;
+      }
+
+      if (!nochLoesbar()) {
+        stand.hilfen += 1;
+        sichern();
+        s.blatt({
+          titel: 'So geht es nicht mehr auf',
+          inhalt: 'Jede gesetzte Dame steht für sich genommen auf einem möglichen Feld, zusammen '
+            + 'gehen sie aber nicht auf. Welche Kombination stört, verrate ich nicht: Das lässt sich '
+            + 'herausfinden, indem du für jede Dame durchspielst, was danach noch übrig bliebe.',
+          aktionen: [{ text: 'Verstanden' }],
+        });
+        return;
+      }
+
+      const { geht } = moegliche();
+      const felderVon = (pruef) => [...Array(k * k).keys()].filter((i) => geht[i] && pruef(i));
 
       const zeigen = (titel, text, kreuze, dame, kandidaten) => {
         stand.hilfen += 1;
@@ -829,7 +917,7 @@
       d.append(el('p', 'notiz', 'Tippen schaltet weiter: leer → × → Dame → leer. Über mehrere Felder zu streichen setzt dort Kreuze – das geht deutlich schneller als einzeln zu tippen.'));
       d.append(el('p', 'notiz', 'Mit „Kreuze automatisch" kreuzt die App alles aus, was durch eine gesetzte Dame ohnehin wegfällt. Diese blassen Kreuze sind nur abgeleitet und nirgends gespeichert: Nimmst du eine falsch gesetzte Dame wieder weg, verschwinden sie im selben Moment mit. Deine eigenen Kreuze bleiben davon unberührt.'));
       d.append(el('p', 'notiz', 'Was sich in die Quere kommt, färbt sich rot.'));
-      d.append(el('p', 'notiz', 'Guter Anfang: Ein Farbgebiet, das nur in einer einzigen Zeile liegt, belegt diese Zeile – in allen anderen Feldern dieser Zeile kann dann keine Dame mehr stehen. Genau nach solchen Schlüssen sucht auch der Hinweis; er schaut nie in die Lösung.'));
+      d.append(el('p', 'notiz', 'Guter Anfang: Ein Farbgebiet, das nur in einer einzigen Zeile liegt, belegt diese Zeile – in allen anderen Feldern dieser Zeile kann dann keine Dame mehr stehen. Genau nach solchen Schlüssen sucht auch der Hinweis; er schaut nie in die Lösung. Steht dagegen schon eine Dame oder ein Kreuz nachweislich falsch, sagt er zuerst das – sonst führt jeder weitere Schluss in die Irre.'));
       s.blatt({ titel: 'Damen', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
 
