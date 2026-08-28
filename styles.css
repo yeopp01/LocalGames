@@ -1117,13 +1117,15 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 /* Blass wird nur das Zeichen, nie das Feld: opacity auf dem Knopf zieht die
    Gebietsfarbe mit ins Helle, und dann lassen sich zwei ähnliche Farben nicht
    mehr auseinanderhalten. Die Gebietsfarben sind alle dunkel und satt, darum
-   bekommt das schwarze Kreuz einen hellen Hauch als Unterlage: es bleibt
-   schwarz, hebt sich aber ab, ohne die Farbe aufzuhellen. */
+   werden die Kreuze vor allem größer und satter gezeichnet. Ein heller
+   Hauch als Unterlage hilft dem eigenen Kreuz noch etwas nach, bleibt aber
+   knapp: er legt sich sonst als Schleier über die Zelle und dann ist die
+   Gebietsfarbe wieder nicht zu erkennen. */
 .q-feld[data-wert='kreuz'] {
-  font-size: calc(var(--zelle) * .44);
+  font-size: calc(var(--zelle) * .5);
   font-weight: 700;
   color: #16120E;
-  text-shadow: 0 0 4px rgba(255, 255, 255, .6);
+  text-shadow: 0 0 3px rgba(255, 255, 255, .35);
 }
 .q-feld[data-fehler='ja'] { box-shadow: 0 0 0 3px var(--rost) inset; }
 
@@ -1155,16 +1157,12 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .q-mini-feld[data-grenze-rechts='ja'] { border-right: 3px solid var(--tinte); }
 .q-mini-feld[data-grenze-unten='ja'] { border-bottom: 3px solid var(--tinte); }
 /* Nur das Zeichen wird blass, nicht die Gebietsfarbe darunter – und wie auf
-   dem großen Brett hebt ein heller Hauch das Schwarz vom dunklen Grund ab. */
+   dem großen Brett hilft Größe statt eines Schleiers. */
 .q-mini-feld[data-rolle='schon'] {
-  font-size: calc(var(--zelle) * .42);
-  color: color-mix(in srgb, #16120E 70%, transparent);
-  text-shadow: 0 0 3px rgba(255, 255, 255, .45);
+  font-size: calc(var(--zelle) * .48);
+  color: color-mix(in srgb, #16120E 78%, transparent);
 }
-.q-mini-feld[data-rolle='kandidat'] {
-  color: color-mix(in srgb, #16120E 62%, transparent);
-  text-shadow: 0 0 3px rgba(255, 255, 255, .45);
-}
+.q-mini-feld[data-rolle='kandidat'] { color: color-mix(in srgb, #16120E 68%, transparent); }
 .q-mini-feld[data-rolle='raus'] {
   background: var(--rost);
   color: #fff;
@@ -1227,13 +1225,13 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 /* Mauern liegen zwischen zwei Feldern und sind kraeftiger als die Gitterlinien. */
 .p-linie .p-mauer { stroke: var(--tinte); }
 
-/* Automatisch abgeleitete Kreuze sind blasser als die selbst gesetzten */
-/* Die abgeleiteten Kreuze bleiben eine Spur zurückhaltender als die eigenen –
-   deutlich genug, um sie auf dunklem Grund zu sehen, aber unterscheidbar. */
+/* Die abgeleiteten Kreuze liegen auf vielen Feldern gleichzeitig – ein Hauch
+   unter jedem einzelnen ergäbe über das halbe Brett einen Schleier. Sie
+   bekommen darum gar keinen und werden stattdessen größer gezeichnet; eine
+   Spur zurückhaltender als die eigenen bleiben sie über die Deckung. */
 .q-feld[data-wert='auto'] {
-  font-size: calc(var(--zelle) * .38);
-  color: color-mix(in srgb, #16120E 72%, transparent);
-  text-shadow: 0 0 4px rgba(255, 255, 255, .45);
+  font-size: calc(var(--zelle) * .44);
+  color: color-mix(in srgb, #16120E 80%, transparent);
 }
 
 /* Zwei kurze Stummel links und rechts bzw. oben und unten zeigen, welches

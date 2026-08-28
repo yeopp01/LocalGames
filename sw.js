@@ -1,6 +1,6 @@
 /* Service Worker: legt die App auf dem Gerät ab, damit sie offline startet.
    Beim Ausrollen einer neuen Fassung die Zahl in LAGER hochzählen. */
-const LAGER = 'localgames-v14';
+const LAGER = 'localgames-v15';
 
 const GRUNDBESTAND = [
   './',
