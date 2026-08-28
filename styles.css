@@ -1126,6 +1126,10 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   font-weight: 700;
   color: #16120E;
   text-shadow: 0 0 3px rgba(255, 255, 255, .35);
+  /* Ein Hauch Schatten als Lage über der Gebietsfarbe, nicht als opacity auf
+     dem Knopf: die Farbe wird dadurch nur eine Spur tiefer und bleibt die
+     gleiche Farbe. Sichtbar ist das Feld ohnehin am Kreuz. */
+  background: linear-gradient(rgba(0, 0, 0, .12), rgba(0, 0, 0, .12)), var(--gebiet);
 }
 .q-feld[data-fehler='ja'] { box-shadow: 0 0 0 3px var(--rost) inset; }
 
@@ -1232,6 +1236,7 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .q-feld[data-wert='auto'] {
   font-size: calc(var(--zelle) * .44);
   color: color-mix(in srgb, #16120E 80%, transparent);
+  background: linear-gradient(rgba(0, 0, 0, .09), rgba(0, 0, 0, .09)), var(--gebiet);
 }
 
 /* Zwei kurze Stummel links und rechts bzw. oben und unten zeigen, welches
