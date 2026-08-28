@@ -20,6 +20,10 @@ Enthalten sind bisher:
 | **Tango** | Sonne und Mond im Gleichgewicht, 6 × 6, immer ohne Raten lösbar. |
 | **Damen** | Eine Dame je Zeile, Spalte und Farbgebiet, immer ohne Raten lösbar. |
 | **Weg** | Ein Zug durch jedes Feld, die Zahlen der Reihe nach, auf „schwer" mit Mauern. |
+| **Verräter** | Alle kennen dasselbe Wort, einer nicht. Zu dritt bis zu zwölft, auf einem Handy oder mit Code auf allen. |
+| **Bombe** | Eine Silbe, ein Wort, schnell weitergeben – bis es knallt. Die Uhr läuft verdeckt. |
+| **Zwei Wahrheiten** | Drei Sätze über sich, einer erfunden. Die anderen raten reihum und geheim. |
+| **Wer am ehesten** | Eine Frage, geheime Stimmen, aufgedecktes Ergebnis. 45 Fragen, harmlos und frech. |
 
 Über allem liegt ein Dashboard mit der Spielauswahl und eine gemeinsame
 Statistik über alle Partien, samt Sicherung zum Mitnehmen.
@@ -82,6 +86,8 @@ in `index.html` – die App läuft unverändert weiter.
 | `app.js` | Der Rahmen: Auswahl, Navigation, Speicher, Statistik, Sicherung |
 | `spiele/woerter.js` | Wortschatz für Wördle samt Tipps |
 | `spiele/loeser.js` | Die Rechnung hinter dem Zug-Vorschlag |
+| `spiele/begriffe.js` | Wortpaare für Verräter |
+| `spiele/runde.js` | Bausteine für die Spiele zu mehreren |
 | `spiele/*.js` | je Datei ein Spiel |
 | `sw.js` | Der Offline-Speicher |
 | `icons/` | App-Icons |
@@ -112,6 +118,11 @@ Rahmen.anmelden({
 Dann noch das `<script>` in `index.html` und den Pfad in `sw.js` ergänzen –
 mehr nicht. Das Dashboard, die Statistik und die Sicherung nehmen das Spiel
 von allein auf.
+
+Kennt ein Spiel kein Gewinnen – bei „Wer am ehesten" gibt es keinen Sieger,
+sondern nur ein Ergebnis –, kommt `ohneSiege: true` dazu. Dann lässt die
+Statistik die Siegquote weg, statt eine auszurechnen, die nichts bedeutet, und
+solche Partien zählen auch in der Gesamtquote nicht mit.
 
 Was die Sitzung bietet:
 
@@ -203,6 +214,113 @@ sobald genug Fahnen daneben stehen.
 | klein | 8 × 10 | 10 |
 | mittel | 10 × 14 | 24 |
 | groß | 12 × 18 | 40 |
+
+## Verräter im Detail
+
+Alle bekommen dasselbe Wort, einer nicht. Reihum sagt jeder ein einziges Wort
+dazu, dann wird abgestimmt. Drei Fassungen: *Doppelgänger* (der Verräter
+bekommt ein ähnliches Wort und ahnt selbst nichts), *blind* (er weiß Bescheid
+und kennt nur das Thema) und *zwei Verräter* ab fünf Leuten.
+
+**Zwei Wege, die Rollen zu verteilen.**
+
+*Ein Handy* wandert im Kreis. Vor jedem Blick steht ein Sperrschirm mit dem
+Namen, und das Wort erscheint nur, solange der Finger auf dem Feld liegt – so
+steht nichts mehr auf dem Bildschirm, während das Gerät weitergereicht wird.
+Abgestimmt wird danach genauso, reihum und geheim.
+
+*Mit Code* braucht jeder die App, dafür kein Weitergeben. Einer würfelt einen
+Code wie `R4KM`, sagt ihn samt Spielerzahl an, alle tippen ihn ein und wählen
+ihre Nummer. Danach rechnet jedes Gerät die Runde für sich aus – und kommt auf
+dasselbe Ergebnis.
+
+**Warum das ohne Verbindung geht.** Zwei Geräte müssen sich nicht absprechen,
+wenn sie dieselbe Rechnung mit demselben Startwert ausführen. `Math.random`
+taugt dafür nicht, also steht in `spiele/runde.js` ein eigener Würfel: FNV-1a
+macht aus dem Code eine Zahl, Mulberry32 daraus eine Folge, und die ist Zeichen
+für Zeichen auf jedem Gerät dieselbe. Aus ihr fallen der Reihe nach Thema,
+Fassung, das Wortpaar, wer der Verräter ist und wer anfängt.
+
+Es fließt dabei kein Byte zwischen den Geräten. Kein Server, kein Bluetooth,
+keine Kamera – der Code *ist* die Verbindung, und er wird vorgelesen.
+
+**Was dieser Weg nicht kann.** Stimmen einsammeln. Dafür müssten die Geräte
+wirklich miteinander reden, und das ginge nur über einen fremden Rechner. Also
+wird von Hand abgestimmt, und die App fragt am Ende nur nach dem Ausgang.
+
+**Die Probe.** Oben auf dem Schirm stehen Thema, Fassung und Spielerzahl. Die
+drei müssen bei allen gleich sein – sie kommen ja aus demselben Code. Wer sich
+vertippt hat, sieht dort etwas anderes als der Rest und merkt es vor der ersten
+Runde statt in der Auflösung. Der Zeichenvorrat des Codes hilft mit: kein O
+neben der 0, kein I neben der 1, damit sich beim Vorlesen nichts verhört.
+
+**Der Wortschatz** steht in `spiele/begriffe.js`: 120 Paare in zehn Themen, von
+Hand geschrieben wie die Wördle-Liste und aus demselben Grund – fremde
+Wortlisten stehen unter der GPL und würden sich auf das ganze Projekt
+durchschlagen. Ein Paar muss nah genug sein, dass beide Wörter auf dieselben
+Beschreibungen passen, und verschieden genug, dass es irgendwann auffällt.
+Neue Paare kommen einfach in das passende Thema.
+
+## Die Spiele zu mehreren
+
+Vier Spiele teilen sich `spiele/runde.js`. Der Baustein kennt kein Spiel,
+sondern nur die Teile, die alle brauchen:
+
+| Werkzeug | Wofür |
+| --- | --- |
+| `zufallAus(code)` | Der Würfel, der aus einem Text seine Folge ableitet – Grundlage des Code-Wegs bei Verräter. Ohne Startwert der gewöhnliche Zufall. |
+| `aufbau(…)` | Spielerzahl und Namen |
+| `codeAufbau(…)` | Code, Spielerzahl und „ich bin Nummer" auf einem Schirm |
+| `weitergabe(…)` | Sperrschirm mit Namen, Halten zum Aufdecken, reihum |
+| `stimmen(…)` / `auszaehlen(…)` | Geheime Abstimmung und ihre Auszählung |
+| `uhr(…)` | Rücklaufende Uhr, wahlweise verdeckt und mit Streuung |
+
+Der Sperrschirm ist dabei das eigentliche Stück Arbeit: ohne ihn steht das
+Geheimnis schon auf dem Bildschirm, während das Gerät noch in der Luft ist.
+
+## Bombe im Detail
+
+Auf dem Schirm steht eine Silbe. Wer das Gerät hält, sagt ein Wort, in dem sie
+vorkommt, und reicht weiter. Wer sie hält, wenn es knallt, ist raus – bis einer
+übrig bleibt.
+
+Die Uhr läuft **verdeckt und mit Streuung**: die eingestellte Zeit ist nur die
+Mitte, das Ende liegt irgendwo darum herum. Eine sichtbare Uhr würde das Spiel
+zerstören, weil der Vorletzte dann einfach abwarten könnte.
+
+| Stufe | Silben | Zeit |
+| --- | --- | --- |
+| leicht | häufige Bausteine wie `AU`, `ER`, `ST` | um die 45 s |
+| mittel | `SCH`, `UNG`, `TER`, `RAU` … | um die 35 s |
+| schwer | `PFL`, `TZE`, `KNO`, `ÖFF` … | um die 25 s |
+
+Weitergeben stellt die Uhr **nicht** zurück – nur der Name wechselt. Wo das
+Gerät es kann, rüttelt es beim Knall kurz; wo nicht, passiert eben nichts.
+
+## Zwei Wahrheiten im Detail
+
+Einer schreibt drei Sätze über sich auf, zwei stimmen. Dann wandert das Gerät,
+und jeder andere tippt auf den, den er für gelogen hält.
+
+Die drei Sätze werden vor dem Raten **gemischt**. Ohne das gewöhnt sich die
+Runde daran, dass die Lüge immer an derselben Stelle steht – Leute schreiben
+sie gern zuletzt.
+
+Das Gerät prüft nichts nach; es hält nur auseinander, wer was sehen darf. Beim
+Schreiben liegt ein Sperrschirm davor, beim Raten auch – wer als Zweiter rät,
+sieht die Stimme des Ersten nicht.
+
+## Wer am ehesten im Detail
+
+Eine Frage wird vorgelesen, das Gerät wandert, jeder tippt heimlich auf einen
+Namen, dann werden alle Stimmen auf einmal aufgedeckt. Sich selbst kann niemand
+wählen.
+
+45 Fragen liegen bereit, harmlose und freche; innerhalb eines Abends kommt
+keine zweimal. Es gibt keinen Sieger – deshalb meldet sich das Spiel mit
+`ohneSiege` an, und eine „Partie" ist hier der ganze Abend und nicht die
+einzelne Frage. Sonst stünden nach einer Viertelstunde vierzig Einträge in der
+Statistik.
 
 ## Statistik
 

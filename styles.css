@@ -1229,3 +1229,440 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 
 /* Beim Streichen über das Damenbrett soll die Seite nicht mitscrollen. */
 .q-gitter { touch-action: none; }
+
+/* ====================================================== Runde (Bausteine) */
+/* Alles, was die Spiele zu mehreren teilen: Aufbau, Sperrschirm, Deckel,
+   Abstimmung, Uhr. Steht vor den Spielen, die es benutzen. */
+
+.r-aufbau { display: flex; flex-direction: column; gap: 12px; width: 100%; }
+.r-titel { font-size: 19px; font-weight: 800; margin: 0; }
+.r-hinweis { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--tinte-leise); }
+.r-hinweis--leise { font-size: 12.5px; color: var(--tinte-still); }
+
+.r-zaehler {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--rund);
+  background: var(--karte);
+  border: 1px solid var(--karte-rand);
+}
+.r-zaehler-wort { font-size: 14px; color: var(--tinte-leise); margin-right: auto; }
+.r-stufe {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border: 1px solid var(--karte-rand);
+  border-radius: 999px;
+  background: var(--papier);
+  color: var(--tinte);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+.r-stufe:disabled { opacity: .3; cursor: default; }
+.r-zahl {
+  font-family: 'DM Mono', monospace;
+  font-size: 19px;
+  font-weight: 500;
+  min-width: 2ch;
+  text-align: center;
+}
+
+.r-namen { display: flex; flex-direction: column; gap: 6px; }
+.r-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 12px;
+  border-radius: var(--rund-klein);
+  background: var(--karte);
+  border: 1px solid var(--karte-rand);
+}
+.r-name-nr { font-size: 12px; color: var(--tinte-still); min-width: 1.5ch; }
+.r-name-feld {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: var(--tinte);
+  font: inherit;
+  font-size: 15px;
+  padding: 8px 0;
+  min-width: 0;
+}
+.r-name-feld:focus { outline: none; }
+
+.r-codezeile { display: flex; gap: 8px; }
+.r-codefeld {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  border-radius: var(--rund);
+  border: 1px solid var(--karte-rand);
+  background: var(--karte);
+  color: var(--tinte);
+  font-family: 'DM Mono', monospace;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: .18em;
+  text-align: center;
+  text-transform: uppercase;
+}
+.r-codefeld:focus { outline: 2px solid var(--tinte-still); outline-offset: -1px; }
+.r-wuerfel { flex: none; }
+
+.r-los { width: 100%; }
+
+/* Weitergeben */
+
+.r-buehne { width: 100%; }
+
+/* Der Sperrschirm nimmt die ganze Hoehe: er soll nicht wie ein
+   Zwischenschritt aussehen, sondern wie eine Tuer. */
+.r-sperre,
+.r-geheim {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 58dvh;
+  padding: 20px;
+  border-radius: var(--rund);
+  background: var(--karte);
+  border: 1px solid var(--karte-rand);
+  text-align: center;
+}
+.r-sperre-vor { margin: 0; font-size: 13.5px; color: var(--tinte-leise); }
+.r-sperre-name { margin: 0; font-size: 30px; font-weight: 800; line-height: 1.15; }
+.r-sperre-knopf,
+.r-weiter { width: 100%; max-width: 320px; }
+.r-geheim-name { margin: 0; font-size: 13px; color: var(--tinte-still); }
+.r-flaeche { width: 100%; }
+
+/* Der Deckel liegt ueber dem Inhalt und weicht nur, solange der Finger liegt.
+   So bleibt nichts stehen, wenn das Geraet weitergereicht wird. */
+.r-decke {
+  position: relative;
+  width: 100%;
+  min-height: 160px;
+  border-radius: var(--rund);
+  overflow: hidden;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.r-deckel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--tinte);
+  color: var(--papier);
+  border-radius: var(--rund);
+  transition: opacity .12s ease;
+}
+.r-deckel-text { font-size: 14px; font-weight: 700; letter-spacing: .04em; }
+.r-decke[data-offen] .r-deckel { opacity: 0; pointer-events: none; }
+
+/* Abstimmung */
+
+.r-frage { margin: 0 0 12px; font-size: 15px; font-weight: 700; }
+.r-wahl { display: flex; flex-direction: column; gap: 6px; }
+.r-wahl-knopf {
+  padding: 14px 16px;
+  border-radius: var(--rund-klein);
+  border: 1px solid var(--karte-rand);
+  background: var(--papier);
+  color: var(--tinte);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.r-wahl-knopf:active { opacity: .8; }
+
+/* Uhr */
+
+.r-uhr {
+  font-family: 'DM Mono', monospace;
+  font-size: 30px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--tinte-leise);
+}
+.r-uhr[data-knapp] { color: var(--rost); }
+.r-uhr--blind { display: none; }
+
+
+/* =========================================================== 12. Verraeter */
+
+.v-boden { display: flex; flex-direction: column; gap: 14px; width: 100%; }
+
+.v-modus { display: flex; gap: 8px; }
+.v-modus-knopf {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 14px;
+  border-radius: var(--rund);
+  border: 1px solid var(--karte-rand);
+  background: var(--karte);
+  color: var(--tinte);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.v-modus-knopf[data-an] { border-color: var(--tinte); background: var(--tinte); color: var(--papier); }
+.v-modus-name { font-size: 15px; font-weight: 700; }
+.v-modus-unter { font-size: 12px; opacity: .7; }
+
+.v-wahlblock { display: flex; flex-direction: column; gap: 6px; }
+.v-wahl-titel {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--tinte-still);
+}
+.v-wahl-reihe { display: flex; flex-wrap: wrap; gap: 6px; }
+.v-wahl-knopf {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1 1 auto;
+  padding: 9px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--karte-rand);
+  background: var(--karte);
+  color: var(--tinte);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+/* Steht eine Erklaerung darunter, ist die Pille zu eng - dann eine Zeile. */
+.v-wahl-knopf:has(.v-wahl-unter) { flex-basis: 100%; border-radius: var(--rund-klein); }
+.v-wahl-knopf[data-an] { border-color: var(--tinte); background: var(--tinte); color: var(--papier); }
+.v-wahl-knopf:disabled { opacity: .35; cursor: default; }
+.v-wahl-name { font-size: 14px; font-weight: 600; }
+.v-wahl-unter { font-size: 12px; opacity: .7; }
+
+.v-notiz { margin: 0; font-size: 13px; line-height: 1.55; color: var(--tinte-leise); }
+
+/* Die Rollenkarte - das eine Bild, das jeder fuer sich sieht. */
+.v-karte {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 160px;
+  padding: 24px 18px;
+  border-radius: var(--rund);
+  background: var(--papier);
+  border: 1px solid var(--karte-rand);
+  text-align: center;
+}
+.v-karte[data-rolle='verraeter'] { border-color: var(--rost); }
+.v-karte-vor {
+  margin: 0;
+  font-size: 12.5px;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--tinte-still);
+}
+.v-karte-nach { margin: 0; font-size: 13px; color: var(--tinte-leise); }
+.v-wort { margin: 0; font-size: 30px; font-weight: 800; line-height: 1.15; }
+.v-karte[data-rolle='verraeter'] .v-wort { color: var(--rost); }
+
+/* Die Probe im Code-Weg: drei Angaben, die bei allen gleich stehen muessen. */
+.v-probe { display: flex; flex-wrap: wrap; gap: 6px; }
+.v-probe-teil {
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: var(--karte);
+  border: 1px solid var(--karte-rand);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.v-reden {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 18px;
+  border-radius: var(--rund);
+  background: var(--karte);
+  border: 1px solid var(--karte-rand);
+  text-align: center;
+}
+.v-beginner { margin: 0; font-size: 28px; font-weight: 800; }
+
+.v-breit { width: 100%; }
+
+.v-ende {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 18px;
+  border-radius: var(--rund);
+  background: var(--karte);
+  border: 1px solid var(--karte-rand);
+  text-align: center;
+}
+.v-ende-titel { margin: 0; font-size: 22px; font-weight: 800; }
+.v-ende[data-aus='gut'] .v-ende-titel { color: var(--gruen); }
+.v-ende[data-aus='schlecht'] .v-ende-titel { color: var(--rost); }
+.v-aufloesung { display: flex; flex-direction: column; gap: 4px; }
+
+.v-tafel { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; }
+.v-tafel-zeile {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--rund-klein);
+  background: var(--papier);
+  border: 1px solid var(--karte-rand);
+  font-size: 14px;
+}
+.v-tafel-zeile[data-rolle='verraeter'] { border-color: var(--rost); color: var(--rost); font-weight: 700; }
+.v-tafel-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.v-tafel-zahl { flex: none; color: var(--tinte-still); font-variant-numeric: tabular-nums; }
+.v-tafel-zeile[data-rolle='verraeter'] .v-tafel-zahl { color: inherit; }
+
+
+/* ============================================================== 13. Bombe */
+
+.b-boden { display: flex; flex-direction: column; gap: 14px; width: 100%; }
+
+.b-tisch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 46dvh;
+  padding: 24px 18px;
+  border-radius: var(--rund);
+  background: var(--karte);
+  border: 1px solid var(--karte-rand);
+  text-align: center;
+}
+.b-silbe {
+  margin: 0;
+  font-family: 'DM Mono', monospace;
+  font-size: clamp(52px, 22vw, 96px);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: .04em;
+}
+.b-dran { margin: 0; font-size: 20px; font-weight: 700; }
+
+/* Die Lunte schlaegt gleichmaessig - sie zeigt, dass es laeuft, und verraet
+   nichts darueber, wie lange noch. */
+.b-lunte {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--rost);
+  animation: lunte 1.1s ease-in-out infinite;
+}
+@keyframes lunte {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: .35; transform: scale(.72); }
+}
+
+.b-tisch--peng { border-color: var(--rost); }
+.b-peng {
+  margin: 0;
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--rost);
+}
+.b-raus { margin: 0; font-size: 19px; font-weight: 700; }
+
+/* Der Weiter-Knopf ist der meistgedrueckte der App - er darf gross sein. */
+.b-weiter { width: 100%; padding: 20px; font-size: 18px; }
+
+
+/* =================================================== 14. Zwei Wahrheiten */
+
+.w2-liste { display: flex; flex-direction: column; gap: 6px; }
+.w2-satz {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 12px 14px;
+  border-radius: var(--rund-klein);
+  background: var(--karte);
+  border: 1px solid var(--karte-rand);
+}
+.w2-satz[data-luege] { border-color: var(--rost); }
+.w2-text { font-size: 15px; line-height: 1.4; }
+.w2-satz[data-luege] .w2-text { color: var(--rost); font-weight: 700; }
+.w2-wer { font-size: 12.5px; color: var(--tinte-still); }
+
+
+/* ==================================================== 15. Wer am ehesten */
+
+.a-frage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 22px 18px;
+  border-radius: var(--rund);
+  background: var(--karte);
+  border: 1px solid var(--karte-rand);
+  text-align: center;
+}
+.a-frage-text { margin: 0; font-size: 23px; font-weight: 800; line-height: 1.25; }
+
+.a-liste { display: flex; flex-direction: column; gap: 5px; }
+
+/* Der Balken liegt als Hintergrund hinter der Zeile, nicht daneben: so bleibt
+   der Name lesbar, auch wenn er laenger ist als der Balken. */
+.a-zeile {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: var(--rund-klein);
+  background: var(--karte);
+  border: 1px solid var(--karte-rand);
+  overflow: hidden;
+}
+.a-zeile::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--anteil, 0%);
+  background: color-mix(in srgb, var(--gruen) 20%, transparent);
+}
+.a-zeile[data-vorn]::before { background: color-mix(in srgb, var(--gruen) 40%, transparent); }
+.a-name { position: relative; font-size: 15px; font-weight: 600; }
+.a-zahl {
+  position: relative;
+  font-family: 'DM Mono', monospace;
+  font-size: 15px;
+  color: var(--tinte-leise);
+  font-variant-numeric: tabular-nums;
+}
+.a-zeile[data-vorn] .a-zahl { color: var(--tinte); font-weight: 500; }
+
+/* Bewegung aus, wenn das Geraet danach fragt. */
+@media (prefers-reduced-motion: reduce) {
+  .b-lunte { animation: none; }
+}

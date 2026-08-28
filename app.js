@@ -103,6 +103,19 @@ const Rahmen = (() => {
     if (bereit) zeichnen();
   }
 
+  /* Manche Spiele kennen kein Gewinnen: eine Runde „Wer am ehesten" hat kein
+     Ergebnis, das sich in richtig und falsch teilen ließe. Ihre Partien sollen
+     die Siegquote weder heben noch drücken – sie fallen überall dort heraus,
+     wo gezählt wird, und die Kachel zeigt bei ihnen nur die Zahl der Runden.
+     Ein Spiel meldet das mit ohneSiege: true bei der Anmeldung an. */
+  const siegquote = (liste) => {
+    const zaehlt = liste.filter((p) => {
+      const s = nachId(p.spiel);
+      return !s || !s.ohneSiege;
+    });
+    return prozent(zaehlt.filter((p) => p.gewonnen).length, zaehlt.length);
+  };
+
   /* ------------------------------------------------------------------ Toast */
 
   let toastUhr = null;
@@ -290,8 +303,9 @@ const Rahmen = (() => {
       text.append(el('span', 'kachel-unter', s.unter));
 
       const fuss = el('span', 'kachel-fuss',
-        p.length ? p.length + (p.length === 1 ? ' Partie · ' : ' Partien · ') + prozent(gewonnen, p.length) + ' gewonnen'
-                 : 'Noch nie gespielt');
+        !p.length ? 'Noch nie gespielt'
+          : s.ohneSiege ? p.length + (p.length === 1 ? ' Runde' : ' Runden')
+          : p.length + (p.length === 1 ? ' Partie · ' : ' Partien · ') + prozent(gewonnen, p.length) + ' gewonnen');
 
       karte.append(marke, text, fuss);
       gitter.append(karte);
@@ -311,7 +325,7 @@ const Rahmen = (() => {
     streifen.type = 'button';
     streifen.addEventListener('click', () => gehe({ name: 'statistik' }));
     streifen.append(zahlBlock(String(daten.partien.length), 'Partien'));
-    streifen.append(zahlBlock(prozent(daten.partien.filter((p) => p.gewonnen).length, daten.partien.length), 'gewonnen'));
+    streifen.append(zahlBlock(siegquote(daten.partien), 'gewonnen'));
     streifen.append(zahlBlock(String(serie(daten.partien)), 'Tage Serie'));
     streifen.append(zahlBlock(String(heutePartien.length), 'heute'));
     wurzel.append(streifen);
@@ -397,8 +411,10 @@ const Rahmen = (() => {
     }
 
     const werte = el('div', 'kennzahlen');
-    werte.append(kennzahl(String(p.length), 'Partien'));
-    werte.append(kennzahl(prozent(p.filter((x) => x.gewonnen).length, p.length), 'gewonnen'));
+    werte.append(kennzahl(String(p.length), s.ohneSiege ? 'Runden' : 'Partien'));
+    if (!s.ohneSiege) {
+      werte.append(kennzahl(prozent(p.filter((x) => x.gewonnen).length, p.length), 'gewonnen'));
+    }
     const eigene = s.auswertung ? s.auswertung(p, { dauerText, beste, prozent }) : [];
     for (const k of [...eigene, ...allgemeineKennzahlen(p)]) {
       werte.append(kennzahl(k.wert, k.label));
@@ -464,7 +480,7 @@ const Rahmen = (() => {
     kopf.append(el('h2', 'block-titel', 'Insgesamt'));
     const gitter = el('div', 'kennzahlen');
     gitter.append(kennzahl(String(alle.length), 'Partien'));
-    gitter.append(kennzahl(prozent(alle.filter((p) => p.gewonnen).length, alle.length), 'gewonnen'));
+    gitter.append(kennzahl(siegquote(alle), 'gewonnen'));
     gitter.append(kennzahl(zeitspanne(spielzeit), 'gespielt'));
     gitter.append(kennzahl(String(serie(alle)), serie(alle) === 1 ? 'Tag in Folge' : 'Tage in Folge'));
     kopf.append(gitter);
