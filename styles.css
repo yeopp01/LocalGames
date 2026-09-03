@@ -601,6 +601,9 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .s-feld[data-verwandt='ja'] { background: color-mix(in srgb, var(--tinte-still) 14%, transparent); }
 .s-feld[data-gleich='ja'] { background: color-mix(in srgb, var(--gruen) 22%, transparent); }
 .s-feld[data-fehler='ja'] { color: #fff; background: var(--rost); }
+/* Vom Hinweis aufgedeckt: nachweislich falsch, aber (noch) nicht doppelt.
+   Eigener Rahmen statt der roten Fläche, damit beides unterscheidbar bleibt. */
+.s-feld[data-falsch='ja'] { box-shadow: 0 0 0 3px var(--rost) inset; }
 
 .s-notizen {
   position: absolute;
