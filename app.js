@@ -618,6 +618,8 @@ const Rahmen = (() => {
       if (datei) importieren(datei);
       e.target.value = '';
     });
+    document.getElementById('btn-aktualisieren')
+      .addEventListener('click', aktualisierungSuchen);
     document.getElementById('btn-alles-loeschen').addEventListener('click', () => {
       if (!confirm('Wirklich alles löschen? Statistik und laufende Partien sind dann weg.')) return;
       daten = leer();
@@ -664,7 +666,36 @@ const Rahmen = (() => {
     const n = daten.partien.length;
     document.getElementById('bestand-notiz').textContent =
       n ? n + (n === 1 ? ' Partie' : ' Partien') + ' auf diesem Gerät.' : 'Noch nichts gespeichert.';
+    document.getElementById('fassung-notiz').textContent = fassungText();
     document.getElementById('sheet-einstellungen').hidden = false;
+  }
+
+  /* Die Nummer kommt aus fassung.js, also aus dem Code, der gerade wirklich
+     läuft – nicht vom Service Worker. Der kann schon eine neuere Fassung
+     tragen, während die offene Seite noch die alten Dateien ausführt. */
+  function fassungText() {
+    const f = typeof FASSUNG === 'object' ? FASSUNG : null;
+    return f ? 'Fassung ' + f.nummer + ', Stand ' + f.stand : 'Fassung unbekannt';
+  }
+
+  /* Der Service Worker liefert die App aus dem Lager, bis er sich erneuert.
+     Wer wissen will, ob er auf dem letzten Stand ist, fragt hier nach –
+     und lädt erst neu, wenn der neue Worker tatsächlich übernommen hat. */
+  async function aktualisierungSuchen() {
+    if (!('serviceWorker' in navigator)) { toast('Ohne Offline-Speicher: einfach neu laden.'); return; }
+    const anmeldung = await navigator.serviceWorker.getRegistration();
+    if (!anmeldung) { toast('Ohne Offline-Speicher: einfach neu laden.'); return; }
+
+    toast('Sucht …');
+    const uebernahme = new Promise((fertig) => {
+      navigator.serviceWorker.addEventListener('controllerchange', fertig, { once: true });
+    });
+    try { await anmeldung.update(); } catch (e) { toast('Kein Netz erreichbar.'); return; }
+    if (!anmeldung.installing && !anmeldung.waiting) { toast('Schon auf dem neuesten Stand.'); return; }
+
+    toast('Neue Fassung gefunden, lädt neu …');
+    await uebernahme;
+    location.reload();
   }
 
   return { anmelden, los, toast, el, dauerText, prozent };

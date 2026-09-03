@@ -89,15 +89,22 @@ in `index.html` – die App läuft unverändert weiter.
 | `spiele/begriffe.js` | Wortpaare für Verräter |
 | `spiele/runde.js` | Bausteine für die Spiele zu mehreren |
 | `spiele/*.js` | je Datei ein Spiel |
+| `fassung.js` | Die Fassungsnummer, für Seite und Offline-Speicher |
 | `sw.js` | Der Offline-Speicher |
 | `icons/` | App-Icons |
 | `schriften/` | Die beiden Schriften samt Lizenztexten |
 
 ### Änderungen ausrollen
 
-Wenn an einer Datei etwas geändert wird, in `sw.js` die Zahl in
-`const LAGER = 'localgames-v1'` hochzählen. Sonst zeigt das Handy weiter die
-alte Fassung aus seinem Offline-Speicher.
+Wenn an einer Datei etwas geändert wird, in `fassung.js` die `nummer`
+hochzählen und `stand` setzen. Sonst zeigt das Handy weiter die alte Fassung
+aus seinem Offline-Speicher.
+
+Welche Fassung gerade läuft, steht in den Einstellungen unter „Nach einer
+neuen Fassung suchen". Die Zahl kommt aus dem geladenen Code selbst, nicht
+vom Offline-Speicher – der kann schon weiter sein, während die offene Seite
+noch die alten Dateien ausführt. Derselbe Knopf holt die neue Fassung und
+lädt neu, sobald sie übernommen hat.
 
 ## Ein Spiel dazu bauen
 

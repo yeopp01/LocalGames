@@ -1,10 +1,14 @@
 /* Service Worker: legt die App auf dem Gerät ab, damit sie offline startet.
-   Beim Ausrollen einer neuen Fassung die Zahl in LAGER hochzählen. */
-const LAGER = 'localgames-v17';
+   Die Fassungsnummer steht in fassung.js und gilt für beide Seiten. */
+// Eingebundene Skripte zaehlen bei der Aktualisierungspruefung des Workers
+// mit: aendert sich fassung.js, gilt auch dieser Worker als neu.
+importScripts('./fassung.js');
+const LAGER = 'localgames-v' + FASSUNG.nummer;
 
 const GRUNDBESTAND = [
   './',
   './index.html',
+  './fassung.js',
   './styles.css',
   './app.js',
   './spiele/woerter.js',

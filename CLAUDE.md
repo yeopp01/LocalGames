@@ -15,9 +15,13 @@ Ausprobieren: `npx serve -l 4173 .`
 * `index.html` lädt alle Dateien als klassische `<script>`-Tags in fester
   Reihenfolge (Werkzeuge, `app.js`, dann die Spiele) und ruft `Rahmen.los()`.
   Kein `type="module"`, jede Datei ist ein IIFE mit einem globalen Namen.
-* `sw.js` – Service Worker. **Bei jeder Änderung an ausgelieferten Dateien
-  die Zahl in `LAGER` hochzählen** und neue Dateien in `GRUNDBESTAND`
-  eintragen, sonst bekommen installierte Geräte den alten Stand.
+* `fassung.js` – nur die Fassungsnummer. **Bei jeder Änderung an
+  ausgelieferten Dateien `nummer` hochzählen und `stand` setzen**, sonst
+  bekommen installierte Geräte den alten Stand. Seite und Service Worker
+  lesen dieselbe Datei; die Einstellungen zeigen die Nummer an, mit der die
+  Seite geladen wurde.
+* `sw.js` – Service Worker. Neue Dateien in `GRUNDBESTAND` eintragen; der
+  Lagername kommt aus `fassung.js`.
 
 ## Ein Spiel hinzufügen
 
@@ -27,7 +31,7 @@ Ausprobieren: `npx serve -l 4173 .`
    `{ ende() }` zurück; `auswertung(partien)` liefert Kennzahlen für die
    Statistik.
 2. `<script>` in `index.html` ergänzen.
-3. Pfad in `sw.js` (`GRUNDBESTAND`) ergänzen, `LAGER` hochzählen.
+3. Pfad in `sw.js` (`GRUNDBESTAND`) ergänzen, `fassung.js` hochzählen.
 4. Zeile in der Tabelle im README ergänzen.
 
 Die `sitzung` ist die einzige Verbindung zum Rahmen: `unter`, `werkzeuge`,
