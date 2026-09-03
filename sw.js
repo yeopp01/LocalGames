@@ -1,14 +1,14 @@
 /* Service Worker: legt die App auf dem Gerät ab, damit sie offline startet.
-   Die Fassungsnummer steht in fassung.js und gilt für beide Seiten. */
+   Die Versionsnummer steht in version.js und gilt für beide Seiten. */
 // Eingebundene Skripte zaehlen bei der Aktualisierungspruefung des Workers
-// mit: aendert sich fassung.js, gilt auch dieser Worker als neu.
-importScripts('./fassung.js');
-const LAGER = 'localgames-v' + FASSUNG.nummer;
+// mit: aendert sich version.js, gilt auch dieser Worker als neu.
+importScripts('./version.js');
+const LAGER = 'localgames-v' + VERSION.nummer;
 
 const GRUNDBESTAND = [
   './',
   './index.html',
-  './fassung.js',
+  './version.js',
   './styles.css',
   './app.js',
   './spiele/woerter.js',

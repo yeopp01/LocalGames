@@ -666,16 +666,16 @@ const Rahmen = (() => {
     const n = daten.partien.length;
     document.getElementById('bestand-notiz').textContent =
       n ? n + (n === 1 ? ' Partie' : ' Partien') + ' auf diesem Gerät.' : 'Noch nichts gespeichert.';
-    document.getElementById('fassung-notiz').textContent = fassungText();
+    document.getElementById('version-notiz').textContent = versionText();
     document.getElementById('sheet-einstellungen').hidden = false;
   }
 
-  /* Die Nummer kommt aus fassung.js, also aus dem Code, der gerade wirklich
-     läuft – nicht vom Service Worker. Der kann schon eine neuere Fassung
+  /* Die Nummer kommt aus version.js, also aus dem Code, der gerade wirklich
+     läuft – nicht vom Service Worker. Der kann schon eine neuere Version
      tragen, während die offene Seite noch die alten Dateien ausführt. */
-  function fassungText() {
-    const f = typeof FASSUNG === 'object' ? FASSUNG : null;
-    return f ? 'Fassung ' + f.nummer + ', Stand ' + f.stand : 'Fassung unbekannt';
+  function versionText() {
+    const f = typeof VERSION === 'object' ? VERSION : null;
+    return f ? 'Version ' + f.nummer + ', Stand ' + f.stand : 'Version unbekannt';
   }
 
   /* Läuft hier wirklich der letzte Stand? Der Service Worker liefert die App
@@ -683,8 +683,8 @@ const Rahmen = (() => {
      im Browser allein beantworten. Darum die Nummer frisch vom Server holen
      und mit der vergleichen, die dieser Code trägt. Der Zeitstempel in der
      Adresse sorgt dafür, dass weder Lager noch Browser-Cache antworten. */
-  async function serverFassung() {
-    const antwort = await fetch('fassung.js?zeit=' + Date.now(), { cache: 'no-store' });
+  async function serverVersion() {
+    const antwort = await fetch('version.js?zeit=' + Date.now(), { cache: 'no-store' });
     if (!antwort.ok) throw new Error('nicht erreichbar');
     const treffer = /nummer:\s*(\d+)/.exec(await antwort.text());
     if (!treffer) throw new Error('unverständlich');
@@ -692,20 +692,20 @@ const Rahmen = (() => {
   }
 
   async function aktualisierungSuchen() {
-    const hier = typeof FASSUNG === 'object' ? FASSUNG.nummer : 0;
+    const hier = typeof VERSION === 'object' ? VERSION.nummer : 0;
     toast('Sucht …');
 
     let dort;
     try {
-      dort = await serverFassung();
+      dort = await serverVersion();
     } catch (e) {
-      toast('Kein Netz – geladen ist Fassung ' + hier + '.');
+      toast('Kein Netz – geladen ist Version ' + hier + '.');
       return;
     }
 
-    if (dort <= hier) { toast('Fassung ' + hier + ' ist die neueste.'); return; }
+    if (dort <= hier) { toast('Version ' + hier + ' ist die neueste.'); return; }
 
-    toast('Fassung ' + dort + ' gefunden, lädt …');
+    toast('Version ' + dort + ' gefunden, lädt …');
 
     // Erst den Worker den neuen Bestand holen lassen, dann neu laden: ein
     // sofortiger Reload bekäme sonst wieder die alten Dateien aus dem Lager.

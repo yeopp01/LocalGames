@@ -89,21 +89,21 @@ in `index.html` – die App läuft unverändert weiter.
 | `spiele/begriffe.js` | Wortpaare für Verräter |
 | `spiele/runde.js` | Bausteine für die Spiele zu mehreren |
 | `spiele/*.js` | je Datei ein Spiel |
-| `fassung.js` | Die Fassungsnummer, für Seite und Offline-Speicher |
+| `version.js` | Die Versionsnummer, für Seite und Offline-Speicher |
 | `sw.js` | Der Offline-Speicher |
 | `icons/` | App-Icons |
 | `schriften/` | Die beiden Schriften samt Lizenztexten |
 
 ### Änderungen ausrollen
 
-Wenn an einer Datei etwas geändert wird, in `fassung.js` die `nummer`
-hochzählen und `stand` setzen. Sonst zeigt das Handy weiter die alte Fassung
+Wenn an einer Datei etwas geändert wird, in `version.js` die `nummer`
+hochzählen und `stand` setzen. Sonst zeigt das Handy weiter die alte Version
 aus seinem Offline-Speicher.
 
-Welche Fassung gerade läuft, steht in den Einstellungen unter „Nach einer
-neuen Fassung suchen". Die Zahl kommt aus dem geladenen Code selbst, nicht
+Welche Version gerade läuft, steht in den Einstellungen unter „Nach einer
+neuen Version suchen". Die Zahl kommt aus dem geladenen Code selbst, nicht
 vom Offline-Speicher – der kann schon weiter sein, während die offene Seite
-noch die alten Dateien ausführt. Der Knopf holt `fassung.js` frisch vom
+noch die alten Dateien ausführt. Der Knopf holt `version.js` frisch vom
 Server, vergleicht die Nummern und sagt entweder „ist die neueste" oder holt
 den neuen Bestand und lädt neu, sobald der Worker übernommen hat.
 
