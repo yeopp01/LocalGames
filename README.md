@@ -104,8 +104,13 @@ Welche Version gerade läuft, steht in den Einstellungen unter „Nach einer
 neuen Version suchen". Die Zahl kommt aus dem geladenen Code selbst, nicht
 vom Offline-Speicher – der kann schon weiter sein, während die offene Seite
 noch die alten Dateien ausführt. Der Knopf holt `version.js` frisch vom
-Server, vergleicht die Nummern und sagt entweder „ist die neueste" oder holt
-den neuen Bestand und lädt neu, sobald der Worker übernommen hat.
+Server, vergleicht die Nummern und schreibt das Ergebnis in dieselbe Zeile:
+entweder „ist die neueste" oder er holt den neuen Bestand und lädt neu,
+sobald der Worker übernommen hat.
+
+Der Offline-Speicher ist dabei ein Jahrgang: Ein Lager wird bei der
+Installation gefüllt und danach nicht mehr angefasst, alles kommt aus
+demselben. Sonst träfe nach einem Ausrollen frisches HTML auf alten Code.
 
 ## Ein Spiel dazu bauen
 

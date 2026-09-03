@@ -47,7 +47,11 @@ self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(LAGER)
       // Einzeln, damit eine fehlende Datei nicht die ganze Installation kippt.
-      .then((lager) => Promise.all(GRUNDBESTAND.map((pfad) => lager.add(pfad).catch(() => {}))))
+      // 'reload' geht am Browser-Cache vorbei: sonst landet beim Ausrollen
+      // womoeglich eine alte Datei im neuen Lager und bleibt dort liegen.
+      .then((lager) => Promise.all(GRUNDBESTAND.map(
+        (pfad) => lager.add(new Request(pfad, { cache: 'reload' })).catch(() => {})
+      )))
       .then(() => self.skipWaiting())
   );
 });
@@ -63,37 +67,20 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const anfrage = e.request;
   if (anfrage.method !== 'GET') return;
+  if (new URL(anfrage.url).origin !== self.location.origin) return;
 
-  const url = new URL(anfrage.url);
-
-  if (url.origin !== self.location.origin) return;
-
-  // Seitenaufrufe: erst das Netz für frische Fassungen, sonst das Lager.
-  if (anfrage.mode === 'navigate') {
-    e.respondWith(
-      fetch(anfrage)
-        .then((antwort) => {
-          const kopie = antwort.clone();
-          caches.open(LAGER).then((lager) => lager.put('./index.html', kopie)).catch(() => {});
-          return antwort;
-        })
-        .catch(() => caches.match('./index.html').then((t) => t || caches.match('./')))
-    );
-    return;
-  }
+  /* Ein Lager ist ein Jahrgang und wird nach der Installation nicht mehr
+     angefasst. Alles kommt aus demselben - index.html, app.js, die Spiele.
+     Vorher holte die Seite frisches HTML aus dem Netz, waehrend die Skripte
+     aus dem Lager kamen: Nach einem Ausrollen traf dann neues HTML auf alten
+     Code, und was das eine kannte, gab es im anderen noch nicht. Neues gibt
+     es erst, wenn ein neuer Worker sein eigenes Lager gefuellt hat - dann
+     aber vollstaendig. */
+  const ziel = anfrage.mode === 'navigate' ? './index.html' : anfrage;
 
   e.respondWith(
-    caches.match(anfrage).then((treffer) => {
-      if (treffer) {
-        // Im Hintergrund auffrischen, damit Änderungen nachrücken.
-        fetch(anfrage).then((antwort) => {
-          if (antwort && antwort.ok) {
-            caches.open(LAGER).then((lager) => lager.put(anfrage, antwort)).catch(() => {});
-          }
-        }).catch(() => {});
-        return treffer;
-      }
-      return fetch(anfrage);
-    })
+    caches.match(ziel)
+      .then((treffer) => treffer || fetch(anfrage))
+      .catch(() => caches.match('./'))
   );
 });

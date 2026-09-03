@@ -618,8 +618,8 @@ const Rahmen = (() => {
       if (datei) importieren(datei);
       e.target.value = '';
     });
-    document.getElementById('btn-aktualisieren')
-      .addEventListener('click', aktualisierungSuchen);
+    const knopfAktualisieren = document.getElementById('btn-aktualisieren');
+    if (knopfAktualisieren) knopfAktualisieren.addEventListener('click', aktualisierungSuchen);
     document.getElementById('btn-alles-loeschen').addEventListener('click', () => {
       if (!confirm('Wirklich alles löschen? Statistik und laufende Partien sind dann weg.')) return;
       daten = leer();
@@ -662,12 +662,22 @@ const Rahmen = (() => {
     zeichnen();
   }
 
+  /* Das Blatt muss sich auch dann öffnen, wenn eine Zeile fehlt: Nach einem
+     Ausrollen kann index.html schon neu und app.js noch aus dem Lager sein –
+     dann sucht der alte Code eine Id, die es nicht mehr gibt. Ohne diese
+     Vorsicht bliebe das ganze Menü für eine Ladung unerreichbar. */
+  function fuellen(id, text) {
+    const knoten = document.getElementById(id);
+    if (knoten) knoten.textContent = text;
+  }
+
   function einstellungenZeigen() {
     const n = daten.partien.length;
-    document.getElementById('bestand-notiz').textContent =
-      n ? n + (n === 1 ? ' Partie' : ' Partien') + ' auf diesem Gerät.' : 'Noch nichts gespeichert.';
-    document.getElementById('version-notiz').textContent = versionText();
-    document.getElementById('sheet-einstellungen').hidden = false;
+    fuellen('bestand-notiz',
+      n ? n + (n === 1 ? ' Partie' : ' Partien') + ' auf diesem Gerät.' : 'Noch nichts gespeichert.');
+    fuellen('version-notiz', versionText());
+    const blatt = document.getElementById('sheet-einstellungen');
+    if (blatt) blatt.hidden = false;
   }
 
   /* Die Nummer kommt aus version.js, also aus dem Code, der gerade wirklich
@@ -692,20 +702,35 @@ const Rahmen = (() => {
   }
 
   async function aktualisierungSuchen() {
+    const knopf = document.getElementById('btn-aktualisieren') || { disabled: false };
     const hier = typeof VERSION === 'object' ? VERSION.nummer : 0;
-    toast('Sucht …');
+    // Das Ergebnis steht in der Zeile unter dem Knopf und nicht nur im Toast:
+    // der liegt unten am Rand und ist beim Tippen leicht zu übersehen.
+    const sagen = (text) => fuellen('version-notiz', text);
+
+    if (knopf.disabled) return;
+    knopf.disabled = true;
+    sagen('Sucht …');
 
     let dort;
     try {
       dort = await serverVersion();
     } catch (e) {
-      toast('Kein Netz – geladen ist Version ' + hier + '.');
+      knopf.disabled = false;
+      sagen(versionText());
+      toast('Nicht erreichbar – geladen ist Version ' + hier + '.');
       return;
     }
 
-    if (dort <= hier) { toast('Version ' + hier + ' ist die neueste.'); return; }
+    if (dort <= hier) {
+      knopf.disabled = false;
+      sagen('Version ' + hier + ' ist die neueste.');
+      toast('Schon auf dem neuesten Stand.');
+      return;
+    }
 
-    toast('Version ' + dort + ' gefunden, lädt …');
+    sagen('Version ' + dort + ' gefunden, lädt …');
+    toast('Version ' + dort + ' wird geladen.');
 
     // Erst den Worker den neuen Bestand holen lassen, dann neu laden: ein
     // sofortiger Reload bekäme sonst wieder die alten Dateien aus dem Lager.
