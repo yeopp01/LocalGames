@@ -678,23 +678,49 @@ const Rahmen = (() => {
     return f ? 'Fassung ' + f.nummer + ', Stand ' + f.stand : 'Fassung unbekannt';
   }
 
-  /* Der Service Worker liefert die App aus dem Lager, bis er sich erneuert.
-     Wer wissen will, ob er auf dem letzten Stand ist, fragt hier nach –
-     und lädt erst neu, wenn der neue Worker tatsächlich übernommen hat. */
+  /* Läuft hier wirklich der letzte Stand? Der Service Worker liefert die App
+     aus seinem Lager, bis er sich erneuert – die Frage lässt sich also nicht
+     im Browser allein beantworten. Darum die Nummer frisch vom Server holen
+     und mit der vergleichen, die dieser Code trägt. Der Zeitstempel in der
+     Adresse sorgt dafür, dass weder Lager noch Browser-Cache antworten. */
+  async function serverFassung() {
+    const antwort = await fetch('fassung.js?zeit=' + Date.now(), { cache: 'no-store' });
+    if (!antwort.ok) throw new Error('nicht erreichbar');
+    const treffer = /nummer:\s*(\d+)/.exec(await antwort.text());
+    if (!treffer) throw new Error('unverständlich');
+    return Number(treffer[1]);
+  }
+
   async function aktualisierungSuchen() {
-    if (!('serviceWorker' in navigator)) { toast('Ohne Offline-Speicher: einfach neu laden.'); return; }
-    const anmeldung = await navigator.serviceWorker.getRegistration();
-    if (!anmeldung) { toast('Ohne Offline-Speicher: einfach neu laden.'); return; }
-
+    const hier = typeof FASSUNG === 'object' ? FASSUNG.nummer : 0;
     toast('Sucht …');
-    const uebernahme = new Promise((fertig) => {
-      navigator.serviceWorker.addEventListener('controllerchange', fertig, { once: true });
-    });
-    try { await anmeldung.update(); } catch (e) { toast('Kein Netz erreichbar.'); return; }
-    if (!anmeldung.installing && !anmeldung.waiting) { toast('Schon auf dem neuesten Stand.'); return; }
 
-    toast('Neue Fassung gefunden, lädt neu …');
-    await uebernahme;
+    let dort;
+    try {
+      dort = await serverFassung();
+    } catch (e) {
+      toast('Kein Netz – geladen ist Fassung ' + hier + '.');
+      return;
+    }
+
+    if (dort <= hier) { toast('Fassung ' + hier + ' ist die neueste.'); return; }
+
+    toast('Fassung ' + dort + ' gefunden, lädt …');
+
+    // Erst den Worker den neuen Bestand holen lassen, dann neu laden: ein
+    // sofortiger Reload bekäme sonst wieder die alten Dateien aus dem Lager.
+    if ('serviceWorker' in navigator) {
+      const anmeldung = await navigator.serviceWorker.getRegistration();
+      if (anmeldung) {
+        const uebernahme = new Promise((fertig) => {
+          navigator.serviceWorker.addEventListener('controllerchange', fertig, { once: true });
+        });
+        try { await anmeldung.update(); } catch (e) { /* dann eben ohne */ }
+        // Nicht ewig warten: klemmt die Übernahme, wird trotzdem neu geladen –
+        // spätestens der nächste Start bekommt den neuen Stand.
+        await Promise.race([uebernahme, new Promise((f) => setTimeout(f, 6000))]);
+      }
+    }
     location.reload();
   }
 

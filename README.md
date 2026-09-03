@@ -103,8 +103,9 @@ aus seinem Offline-Speicher.
 Welche Fassung gerade läuft, steht in den Einstellungen unter „Nach einer
 neuen Fassung suchen". Die Zahl kommt aus dem geladenen Code selbst, nicht
 vom Offline-Speicher – der kann schon weiter sein, während die offene Seite
-noch die alten Dateien ausführt. Derselbe Knopf holt die neue Fassung und
-lädt neu, sobald sie übernommen hat.
+noch die alten Dateien ausführt. Der Knopf holt `fassung.js` frisch vom
+Server, vergleicht die Nummern und sagt entweder „ist die neueste" oder holt
+den neuen Bestand und lädt neu, sobald der Worker übernommen hat.
 
 ## Ein Spiel dazu bauen
 
