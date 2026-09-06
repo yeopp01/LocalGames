@@ -63,13 +63,18 @@
        Die Viertel waren eine Weile gruen. Das war doppelt falsch: Gruen
        gehoert auf diesem Blatt dem Laub, und eine gruen-goldene Scheibe sieht
        neben einer gold-bernsteinfarbenen Eichel nach derselben Familie aus.
-       Rot trennt sie von beidem - und vom Herz trennt sie ihre Form. */
+       Rot trennt sie von beidem - und vom Herz trennt sie ihre Form.
+
+       Die Viertel liegen dabei innen und nicht am Rand: reichten sie bis
+       aussen, waere die halbe Schelle rot und das Zeichen laese sich auf
+       Armlaenge als roter Fleck. So bleibt ein goldener Ring stehen, die
+       Schelle bleibt golden, und rot ist noch etwa ein Viertel der Flaeche. */
     '<circle class="sk-gold" cx="12" cy="12" r="9.2"/>'
-      + '<path class="sk-rot" d="M2.8 12A9.2 9.2 0 0 1 12 2.8V12z"/>'
-      + '<path class="sk-rot" d="M21.2 12A9.2 9.2 0 0 1 12 21.2V12z"/>'
-      + '<circle class="sk-punkt" cx="12" cy="12" r="1.5"/>'
-      + '<circle class="sk-punkt" cx="16.7" cy="7.3" r="1.5"/>'
-      + '<circle class="sk-punkt" cx="7.3" cy="16.7" r="1.5"/>',
+      + '<path class="sk-rot" d="M5.4 12A6.6 6.6 0 0 1 12 5.4V12z"/>'
+      + '<path class="sk-rot" d="M18.6 12A6.6 6.6 0 0 1 12 18.6V12z"/>'
+      + '<circle class="sk-punkt" cx="12" cy="12" r="1.4"/>'
+      + '<circle class="sk-punkt" cx="15.6" cy="8.4" r="1.4"/>'
+      + '<circle class="sk-punkt" cx="8.4" cy="15.6" r="1.4"/>',
   ];
 
   const sauKarteVon = (sp) => (sp && sp.art === 'sau' ? K.karte(sp.farbe, 0) : -1);
