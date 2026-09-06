@@ -1803,7 +1803,7 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
   place-items: center;
-  min-height: 176px;
+  min-height: 214px;
   position: relative;
 }
 .sk-karte--tisch[data-platz="unten"] { grid-area: 3 / 2; }
@@ -1828,10 +1828,10 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .sk-karte {
   position: relative;
   display: block;
-  width: 56px;
-  height: 80px;
+  width: 78px;
+  height: 112px;
   padding: 0;
-  border-radius: 8px;
+  border-radius: 9px;
   background: var(--sk-papier);
   border: 1px solid var(--sk-kante);
   box-shadow: 0 1px 2px rgba(20, 14, 8, .3), 0 4px 10px rgba(20, 14, 8, .16);
@@ -1849,8 +1849,8 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
    ueberhaupt nicht auf der Karte. */
 .sk-ecke {
   position: absolute;
-  top: 3px;
-  left: 4px;
+  top: 5px;
+  left: 6px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1860,28 +1860,30 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .sk-ecke--unten {
   top: auto;
   left: auto;
-  right: 4px;
-  bottom: 3px;
+  right: 6px;
+  bottom: 5px;
   transform: rotate(180deg);
 }
 .sk-rang {
   font-family: 'DM Mono', monospace;
-  font-size: 14px;
+  font-size: 21px;
   font-weight: 500;
-  letter-spacing: -.06em;
-  padding: 0 1px;
-  border-radius: 3px;
+  letter-spacing: -.07em;
 }
-/* Trumpf traegt seinen Wert als ausgefuellte Marke. Beim Sauspiel sind
-   vierzehn der zweiunddreissig Karten Trumpf, quer durch drei Farben - das
-   ist genau die Sache, die Anfaenger dauernd nachzaehlen muessen. */
-.sk-karte[data-trumpf="ja"] .sk-rang {
+/* Trumpf bekommt einen Punkt neben den Eckindex, mehr nicht. Der Wert
+   bleibt ein Wert - eine ausgefuellte Marke drumherum frisst bei dieser
+   Groesse genau den Buchstaben auf, den sie hervorheben soll. */
+.sk-trumpfpunkt {
+  position: absolute;
+  top: 8px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
   background: currentColor;
-  color: var(--sk-papier);
-  padding: 1px 3px;
 }
 .sk-minipip { display: block; }
-.sk-minipip svg { width: 9px; height: 9px; display: block; }
+.sk-minipip svg { width: 14px; height: 14px; display: block; }
 
 .sk-bild {
   position: absolute;
@@ -1889,7 +1891,7 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   display: grid;
   place-items: center;
 }
-.sk-bild svg { width: 61%; display: block; }
+.sk-bild svg { width: 58%; display: block; }
 
 .sk-karte .sk-voll,
 .sk-karte .sk-aus { stroke: none; }
@@ -1904,7 +1906,7 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   stroke-linecap: round;
 }
 
-.sk-karte--tisch { width: 52px; height: 74px; }
+.sk-karte--tisch { width: 62px; height: 89px; }
 /* Wer den Stich haelt, steht ein Stueck vor - dafuer braucht es keine Farbe,
    die mit den vier Kartenfarben um Aufmerksamkeit streitet. */
 .sk-karte[data-sticht="ja"] {
@@ -1919,11 +1921,17 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   justify-content: center;
   align-items: flex-end;
   width: 100%;
-  min-height: 98px;
-  padding: 10px 0 2px;
+  min-height: 130px;
+  padding: 12px 0 2px;
 }
-.sk-hand[data-eng="ja"] .sk-karte--hand { margin-right: -19px; }
-.sk-hand[data-eng="ja"] .sk-karte--hand:last-child { margin-right: 0; }
+.sk-hand[data-eng="viel"] .sk-karte--hand { margin-right: -46px; }
+.sk-hand[data-eng="mittel"] .sk-karte--hand { margin-right: -30px; }
+.sk-hand[data-eng="wenig"] .sk-karte--hand { margin-right: -14px; }
+.sk-hand .sk-karte--hand:last-child { margin-right: 0; }
+/* Eine Luecke zwischen Trumpf und Farbe - genau die, die man auch mit
+   echten Karten in der Hand laesst. Sie sagt mehr als jede Marke auf der
+   Karte und kostet keinen Millimeter Kartenflaeche. */
+.sk-karte--hand[data-gruppe="farbe"] { margin-left: 15px; }
 .sk-karte--hand {
   transition: transform .13s ease, box-shadow .13s ease;
   transform-origin: 50% 130%;
@@ -1948,9 +1956,9 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   box-shadow: 0 0 0 2px var(--gruen), 0 10px 20px rgba(20, 14, 8, .34);
 }
 
-.sk-karte--mini { width: 34px; height: 48px; border-radius: 5px; box-shadow: 0 1px 2px rgba(20, 14, 8, .25); }
+.sk-karte--mini { width: 40px; height: 57px; border-radius: 5px; box-shadow: 0 1px 2px rgba(20, 14, 8, .25); }
 .sk-karte--mini .sk-ecke--unten { display: none; }
-.sk-karte--mini .sk-rang { font-size: 10px; }
+.sk-karte--mini .sk-rang { font-size: 13px; }
 .sk-karte--mini .sk-minipip { display: none; }
 .sk-karte--mini .sk-bild svg { width: 70%; }
 .sk-karte--mini[data-sticht="ja"] { transform: none; box-shadow: 0 0 0 2px var(--gruen); }
@@ -2028,11 +2036,13 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 
 .zeile[data-gewaehlt="ja"] { border-color: var(--gruen); }
 
-@media (max-width: 370px) {
-  .sk-karte { width: 50px; height: 72px; }
-  .sk-karte--tisch { width: 46px; height: 66px; }
-  .sk-hand[data-eng="ja"] .sk-karte--hand { margin-right: -18px; }
-  .sk-rang { font-size: 13px; }
+@media (max-width: 380px) {
+  .sk-karte { width: 70px; height: 100px; }
+  .sk-karte--tisch { width: 56px; height: 80px; }
+  .sk-hand[data-eng="viel"] .sk-karte--hand { margin-right: -42px; }
+  .sk-hand[data-eng="mittel"] .sk-karte--hand { margin-right: -28px; }
+  .sk-tisch { grid-template-columns: 56px 1fr 56px; }
+  .sk-rang { font-size: 19px; }
 }
 
 

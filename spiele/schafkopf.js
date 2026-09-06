@@ -645,20 +645,22 @@
       const b = el('button', 'sk-karte ' + (klasse || ''));
       b.type = 'button';
       b.dataset.farbe = String(K.farbe(k));
-      /* Trumpf bekommt seinen Wert als ausgefüllte Marke statt als blossen
-         Buchstaben. Beim Sauspiel sind das vierzehn der zweiunddreißig Karten,
-         quer durch drei Farben – ohne Marke muss man sie sich merken. Vor der
-         Ansage steht die Spielart noch nicht fest, dann bleibt die Marke weg
-         statt zu raten. */
-      if (stand.spielart && (stand.phase === 'spiel' || stand.phase === 'ende')) {
-        if (ord().trumpf[k]) b.dataset.trumpf = 'ja';
-      }
+      /* Trumpf bekommt einen Punkt neben den Eckindex, mehr nicht. Beim
+         Sauspiel sind vierzehn der zweiunddreißig Karten Trumpf, quer durch
+         drei Farben – ohne Marke muss man sie sich merken. Vor der Ansage
+         steht die Spielart noch nicht fest, dann bleibt der Punkt weg statt
+         zu raten. */
+      const trumpf = !!stand.spielart
+        && (stand.phase === 'spiel' || stand.phase === 'ende')
+        && ord().trumpf[k] === 1;
+      if (trumpf) b.dataset.trumpf = 'ja';
       b.setAttribute('aria-label', K.kartenName(k)
-        + (b.dataset.trumpf ? ', Trumpf' : '') + ', ' + K.augen(k) + ' Augen');
+        + (trumpf ? ', Trumpf' : '') + ', ' + K.augen(k) + ' Augen');
       const bild = el('span', 'sk-bild');
       bild.innerHTML = '<svg viewBox="0 0 34 46" aria-hidden="true" focusable="false">'
         + kartenBild(K.farbe(k), K.wert(k)) + '</svg>';
       b.append(bild, ecke(k, false), ecke(k, true));
+      if (trumpf) b.append(el('span', 'sk-trumpfpunkt'));
       return b;
     }
 
@@ -764,9 +766,22 @@
       const hand = K.sortieren(stand.haende[ICH], stand.spielart || { art: 'sau', farbe: 0 });
       const erlaubt = stand.phase === 'spiel' && stand.amZug === ICH && !stand.stichFertig
         ? erlaubteJetzt(ICH) : null;
-      handKasten.dataset.eng = hand.length > 6 ? 'ja' : 'nein';
-      for (const k of hand) {
+      /* Wie stark der Faecher ueberlappt, haengt an der Kartenzahl: acht
+         Karten muessen sich schieben, drei duerfen nebeneinanderliegen.
+         Am Ende steht immer ungefaehr dieselbe Gesamtbreite - sonst
+         laeuft die Hand mit sechs Karten aus dem schmalen Bild heraus. */
+      handKasten.dataset.eng = hand.length > 6 ? 'viel'
+        : hand.length > 4 ? 'mittel'
+          : hand.length > 3 ? 'wenig' : 'nein';
+      /* Die Lücke zwischen Trumpf und Farbe – dieselbe, die man mit echten
+         Karten in der Hand lässt. Sie sagt mehr als jede Marke auf der Karte
+         und kostet keinen Millimeter Kartenfläche. */
+      const trumpfEnde = stand.spielart && stand.phase === 'spiel'
+        ? hand.findIndex((k) => !ord().trumpf[k]) : -1;
+      for (let i = 0; i < hand.length; i += 1) {
+        const k = hand[i];
         const b = karteBauen(k, 'sk-karte--hand');
+        if (i === trumpfEnde && i > 0) b.dataset.gruppe = 'farbe';
         if (erlaubt && erlaubt.indexOf(k) < 0) b.dataset.gesperrt = 'ja';
         if (tipp && tipp.karte === k) b.dataset.tipp = 'ja';
         b.addEventListener('click', () => deineKarte(k));
