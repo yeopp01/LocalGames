@@ -1967,6 +1967,7 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   font-size: 14px;
 }
 .sk-ratzeile[data-gut="ja"] { border-color: var(--gruen); }
+.sk-ratzeile[data-wahl="ja"] { border-color: var(--gruen); background: color-mix(in srgb, var(--gruen) 12%, var(--karte)); font-weight: 700; }
 .sk-ratzahl { font-family: 'DM Mono', monospace; color: var(--tinte-leise); font-variant-numeric: tabular-nums; }
 
 /* Die Abrechnung am Ende. */

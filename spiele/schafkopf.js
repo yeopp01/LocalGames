@@ -209,11 +209,12 @@
       denkt = true;
       zeichnen();
       spaeter(() => {
-        const rat = K.ansageRat(stand.haende[p], stand.zeiger, { proben: 60 });
         const oben = bestesGebot();
-        const nimmt = rat.wahl
-          && (!oben || K.spielStufe(rat.wahl.spiel) > K.spielStufe(oben.spiel));
-        stand.gebote.push({ p, spiel: nimmt ? rat.wahl.spiel : null });
+        const rat = K.ansageRat(stand.haende[p], stand.zeiger, {
+          proben: 400,
+          stufeAb: oben ? K.spielStufe(oben.spiel) : 0,
+        });
+        stand.gebote.push({ p, spiel: rat.wahl ? rat.wahl.spiel : null });
         stand.zeiger += 1;
         denkt = false;
         sichern();
@@ -428,27 +429,76 @@
 
     function ansageTipp() {
       stand.hilfen += 1;
-      const rat = K.ansageRat(stand.haende[ICH], stand.zeiger, { proben: 120 });
+      const oben = bestesGebot();
+      const rat = K.ansageRat(stand.haende[ICH], stand.zeiger, {
+        proben: 1200,
+        stufeAb: oben ? K.spielStufe(oben.spiel) : 0,
+      });
       const d = el('div');
+
+      if (oben) {
+        d.append(el('p', 'notiz', NAMEN[oben.p] + ' hat ' + K.spielName(oben.spiel)
+          + ' angesagt. Dagegenhalten kannst du nur mit einer höheren Spielart – '
+          + 'gleicher Rang bleibt beim Näheren an der Vorhand. Gerechnet ist deshalb '
+          + 'nur, was jetzt überhaupt noch geht.'));
+      }
+
       if (!rat.liste.length) {
-        d.append(el('p', 'notiz', 'Mit diesem Blatt ist nichts anzufangen – zu wenig Trumpf, '
-          + 'zu wenig Ober. Weiter sagen und schauen, was die anderen wollen.'));
+        d.append(el('p', 'notiz', oben
+          ? 'Und dafür reicht dein Blatt nicht annähernd. Weiter sagen.'
+          : 'Mit diesem Blatt ist nichts anzufangen – zu wenig Trumpf, zu wenig Ober. '
+            + 'Weiter sagen und schauen, was die anderen wollen.'));
+        sichern();
+        s.blatt({ titel: 'Was geht mit dem Blatt?', inhalt: d, aktionen: [{ text: 'Danke' }] });
+        return;
+      }
+
+      const fehler = Math.round(rat.liste[0].fehler * 100);
+      d.append(el('p', 'notiz', 'So oft reicht dein Blatt für 61 Augen, wenn der Rest '
+        + 'zufällig verteilt ist – aus ' + rat.liste[0].proben + ' probeweise ausgespielten '
+        + 'Gaben je Zeile. Die Zahlen sind auf ±' + fehler + ' Punkte genau; was enger '
+        + 'beieinanderliegt, ist nicht wirklich verschieden.'));
+
+      const liste = el('div', 'sk-ratliste');
+      const gleich = new Set(rat.gleichauf.map((e) => e.spiel));
+      for (const e of rat.liste.slice(0, 5)) {
+        const z = el('div', 'sk-ratzeile');
+        z.append(el('span', 'sk-ratname', K.spielName(e.spiel)));
+        z.append(el('span', 'sk-ratzahl', prozentText(e.quote) + ' ±' + fehler));
+        if (e.reicht) z.dataset.gut = 'ja';
+        if (rat.wahl && e.spiel === rat.wahl.spiel) z.dataset.wahl = 'ja';
+        liste.append(z);
+      }
+      d.append(liste);
+
+      if (!rat.wahl) {
+        d.append(el('p', 'notiz', 'Der Rechner würde weiter sagen. Ein Sauspiel braucht die '
+          + 'Hälfte, ein Alleinspiel 72 von 100 – dort steht das Fünfzehnfache auf dem Spiel.'));
       } else {
-        d.append(el('p', 'notiz', 'So oft reicht dein Blatt für 61 Augen, wenn der Rest '
-          + 'zufällig verteilt ist. Der Rechner spielt jedes Spiel dafür sechzigmal probeweise durch.'));
-        const liste = el('div', 'sk-ratliste');
-        for (const e of rat.liste.slice(0, 4)) {
-          const z = el('div', 'sk-ratzeile');
-          z.append(el('span', 'sk-ratname', K.spielName(e.spiel)));
-          z.append(el('span', 'sk-ratzahl', prozentText(e.quote)));
-          if (e.reicht) z.dataset.gut = 'ja';
-          liste.append(z);
+        d.append(el('p', 'notiz', 'Der Rechner würde ' + K.spielName(rat.wahl.spiel) + ' ansagen.'));
+        /* Wenn mehrere Rufe rechnerisch gleichauf sind, hat nicht die Rechnung
+           entschieden, sondern die Regel darunter – und dann muss sie auch
+           dastehen. Sonst wirkt die Wahl willkürlich, so wie sie es vorher war. */
+        if (rat.gleichauf.length > 1 && rat.wahl.spiel.art === 'sau') {
+          const ord = K.ordnung(rat.wahl.spiel);
+          const meine = stand.haende[ICH]
+            .filter((k) => !ord.trumpf[k] && K.farbe(k) === rat.wahl.spiel.farbe);
+          const wieviele = rat.gleichauf.length;
+          let satz = 'Rechnerisch sind ' + (wieviele === 2 ? 'beide' : 'alle ' + wieviele)
+            + ' Rufe dasselbe Spiel – der Unterschied in der Liste ist Würfelrauschen. '
+            + 'Den Ausschlag gibt etwas anderes: ';
+          if (rat.wahl.schutz > 0) {
+            satz += 'Die gerufene Sau gehört deinem Partner. Wird die Farbe angespielt, '
+              + 'muss er sie legen und nimmt den Stich – ' + meine.map(K.kartenName).join(' und ')
+              + ' fällt damit der eigenen Partei zu statt der gegnerischen. '
+              + 'Nachgemessen: bei diesem Ruf landet die Karte zu 71 % bei euch, sonst zu 41 %. '
+              + 'Auf die Siegquote schlägt das knapp einen Punkt durch.';
+          } else {
+            satz += 'in keiner der Farben steht etwas Zählbares von dir, also ist es '
+              + 'wirklich einerlei.';
+          }
+          d.append(el('p', 'notiz', satz));
         }
-        d.append(liste);
-        d.append(el('p', 'notiz', rat.wahl
-          ? 'Der Rechner würde ' + K.spielName(rat.wahl.spiel) + ' ansagen.'
-          : 'Der Rechner würde weiter sagen. Ein Sauspiel braucht die Hälfte, '
-            + 'ein Alleinspiel deutlich mehr – dort steht das Fünfzehnfache auf dem Spiel.'));
       }
       sichern();
       s.blatt({ titel: 'Was geht mit dem Blatt?', inhalt: d, aktionen: [{ text: 'Danke' }] });

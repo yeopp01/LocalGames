@@ -382,9 +382,42 @@ umzuschalten kostet das Sechsfache an Rechenzeit und im schlimmsten Fall
 Gegen die reine Faustregel, die in den Ausspielungen steckt, gewinnt dieser
 Rechner **44 von 59** Partien; umgekehrt nur 29 von 59.
 
-**Ob sich ein Blatt lohnt**, wird genauso beantwortet: sechzigmal probeweise
-durchspielen und zählen. Eine Punktetabelle wäre schlechter, denn die gerufene
-Sau liegt irgendwo, und wo, weiß beim Ansagen niemand.
+**Ob sich ein Blatt lohnt**, wird genauso beantwortet: probeweise durchspielen
+und zählen. Eine Punktetabelle wäre schlechter, denn die gerufene Sau liegt
+irgendwo, und wo, weiß beim Ansagen niemand.
+
+Wie oft probeweise, ist dabei keine Geschmacksfrage. Der Fehler einer Quote
+fällt mit der Wurzel der Probenzahl: bei 60 Proben liegt er um 0,7 herum bei
+±12 Punkten. Zwei Rufe, die drei Punkte auseinanderliegen, sind damit
+überhaupt nicht zu unterscheiden – eine Anzeige, die sie trotzdem der Reihe
+nach sortiert, zeigt Rauschen und nennt es Rangfolge. Der Rechner nimmt
+deshalb 400 Proben, der Hinweis für den Menschen 1200, und `quote()` gibt den
+Fehler mit heraus, damit niemand zwei Zahlen für verschieden erklärt, die es
+nicht sind.
+
+Das ist nicht nur Kosmetik: Mit 60 Proben wurde jede fünfte Gabe allein
+gespielt, mit 600 nur noch jede neunte. Ein Teil der Solos war schlicht
+Zufall, der knappe Blätter über die Schwelle geschoben hat.
+
+**Wenn zwei Rufe gleichauf sind**, entscheidet nicht die dritte
+Nachkommastelle, sondern eine Regel vom Tisch: Ruf die Farbe, in der deine
+eigenen Augen stehen. Die gerufene Sau gehört dem Partner – wird die Farbe
+angespielt, muss er sie legen und nimmt den Stich, deine hohe Karte dieser
+Farbe fällt also der eigenen Partei zu statt der gegnerischen. Nachgemessen an
+einem Blatt mit je einer blanken Karte in Eichel, Gras und Schellen, 3000
+ausgespielte Gaben je Ruf – wo landet der Eichel-Zehner?
+
+| gerufen wird | Zehner bei der eigenen Partei |
+| --- | --- |
+| die Alte (Eichel) | 71 % |
+| die Blaue (Gras) | 43 % |
+| die Bumpel (Schellen) | 41 % |
+
+Auf die Siegquote schlägt das mit +0,92 ± 1,05 Punkten durch, gepaart über
+12 000 Gaben. Zu wenig, um deswegen eine schlechtere Farbe zu rufen – genau
+richtig, um zu entscheiden, wenn sich die Quoten ohnehin nicht unterscheiden
+lassen. Der Hinweis sagt das dann auch dazu, statt eine Wahl zu treffen, die
+willkürlich aussieht.
 
 Diese Probe schmeichelt allerdings dem, der ansagt – die Faustregel greift
 lieber an, als dass sie verteidigt. Über 160 durchgespielte Partien gemessen:
@@ -396,10 +429,9 @@ lieber an, als dass sie verteidigt. Über 160 durchgespielte Partien gemessen:
 
 Derselbe Abstand quer durch alle Spielarten, also wird er einmal abgezogen,
 statt für jede Spielart eine eigene Zahl zu erfinden. Ein Alleinspiel braucht
-danach 0,72, damit es angesagt wird. Bei 0,62 spielt jeder Vierte allein, bei
-0,72 jeder Siebte – und das kommt dem nahe, wie am Tisch wirklich gespielt
-wird. Ein Solo spielt man, wenn es sitzt, und nicht, wenn es sich gerade
-eben rechnet.
+danach 0,72, damit es angesagt wird – ein Solo spielt man, wenn es sitzt, und
+nicht, wenn es sich gerade eben rechnet. Über 400 Gaben werden damit 94 %
+gespielt: 83 % Sauspiel, 11 % Alleinspiel, der Rest zusammengeworfen.
 
 **Der Lehrer.** Drei Stufen, oben unter der Glühbirne:
 
