@@ -42,13 +42,23 @@
      zwanzig Pixeln hält sie die Form zusammen, und das gedruckte Blatt macht
      es genauso. */
   const ZEICHEN = [
-    /* Eichel: Stiel, goldene Kappe mit rotem Band, bernsteinfarbene Frucht.
-       Gruen war sie lange - dasselbe Gruen wie das Laub, und damit war die
-       Farbe als Unterscheidung wertlos. */
-    '<path class="sk-dunkel" d="M11.2 1.4h1.6v2.4h-1.6z"/>'
-      + '<path class="sk-gold" d="M5.1 9.2C5.1 6 8.2 3.5 12 3.5s6.9 2.5 6.9 5.7z"/>'
-      + '<rect class="sk-rot" x="6.3" y="6.5" width="11.4" height="1.8"/>'
-      + '<path class="sk-frucht" d="M6.2 10.3h11.6c0 6.7-2.4 11.2-5.8 11.2s-5.8-4.5-5.8-11.2z"/>',
+    /* Eichel: dunkle Frucht unter goldener Kappe.
+
+       Eichel und Schelle waren sich lange zu aehnlich, und die Ursache lag
+       nicht im Ton, sondern im Aufbau: beide golden, beide rund, beide mit
+       Rot darin. Wer zwei Zeichen nur in Feinheiten trennt, trennt sie bei
+       sechzehn Pixeln gar nicht.
+
+       Das gedruckte Blatt macht es ueber die Helligkeit - Eicheln dunkel,
+       Schellen leuchtend gelb. Helligkeit ueberlebt das Verkleinern, weil
+       davon auch dann noch etwas da ist, wenn von der Form nichts mehr
+       uebrig ist. Dazu die Silhouette: die Eichel ist hoch und traegt einen
+       breiten Deckel, die Schelle ist ein Kreis. Das rote Band auf der Kappe
+       ist weg - bei dieser Groesse war es der dritte Ton auf einem Zeichen,
+       das mit zweien auskommt. */
+    '<path class="sk-dunkel" d="M11.1 .8h1.8v2.8h-1.8z"/>'
+      + '<path class="sk-gold" d="M3.6 9.2C3.6 5.9 7.4 3.4 12 3.4s8.4 2.5 8.4 5.8z"/>'
+      + '<path class="sk-frucht" d="M6.4 10h11.2c0 7.2-2.5 12-5.6 12S6.4 17.2 6.4 10z"/>',
     /* Gras: das Laub, ganz gruen und aus einem Stueck. Eine goldene Rippe lag
        eine Weile darin - gedacht als Blattader, gewirkt als gelber Strich, der
        das Zeichen in zwei Haelften schneidet. Bei neun Zeichen auf einer Karte

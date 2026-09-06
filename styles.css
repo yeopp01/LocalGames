@@ -1718,15 +1718,15 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
      aus demselben Grund fast schwarz und nicht mehr braun. */
   --sk-gruen: #1E7A3C;                   /* Laub - und nur das Laub */
   --sk-gold: #F2B705;
-  /* Die Eichelfrucht war lange dasselbe Gruen wie das Laub. Auf dem
-     gedruckten Blatt geht das, weil dort die Form gross und gestochen
-     ist; auf einem Zeichen von zwanzig Pixeln sind zwei gruene Farben
-     unter vieren eine zu viel. Die Frucht geht deshalb ins Bernstein -
-     dunkler als die Kappe darueber, damit die Eichel eine Eichel bleibt
-     und nicht zur goldenen Kugel wird. */
-  --sk-frucht: #E08A12;
+  /* Die Eichelfrucht ist dunkel, und das ist keine Geschmacksfrage: Eichel
+     und Schelle waren beide golden und beide rund, und damit bei sechzehn
+     Pixeln dasselbe Zeichen. Auf dem gedruckten Blatt sind die Eicheln dunkel
+     und die Schellen leuchtend gelb - ein Helligkeitsunterschied haelt das
+     Verkleinern aus, ein Farbtonunterschied nicht. Die goldene Kappe bleibt,
+     damit die Eichel eine Eichel ist und kein Kastanienklecks. */
+  --sk-frucht: #6E3608;
   --sk-rot: #D22A1D;
-  --sk-stiel: #5A3E1C;
+  --sk-stiel: #6E3608;                   /* Stiel wie die Frucht */
   --sk-kontur: #18130F;
   --sk-tinte-karte: #241C14;
   --sk-haut: #F6E6CE;
