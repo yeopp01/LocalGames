@@ -1735,8 +1735,8 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
      Handkarte. Hoehe, Schriftgrad, Ueberlappung und die Breite des Tisches
      rechnen sich daraus. Ein Handy hat andere Karten als ein Bildschirm,
      ohne dass dafuer ein zweites Stylesheet noetig waere. */
-  --sk-b: 70px;                          /* Handkarte */
-  --sk-t: 56px;                          /* Karte auf dem Tisch */
+  --sk-b: 74px;                          /* Handkarte */
+  --sk-t: 60px;                          /* Karte auf dem Tisch */
   --sk-breit: 420px;                     /* wie breit der Tisch werden darf */
   --sk-papier: #FAF4E7;
   --sk-faser: rgba(122, 92, 44, .022);   /* die Faser im Papier, kaum sichtbar */
@@ -1933,7 +1933,12 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   background: currentColor;
 }
 .sk-minipip { display: block; }
-.sk-minipip svg { width: calc(var(--sk-b) * .18); height: calc(var(--sk-b) * .18); display: block; }
+/* Das Zeichen im Eckindex war mit 18 Prozent der Kartenbreite halb so hoch
+   wie der Buchstabe darueber - auf einem Handy zwoelf Pixel, und darin
+   faellt ein vierfarbiges Zeichen mit Kontur auseinander. Auf einer
+   gedruckten Karte ist das Eckzeichen ungefaehr so hoch wie die Ziffer;
+   das ist es jetzt auch hier. */
+.sk-minipip svg { width: calc(var(--sk-b) * .24); height: calc(var(--sk-b) * .24); display: block; }
 
 .sk-bild {
   position: absolute;
@@ -1941,7 +1946,7 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   display: grid;
   place-items: center;
 }
-.sk-bild svg { width: 58%; display: block; }
+.sk-bild svg { width: 62%; display: block; }
 
 /* Die Farbzeichen sind mehrfarbig wie auf dem gedruckten Blatt - die Eichel
    traegt eine goldene Kappe mit rotem Band auf gruener Frucht, die Schelle
@@ -2161,7 +2166,11 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 /* Je mehr Platz da ist, desto groesser die Karten. Am Handy sind es 70
    Pixel Kartenbreite, am Bildschirm bis zu 116 - dieselben Karten, nur
    nicht mehr auf Handygroesse zusammengedrueckt. */
-@media (min-width: 420px) { :root { --sk-b: 78px; --sk-t: 62px; --sk-breit: 96vw; } }
+/* Fast jedes Handy liegt zwischen 360 und 430 Punkten breit. Dort stand
+   bisher die unterste Stufe - genau da, wo die Karten am kleinsten waren
+   und am meisten drauf sein muss. Jetzt gibt es dazwischen zwei Stufen. */
+@media (min-width: 380px) { :root { --sk-b: 80px; --sk-t: 64px; --sk-breit: 97vw; } }
+@media (min-width: 430px) { :root { --sk-b: 86px; --sk-t: 70px; --sk-breit: 96vw; } }
 @media (min-width: 560px) { :root { --sk-b: 94px; --sk-t: 76px; --sk-breit: min(96vw, 580px); } }
 @media (min-width: 820px) { :root { --sk-b: 108px; --sk-t: 88px; --sk-breit: min(92vw, 680px); } }
 @media (min-width: 1150px) { :root { --sk-b: 122px; --sk-t: 100px; --sk-breit: min(88vw, 780px); } }
@@ -2173,8 +2182,8 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 }
 .sk-karte--tisch .sk-rang { font-size: calc(var(--sk-t) * .27); }
 .sk-karte--tisch .sk-minipip svg {
-  width: calc(var(--sk-t) * .18);
-  height: calc(var(--sk-t) * .18);
+  width: calc(var(--sk-t) * .24);
+  height: calc(var(--sk-t) * .24);
 }
 
 
