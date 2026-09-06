@@ -1766,7 +1766,11 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   font-size: 13px;
   color: var(--tinte-leise);
 }
-.sk-kopf b { font-size: 15px; color: var(--tinte); font-weight: 700; }
+.sk-kopf b { font-size: 15px; color: var(--tinte); font-weight: 700; white-space: nowrap; }
+/* Wer spielt, steht links und darf dafuer Platz nehmen; die Stichzahl
+   rechts braucht kaum welche. */
+.sk-kopf-spiel { flex: 1 1 auto; min-width: 0; }
+.sk-kopf > span:last-child { flex: none; white-space: nowrap; }
 
 /* Der Tisch: drei Mitspieler aussen herum, in der Mitte der Stich. Deine
    Karten liegen ausserhalb - sie brauchen die ganze Breite. */
@@ -1776,8 +1780,8 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   display: grid;
   grid-template-columns: calc(var(--sk-t) * 1.2) 1fr calc(var(--sk-t) * 1.2);
   grid-template-rows: auto 1fr;
-  gap: 4px;
-  padding: 10px 8px 12px;
+  gap: 2px;
+  padding: 8px 6px 10px;
   border-radius: var(--rund);
   color: var(--sk-filz-tinte);
   background:
@@ -1845,7 +1849,7 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
   place-items: center;
-  min-height: calc(var(--sk-t) * 3.9);
+  min-height: calc(var(--sk-t) * 3.35);
   position: relative;
 }
 .sk-karte--tisch[data-platz="unten"] { grid-area: 3 / 2; }
@@ -2157,9 +2161,10 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 /* Je mehr Platz da ist, desto groesser die Karten. Am Handy sind es 70
    Pixel Kartenbreite, am Bildschirm bis zu 116 - dieselben Karten, nur
    nicht mehr auf Handygroesse zusammengedrueckt. */
-@media (min-width: 520px) { :root { --sk-b: 82px; --sk-t: 66px; --sk-breit: 470px; } }
-@media (min-width: 900px) { :root { --sk-b: 104px; --sk-t: 84px; --sk-breit: 620px; } }
-@media (min-width: 1250px) { :root { --sk-b: 116px; --sk-t: 94px; --sk-breit: 700px; } }
+@media (min-width: 420px) { :root { --sk-b: 78px; --sk-t: 62px; --sk-breit: 96vw; } }
+@media (min-width: 560px) { :root { --sk-b: 94px; --sk-t: 76px; --sk-breit: min(96vw, 580px); } }
+@media (min-width: 820px) { :root { --sk-b: 108px; --sk-t: 88px; --sk-breit: min(92vw, 680px); } }
+@media (min-width: 1150px) { :root { --sk-b: 122px; --sk-t: 100px; --sk-breit: min(88vw, 780px); } }
 
 /* Die Trumpfmarke und der Eckindex ruecken mit. */
 .sk-trumpfpunkt {

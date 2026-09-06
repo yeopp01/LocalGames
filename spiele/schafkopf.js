@@ -54,14 +54,19 @@
       + '<path class="sk-rippe" d="M12 20V7"/>',
     /* Herz. */
     '<path class="sk-rot" d="M12 21.3C6.4 17.2 3.3 14 3.3 10.2A4.7 4.7 0 0 1 12 7.7a4.7 4.7 0 0 1 8.7 2.5c0 3.8-3.1 7-8.7 11.1z"/>',
-    /* Schellen: die geviertelte Schelle, gold und gruen ueber Kreuz, mit den
+    /* Schellen: die geviertelte Schelle, gold und rot ueber Kreuz, mit den
        drei Punkten. Der Schlitz allein war zu wenig - eine goldene Scheibe
        mit rotem Strich sah aus wie eine Muenze; die Vierung ist das, was auf
        dem gedruckten Blatt eine Schelle zur Schelle macht, und sie traegt
-       auch dann noch, wenn der Punkt nur drei Pixel gross ist. */
+       auch dann noch, wenn der Punkt nur drei Pixel gross ist.
+
+       Die Viertel waren eine Weile gruen. Das war doppelt falsch: Gruen
+       gehoert auf diesem Blatt dem Laub, und eine gruen-goldene Scheibe sieht
+       neben einer gold-bernsteinfarbenen Eichel nach derselben Familie aus.
+       Rot trennt sie von beidem - und vom Herz trennt sie ihre Form. */
     '<circle class="sk-gold" cx="12" cy="12" r="9.2"/>'
-      + '<path class="sk-gruen" d="M2.8 12A9.2 9.2 0 0 1 12 2.8V12z"/>'
-      + '<path class="sk-gruen" d="M21.2 12A9.2 9.2 0 0 1 12 21.2V12z"/>'
+      + '<path class="sk-rot" d="M2.8 12A9.2 9.2 0 0 1 12 2.8V12z"/>'
+      + '<path class="sk-rot" d="M21.2 12A9.2 9.2 0 0 1 12 21.2V12z"/>'
       + '<circle class="sk-punkt" cx="12" cy="12" r="1.5"/>'
       + '<circle class="sk-punkt" cx="16.7" cy="7.3" r="1.5"/>'
       + '<circle class="sk-punkt" cx="7.3" cy="16.7" r="1.5"/>',
@@ -754,6 +759,21 @@
       leiste.hidden = tippKnopf.hidden;
     }
 
+    /* Oben links: wer spielt, und was. Bisher stand dort nur die Spielart -
+       gerade beim Sauspiel ist aber die Frage, wer sie angesagt hat, die
+       wichtigste am Tisch, und sie liess sich nur aus dem kleinen Wort
+       SPIELT unter einem der drei Namen herauslesen. Der Partner kommt dazu,
+       sobald er bekannt ist; vorher wird er auch nicht angedeutet. */
+    function spielZeile() {
+      const sp = stand.spielart;
+      let text = (stand.spieler === ICH ? 'Du spielst ' : NAMEN[stand.spieler] + ' spielt ')
+        + K.spielKurz(sp);
+      if (sp.art === 'sau' && stand.partner >= 0 && partnerBekannt()) {
+        text += ' mit ' + (stand.partner === ICH ? 'dir' : NAMEN[stand.partner]);
+      }
+      return text;
+    }
+
     function kopfZeichnen() {
       kopf.replaceChildren();
       if (stand.phase === 'ansage' || stand.phase === 'weiter') {
@@ -765,15 +785,15 @@
           : 'Vorhand ist ' + NAMEN[vorhand()] + '.');
         return;
       }
-      kopf.append(el('span', null, K.spielKurz(stand.spielart)));
-      const mitte = el('b', null, augenText());
-      kopf.append(mitte);
+      kopf.append(el('span', 'sk-kopf-spiel', spielZeile()));
+      kopf.append(el('b', null, augenText()));
       kopf.append(el('span', null, 'Stich ' + Math.min(stand.stiche.length + 1, 8) + '/8'));
 
+      /* Wer dran ist, steht jetzt gross ueber der Hand. Die Zeile unter dem
+         Titel traegt deshalb das, was sonst nirgends vollstaendig steht: auf
+         welche Sau gerufen wurde, mit ihrem Namen am Tisch. */
       if (stand.phase === 'ende') { s.unter(''); return; }
-      s.unter(denkt ? NAMEN[stand.amZug] + ' überlegt …'
-        : stand.amZug === ICH ? 'Du bist dran.'
-          : NAMEN[stand.amZug] + ' ist dran.');
+      s.unter(K.spielName(stand.spielart));
     }
 
     /* Was du an Augen beisammen hast. Solange beim Sauspiel die Sau nicht
