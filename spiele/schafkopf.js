@@ -207,7 +207,8 @@
         stiche: [], aktuell: { start: 0, karten: [] }, stichFertig: false,
         amZug: 0, sauWeg: false, davon: false,
         begonnen: Date.now(),
-        hilfen: 0, treffer: 0, gezaehlt: 0,
+        hilfen: 0, treffer: 0, gezaehlt: 0, zurueck: 0,
+        rueckstand: null,        // Stand vor deiner letzten Karte
         abrechnung: null,
         lehre: alt ? alt.lehre : 'tipp',
         konto: alt ? alt.konto.slice() : [0, 0, 0, 0],
@@ -222,6 +223,8 @@
           && ['ansage', 'spiel', 'ende'].includes(a.phase)) {
         if (!Array.isArray(a.konto)) a.konto = [0, 0, 0, 0];
         if (!a.lehre) a.lehre = 'tipp';
+        if (typeof a.zurueck !== 'number') a.zurueck = 0;
+        if (typeof a.rueckstand !== 'string') a.rueckstand = null;
         return a;
       }
       return frisch(null);
@@ -301,7 +304,10 @@
     const tippKnopf = el('button', 'knopf knopf--still', 'Tipp');
     tippKnopf.type = 'button';
     tippKnopf.addEventListener('click', tippGeben);
-    leiste.append(tippKnopf);
+    const zurueckKnopf = el('button', 'knopf knopf--still', 'Zug zurück');
+    zurueckKnopf.type = 'button';
+    zurueckKnopf.addEventListener('click', zurueckNehmen);
+    leiste.append(tippKnopf, zurueckKnopf);
 
     s.werkzeuge([
       { label: 'Anleitung', symbol: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01" stroke-linecap="round"/>', tun: anleitung },
@@ -461,11 +467,57 @@
       zugWeiter();
     }
 
+    /* ------------------------------------------------------- Zug zurück
+
+       Genommen wird deine letzte Karte samt allem, was die drei danach
+       gelegt haben – ein halber Schritt brächte nichts, man stünde vor
+       derselben Lage und wäre nur nicht am Zug.
+
+       Der Stand vor deiner Karte wird dafür weggeschrieben, statt den Zug
+       rückwärts nachzurechnen: Ein Stich kann in der Zwischenzeit fertig
+       geworden sein, die Rufsau gefallen, jemand davongelaufen. Eine Kopie
+       ist kürzer als all diese Fälle einzeln rückgängig zu machen.
+
+       Die Rechner legen danach nicht dieselben Karten wie vorher – sie
+       würfeln ja neu. Wer oft genug zurücknimmt, spielt sich also auch eine
+       günstige Antwort herbei. Für einen Lehrer ist das kein Schaden, aber
+       ehrlich soll es bleiben: Die Zahl der zurückgenommenen Züge steht in
+       der Statistik. */
+    function merkeStand() {
+      stand.rueckstand = JSON.stringify({
+        haende: stand.haende, stiche: stand.stiche, aktuell: stand.aktuell,
+        amZug: stand.amZug, sauWeg: stand.sauWeg, davon: stand.davon,
+        stichFertig: stand.stichFertig,
+        treffer: stand.treffer, gezaehlt: stand.gezaehlt,
+      });
+    }
+
+    const kannZurueck = () => !!stand.rueckstand && stand.phase === 'spiel'
+      && stand.amZug === ICH && !denkt && !stand.stichFertig;
+
+    function zurueckNehmen() {
+      if (!kannZurueck()) return;
+      // Erst die laufenden Uhren stoppen: ein schon angesetzter Rechnerzug
+      // fiele sonst in den wiederhergestellten Stand hinein.
+      uhrenAus();
+      denkt = false;
+      Object.assign(stand, JSON.parse(stand.rueckstand));
+      stand.rueckstand = null;
+      stand.zurueck += 1;
+      stand.notiz = null;
+      tipp = null;
+      vorabRat = null;
+      sichern();
+      zeichnen();
+      zugWeiter();
+    }
+
     /* Deine Karte – erst prüfen, dann urteilen, dann legen. */
     function deineKarte(karte) {
       if (stand.phase !== 'spiel' || stand.amZug !== ICH || denkt || stand.stichFertig) return;
       const erlaubt = erlaubteJetzt(ICH);
       if (erlaubt.indexOf(karte) < 0) { warumNicht(karte, erlaubt); return; }
+      merkeStand();
       if (stand.lehre === 'mit') urteilen(karte, erlaubt);
       else stand.notiz = null;
       tipp = null;
@@ -714,6 +766,7 @@
         hilfen: stand.hilfen,
         treffer: stand.treffer,
         gezaehlt: stand.gezaehlt,
+        zurueck: stand.zurueck,
       });
       sichern();
       zeichnen();
@@ -773,7 +826,9 @@
         || !(stand.phase === 'spiel' ? stand.amZug === ICH
           : stand.phase === 'ansage' && (vorhand() + stand.zeiger) % 4 === ICH);
       tippKnopf.textContent = stand.phase === 'ansage' ? 'Was geht?' : 'Tipp';
-      leiste.hidden = tippKnopf.hidden;
+      zurueckKnopf.hidden = stand.phase !== 'spiel';
+      zurueckKnopf.disabled = !kannZurueck();
+      leiste.hidden = tippKnopf.hidden && zurueckKnopf.hidden;
     }
 
     /* Oben links: wer spielt, und was. Bisher stand dort nur die Spielart -
@@ -1103,6 +1158,12 @@
         + '10 für Schwarz, also gar kein Stich, und 10 je Laufendem. Laufende sind die obersten '
         + 'Trümpfe in ununterbrochener Reihe in einer Hand oder Partei; sie zählen ab drei, beim '
         + 'Wenz und Geier ab zwei. Der Alleinspieler bekommt oder zahlt das Ganze dreifach.'));
+      d.append(el('p', 'notiz', '„Zug zurück" nimmt deine letzte Karte samt allem, was die drei '
+        + 'darauf gelegt haben, wieder vom Tisch – ein halber Schritt brächte nichts, du '
+        + 'stündest vor derselben Lage und wärst nur nicht am Zug. Zusammen mit dem Mitlesen '
+        + 'ist das die eigentliche Übung: legen, das Urteil lesen, zurücknehmen, es besser '
+        + 'machen. Die Rechner würfeln danach neu und antworten deshalb anders als vorher; '
+        + 'wie oft du zurückgenommen hast, steht in der Statistik.'));
       d.append(el('p', 'notiz', 'Die drei Gegenspieler rechnen: aus dem, was sie sehen dürfen, '
         + 'würfeln sie zweihundert mögliche Verteilungen der fremden Karten, spielen jede zu '
         + 'Ende und nehmen die Karte, die am häufigsten reicht. Liegen nur noch wenige Karten, '
@@ -1155,6 +1216,10 @@
     }
     /* Wie oft lag die eigene Karte auf der besten? Nur aus Partien, in denen
        das Mitlesen anlag – sonst wurde nichts gezählt. */
+    const zurueck = partien.reduce((n, p) => n + (p.zurueck || 0), 0);
+    if (zurueck) {
+      raus.push({ wert: String(zurueck), label: zurueck === 1 ? 'Zug zurück' : 'Züge zurück' });
+    }
     const gemessen = partien.filter((p) => p.gezaehlt > 0);
     if (gemessen.length) {
       const t = gemessen.reduce((s, p) => s + p.treffer, 0);

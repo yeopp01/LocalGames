@@ -685,10 +685,16 @@ const Karten = (() => {
       return { werte, welten: 0, einzig: true };
     }
 
+    /* Was die Faustregel in dieser Welt legen wuerde. Gebraucht wird das
+       nicht fuer die Bewertung, sondern fuer den Gleichstand weiter unten. */
+    const regelStimmen = new Map();
+
     let welten = 0;
     for (let i = 0; i < proben; i += 1) {
       if (i && Date.now() - beginn > frist) break;
       const w = i === 0 ? erste : weltAus(s, verteilen(s, wuerfel));
+      const regelZug = faustregel(w, s.ich);
+      regelStimmen.set(regelZug, (regelStimmen.get(regelZug) || 0) + 1);
       const meineSeite = w.seite[s.ich] ? 0 : 1;
       const schwelle = w.seite[s.ich] ? 61 : 60;
       for (const e of werte) {
@@ -717,7 +723,35 @@ const Karten = (() => {
       e.nutzen = e.quote + e.schnitt / 4000;
     }
     werte.sort((a, b) => b.nutzen - a.nutzen);
-    return { werte, welten, einzig: false };
+    for (const e of werte) e.regel = regelStimmen.get(e.karte) || 0;
+
+    /* Gleichstand: Alles, was sich vom Besten nicht unterscheiden laesst,
+       steht rechnerisch gleichauf – und dann entschied bisher die dritte
+       Nachkommastelle des Wuerfelns. Bei fuenfhundert Welten liegt der Fehler
+       bei ein paar Punkten; unter sechs erlaubten Karten kann so jede oben
+       landen, auch eine, die am Tisch niemand spielen wuerde.
+
+       Unter Gleichen entscheidet deshalb die Faustregel – dieselben
+       Merksaetze, die auch die Ausspielungen steuern: Trumpf ziehen, wenn man
+       den hoechsten hat, der noch draussen ist. Eine blanke Sau anspielen,
+       solange die Farbe laeuft. Mit der billigsten Karte stechen, die reicht.
+
+       Das ist nicht dasselbe wie "nach Merksatz spielen": Ist ein Zug
+       nachweisbar besser, gewinnt er, auch gegen jeden Merksatz. Nachgemessen
+       schadet es naemlich, die Regeln stur anzuwenden - liessen die
+       Gegenspieler in der Ausspielung immer die Rufsau suchen, verloeren sie
+       ueber 4000 Sauspiele 1,2 Punkte. Die Merksaetze taugen als Ausgleich
+       bei Gleichstand, nicht als Gesetz. */
+    const gleichauf = werte.filter((e) => e === werte[0] || !unterschied(werte[0], e).klar);
+    if (gleichauf.length > 1) {
+      gleichauf.sort((a, b) => b.regel - a.regel || b.nutzen - a.nutzen);
+      const wahl = gleichauf[0];
+      if (wahl !== werte[0]) {
+        werte.splice(werte.indexOf(wahl), 1);
+        werte.unshift(wahl);
+      }
+    }
+    return { werte, welten, einzig: false, gleichauf };
   }
 
   const besteKarte = (s, opt) => bewerten(s, opt).werte[0].karte;
