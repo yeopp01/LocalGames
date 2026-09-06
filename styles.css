@@ -1706,10 +1706,18 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
    beim franzoesischen Spiel geht nicht: Eichel und Gras waeren dann auf einem
    Handy nicht auseinanderzuhalten. */
 :root {
-  --sk-eichel: #4F3116;
+  --sk-eichel: #6B4119;
   --sk-gras: #2F6B3A;
   --sk-herz: #A83228;
-  --sk-schellen: #C6900B;
+  --sk-schellen: #CE8E06;
+
+  /* Alle Kartenmasse haengen an einer einzigen Zahl: der Breite einer
+     Handkarte. Hoehe, Schriftgrad, Ueberlappung und die Breite des Tisches
+     rechnen sich daraus. Ein Handy hat andere Karten als ein Bildschirm,
+     ohne dass dafuer ein zweites Stylesheet noetig waere. */
+  --sk-b: 70px;                          /* Handkarte */
+  --sk-t: 56px;                          /* Karte auf dem Tisch */
+  --sk-breit: 420px;                     /* wie breit der Tisch werden darf */
   --sk-papier: #FBF7EE;
   --sk-kante: #D8CEBC;
   --sk-filz: #3F6147;
@@ -1732,7 +1740,7 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   align-items: baseline;
   gap: 10px;
   width: 100%;
-  max-width: 420px;
+  max-width: var(--sk-breit);
   font-size: 13px;
   color: var(--tinte-leise);
 }
@@ -1742,9 +1750,9 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
    Karten liegen ausserhalb - sie brauchen die ganze Breite. */
 .sk-tisch {
   width: 100%;
-  max-width: 420px;
+  max-width: var(--sk-breit);
   display: grid;
-  grid-template-columns: 66px 1fr 66px;
+  grid-template-columns: calc(var(--sk-t) * 1.2) 1fr calc(var(--sk-t) * 1.2);
   grid-template-rows: auto 1fr;
   gap: 4px;
   padding: 10px 8px 12px;
@@ -1803,7 +1811,7 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
   place-items: center;
-  min-height: 214px;
+  min-height: calc(var(--sk-t) * 3.9);
   position: relative;
 }
 .sk-karte--tisch[data-platz="unten"] { grid-area: 3 / 2; }
@@ -1828,10 +1836,10 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .sk-karte {
   position: relative;
   display: block;
-  width: 78px;
-  height: 112px;
+  width: var(--sk-b);
+  height: calc(var(--sk-b) * 1.436);     /* dasselbe Seitenverhaeltnis wie 57 x 89 mm */
   padding: 0;
-  border-radius: 9px;
+  border-radius: calc(var(--sk-b) * .115);
   background: var(--sk-papier);
   border: 1px solid var(--sk-kante);
   box-shadow: 0 1px 2px rgba(20, 14, 8, .3), 0 4px 10px rgba(20, 14, 8, .16);
@@ -1866,7 +1874,7 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 }
 .sk-rang {
   font-family: 'DM Mono', monospace;
-  font-size: 21px;
+  font-size: calc(var(--sk-b) * .27);
   font-weight: 500;
   letter-spacing: -.07em;
 }
@@ -1883,7 +1891,7 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   background: currentColor;
 }
 .sk-minipip { display: block; }
-.sk-minipip svg { width: 14px; height: 14px; display: block; }
+.sk-minipip svg { width: calc(var(--sk-b) * .18); height: calc(var(--sk-b) * .18); display: block; }
 
 .sk-bild {
   position: absolute;
@@ -1905,8 +1913,16 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   stroke-width: 3.6;
   stroke-linecap: round;
 }
+/* Die Schraffur auf der Eichelkappe. Duenner als der Schnitt des Zehners und
+   ohne Rundung - sie soll Struktur andeuten, nicht die Kappe zerschneiden. */
+.sk-karte .sk-fein {
+  fill: none;
+  stroke: var(--sk-papier);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
 
-.sk-karte--tisch { width: 62px; height: 89px; }
+.sk-karte--tisch { width: var(--sk-t); height: calc(var(--sk-t) * 1.436); }
 /* Wer den Stich haelt, steht ein Stueck vor - dafuer braucht es keine Farbe,
    die mit den vier Kartenfarben um Aufmerksamkeit streitet. */
 .sk-karte[data-sticht="ja"] {
@@ -1921,17 +1937,17 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   justify-content: center;
   align-items: flex-end;
   width: 100%;
-  min-height: 130px;
+  min-height: calc(var(--sk-b) * 1.68);
   padding: 12px 0 2px;
 }
-.sk-hand[data-eng="viel"] .sk-karte--hand { margin-right: -46px; }
-.sk-hand[data-eng="mittel"] .sk-karte--hand { margin-right: -30px; }
-.sk-hand[data-eng="wenig"] .sk-karte--hand { margin-right: -14px; }
+.sk-hand[data-eng="viel"] .sk-karte--hand { margin-right: calc(var(--sk-b) * -.59); }
+.sk-hand[data-eng="mittel"] .sk-karte--hand { margin-right: calc(var(--sk-b) * -.385); }
+.sk-hand[data-eng="wenig"] .sk-karte--hand { margin-right: calc(var(--sk-b) * -.18); }
 .sk-hand .sk-karte--hand:last-child { margin-right: 0; }
 /* Eine Luecke zwischen Trumpf und Farbe - genau die, die man auch mit
    echten Karten in der Hand laesst. Sie sagt mehr als jede Marke auf der
    Karte und kostet keinen Millimeter Kartenflaeche. */
-.sk-karte--hand[data-gruppe="farbe"] { margin-left: 15px; }
+.sk-karte--hand[data-gruppe="farbe"] { margin-left: calc(var(--sk-b) * .19); }
 .sk-karte--hand {
   transition: transform .13s ease, box-shadow .13s ease;
   transform-origin: 50% 130%;
@@ -2036,13 +2052,22 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 
 .zeile[data-gewaehlt="ja"] { border-color: var(--gruen); }
 
-@media (max-width: 380px) {
-  .sk-karte { width: 70px; height: 100px; }
-  .sk-karte--tisch { width: 56px; height: 80px; }
-  .sk-hand[data-eng="viel"] .sk-karte--hand { margin-right: -42px; }
-  .sk-hand[data-eng="mittel"] .sk-karte--hand { margin-right: -28px; }
-  .sk-tisch { grid-template-columns: 56px 1fr 56px; }
-  .sk-rang { font-size: 19px; }
+/* Je mehr Platz da ist, desto groesser die Karten. Am Handy sind es 70
+   Pixel Kartenbreite, am Bildschirm bis zu 116 - dieselben Karten, nur
+   nicht mehr auf Handygroesse zusammengedrueckt. */
+@media (min-width: 520px) { :root { --sk-b: 82px; --sk-t: 66px; --sk-breit: 470px; } }
+@media (min-width: 900px) { :root { --sk-b: 104px; --sk-t: 84px; --sk-breit: 620px; } }
+@media (min-width: 1250px) { :root { --sk-b: 116px; --sk-t: 94px; --sk-breit: 700px; } }
+
+/* Die Trumpfmarke und der Eckindex ruecken mit. */
+.sk-trumpfpunkt {
+  width: calc(var(--sk-b) * .09);
+  height: calc(var(--sk-b) * .09);
+}
+.sk-karte--tisch .sk-rang { font-size: calc(var(--sk-t) * .27); }
+.sk-karte--tisch .sk-minipip svg {
+  width: calc(var(--sk-t) * .18);
+  height: calc(var(--sk-t) * .18);
 }
 
 

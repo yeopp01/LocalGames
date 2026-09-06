@@ -38,19 +38,25 @@
      Jedes Zeichen lebt in einem Feld von 24 × 24 und wird zum Setzen nur
      verschoben und skaliert. */
   const ZEICHEN = [
-    /* Eichel: Stiel, Kappe, Frucht. Der Spalt dazwischen ist echter Abstand. */
-    '<path class="sk-voll" d="M11.2 1.5h1.6v2.6h-1.6z"/>'
-      + '<path class="sk-voll" d="M5.3 8.6C5.3 5.6 8.3 3.4 12 3.4s6.7 2.2 6.7 5.2z"/>'
-      + '<path class="sk-voll" d="M6.1 9.8h11.8c0 6.7-2.4 11.2-5.9 11.2S6.1 16.5 6.1 9.8z"/>',
-    /* Gras: das Laub, wie es auf dem bayrischen Blatt steht – Blatt mit Stiel. */
+    /* Eichel: Stiel, Kappe, Frucht. Die Kappe ist schraffiert wie auf dem
+       gedruckten Blatt – ohne das ist sie nur eine Halbkugel, und die Eichel
+       wird zur Schelle mit Stiel. Genau daran lagen die beiden zu nah
+       beieinander. */
+    '<path class="sk-voll" d="M11.1 1.2h1.8v2.6h-1.8z"/>'
+      + '<path class="sk-voll" d="M5.1 9C5.1 5.8 8.2 3.5 12 3.5s6.9 2.3 6.9 5.5z"/>'
+      + '<path class="sk-fein" d="M8.5 4.8L7 9M12 3.7V9M15.5 4.8L17 9"/>'
+      + '<path class="sk-voll" d="M6.2 10.2h11.6c0 6.7-2.4 11.2-5.8 11.2s-5.8-4.5-5.8-11.2z"/>',
+    /* Gras: das Laub des bayrischen Blatts – ein Blatt am Stiel. */
     '<path class="sk-voll" d="M12 2.3c3.4 4.5 8 7 8 11.1a4.1 4.1 0 0 1-6.7 3.2c.3 1.9.9 3.2 2 4.4H8.7c1.1-1.2 1.7-2.5 2-4.4A4.1 4.1 0 0 1 4 13.4C4 9.3 8.6 6.8 12 2.3z"/>',
     /* Herz. */
     '<path class="sk-voll" d="M12 21.3C6.4 17.2 3.3 14 3.3 10.2A4.7 4.7 0 0 1 12 7.7a4.7 4.7 0 0 1 8.7 2.5c0 3.8-3.1 7-8.7 11.1z"/>',
-    /* Schellen: die runde Schelle mit Öse und Schlitz. */
-    '<circle class="sk-voll" cx="12" cy="5" r="2.2"/>'
-      + '<circle class="sk-aus" cx="12" cy="5" r="1"/>'
-      + '<circle class="sk-voll" cx="12" cy="13.7" r="7"/>'
-      + '<rect class="sk-aus" x="7.4" y="12.8" width="9.2" height="1.9" rx=".95"/>',
+    /* Schellen: die runde Schelle mit Schlitz und Loch – rund und satt, ohne
+       Öse obendrauf. Die Öse war der Fehler: bei zwanzig Pixeln las sie sich
+       als Eichelstiel, und damit sahen die beiden Farben gleich aus. */
+    '<circle class="sk-voll" cx="12" cy="12" r="9.2"/>'
+      + '<rect class="sk-aus" x="5.6" y="11" width="12.8" height="2.2" rx="1.1"/>'
+      + '<circle class="sk-aus" cx="12" cy="7.2" r="1.9"/>'
+      + '<rect class="sk-aus" x="10.9" y="15.4" width="2.2" height="4.2" rx="1.1"/>',
   ];
 
   const sauKarteVon = (sp) => (sp && sp.art === 'sau' ? K.karte(sp.farbe, 0) : -1);
@@ -74,41 +80,48 @@
        Zeichen ausgespart.
   */
 
-  const zeichenSetzen = (f, x, y, g) => '<g transform="translate(' + (x - 12 * g).toFixed(2)
-    + ' ' + (y - 12 * g).toFixed(2) + ') scale(' + g + ')">' + ZEICHEN[f] + '</g>';
+  /* kopf = auf den Kopf gestellt. Die untere Hälfte einer Zahlkarte trägt
+     ihre Zeichen gedreht, so wie auf dem gedruckten Blatt – die Karte liest
+     sich dann von beiden Seiten gleich. */
+  const zeichenSetzen = (f, x, y, g, kopf) => '<g transform="translate(' + x + ' ' + y
+    + ') scale(' + g + ')' + (kopf ? ' rotate(180)' : '') + ' translate(-12 -12)">'
+    + ZEICHEN[f] + '</g>';
 
-  /* Die Anordnungen der Zahlkarten – dieselbe Ordnung wie auf dem Blatt:
-     paarweise untereinander, bei ungerader Zahl eine in der Mitte. */
+  /* Die Anordnungen der Zahlkarten – zwei Spalten wie auf dem Blatt, bei
+     ungerader Zahl eine Reihe in der Mitte. Die Mittelachse liegt bei 23. */
   const REIHEN = {
-    7: [[11, 11], [23, 11], [8, 23], [17, 23], [26, 23], [11, 35], [23, 35]],
-    8: [[11, 9], [23, 9], [11, 19], [23, 19], [11, 28], [23, 28], [11, 38], [23, 38]],
-    9: [[11, 11], [17, 11], [23, 11], [11, 23], [17, 23], [23, 23], [11, 35], [17, 35], [23, 35]],
+    7: [[11, 10], [23, 10], [8, 23], [17, 23], [26, 23], [11, 36], [23, 36]],
+    8: [[11, 8], [23, 8], [11, 18], [23, 18], [11, 28], [23, 28], [11, 38], [23, 38]],
+    9: [[11, 10], [17, 10], [23, 10], [11, 23], [17, 23], [23, 23], [11, 36], [17, 36], [23, 36]],
   };
 
-  /* Die Figur für Ober und Unter: Kopf und Schultern, mehr braucht es nicht.
-     Sie steht in der Hälfte, die das Farbzeichen frei lässt – beim Ober also
-     unten, beim Unter oben. */
-  const figur = (unten) => (unten
-    ? '<circle class="sk-voll" cx="17" cy="30" r="4.4"/>'
-      + '<path class="sk-voll" d="M8.5 46c0-5.4 3.8-8.8 8.5-8.8s8.5 3.4 8.5 8.8z"/>'
-    : '<circle class="sk-voll" cx="17" cy="9" r="4.4"/>'
-      + '<path class="sk-voll" d="M8.5 25c0-5.4 3.8-8.8 8.5-8.8s8.5 3.4 8.5 8.8z"/>');
+  /* Die Figur für Ober und Unter. Kopf und Schultern allein sahen aus wie ein
+     Benutzersymbol – erst der Hut macht daraus eine Kartenfigur. Sie steht in
+     der Hälfte, die das Farbzeichen frei lässt: beim Ober also unten, beim
+     Unter oben. Genau daher kommen die beiden Namen. */
+  function figur(unten) {
+    const o = unten ? 24 : 0;
+    return '<rect class="sk-voll" x="13.4" y="' + (1.6 + o) + '" width="7.2" height="4.3" rx="1.4"/>'
+      + '<rect class="sk-voll" x="8.4" y="' + (5.5 + o) + '" width="17.2" height="1.9" rx=".95"/>'
+      + '<circle class="sk-voll" cx="17" cy="' + (11.2 + o) + '" r="3.7"/>'
+      + '<path class="sk-voll" d="M9 ' + (22 + o) + 'c0-4.4 3.6-7.3 8-7.3s8 2.9 8 7.3z"/>';
+  }
 
   function kartenBild(f, w) {
-    if (w === 0) return zeichenSetzen(f, 17, 23, 1.35);                // Sau
+    if (w === 0) return zeichenSetzen(f, 17, 23, 1.4);                 // Sau
     if (w === 1) {                                                     // Zehner mit römischem X
-      return zeichenSetzen(f, 17, 23, 1.35)
-        + '<path class="sk-schnitt" d="M9 14l16 18M25 14L9 32"/>';
+      return zeichenSetzen(f, 17, 23, 1.4)
+        + '<path class="sk-schnitt" d="M9 13l16 20M25 13L9 33"/>';
     }
     if (w === 2) {                                                     // König mit Krone
       return '<path class="sk-voll" d="M6.5 15.5l2-8.5 4.2 4.6L17 4l4.3 7.6 4.2-4.6 2 8.5z"/>'
         + '<rect class="sk-voll" x="6.5" y="17" width="21" height="3" rx="1.2"/>'
         + zeichenSetzen(f, 17, 33, 1.02);
     }
-    if (w === 3) return zeichenSetzen(f, 17, 11, 0.82) + figur(true);   // Ober: Zeichen oben
-    if (w === 4) return figur(false) + zeichenSetzen(f, 17, 35, 0.82);  // Unter: Zeichen unten
+    if (w === 3) return zeichenSetzen(f, 17, 11, 0.86) + figur(true);   // Ober: Zeichen oben
+    if (w === 4) return figur(false) + zeichenSetzen(f, 17, 35, 0.86, true); // Unter: Zeichen unten
     const n = w === 5 ? 9 : w === 6 ? 8 : 7;
-    return REIHEN[n].map(([x, y]) => zeichenSetzen(f, x, y, 0.42)).join('');
+    return REIHEN[n].map(([x, y]) => zeichenSetzen(f, x, y, 0.43, y > 23)).join('');
   }
 
   /* ------------------------------------------------------------------ Spiel */
