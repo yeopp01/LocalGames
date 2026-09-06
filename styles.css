@@ -1982,15 +1982,8 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   stroke-linejoin: round;
   vector-effect: non-scaling-stroke;
 }
-/* Die Rippe im Laubblatt und das roemische X des Zehners: beides Striche,
-   keine Flaechen. Das X steht oben und unten in der Mitte, so wie gedruckt. */
-.sk-karte .sk-rippe {
-  fill: none;
-  stroke: var(--sk-gold);
-  stroke-width: 1.4;
-  stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
-}
+/* Das roemische X des Zehners: ein Strich, keine Flaeche. Es steht oben und
+   unten in der Mitte, so wie gedruckt. */
 .sk-karte .sk-xmark {
   fill: none;
   stroke: var(--sk-tinte-karte);
@@ -2035,16 +2028,40 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   z-index: 4;
   box-shadow: 0 3px 4px rgba(20, 14, 8, .34), 0 12px 22px rgba(20, 14, 8, .3);
 }
-/* Was gerade nicht gelegt werden darf, sinkt zurueck und verliert Farbe -
-   gesperrt, aber noch lesbar. Ausgrauen allein sieht nach Fehler aus. */
-.sk-karte--hand[data-gesperrt="ja"] {
-  filter: saturate(.25) brightness(.94);
-  opacity: .6;
-  transform: translateY(6px);
+/* Was gelegt werden darf, steht als Gruppe ein Stueck vor. Nicht die
+   gesperrten Karten sind das Auffaellige, sondern die spielbaren - danach
+   sucht man ja. */
+.sk-hand[data-wahl="ja"] .sk-karte--hand:not([data-gesperrt]) { transform: translateY(-5px); }
+
+/* Was gerade nicht gelegt werden darf, sinkt zurueck und verblasst. Wichtig
+   dabei: die Karte selbst bleibt deckend. Mit opacity wurde sie durchsichtig,
+   und weil im Faecher hinter jeder Karte die naechste liegt, sah man beide
+   uebereinander - ein Brei statt einer Karte. Der Schleier liegt deshalb
+   ueber der Karte und traegt selbst die Papierfarbe. */
+.sk-hand[data-wahl="ja"] .sk-karte--hand[data-gesperrt="ja"] {
+  filter: saturate(.3);
+  transform: translateY(9px);
 }
-.sk-karte--hand[data-gesperrt="ja"]:hover { transform: translateY(4px); }
-.sk-karte--hand[data-tipp="ja"] {
-  transform: translateY(-12px);
+.sk-karte--hand[data-gesperrt="ja"]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--sk-papier);
+  opacity: .62;
+  pointer-events: none;
+}
+.sk-hand[data-wahl="ja"] .sk-karte--hand[data-gesperrt="ja"]:hover { transform: translateY(7px); }
+
+/* Nach den Gruppenregeln, damit Zeigen und Tipp sie ueberstimmen. */
+.sk-hand .sk-karte--hand:not(:disabled):not([data-gesperrt]):hover,
+.sk-hand .sk-karte--hand:not(:disabled):not([data-gesperrt]):focus-visible {
+  transform: translateY(-13px);
+  z-index: 4;
+  box-shadow: 0 3px 4px rgba(20, 14, 8, .34), 0 12px 22px rgba(20, 14, 8, .3);
+}
+.sk-hand .sk-karte--hand[data-tipp="ja"] {
+  transform: translateY(-17px);
   z-index: 5;
   box-shadow: 0 0 0 2px var(--gruen), 0 10px 20px rgba(20, 14, 8, .34);
 }

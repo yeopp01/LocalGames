@@ -49,9 +49,11 @@
       + '<path class="sk-gold" d="M5.1 9.2C5.1 6 8.2 3.5 12 3.5s6.9 2.5 6.9 5.7z"/>'
       + '<rect class="sk-rot" x="6.3" y="6.5" width="11.4" height="1.8"/>'
       + '<path class="sk-frucht" d="M6.2 10.3h11.6c0 6.7-2.4 11.2-5.8 11.2s-5.8-4.5-5.8-11.2z"/>',
-    /* Gras: das gruene Laub mit goldener Rippe. */
-    '<path class="sk-gruen" d="M12 2.3c3.4 4.5 8 7 8 11.1a4.1 4.1 0 0 1-6.7 3.2c.3 1.9.9 3.2 2 4.4H8.7c1.1-1.2 1.7-2.5 2-4.4A4.1 4.1 0 0 1 4 13.4C4 9.3 8.6 6.8 12 2.3z"/>'
-      + '<path class="sk-rippe" d="M12 20V7"/>',
+    /* Gras: das Laub, ganz gruen und aus einem Stueck. Eine goldene Rippe lag
+       eine Weile darin - gedacht als Blattader, gewirkt als gelber Strich, der
+       das Zeichen in zwei Haelften schneidet. Bei neun Zeichen auf einer Karte
+       war davon mehr zu sehen als vom Blatt. */
+    '<path class="sk-gruen" d="M12 2.3c3.4 4.5 8 7 8 11.1a4.1 4.1 0 0 1-6.7 3.2c.3 1.9.9 3.2 2 4.4H8.7c1.1-1.2 1.7-2.5 2-4.4A4.1 4.1 0 0 1 4 13.4C4 9.3 8.6 6.8 12 2.3z"/>',
     /* Herz. */
     '<path class="sk-rot" d="M12 21.3C6.4 17.2 3.3 14 3.3 10.2A4.7 4.7 0 0 1 12 7.7a4.7 4.7 0 0 1 8.7 2.5c0 3.8-3.1 7-8.7 11.1z"/>',
     /* Schellen: die geviertelte Schelle, gold und rot ueber Kreuz, mit den
@@ -894,6 +896,9 @@
          Karten muessen sich schieben, drei duerfen nebeneinanderliegen.
          Am Ende steht immer ungefaehr dieselbe Gesamtbreite - sonst
          laeuft die Hand mit sechs Karten aus dem schmalen Bild heraus. */
+      /* Steht die Wahl an, heben sich die spielbaren Karten ab. Ausserhalb
+         des eigenen Zuges bleibt die Hand ruhig liegen. */
+      handKasten.dataset.wahl = erlaubt ? 'ja' : 'nein';
       handKasten.dataset.eng = hand.length > 6 ? 'viel'
         : hand.length > 4 ? 'mittel'
           : hand.length > 3 ? 'wenig' : 'nein';
