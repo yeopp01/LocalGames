@@ -1709,14 +1709,27 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   /* Die Farben des Blatts, nicht die der Oberflaeche: gruen, gold, rot, dazu
      schwarze Eckindizes. Vier Toene fuer vier Farben - unterschieden werden
      Eichel und Gras nicht ueber die Farbe, sondern ueber die Form, genau wie
-     auf dem gedruckten Blatt, wo beide gruen sind. */
-  --sk-gruen: #3C7A3E;
-  --sk-gold: #DFA51B;
-  --sk-rot: #BE3128;
-  --sk-stiel: #6A4A22;
-  --sk-kontur: #2C2318;
+     auf dem gedruckten Blatt, wo beide gruen sind.
+
+     Die Toene sind Drucktoene und keine Oberflaechentoene: satt, laut und
+     ohne Grau darin. Ein gedrucktes Blatt ist mit vier Volltonfarben
+     gemacht, es hat keine gedeckten Zwischentoene - abgetoent sah das Blatt
+     aus wie eine Abbildung eines Blatts und nicht wie eines. Die Kontur ist
+     aus demselben Grund fast schwarz und nicht mehr braun. */
+  --sk-gruen: #1E7A3C;                   /* Laub - und nur das Laub */
+  --sk-gold: #F2B705;
+  /* Die Eichelfrucht war lange dasselbe Gruen wie das Laub. Auf dem
+     gedruckten Blatt geht das, weil dort die Form gross und gestochen
+     ist; auf einem Zeichen von zwanzig Pixeln sind zwei gruene Farben
+     unter vieren eine zu viel. Die Frucht geht deshalb ins Bernstein -
+     dunkler als die Kappe darueber, damit die Eichel eine Eichel bleibt
+     und nicht zur goldenen Kugel wird. */
+  --sk-frucht: #E08A12;
+  --sk-rot: #D22A1D;
+  --sk-stiel: #5A3E1C;
+  --sk-kontur: #18130F;
   --sk-tinte-karte: #241C14;
-  --sk-figur: #33291E;
+  --sk-haut: #F6E6CE;
 
   /* Alle Kartenmasse haengen an einer einzigen Zahl: der Breite einer
      Handkarte. Hoehe, Schriftgrad, Ueberlappung und die Breite des Tisches
@@ -1725,19 +1738,21 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   --sk-b: 70px;                          /* Handkarte */
   --sk-t: 56px;                          /* Karte auf dem Tisch */
   --sk-breit: 420px;                     /* wie breit der Tisch werden darf */
-  --sk-papier: #FBF7EE;
+  --sk-papier: #FAF4E7;
+  --sk-faser: rgba(122, 92, 44, .022);   /* die Faser im Papier, kaum sichtbar */
   --sk-kante: #D8CEBC;
   --sk-filz: #3F6147;
   --sk-filz-tief: #345239;
   --sk-filz-tinte: #E4EBE2;
-  --sk-ruecken: #7C4A3E;
+  /* Der Rueckenkarton ist in beiden Ansichten derselbe: eine Karte dreht sich
+     nicht um, wenn im Zimmer das Licht ausgeht. */
+  --sk-ruecken: #241B12;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --sk-filz: #24382B;
     --sk-filz-tief: #1C2C22;
     --sk-filz-tinte: #CFDACD;
-    --sk-ruecken: #6A3F35;
   }
 }
 
@@ -1784,7 +1799,10 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .sk-mitspieler--rechts { grid-area: 2 / 3; align-self: center; }
 /* Wer dran ist, bekommt einen hellen Fleck im Filz - kein Rahmen, der auf
    dem Tuch wie ein Fremdkoerper saesse. */
-.sk-mitspieler[data-dran="ja"] { background: rgba(255, 255, 255, .14); }
+.sk-mitspieler[data-dran="ja"] {
+  background: rgba(255, 255, 255, .16);
+  box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .5);
+}
 
 .sk-name { font-size: 13px; font-weight: 700; }
 .sk-rolle {
@@ -1799,13 +1817,22 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .sk-mitspieler[data-dran="ja"] .sk-rolle { opacity: .9; }
 .sk-ruecken { display: flex; gap: 1px; flex-wrap: wrap; justify-content: center; max-width: 62px; }
 /* Die Rueckseiten sind kleine Karten und keine Striche: man soll auf einen
-   Blick sehen, wie viel einer noch auf der Hand hat. */
+   Blick sehen, wie viel einer noch auf der Hand hat.
+
+   Auf dem Karton steht das Zeichen der Sammlung: die vier Kacheln des
+   LocalGames-Logos, hier in den Farben des Blatts. Das passt genau, weil
+   beide dasselbe zaehlen - vier Kacheln, vier Farben. Die vierte Kachel ist
+   die des Papiers: Gruen, Rot und Gold sind alles, was ein Schafkopfblatt an
+   Farben kennt, und eine erfundene vierte waere eine Farbe zu viel. */
 .sk-rueck {
   width: 9px;
   height: 13px;
   border-radius: 2px;
   background:
-    repeating-linear-gradient(45deg, rgba(255, 255, 255, .22) 0 1px, transparent 1px 3px),
+    linear-gradient(var(--sk-gruen) 0 0) 1.2px 2.8px / 3.2px 3.2px no-repeat,
+    linear-gradient(var(--sk-rot) 0 0) 4.6px 2.8px / 3.2px 3.2px no-repeat,
+    linear-gradient(var(--sk-gold) 0 0) 1.2px 6.4px / 3.2px 3.2px no-repeat,
+    linear-gradient(var(--sk-papier) 0 0) 4.6px 6.4px / 3.2px 3.2px no-repeat,
     var(--sk-ruecken);
   box-shadow: 0 0 0 .5px rgba(0, 0, 0, .35);
 }
@@ -1847,10 +1874,14 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   height: calc(var(--sk-b) * 1.436);     /* dasselbe Seitenverhaeltnis wie 57 x 89 mm */
   padding: 0;
   border-radius: calc(var(--sk-b) * .115);
-  background: var(--sk-papier);
+  /* Karton und nicht Bildschirm: eine schraege Faser im Papier, so schwach,
+     dass man sie erst sieht, wenn man die Karte gross macht - aber stark
+     genug, dass die Flaeche nicht mehr wie ein weisses Rechteck wirkt. */
+  background:
+    repeating-linear-gradient(48deg, var(--sk-faser) 0 1px, transparent 1px 6px),
+    var(--sk-papier);
   border: 1px solid var(--sk-kante);
   box-shadow: 0 1px 2px rgba(20, 14, 8, .3), 0 4px 10px rgba(20, 14, 8, .16);
-  color: var(--sk-eichel);
   flex: none;
 }
 /* Der Eckindex ist schwarz, nicht in der Kartenfarbe - so steht es auf dem
@@ -1913,10 +1944,16 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
    ist gold mit rotem Schlitz. Deshalb faerbt hier nicht mehr currentColor
    alles ein, sondern jede Form sagt selbst, was sie ist. */
 .sk-karte .sk-gruen { fill: var(--sk-gruen); }
+.sk-karte .sk-frucht { fill: var(--sk-frucht); }
 .sk-karte .sk-gold { fill: var(--sk-gold); }
 .sk-karte .sk-rot { fill: var(--sk-rot); }
 .sk-karte .sk-dunkel { fill: var(--sk-stiel); }
-.sk-karte .sk-figur { fill: var(--sk-figur); }
+/* Die Figuren tragen dieselben vier Farben wie die Zeichen: goldener Hut,
+   roter Rock, helles Gesicht. */
+.sk-karte .sk-hut { fill: var(--sk-gold); }
+.sk-karte .sk-rock { fill: var(--sk-rot); }
+.sk-karte .sk-haut { fill: var(--sk-haut); }
+.sk-karte .sk-punkt { fill: var(--sk-kontur); }
 .sk-karte .sk-aus { fill: var(--sk-papier); stroke: none; }
 
 /* Die dunkle Kontur um jede Form. Sie ist keine Zierde: bei zwanzig Pixeln
@@ -1924,9 +1961,13 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
    non-scaling-stroke haelt sie ueberall gleich stark - sonst waere sie auf
    dem Neuner, wo die Zeichen auf 43 Prozent stehen, nicht mehr zu sehen. */
 .sk-karte .sk-gruen,
+.sk-karte .sk-frucht,
 .sk-karte .sk-gold,
 .sk-karte .sk-rot,
-.sk-karte .sk-dunkel {
+.sk-karte .sk-dunkel,
+.sk-karte .sk-hut,
+.sk-karte .sk-rock,
+.sk-karte .sk-haut {
   stroke: var(--sk-kontur);
   stroke-width: .8;
   stroke-linejoin: round;
@@ -2005,6 +2046,40 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .sk-karte--mini .sk-minipip { display: none; }
 .sk-karte--mini .sk-bild svg { width: 70%; }
 .sk-karte--mini[data-sticht="ja"] { transform: none; box-shadow: 0 0 0 2px var(--gruen); }
+
+/* Wer ist dran. Eine Zeile zwischen Tisch und eigener Hand - dort schaut man
+   ohnehin hin, bevor man eine Karte antippt. Bist du selbst am Zug, ist sie
+   gruen und kraeftig; wartet man auf einen anderen, bleibt sie leise. */
+.sk-dran {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 700;
+  background: var(--karte);
+  border: 1px solid var(--karte-rand);
+  color: var(--tinte-leise);
+}
+.sk-dran[data-wer="ich"] {
+  background: color-mix(in srgb, var(--gruen) 16%, var(--karte));
+  border-color: var(--gruen);
+  color: var(--tinte);
+}
+.sk-dran-punkt {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tinte-still);
+  flex: none;
+}
+/* Der Punkt pocht, solange ein Rechner ueberlegt - so sieht man, dass etwas
+   geschieht, und nicht, dass etwas haengt. */
+.sk-dran[data-wer="andere"] .sk-dran-punkt { animation: sk-pochen 1.1s ease-in-out infinite; }
+.sk-dran[data-wer="ich"] .sk-dran-punkt { background: var(--gruen); }
+@keyframes sk-pochen { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
 
 /* Der Hinweiskasten. Gruen, wenn es passt, rostrot, wenn es besser ginge. */
 .sk-notiz {
@@ -2101,5 +2176,6 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 /* Bewegung aus, wenn das Geraet danach fragt. */
 @media (prefers-reduced-motion: reduce) {
   .b-lunte { animation: none; }
+  .sk-dran-punkt { animation: none; }
   .sk-karte--hand { transition: none; }
 }

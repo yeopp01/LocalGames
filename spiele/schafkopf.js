@@ -42,23 +42,29 @@
      zwanzig Pixeln hält sie die Form zusammen, und das gedruckte Blatt macht
      es genauso. */
   const ZEICHEN = [
-    /* Eichel: Stiel, goldene Kappe mit rotem Band, grüne Frucht. */
+    /* Eichel: Stiel, goldene Kappe mit rotem Band, bernsteinfarbene Frucht.
+       Gruen war sie lange - dasselbe Gruen wie das Laub, und damit war die
+       Farbe als Unterscheidung wertlos. */
     '<path class="sk-dunkel" d="M11.2 1.4h1.6v2.4h-1.6z"/>'
       + '<path class="sk-gold" d="M5.1 9.2C5.1 6 8.2 3.5 12 3.5s6.9 2.5 6.9 5.7z"/>'
       + '<rect class="sk-rot" x="6.3" y="6.5" width="11.4" height="1.8"/>'
-      + '<path class="sk-gruen" d="M6.2 10.3h11.6c0 6.7-2.4 11.2-5.8 11.2s-5.8-4.5-5.8-11.2z"/>',
-    /* Gras: das grüne Laub mit goldener Rippe. */
+      + '<path class="sk-frucht" d="M6.2 10.3h11.6c0 6.7-2.4 11.2-5.8 11.2s-5.8-4.5-5.8-11.2z"/>',
+    /* Gras: das gruene Laub mit goldener Rippe. */
     '<path class="sk-gruen" d="M12 2.3c3.4 4.5 8 7 8 11.1a4.1 4.1 0 0 1-6.7 3.2c.3 1.9.9 3.2 2 4.4H8.7c1.1-1.2 1.7-2.5 2-4.4A4.1 4.1 0 0 1 4 13.4C4 9.3 8.6 6.8 12 2.3z"/>'
       + '<path class="sk-rippe" d="M12 20V7"/>',
     /* Herz. */
     '<path class="sk-rot" d="M12 21.3C6.4 17.2 3.3 14 3.3 10.2A4.7 4.7 0 0 1 12 7.7a4.7 4.7 0 0 1 8.7 2.5c0 3.8-3.1 7-8.7 11.1z"/>',
-    /* Schellen: die goldene Schelle mit rotem Schlitz und Loch. Rund und ohne
-       Öse – die Öse las sich bei zwanzig Pixeln als Eichelstiel, und damit
-       sahen die beiden Farben gleich aus. */
+    /* Schellen: die geviertelte Schelle, gold und gruen ueber Kreuz, mit den
+       drei Punkten. Der Schlitz allein war zu wenig - eine goldene Scheibe
+       mit rotem Strich sah aus wie eine Muenze; die Vierung ist das, was auf
+       dem gedruckten Blatt eine Schelle zur Schelle macht, und sie traegt
+       auch dann noch, wenn der Punkt nur drei Pixel gross ist. */
     '<circle class="sk-gold" cx="12" cy="12" r="9.2"/>'
-      + '<rect class="sk-rot" x="5.4" y="10.9" width="13.2" height="2.3" rx="1.15"/>'
-      + '<circle class="sk-rot" cx="12" cy="7" r="2"/>'
-      + '<rect class="sk-rot" x="10.8" y="15.3" width="2.4" height="4.4" rx="1.2"/>',
+      + '<path class="sk-gruen" d="M2.8 12A9.2 9.2 0 0 1 12 2.8V12z"/>'
+      + '<path class="sk-gruen" d="M21.2 12A9.2 9.2 0 0 1 12 21.2V12z"/>'
+      + '<circle class="sk-punkt" cx="12" cy="12" r="1.5"/>'
+      + '<circle class="sk-punkt" cx="16.7" cy="7.3" r="1.5"/>'
+      + '<circle class="sk-punkt" cx="7.3" cy="16.7" r="1.5"/>',
   ];
 
   const sauKarteVon = (sp) => (sp && sp.art === 'sau' ? K.karte(sp.farbe, 0) : -1);
@@ -98,15 +104,31 @@
   };
 
   /* Die Figur für Ober und Unter. Kopf und Schultern allein sahen aus wie ein
-     Benutzersymbol – erst der Hut macht daraus eine Kartenfigur. Sie steht in
+     Benutzersymbol – erst der Hut macht daraus eine Kartenfigur. Sie ist
+     bunt und keine Silhouette: auf dem gedruckten Blatt trägt der Ober einen
+     roten Rock unter goldenem Hut, und eine schwarze Figur neben einem
+     farbigen Zeichen sieht aus, als fehle ihr die Farbe. Sie steht in
      der Hälfte, die das Farbzeichen frei lässt: beim Ober also unten, beim
-     Unter oben. Genau daher kommen die beiden Namen. */
+     Unter oben. Genau daher kommen die beiden Namen.
+
+     Ausgemalt ist sie mit denselben drei Farben wie die Zeichen, mehr hat
+     das Blatt nicht: roter Rock, gruener Kragen, goldener Hut mit rotem
+     Band, braunes Haar darunter. Das Gesicht bleibt leer – bei acht
+     Millimetern Kopf werden Augen zu Schmutz. */
   function figur(unten) {
     const o = unten ? 24 : 0;
-    return '<rect class="sk-figur" x="13.4" y="' + (1.6 + o) + '" width="7.2" height="4.3" rx="1.4"/>'
-      + '<rect class="sk-figur" x="8.4" y="' + (5.5 + o) + '" width="17.2" height="1.9" rx=".95"/>'
-      + '<circle class="sk-figur" cx="17" cy="' + (11.2 + o) + '" r="3.7"/>'
-      + '<path class="sk-figur" d="M9 ' + (22 + o) + 'c0-4.4 3.6-7.3 8-7.3s8 2.9 8 7.3z"/>';
+    const y = (v) => v + o;
+    /* Von unten nach oben gemalt, so wie sich die Teile ueberdecken: Rock,
+       Kragen, Knopfleiste, Kopf, Haar, Krempe, Hut, Hutband. */
+    return '<path class="sk-rock" d="M9 ' + y(22) + 'c0-4.5 3.6-7.4 8-7.4s8 2.9 8 7.4z"/>'
+      + '<path class="sk-gruen" d="M12.6 ' + y(15.4) + 'L17 ' + y(19.6) + 'l4.4-4.2 1.9 1.4L17 '
+        + y(22) + 'l-6.3-5.2z"/>'
+      + '<rect class="sk-gold" x="16.2" y="' + y(15.8) + '" width="1.6" height="3.6" rx=".6"/>'
+      + '<circle class="sk-haut" cx="17" cy="' + y(11.4) + '" r="3.8"/>'
+      + '<path class="sk-dunkel" d="M10.9 ' + y(7.8) + 'h12.2v1.5c0 1.6-2.7 2.7-6.1 2.7s-6.1-1.1-6.1-2.7z"/>'
+      + '<rect class="sk-gold" x="8.4" y="' + y(5.9) + '" width="17.2" height="2" rx="1"/>'
+      + '<path class="sk-gold" d="M13.2 ' + y(5.9) + 'l.8-4.1a9 9 0 0 1 6 0l.8 4.1z"/>'
+      + '<rect class="sk-rot" x="13.2" y="' + y(3.6) + '" width="7.6" height="1.6"/>';
   }
 
   function kartenBild(f, w) {
@@ -120,8 +142,14 @@
         + zeichenSetzen(f, 17, 23, 1.2);
     }
     if (w === 2) {                                                     // König mit Krone
-      return '<path class="sk-figur" d="M6.5 15.5l2-8.5 4.2 4.6L17 4l4.3 7.6 4.2-4.6 2 8.5z"/>'
-        + '<rect class="sk-figur" x="6.5" y="17" width="21" height="3" rx="1.2"/>'
+      return '<path class="sk-hut" d="M6.5 15.5l2-8.5 4.2 4.6L17 4l4.3 7.6 4.2-4.6 2 8.5z"/>'
+        /* Drei Steine auf den Zacken. Ohne sie ist die Krone eine Zackenlinie,
+           mit ihnen liest sie sich auch dann noch als Krone, wenn die Karte
+           halb verdeckt im Faecher steckt. */
+        + '<circle class="sk-rot" cx="8.5" cy="6.4" r="1.4"/>'
+        + '<circle class="sk-rot" cx="17" cy="3.4" r="1.5"/>'
+        + '<circle class="sk-rot" cx="25.5" cy="6.4" r="1.4"/>'
+        + '<rect class="sk-gruen" x="6.5" y="17" width="21" height="3" rx="1.2"/>'
         + zeichenSetzen(f, 17, 33, 1.02);
     }
     if (w === 3) return zeichenSetzen(f, 17, 11, 0.86) + figur(true);   // Ober: Zeichen oben
@@ -229,6 +257,14 @@
     const stichKasten = el('div', 'sk-stich');
     tisch.append(stichKasten);
 
+    /* Wer dran ist, stand bisher nur in der Kopfzeile und als heller Fleck
+       unter dem Namen des Mitspielers. Beides half genau dann nicht, wenn man
+       es am dringendsten braucht: Bist du selbst am Zug, ist keiner der drei
+       hervorgehoben, und dann sieht das Brett aus, als warte es auf jemand
+       anderen. Also eine eigene Zeile, direkt über der eigenen Hand. */
+    const dranKasten = el('div', 'sk-dran');
+    dranKasten.hidden = true;
+
     const notizKasten = el('div', 'sk-notiz');
     notizKasten.hidden = true;
     const handKasten = el('div', 'sk-hand');
@@ -238,7 +274,7 @@
     endeKasten.hidden = true;
     const leiste = el('div', 'leiste');
 
-    wurzel.append(kopf, tisch, notizKasten, ansageKasten, handKasten, leiste, endeKasten);
+    wurzel.append(kopf, tisch, dranKasten, notizKasten, ansageKasten, handKasten, leiste, endeKasten);
 
     const tippKnopf = el('button', 'knopf knopf--still', 'Tipp');
     tippKnopf.type = 'button';
@@ -705,6 +741,7 @@
       tisch.dataset.phase = stand.phase;
       kopfZeichnen();
       tischZeichnen();
+      dranZeichnen();
       handZeichnen();
       ansageZeichnen();
       notizZeichnen();
@@ -757,6 +794,31 @@
     }
 
     const kontoText = () => (stand.konto[ICH] > 0 ? '+' : '') + stand.konto[ICH];
+
+    function dranZeichnen() {
+      dranKasten.replaceChildren();
+      if (stand.phase !== 'spiel') { dranKasten.hidden = true; return; }
+      dranKasten.hidden = false;
+
+      /* Liegt der Stich voll da, ist die Frage nach dem Zug uninteressant –
+         dann will man wissen, wer ihn bekommt und was er wert war. */
+      if (stand.stichFertig) {
+        const platz = K.stichPlatz(stand.aktuell.karten, ord());
+        const sieger = (stand.aktuell.start + platz) % 4;
+        const a = K.augenSumme(stand.aktuell.karten);
+        dranKasten.dataset.wer = sieger === ICH ? 'ich' : 'stich';
+        dranKasten.append(el('span', 'sk-dran-text',
+          (sieger === ICH ? 'Du machst den Stich' : NAMEN[sieger] + ' macht den Stich')
+          + ' · ' + a + (a === 1 ? ' Auge' : ' Augen')));
+        return;
+      }
+
+      dranKasten.dataset.wer = stand.amZug === ICH ? 'ich' : 'andere';
+      dranKasten.append(el('span', 'sk-dran-punkt'));
+      dranKasten.append(el('span', 'sk-dran-text', stand.amZug === ICH
+        ? 'Du bist dran'
+        : NAMEN[stand.amZug] + ' überlegt …'));
+    }
 
     function tischZeichnen() {
       for (const i of [1, 2, 3]) {
