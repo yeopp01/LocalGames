@@ -654,12 +654,33 @@ const Rahmen = (() => {
     });
 
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
-      });
+      window.addEventListener('load', () => { arbeiterAnmelden(hierNummer()); });
     }
 
     zeichnen();
+  }
+
+  const hierNummer = () => (typeof VERSION === 'object' ? VERSION.nummer : 0);
+
+  /* Der Offline-Speicher wird unter seiner Versionsnummer angemeldet:
+     sw.js?v=32.
+
+     Ein Service Worker erneuert sich nur, wenn sich sein Skript ändert. Bei
+     uns stand die Nummer aber nicht in sw.js, sondern in der importierten
+     version.js – und eingebundene Skripte holt der Browser beim Prüfen aus
+     dem HTTP-Cache. GitHub Pages liefert mit max-age=600, also verglich er
+     zehn Minuten lang gegen eine alte version.js, fand keinen Unterschied
+     und installierte gar nichts. Auf dem Gerät sah das aus, als bräche die
+     Aktualisierung ab: der Knopf meldete eine neue Version, lud neu – und
+     alles kam wieder aus dem alten Lager.
+
+     Steht die Nummer in der Adresse, ist jede Version ein anderes Skript.
+     updateViaCache 'none' hält zusätzlich den Import aus dem Cache heraus. */
+  function arbeiterAnmelden(nummer) {
+    if (!('serviceWorker' in navigator)) return Promise.resolve(null);
+    return navigator.serviceWorker
+      .register('sw.js?v=' + nummer, { updateViaCache: 'none' })
+      .catch(() => null);
   }
 
   /* Das Blatt muss sich auch dann öffnen, wenn eine Zeile fehlt: Nach einem
@@ -732,19 +753,25 @@ const Rahmen = (() => {
     sagen('Version ' + dort + ' gefunden, lädt …');
     toast('Version ' + dort + ' wird geladen.');
 
-    // Erst den Worker den neuen Bestand holen lassen, dann neu laden: ein
-    // sofortiger Reload bekäme sonst wieder die alten Dateien aus dem Lager.
+    /* Erst den Worker den neuen Bestand holen lassen, dann neu laden: ein
+       sofortiger Reload bekäme sonst wieder die alten Dateien aus dem Lager.
+
+       Angemeldet wird dabei ausdrücklich die Nummer, die der Server nennt –
+       nicht nur update() auf der alten Adresse. update() prüft, ob sich
+       dasselbe Skript geändert hat; die neue Adresse ist von vornherein ein
+       anderes und muss nicht erst überzeugen. */
     if ('serviceWorker' in navigator) {
-      const anmeldung = await navigator.serviceWorker.getRegistration();
-      if (anmeldung) {
-        const uebernahme = new Promise((fertig) => {
-          navigator.serviceWorker.addEventListener('controllerchange', fertig, { once: true });
-        });
-        try { await anmeldung.update(); } catch (e) { /* dann eben ohne */ }
-        // Nicht ewig warten: klemmt die Übernahme, wird trotzdem neu geladen –
-        // spätestens der nächste Start bekommt den neuen Stand.
-        await Promise.race([uebernahme, new Promise((f) => setTimeout(f, 6000))]);
-      }
+      const uebernahme = new Promise((fertig) => {
+        navigator.serviceWorker.addEventListener('controllerchange', fertig, { once: true });
+      });
+      await arbeiterAnmelden(dort);
+      try {
+        const anmeldung = await navigator.serviceWorker.getRegistration();
+        if (anmeldung) await anmeldung.update();
+      } catch (e) { /* dann eben ohne */ }
+      // Nicht ewig warten: klemmt die Übernahme, wird trotzdem neu geladen –
+      // spätestens der nächste Start bekommt den neuen Stand.
+      await Promise.race([uebernahme, new Promise((f) => setTimeout(f, 8000))]);
     }
     location.reload();
   }

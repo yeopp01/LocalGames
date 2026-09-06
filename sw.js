@@ -1,9 +1,24 @@
 /* Service Worker: legt die App auf dem Gerät ab, damit sie offline startet.
    Die Versionsnummer steht in version.js und gilt für beide Seiten. */
-// Eingebundene Skripte zaehlen bei der Aktualisierungspruefung des Workers
-// mit: aendert sich version.js, gilt auch dieser Worker als neu.
+/* Die Nummer steht in der Adresse dieses Workers - sw.js?v=32 - und nur
+   ersatzweise in der importierten version.js.
+
+   Frueher stand hier, eingebundene Skripte zaehlten bei der
+   Aktualisierungspruefung mit: aendere version.js, und der Worker gelte als
+   neu. Das stimmt nur halb. Der Browser holt eingebundene Skripte beim
+   Pruefen aus dem HTTP-Cache (updateViaCache steht von Haus aus auf
+   'imports'), und GitHub Pages liefert mit max-age=600. Zehn Minuten lang
+   verglich der Browser also gegen eine alte version.js, fand keinen
+   Unterschied und installierte gar nichts - auf dem Geraet sah das aus, als
+   braeche die Aktualisierung ab.
+
+   Die Adresse des Workers dagegen kommt nie aus dem Cache. Steht die Nummer
+   darin, ist jede Version ein anderes Skript, und es gibt nichts zu
+   vergleichen. */
 importScripts('./version.js');
-const LAGER = 'localgames-v' + VERSION.nummer;
+const NUMMER = new URL(self.location.href).searchParams.get('v')
+  || (typeof VERSION === 'object' ? String(VERSION.nummer) : '0');
+const LAGER = 'localgames-v' + NUMMER;
 
 const GRUNDBESTAND = [
   './',

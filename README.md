@@ -114,6 +114,26 @@ Der Offline-Speicher ist dabei ein Jahrgang: Ein Lager wird bei der
 Installation gefüllt und danach nicht mehr angefasst, alles kommt aus
 demselben. Sonst träfe nach einem Ausrollen frisches HTML auf alten Code.
 
+**Warum die Nummer in der Adresse des Workers steht.** Ein Service Worker
+erneuert sich nur, wenn sich sein *Skript* ändert. Die Nummer stand aber lange
+nicht in `sw.js`, sondern in der davon importierten `version.js` — und
+eingebundene Skripte holt der Browser bei der Prüfung aus dem HTTP-Cache
+(`updateViaCache` steht von Haus aus auf `'imports'`). GitHub Pages liefert mit
+`max-age=600`. Zehn Minuten lang verglich der Browser also gegen eine alte
+`version.js`, fand keinen Unterschied und installierte gar nichts. Auf dem
+Gerät sah das aus, als bräche die Aktualisierung ab: Der Knopf meldete eine
+neue Version, lud neu — und alles kam wieder aus dem alten Lager.
+
+Angemeldet wird der Worker deshalb als `sw.js?v=<nummer>`, mit
+`updateViaCache: 'none'`. Die Adresse eines Workers kommt nie aus dem Cache;
+ist die Nummer darin, ist jede Version schlicht ein anderes Skript, und es gibt
+nichts zu vergleichen. Das Lager benennt sich aus derselben Adresse und nur
+ersatzweise aus dem Import — sonst bekäme es womöglich den Namen einer alten
+Version. Der Knopf meldet zusätzlich ausdrücklich die Nummer an, die der Server
+nennt, statt nur `update()` auf der alten Adresse aufzurufen.
+
+Die Nummer steht damit weiterhin an genau einer Stelle: in `version.js`.
+
 ## Ein Spiel dazu bauen
 
 Ein Spiel ist genau eine Datei in `spiele/`, die sich beim Rahmen anmeldet:
