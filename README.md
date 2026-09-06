@@ -376,8 +376,18 @@ widersprechen, werden gar nicht erst gewürfelt.
 
 Liegen nur noch dreizehn Karten, hört das Schätzen auf: dann wird die Welt
 exakt durchgerechnet, beide Parteien bestmöglich, mit Alpha-Beta. Früher
-umzuschalten kostet das Sechsfache an Rechenzeit und im schlimmsten Fall
-über eine Sekunde – gemessen, nicht geschätzt.
+umzuschalten wäre schön und geht nicht – die Zeit für einen einzigen Zug,
+gemessen statt geschätzt:
+
+| exakt ab … offenen Karten | Median | schlimmster Fall |
+| --- | --- | --- |
+| 13 | 3 ms | 0,3 s |
+| 17 | 4 ms | 1,2 s |
+| 21 | 5 ms | 42 s |
+| 25 | 7 ms | 21 min |
+
+Der Median bleibt harmlos, weil die meisten Stellungen klein sind. Es sind die
+wenigen grossen, die einen Zug zur Hängepartie machen.
 
 Gegen die reine Faustregel, die in den Ausspielungen steckt, gewinnt dieser
 Rechner **44 von 59** Partien; umgekehrt nur 29 von 59.
@@ -442,10 +452,24 @@ gespielt: 83 % Sauspiel, 11 % Alleinspiel, der Rest zusammengeworfen.
   in 71 % der Fälle – mit dem Gras-Ober nur in 58 %." In der Ansage heißt
   derselbe Knopf „Was geht?" und zeigt für jedes mögliche Spiel die Quote.
 * *Mitlesen* – nach jeder deiner Karten ein Urteil. Gerechnet wird still, schon
-  während du überlegst, damit es sofort dasteht. Unter drei Punkten
-  Quotenabstand gilt eine Karte als richtig: zwei Züge, die so eng
-  beieinanderliegen, unterscheiden sich nur im Rauschen des Würfelns. Am Ende
-  steht die Bilanz, bei wie vielen Karten du auf der besten lagst.
+  während du überlegst, damit es sofort dasteht. Am Ende steht die Bilanz, bei
+  wie vielen Karten du auf der besten lagst.
+
+**Wann ist ein Vorsprung einer?** Alle Karten werden in *denselben* gewürfelten
+Verteilungen geprüft. Der Unterschied lässt sich deshalb Welt für Welt bilden
+statt aus zwei getrennten Quoten schätzen, und das ist um ein Vielfaches
+genauer: Die meisten Verteilungen gehen für beide Karten gleich aus und fallen
+aus der Rechnung heraus, statt zweimal Streuung beizusteuern. Ist der
+Unterschied kleiner als sein eigener Fehler, sagt der Hinweis das – und dass
+dann die Begründung entscheidet und nicht die Zahl. Eine feste Schwelle wäre
+falsch: mal sind drei Punkte Zufall, mal ist einer echt.
+
+**Und die Begründung behauptet nichts Ungeprüftes.** „Billiger kommst du nicht
+drüber" steht nur da, wenn wirklich keine billigere Karte den Stich holt.
+Empfiehlt der Rechner die teure, sagt er, welche billigere er verwirft und
+warum – meistens, weil der Partner hinter einem sitzt und einen Überstich noch
+abfangen kann, oder weil die Karte sonst später ohnehin fällt. Ein Lehrer, der
+den richtigen Zug falsch begründet, ist schlimmer als keiner.
 
 **Der Hinweisgeber schummelt nicht.** Er bekommt genau dieselbe Sicht wie ein
 Gegner: dein Blatt und was liegt, sonst nichts. Ein Tipp kann deshalb

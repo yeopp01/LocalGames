@@ -678,7 +678,7 @@ const Karten = (() => {
 
     const erste = weltAus(s, verteilen(s, wuerfel));
     const zuege = erlaubt(erste, s.ich);
-    const werte = zuege.map((k) => ({ karte: k, siege: 0, augen: 0, welten: 0 }));
+    const werte = zuege.map((k) => ({ karte: k, siege: 0, augen: 0, welten: 0, folge: [] }));
     if (zuege.length === 1) {
       werte[0].welten = 1;
       werte[0].siege = 1;
@@ -696,9 +696,14 @@ const Karten = (() => {
         const punkte0 = w.offen <= EXAKT_AB ? endspiel(w, -1, 1000) : ausspielen(w).punkte[0];
         zugZurueck(w);
         const meine = meineSeite === 0 ? punkte0 : 120 - punkte0;
+        const gut = meine >= schwelle ? 1 : 0;
         e.augen += meine;
-        e.siege += meine >= schwelle ? 1 : 0;
+        e.siege += gut;
         e.welten += 1;
+        /* Jede Welt einzeln festhalten. Alle Karten wurden in denselben Welten
+           geprueft - nur so laesst sich hinterher paarweise vergleichen, und
+           erst das trennt einen echten Vorsprung vom Rauschen des Wuerfelns. */
+        e.folge.push(gut);
       }
       welten += 1;
     }
@@ -717,12 +722,36 @@ const Karten = (() => {
 
   const besteKarte = (s, opt) => bewerten(s, opt).werte[0].karte;
 
+  /* Ist der Vorsprung von a vor b echt? Weil beide in denselben Welten
+     geprueft wurden, wird die Differenz Welt fuer Welt gebildet und nicht aus
+     zwei getrennten Quoten geschaetzt. Das ist um ein Vielfaches genauer:
+     die meisten Welten gehen fuer beide Karten gleich aus und fallen aus der
+     Rechnung heraus, statt zweimal Streuung beizusteuern.
+
+     klar heisst: der Unterschied ist groesser als sein eigener Fehler. Ist er
+     es nicht, sind die beiden Karten hier gleich gut, und der Hinweis soll
+     das auch sagen, statt eine Rangfolge zu behaupten. */
+  function unterschied(a, b) {
+    const n = Math.min(a.folge.length, b.folge.length);
+    if (!n) return { d: 0, fehler: 1, klar: false };
+    let summe = 0;
+    let quadrat = 0;
+    for (let i = 0; i < n; i += 1) {
+      const d = a.folge[i] - b.folge[i];
+      summe += d;
+      quadrat += d * d;
+    }
+    const m = summe / n;
+    const fehler = 1.96 * Math.sqrt(Math.max(quadrat / n - m * m, 0) / n);
+    return { d: m, fehler, klar: m > fehler && m > 0.005 };
+  }
+
   /* -------------------------------------------------------- Begründung
 
      Der Rechner sagt nicht nur was, sondern warum. Die Begründung kommt nicht
      aus der Suche – die kann nur zählen –, sondern aus der Lage: dieselben
      Fragen, die ein Mensch am Tisch stellt, in dieser Reihenfolge. */
-  function begruenden(s, k, seite) {
+  function begruenden(s, k, seite, zuege) {
     const ord = s.ord;
     const meins = seite;                        // gehöre ich zur Spielerpartei?
     const trumpf = ord.trumpf[k] === 1;
@@ -763,25 +792,92 @@ const Karten = (() => {
     const imStich = augenSumme(s.trick);
     const letzter = s.trick.length === 3;
 
+    /* Wer kommt nach mir – und sitzt mein Partner darunter? Das entscheidet
+       mehr als alles andere darüber, ob man eine teure Karte anbringen darf:
+       Kommt einer drüber, kann der Partner hinter mir ihn noch stechen.
+
+       Beim Sauspiel weiß man das nur, wenn die Rufsau schon gefallen ist oder
+       man sie selbst hält. Solange nicht, wird hier auch nichts behauptet. */
+    const folgende = [];
+    for (let i = s.trick.length + 1; i < 4; i += 1) folgende.push((s.trickStart + i) % 4);
+    const teamKlar = s.sp.art !== 'sau' || s.sauBei >= 0;
+    const partnerHinten = teamKlar && folgende.some((q) => seiteVon(s, q) === meins);
+
+    /* Alle erlaubten Karten, die den Stich ebenfalls holen würden – daran
+       misst sich, ob eine teure Karte Absicht ist oder Verschwendung. Ohne
+       diese Liste stand hier früher „billiger kommst du nicht drüber", auch
+       wenn danebenlag, was genau das billiger getan hätte. */
+    const andere = (zuege || []).filter((c) => c !== k);
+    const billiger = andere.filter((c) => schlaegt(c, bester, ang, ord) && augen(c) < augen(k));
+
     if (schlaegt(k, bester, ang, ord)) {
-      if (unsrer) return 'Drüber – auch wenn der Stich schon uns gehört, ist es hier billiger, ihn selbst zu machen.';
-      return 'Stechen: der Stich ist ' + imStich + (imStich === 1 ? ' Auge' : ' Augen')
-        + ' wert' + (letzter ? ' und nach dir kommt keiner mehr.' : ', und billiger kommst du nicht drüber.');
-    }
-    if (unsrer) {
-      if (augen(k) >= 10) {
-        return 'Schmieren: der Stich gehört schon uns' + (letzter ? '' : ' und hält voraussichtlich')
-          + ' – also die Augen drauf. Zehner und Sau sind bei den eigenen Leuten am besten aufgehoben.';
+      if (unsrer) {
+        return 'Drüber – auch wenn der Stich schon uns gehört, ist es hier billiger, '
+          + 'ihn selbst zu machen.';
       }
-      if (augen(k) >= 4) return 'Ein König drauf: etwas Zählbares, ohne gleich den Zehner zu riskieren.';
+      if (!billiger.length) {
+        return 'Stechen: der Stich ist ' + imStich + (imStich === 1 ? ' Auge' : ' Augen')
+          + ' wert' + (letzter ? ' und nach dir kommt keiner mehr.'
+            : ', und billiger kommst du nicht drüber – alles andere, was reicht, '
+              + 'kostet dich mehr.');
+      }
+      /* Die teure Karte ist gewollt. Dann muss auch dastehen, warum – und was
+         sie kostet, wenn es schiefgeht. */
+      const teuer = billiger.map((c) => kartenName(c)).join(' oder ');
+      let satz = 'Den ' + kartenName(k) + ' anbringen, obwohl ' + teuer
+        + ' auch reichen würde. ';
+      if (partnerHinten) {
+        satz += 'Dein Partner legt nach dir: Kommt jemand mit einer höheren Karte '
+          + 'drüber, kann er den Stich immer noch holen – und deine ' + augen(k)
+          + ' Augen liegen dann bei euch statt bei den anderen. ';
+      } else if (letzter) {
+        satz += 'Nach dir kommt keiner mehr, der Stich ist also sicher. ';
+      } else {
+        satz += 'Das ist ein Wagnis: nach dir kommt noch jemand drüber, und dann '
+          + 'sind die Augen weg. Der Rechner hält es trotzdem für den besseren Weg. ';
+      }
+      const hoeher = s.unbekannt.filter((c) => ord.reihe(c) === ord.reihe(k)
+        && ord.rang[c] > ord.rang[k]);
+      if (hoeher.length && augen(k) >= 10) {
+        satz += 'Und lange halten kannst du ihn nicht: ' + kartenName(hoeher[hoeher.length - 1])
+          + ' ist noch draußen, dir fällt der Zehner also später ohnehin – nur dann '
+          + 'womöglich ohne jemanden im Rücken.';
+      }
+      return satz.trim();
+    }
+
+    if (unsrer) {
+      const sicher = letzter || !s.unbekannt.some((c) => schlaegt(c, bester, ang, ord));
+      if (augen(k) >= 10) {
+        return 'Schmieren: der Stich gehört schon uns'
+          + (sicher ? ' und kann nicht mehr weg' : ' und hält voraussichtlich')
+          + ' – also die Augen drauf. Zehner und Sau sind bei den eigenen Leuten '
+          + 'am besten aufgehoben.';
+      }
+      if (augen(k) >= 4) {
+        return 'Ein König drauf: etwas Zählbares, ohne gleich den Zehner zu riskieren – '
+          + 'sicher genug für vier Augen ist der Stich, für zehn noch nicht.';
+      }
       return 'Noch nichts verschenken – der Stich ist nicht sicher genug für die dicken Karten.';
     }
+
     if (augen(k) === 0) {
       return 'Da ist nichts zu holen, also billig abwerfen. Kein Auge für die Gegenpartei.';
+    }
+    const billigste = (zuege || [k]).reduce((a, c) => (augen(c) < augen(a) ? c : a), k);
+    if (billigste !== k) {
+      return 'Du kommst nicht drüber. Billiger wäre ' + kartenName(billigste)
+        + ' – der Rechner gibt trotzdem ' + kartenName(k) + ' her, weil die Karte '
+        + 'später ohnehin fällt und du die andere noch brauchst.';
     }
     return 'Du kommst nicht drüber – dann die Karte weg, die am wenigsten weh tut.';
   }
 
+  /* Zu welcher Partei gehoert p aus meiner Sicht? 1 heisst Spielerpartei.
+     Achtung: Solange beim Sauspiel die Rufsau nicht gefallen ist, weiss man
+     von zwei Leuten nicht, wer davon der Partner des Spielers ist - dann
+     liefert das hier fuer beide 0. Wer daraus etwas ueber den eigenen Partner
+     folgern will, muss vorher fragen, ob sauBei ueberhaupt bekannt ist. */
   const seiteVon = (s, p) => (
     p === s.spieler || (s.sp.art === 'sau' && s.sauBei >= 0 && p === s.sauBei) ? 1 : 0);
 
@@ -942,7 +1038,7 @@ const Karten = (() => {
     schlaegt, stichPlatz, moeglicheSpiele, laufende, abrechnen,
     GRUNDWERT, LAUF_AB, MINDEST, ABSCHLAG, EXAKT_AB,
     welt, erlaubt, zugMachen, zugZurueck, faustregel, ausspielen, endspiel,
-    nochSchlagbar, mischen,
+    nochSchlagbar, mischen, unterschied,
     sichtVon, verteilen, weltAus, bewerten, besteKarte, begruenden, seiteVon,
     quote, ansageRat, siebt, schutz,
   };

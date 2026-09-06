@@ -27,36 +27,38 @@
   const DENKZEIT = 620;      // wie lang ein Rechner "überlegt"
   const STICHZEIT = 1250;    // wie lang ein voller Stich liegen bleibt
 
-  /* Die vier Farbzeichen, selbst gezeichnet – kein fremder Kartensatz, so wie
-     die Wortlisten und die Schriften hier auch nicht von außen kommen.
+  /* Die vier Farbzeichen. Selbst gezeichnet – die Illustrationen eines
+     gedruckten Kartensatzes hängen an fremden Rechten, und dieses Projekt ist
+     bewusst frei davon. Übernommen sind Aufbau und Farbgebung des bayrischen
+     Blatts; die sind Allgemeingut und seit dem 19. Jahrhundert dieselben.
 
-     Gefüllte Umrisse und keine Striche: Auf dreißig Pixeln fällt eine
-     Konturlinie auseinander, eine Silhouette bleibt eine Silhouette. Was Loch
-     sein soll – der Schlitz der Schelle, die Öse –, wird in Papierfarbe
-     darübergelegt statt ausgespart; das spart die Umkehrregeln im Pfad.
+     Und die sind anders, als man denkt: Die Eichel ist nicht braun. Ihre
+     Frucht ist grün, die Kappe gold mit rotem Band. Braun kommt auf dem
+     ganzen Blatt nicht vor – ein brauner Eichel-Ober sieht aus wie eine
+     Eichel im Wald und nicht wie eine auf einer Karte.
 
      Jedes Zeichen lebt in einem Feld von 24 × 24 und wird zum Setzen nur
-     verschoben und skaliert. */
+     verschoben, gedreht und skaliert. Die dunkle Kontur ist keine Zierde: bei
+     zwanzig Pixeln hält sie die Form zusammen, und das gedruckte Blatt macht
+     es genauso. */
   const ZEICHEN = [
-    /* Eichel: Stiel, Kappe, Frucht. Die Kappe ist schraffiert wie auf dem
-       gedruckten Blatt – ohne das ist sie nur eine Halbkugel, und die Eichel
-       wird zur Schelle mit Stiel. Genau daran lagen die beiden zu nah
-       beieinander. */
-    '<path class="sk-voll" d="M11.1 1.2h1.8v2.6h-1.8z"/>'
-      + '<path class="sk-voll" d="M5.1 9C5.1 5.8 8.2 3.5 12 3.5s6.9 2.3 6.9 5.5z"/>'
-      + '<path class="sk-fein" d="M8.5 4.8L7 9M12 3.7V9M15.5 4.8L17 9"/>'
-      + '<path class="sk-voll" d="M6.2 10.2h11.6c0 6.7-2.4 11.2-5.8 11.2s-5.8-4.5-5.8-11.2z"/>',
-    /* Gras: das Laub des bayrischen Blatts – ein Blatt am Stiel. */
-    '<path class="sk-voll" d="M12 2.3c3.4 4.5 8 7 8 11.1a4.1 4.1 0 0 1-6.7 3.2c.3 1.9.9 3.2 2 4.4H8.7c1.1-1.2 1.7-2.5 2-4.4A4.1 4.1 0 0 1 4 13.4C4 9.3 8.6 6.8 12 2.3z"/>',
+    /* Eichel: Stiel, goldene Kappe mit rotem Band, grüne Frucht. */
+    '<path class="sk-dunkel" d="M11.2 1.4h1.6v2.4h-1.6z"/>'
+      + '<path class="sk-gold" d="M5.1 9.2C5.1 6 8.2 3.5 12 3.5s6.9 2.5 6.9 5.7z"/>'
+      + '<rect class="sk-rot" x="6.3" y="6.5" width="11.4" height="1.8"/>'
+      + '<path class="sk-gruen" d="M6.2 10.3h11.6c0 6.7-2.4 11.2-5.8 11.2s-5.8-4.5-5.8-11.2z"/>',
+    /* Gras: das grüne Laub mit goldener Rippe. */
+    '<path class="sk-gruen" d="M12 2.3c3.4 4.5 8 7 8 11.1a4.1 4.1 0 0 1-6.7 3.2c.3 1.9.9 3.2 2 4.4H8.7c1.1-1.2 1.7-2.5 2-4.4A4.1 4.1 0 0 1 4 13.4C4 9.3 8.6 6.8 12 2.3z"/>'
+      + '<path class="sk-rippe" d="M12 20V7"/>',
     /* Herz. */
-    '<path class="sk-voll" d="M12 21.3C6.4 17.2 3.3 14 3.3 10.2A4.7 4.7 0 0 1 12 7.7a4.7 4.7 0 0 1 8.7 2.5c0 3.8-3.1 7-8.7 11.1z"/>',
-    /* Schellen: die runde Schelle mit Schlitz und Loch – rund und satt, ohne
-       Öse obendrauf. Die Öse war der Fehler: bei zwanzig Pixeln las sie sich
-       als Eichelstiel, und damit sahen die beiden Farben gleich aus. */
-    '<circle class="sk-voll" cx="12" cy="12" r="9.2"/>'
-      + '<rect class="sk-aus" x="5.6" y="11" width="12.8" height="2.2" rx="1.1"/>'
-      + '<circle class="sk-aus" cx="12" cy="7.2" r="1.9"/>'
-      + '<rect class="sk-aus" x="10.9" y="15.4" width="2.2" height="4.2" rx="1.1"/>',
+    '<path class="sk-rot" d="M12 21.3C6.4 17.2 3.3 14 3.3 10.2A4.7 4.7 0 0 1 12 7.7a4.7 4.7 0 0 1 8.7 2.5c0 3.8-3.1 7-8.7 11.1z"/>',
+    /* Schellen: die goldene Schelle mit rotem Schlitz und Loch. Rund und ohne
+       Öse – die Öse las sich bei zwanzig Pixeln als Eichelstiel, und damit
+       sahen die beiden Farben gleich aus. */
+    '<circle class="sk-gold" cx="12" cy="12" r="9.2"/>'
+      + '<rect class="sk-rot" x="5.4" y="10.9" width="13.2" height="2.3" rx="1.15"/>'
+      + '<circle class="sk-rot" cx="12" cy="7" r="2"/>'
+      + '<rect class="sk-rot" x="10.8" y="15.3" width="2.4" height="4.4" rx="1.2"/>',
   ];
 
   const sauKarteVon = (sp) => (sp && sp.art === 'sau' ? K.karte(sp.farbe, 0) : -1);
@@ -101,21 +103,25 @@
      Unter oben. Genau daher kommen die beiden Namen. */
   function figur(unten) {
     const o = unten ? 24 : 0;
-    return '<rect class="sk-voll" x="13.4" y="' + (1.6 + o) + '" width="7.2" height="4.3" rx="1.4"/>'
-      + '<rect class="sk-voll" x="8.4" y="' + (5.5 + o) + '" width="17.2" height="1.9" rx=".95"/>'
-      + '<circle class="sk-voll" cx="17" cy="' + (11.2 + o) + '" r="3.7"/>'
-      + '<path class="sk-voll" d="M9 ' + (22 + o) + 'c0-4.4 3.6-7.3 8-7.3s8 2.9 8 7.3z"/>';
+    return '<rect class="sk-figur" x="13.4" y="' + (1.6 + o) + '" width="7.2" height="4.3" rx="1.4"/>'
+      + '<rect class="sk-figur" x="8.4" y="' + (5.5 + o) + '" width="17.2" height="1.9" rx=".95"/>'
+      + '<circle class="sk-figur" cx="17" cy="' + (11.2 + o) + '" r="3.7"/>'
+      + '<path class="sk-figur" d="M9 ' + (22 + o) + 'c0-4.4 3.6-7.3 8-7.3s8 2.9 8 7.3z"/>';
   }
 
   function kartenBild(f, w) {
     if (w === 0) return zeichenSetzen(f, 17, 23, 1.4);                 // Sau
-    if (w === 1) {                                                     // Zehner mit römischem X
-      return zeichenSetzen(f, 17, 23, 1.4)
-        + '<path class="sk-schnitt" d="M9 13l16 20M25 13L9 33"/>';
+    if (w === 1) {                                                     // Zehner
+      /* Das römische X steht auf dem gedruckten Blatt oben und unten in der
+         Mitte – nicht über dem Farbzeichen. Quer durchs Bild gemalt macht es
+         die Karte nur unleserlich. */
+      return '<path class="sk-xmark" d="M13.6 2.4l6.8 6.2M20.4 2.4l-6.8 6.2'
+        + 'M13.6 37.4l6.8 6.2M20.4 37.4l-6.8 6.2"/>'
+        + zeichenSetzen(f, 17, 23, 1.2);
     }
     if (w === 2) {                                                     // König mit Krone
-      return '<path class="sk-voll" d="M6.5 15.5l2-8.5 4.2 4.6L17 4l4.3 7.6 4.2-4.6 2 8.5z"/>'
-        + '<rect class="sk-voll" x="6.5" y="17" width="21" height="3" rx="1.2"/>'
+      return '<path class="sk-figur" d="M6.5 15.5l2-8.5 4.2 4.6L17 4l4.3 7.6 4.2-4.6 2 8.5z"/>'
+        + '<rect class="sk-figur" x="6.5" y="17" width="21" height="3" rx="1.2"/>'
         + zeichenSetzen(f, 17, 33, 1.02);
     }
     if (w === 3) return zeichenSetzen(f, 17, 11, 0.86) + figur(true);   // Ober: Zeichen oben
@@ -411,7 +417,7 @@
     /* ------------------------------------------------------------ Hinweise */
 
     function rechnen(frist) {
-      return K.bewerten(K.sichtVon(zustand(), ICH), { proben: 300, frist: frist || 380 });
+      return K.bewerten(K.sichtVon(zustand(), ICH), { proben: 500, frist: frist || 380 });
     }
 
     function tippGeben() {
@@ -423,14 +429,15 @@
         s.toast('Gerade bist du nicht dran.');
         return;
       }
-      const rat = vorabRat || rechnen();
+      const rat = vorabRat || rechnen(700);
       const beste = rat.werte[0];
       stand.hilfen += 1;
       tipp = {
         karte: beste.karte,
         text: rat.einzig
           ? 'Du hast gar keine Wahl – nur diese eine Karte ist erlaubt.'
-          : K.begruenden(K.sichtVon(zustand(), ICH), beste.karte, meineSeite()),
+          : K.begruenden(K.sichtVon(zustand(), ICH), beste.karte, meineSeite(),
+            rat.werte.map((e) => e.karte)),
         zahl: rat.einzig ? '' : zahlSatz(rat, beste),
       };
       sichern();
@@ -439,14 +446,25 @@
 
     const prozentText = (q) => Math.round(q * 100) + ' %';
 
+    /* Zwei Quoten nebeneinander sind noch kein Vorsprung. Verglichen wird
+       paarweise – dieselben Verteilungen für beide Karten –, und wenn der
+       Unterschied kleiner ist als sein eigener Fehler, steht das auch da.
+       Sonst liest man aus 39 gegen 36 Prozent eine Rangfolge heraus, die es
+       gar nicht gibt. */
     function zahlSatz(rat, e) {
       const zweite = rat.werte[1];
-      const abstand = zweite ? e.quote - zweite.quote : 0;
-      return 'In ' + rat.welten + ' durchgerechneten Verteilungen reicht es damit '
-        + prozentText(e.quote) + ' der Fälle'
-        + (zweite && abstand > 0.005
-          ? ' – mit ' + K.kartenName(zweite.karte) + ' nur ' + prozentText(zweite.quote) + '.'
-          : '.');
+      const kopf = 'In ' + rat.welten + ' durchgerechneten Verteilungen reicht es damit in '
+        + prozentText(e.quote) + ' der Fälle';
+      if (!zweite) return kopf + '.';
+      const u = K.unterschied(e, zweite);
+      if (!u.klar) {
+        return kopf + '. ' + K.kartenName(zweite.karte) + ' käme auf '
+          + prozentText(zweite.quote) + ' – der Unterschied ist kleiner als die '
+          + 'Ungenauigkeit des Würfelns. Hier entscheidet also der Grund oben '
+          + 'und nicht die Zahl.';
+      }
+      return kopf + ', mit ' + K.kartenName(zweite.karte) + ' nur in '
+        + prozentText(zweite.quote) + '.';
     }
 
     /* Das Urteil nach deinem Zug. Es kommt aus derselben Rechnung wie der
@@ -462,20 +480,26 @@
       const meine = rat.werte.find((e) => e.karte === karte);
       if (!meine) return;
       stand.gezaehlt += 1;
-      const abstand = beste.quote - meine.quote;
-      if (abstand <= 0.03) {
+      const sicht = K.sichtVon(zustand(), ICH);
+      const zuege = rat.werte.map((e) => e.karte);
+      /* Gilt als richtig, was sich vom Besten nicht unterscheiden lässt. Der
+         Vergleich ist paarweise: dieselben Verteilungen für beide Karten.
+         Eine feste Schwelle wäre hier falsch – mal sind drei Punkte Zufall,
+         mal ist ein Punkt echt. */
+      const u = K.unterschied(beste, meine);
+      if (!u.klar) {
         stand.treffer += 1;
         stand.notiz = {
           art: 'gut',
           titel: karte === beste.karte ? 'Genau die.' : 'Geht auch.',
-          text: K.begruenden(K.sichtVon(zustand(), ICH), karte, meineSeite()),
+          text: K.begruenden(sicht, karte, meineSeite(), zuege),
         };
         return;
       }
       stand.notiz = {
         art: 'schlecht',
         titel: 'Besser: ' + K.kartenName(beste.karte),
-        text: K.begruenden(K.sichtVon(zustand(), ICH), beste.karte, meineSeite())
+        text: K.begruenden(sicht, beste.karte, meineSeite(), zuege)
           + ' Deine Karte reicht in ' + prozentText(meine.quote) + ' der Verteilungen, jene in '
           + prozentText(beste.quote) + '.',
       };

@@ -1706,10 +1706,17 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
    beim franzoesischen Spiel geht nicht: Eichel und Gras waeren dann auf einem
    Handy nicht auseinanderzuhalten. */
 :root {
-  --sk-eichel: #6B4119;
-  --sk-gras: #2F6B3A;
-  --sk-herz: #A83228;
-  --sk-schellen: #CE8E06;
+  /* Die Farben des Blatts, nicht die der Oberflaeche: gruen, gold, rot, dazu
+     schwarze Eckindizes. Vier Toene fuer vier Farben - unterschieden werden
+     Eichel und Gras nicht ueber die Farbe, sondern ueber die Form, genau wie
+     auf dem gedruckten Blatt, wo beide gruen sind. */
+  --sk-gruen: #3C7A3E;
+  --sk-gold: #DFA51B;
+  --sk-rot: #BE3128;
+  --sk-stiel: #6A4A22;
+  --sk-kontur: #2C2318;
+  --sk-tinte-karte: #241C14;
+  --sk-figur: #33291E;
 
   /* Alle Kartenmasse haengen an einer einzigen Zahl: der Breite einer
      Handkarte. Hoehe, Schriftgrad, Ueberlappung und die Breite des Tisches
@@ -1846,10 +1853,10 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   color: var(--sk-eichel);
   flex: none;
 }
-.sk-karte[data-farbe="0"] { color: var(--sk-eichel); }
-.sk-karte[data-farbe="1"] { color: var(--sk-gras); }
-.sk-karte[data-farbe="2"] { color: var(--sk-herz); }
-.sk-karte[data-farbe="3"] { color: var(--sk-schellen); }
+/* Der Eckindex ist schwarz, nicht in der Kartenfarbe - so steht es auf dem
+   gedruckten Blatt, und es ist zugleich das Lesbarste, was auf hellem Papier
+   geht. Welche Farbe die Karte hat, sagt das Zeichen daneben. */
+.sk-karte { color: var(--sk-tinte-karte); }
 
 /* Der Eckindex: Wert und Farbzeichen klein untereinander, oben links und noch
    einmal gedreht unten rechts. Im Faecher ist von den meisten Karten nur der
@@ -1901,24 +1908,44 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 }
 .sk-bild svg { width: 58%; display: block; }
 
-.sk-karte .sk-voll,
-.sk-karte .sk-aus { stroke: none; }
-.sk-karte .sk-voll { fill: currentColor; }
-.sk-karte .sk-aus { fill: var(--sk-papier); }
-/* Das roemische X des Zehners ist aus dem Zeichen ausgespart, nicht
-   daraufgemalt - deshalb traegt es die Papierfarbe. */
-.sk-karte .sk-schnitt {
-  fill: none;
-  stroke: var(--sk-papier);
-  stroke-width: 3.6;
-  stroke-linecap: round;
+/* Die Farbzeichen sind mehrfarbig wie auf dem gedruckten Blatt - die Eichel
+   traegt eine goldene Kappe mit rotem Band auf gruener Frucht, die Schelle
+   ist gold mit rotem Schlitz. Deshalb faerbt hier nicht mehr currentColor
+   alles ein, sondern jede Form sagt selbst, was sie ist. */
+.sk-karte .sk-gruen { fill: var(--sk-gruen); }
+.sk-karte .sk-gold { fill: var(--sk-gold); }
+.sk-karte .sk-rot { fill: var(--sk-rot); }
+.sk-karte .sk-dunkel { fill: var(--sk-stiel); }
+.sk-karte .sk-figur { fill: var(--sk-figur); }
+.sk-karte .sk-aus { fill: var(--sk-papier); stroke: none; }
+
+/* Die dunkle Kontur um jede Form. Sie ist keine Zierde: bei zwanzig Pixeln
+   haelt sie die Form zusammen, und das gedruckte Blatt macht es genauso.
+   non-scaling-stroke haelt sie ueberall gleich stark - sonst waere sie auf
+   dem Neuner, wo die Zeichen auf 43 Prozent stehen, nicht mehr zu sehen. */
+.sk-karte .sk-gruen,
+.sk-karte .sk-gold,
+.sk-karte .sk-rot,
+.sk-karte .sk-dunkel {
+  stroke: var(--sk-kontur);
+  stroke-width: .8;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
 }
-/* Die Schraffur auf der Eichelkappe. Duenner als der Schnitt des Zehners und
-   ohne Rundung - sie soll Struktur andeuten, nicht die Kappe zerschneiden. */
-.sk-karte .sk-fein {
+/* Die Rippe im Laubblatt und das roemische X des Zehners: beides Striche,
+   keine Flaechen. Das X steht oben und unten in der Mitte, so wie gedruckt. */
+.sk-karte .sk-rippe {
   fill: none;
-  stroke: var(--sk-papier);
-  stroke-width: 1;
+  stroke: var(--sk-gold);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+.sk-karte .sk-xmark {
+  fill: none;
+  stroke: var(--sk-tinte-karte);
+  stroke-width: 1.7;
+  stroke-linecap: round;
   vector-effect: non-scaling-stroke;
 }
 
