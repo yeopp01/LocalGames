@@ -1706,10 +1706,10 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
    beim franzoesischen Spiel geht nicht: Eichel und Gras waeren dann auf einem
    Handy nicht auseinanderzuhalten. */
 :root {
-  --sk-eichel: #6E4A22;
+  --sk-eichel: #4F3116;
   --sk-gras: #2F6B3A;
   --sk-herz: #A83228;
-  --sk-schellen: #A8770E;
+  --sk-schellen: #C6900B;
   --sk-papier: #FBF7EE;
   --sk-kante: #D8CEBC;
   --sk-filz: #3F6147;
@@ -1828,8 +1828,8 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .sk-karte {
   position: relative;
   display: block;
-  width: 52px;
-  height: 74px;
+  width: 56px;
+  height: 80px;
   padding: 0;
   border-radius: 8px;
   background: var(--sk-papier);
@@ -1843,39 +1843,68 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .sk-karte[data-farbe="2"] { color: var(--sk-herz); }
 .sk-karte[data-farbe="3"] { color: var(--sk-schellen); }
 
-.sk-wert {
+/* Der Eckindex: Wert und Farbzeichen klein untereinander, oben links und noch
+   einmal gedreht unten rechts. Im Faecher ist von den meisten Karten nur der
+   linke Streifen zu sehen - was dort nicht steht, steht fuer den Spieler
+   ueberhaupt nicht auf der Karte. */
+.sk-ecke {
   position: absolute;
   top: 3px;
-  left: 5px;
+  left: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  line-height: 1;
+}
+.sk-ecke--unten {
+  top: auto;
+  left: auto;
+  right: 4px;
+  bottom: 3px;
+  transform: rotate(180deg);
+}
+.sk-rang {
   font-family: 'DM Mono', monospace;
   font-size: 14px;
   font-weight: 500;
-  line-height: 1;
-  letter-spacing: -.04em;
+  letter-spacing: -.06em;
+  padding: 0 1px;
+  border-radius: 3px;
 }
-/* Der Wert steht zweimal auf der Karte. Im Faecher verdeckt die naechste
-   Karte die rechte Haelfte - links oben bleibt er immer sichtbar, und beim
-   Aufnehmen liest man ihn wie auf einem echten Blatt. */
-.sk-wert--unten {
-  top: auto;
-  left: auto;
-  right: 5px;
-  bottom: 3px;
-  transform: rotate(180deg);
-  opacity: .55;
+/* Trumpf traegt seinen Wert als ausgefuellte Marke. Beim Sauspiel sind
+   vierzehn der zweiunddreissig Karten Trumpf, quer durch drei Farben - das
+   ist genau die Sache, die Anfaenger dauernd nachzaehlen muessen. */
+.sk-karte[data-trumpf="ja"] .sk-rang {
+  background: currentColor;
+  color: var(--sk-papier);
+  padding: 1px 3px;
 }
-.sk-zeichen {
+.sk-minipip { display: block; }
+.sk-minipip svg { width: 9px; height: 9px; display: block; }
+
+.sk-bild {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
 }
-.sk-zeichen svg { width: 30px; height: 30px; display: block; }
-.sk-zeichen .sk-voll { fill: currentColor; }
-.sk-zeichen .sk-aus { fill: var(--sk-papier); }
+.sk-bild svg { width: 61%; display: block; }
 
-.sk-karte--tisch { width: 48px; height: 68px; }
-.sk-karte--tisch .sk-zeichen svg { width: 27px; height: 27px; }
+.sk-karte .sk-voll,
+.sk-karte .sk-aus { stroke: none; }
+.sk-karte .sk-voll { fill: currentColor; }
+.sk-karte .sk-aus { fill: var(--sk-papier); }
+/* Das roemische X des Zehners ist aus dem Zeichen ausgespart, nicht
+   daraufgemalt - deshalb traegt es die Papierfarbe. */
+.sk-karte .sk-schnitt {
+  fill: none;
+  stroke: var(--sk-papier);
+  stroke-width: 3.6;
+  stroke-linecap: round;
+}
+
+.sk-karte--tisch { width: 52px; height: 74px; }
 /* Wer den Stich haelt, steht ein Stueck vor - dafuer braucht es keine Farbe,
    die mit den vier Kartenfarben um Aufmerksamkeit streitet. */
 .sk-karte[data-sticht="ja"] {
@@ -1890,10 +1919,10 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   justify-content: center;
   align-items: flex-end;
   width: 100%;
-  min-height: 92px;
+  min-height: 98px;
   padding: 10px 0 2px;
 }
-.sk-hand[data-eng="ja"] .sk-karte--hand { margin-right: -13px; }
+.sk-hand[data-eng="ja"] .sk-karte--hand { margin-right: -19px; }
 .sk-hand[data-eng="ja"] .sk-karte--hand:last-child { margin-right: 0; }
 .sk-karte--hand {
   transition: transform .13s ease, box-shadow .13s ease;
@@ -1919,10 +1948,11 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   box-shadow: 0 0 0 2px var(--gruen), 0 10px 20px rgba(20, 14, 8, .34);
 }
 
-.sk-karte--mini { width: 32px; height: 46px; border-radius: 5px; box-shadow: 0 1px 2px rgba(20, 14, 8, .25); }
-.sk-karte--mini .sk-wert { font-size: 10px; top: 2px; left: 3px; }
-.sk-karte--mini .sk-wert--unten { display: none; }
-.sk-karte--mini .sk-zeichen svg { width: 17px; height: 17px; }
+.sk-karte--mini { width: 34px; height: 48px; border-radius: 5px; box-shadow: 0 1px 2px rgba(20, 14, 8, .25); }
+.sk-karte--mini .sk-ecke--unten { display: none; }
+.sk-karte--mini .sk-rang { font-size: 10px; }
+.sk-karte--mini .sk-minipip { display: none; }
+.sk-karte--mini .sk-bild svg { width: 70%; }
 .sk-karte--mini[data-sticht="ja"] { transform: none; box-shadow: 0 0 0 2px var(--gruen); }
 
 /* Der Hinweiskasten. Gruen, wenn es passt, rostrot, wenn es besser ginge. */
@@ -1998,9 +2028,11 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 
 .zeile[data-gewaehlt="ja"] { border-color: var(--gruen); }
 
-@media (max-width: 360px) {
-  .sk-karte { width: 42px; height: 60px; }
-  .sk-karte--tisch { width: 38px; height: 55px; }
+@media (max-width: 370px) {
+  .sk-karte { width: 50px; height: 72px; }
+  .sk-karte--tisch { width: 46px; height: 66px; }
+  .sk-hand[data-eng="ja"] .sk-karte--hand { margin-right: -18px; }
+  .sk-rang { font-size: 13px; }
 }
 
 

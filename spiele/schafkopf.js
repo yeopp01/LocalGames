@@ -33,7 +33,10 @@
      Gefüllte Umrisse und keine Striche: Auf dreißig Pixeln fällt eine
      Konturlinie auseinander, eine Silhouette bleibt eine Silhouette. Was Loch
      sein soll – der Schlitz der Schelle, die Öse –, wird in Papierfarbe
-     darübergelegt statt ausgespart; das spart die Umkehrregeln im Pfad. */
+     darübergelegt statt ausgespart; das spart die Umkehrregeln im Pfad.
+
+     Jedes Zeichen lebt in einem Feld von 24 × 24 und wird zum Setzen nur
+     verschoben und skaliert. */
   const ZEICHEN = [
     /* Eichel: Stiel, Kappe, Frucht. Der Spalt dazwischen ist echter Abstand. */
     '<path class="sk-voll" d="M11.2 1.5h1.6v2.6h-1.6z"/>'
@@ -51,6 +54,62 @@
   ];
 
   const sauKarteVon = (sp) => (sp && sp.art === 'sau' ? K.karte(sp.farbe, 0) : -1);
+
+  /* ------------------------------------------------------- Das Kartenbild
+
+     Das Bild in der Mitte, in einem Feld von 34 × 46. Die Bauweise ist die des
+     gedruckten Blatts, nur die Striche sind eigene:
+
+       Zahlkarten tragen ihr Zeichen so oft, wie sie heißen. Sieben Eicheln
+       sehen anders aus als neun, ohne dass man den Buchstaben liest – und
+       nebenbei sagt das Bild schon, was die Karte wert ist: viele kleine
+       Zeichen heißt wertlos, ein großes heißt Sau.
+
+       Ober und Unter heißen so, weil das Farbzeichen bei der Figur oben
+       beziehungsweise unten steht. Genau das machen sie hier auch. Das ist
+       die einzige Unterscheidung, die man am Rand eines Fächers noch sieht,
+       und sie ist die, die den Karten ihre Namen gab.
+
+       Der Zehner trägt sein römisches X wie auf dem gedruckten Blatt, aus dem
+       Zeichen ausgespart.
+  */
+
+  const zeichenSetzen = (f, x, y, g) => '<g transform="translate(' + (x - 12 * g).toFixed(2)
+    + ' ' + (y - 12 * g).toFixed(2) + ') scale(' + g + ')">' + ZEICHEN[f] + '</g>';
+
+  /* Die Anordnungen der Zahlkarten – dieselbe Ordnung wie auf dem Blatt:
+     paarweise untereinander, bei ungerader Zahl eine in der Mitte. */
+  const REIHEN = {
+    7: [[11, 11], [23, 11], [8, 23], [17, 23], [26, 23], [11, 35], [23, 35]],
+    8: [[11, 9], [23, 9], [11, 19], [23, 19], [11, 28], [23, 28], [11, 38], [23, 38]],
+    9: [[11, 11], [17, 11], [23, 11], [11, 23], [17, 23], [23, 23], [11, 35], [17, 35], [23, 35]],
+  };
+
+  /* Die Figur für Ober und Unter: Kopf und Schultern, mehr braucht es nicht.
+     Sie steht in der Hälfte, die das Farbzeichen frei lässt – beim Ober also
+     unten, beim Unter oben. */
+  const figur = (unten) => (unten
+    ? '<circle class="sk-voll" cx="17" cy="30" r="4.4"/>'
+      + '<path class="sk-voll" d="M8.5 46c0-5.4 3.8-8.8 8.5-8.8s8.5 3.4 8.5 8.8z"/>'
+    : '<circle class="sk-voll" cx="17" cy="9" r="4.4"/>'
+      + '<path class="sk-voll" d="M8.5 25c0-5.4 3.8-8.8 8.5-8.8s8.5 3.4 8.5 8.8z"/>');
+
+  function kartenBild(f, w) {
+    if (w === 0) return zeichenSetzen(f, 17, 23, 1.35);                // Sau
+    if (w === 1) {                                                     // Zehner mit römischem X
+      return zeichenSetzen(f, 17, 23, 1.35)
+        + '<path class="sk-schnitt" d="M9 14l16 18M25 14L9 32"/>';
+    }
+    if (w === 2) {                                                     // König mit Krone
+      return '<path class="sk-voll" d="M6.5 15.5l2-8.5 4.2 4.6L17 4l4.3 7.6 4.2-4.6 2 8.5z"/>'
+        + '<rect class="sk-voll" x="6.5" y="17" width="21" height="3" rx="1.2"/>'
+        + zeichenSetzen(f, 17, 33, 1.02);
+    }
+    if (w === 3) return zeichenSetzen(f, 17, 11, 0.82) + figur(true);   // Ober: Zeichen oben
+    if (w === 4) return figur(false) + zeichenSetzen(f, 17, 35, 0.82);  // Unter: Zeichen unten
+    const n = w === 5 ? 9 : w === 6 ? 8 : 7;
+    return REIHEN[n].map(([x, y]) => zeichenSetzen(f, x, y, 0.42)).join('');
+  }
 
   /* ------------------------------------------------------------------ Spiel */
 
@@ -567,17 +626,39 @@
 
     /* ------------------------------------------------------------ Zeichnen */
 
+    /* Der Eckindex ist der Grund, warum sich ein Fächer lesen lässt: Von den
+       acht Karten in der Hand ist von sieben nur ein Streifen zu sehen, und
+       auf dem muss alles stehen. Wert und Farbzeichen, klein untereinander,
+       oben links – und noch einmal auf dem Kopf unten rechts, damit es auch
+       dann stimmt, wenn die Karte andersherum liegt. */
+    function ecke(k, unten) {
+      const e = el('span', 'sk-ecke' + (unten ? ' sk-ecke--unten' : ''));
+      e.append(el('span', 'sk-rang', K.KURZ[K.wert(k)]));
+      const p = el('span', 'sk-minipip');
+      p.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+        + ZEICHEN[K.farbe(k)] + '</svg>';
+      e.append(p);
+      return e;
+    }
+
     function karteBauen(k, klasse) {
       const b = el('button', 'sk-karte ' + (klasse || ''));
       b.type = 'button';
       b.dataset.farbe = String(K.farbe(k));
-      b.setAttribute('aria-label', K.kartenName(k));
-      const bild = el('span', 'sk-zeichen');
-      bild.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
-        + ZEICHEN[K.farbe(k)] + '</svg>';
-      b.append(bild);
-      b.append(el('span', 'sk-wert', K.KURZ[K.wert(k)]));
-      b.append(el('span', 'sk-wert sk-wert--unten', K.KURZ[K.wert(k)]));
+      /* Trumpf bekommt seinen Wert als ausgefüllte Marke statt als blossen
+         Buchstaben. Beim Sauspiel sind das vierzehn der zweiunddreißig Karten,
+         quer durch drei Farben – ohne Marke muss man sie sich merken. Vor der
+         Ansage steht die Spielart noch nicht fest, dann bleibt die Marke weg
+         statt zu raten. */
+      if (stand.spielart && (stand.phase === 'spiel' || stand.phase === 'ende')) {
+        if (ord().trumpf[k]) b.dataset.trumpf = 'ja';
+      }
+      b.setAttribute('aria-label', K.kartenName(k)
+        + (b.dataset.trumpf ? ', Trumpf' : '') + ', ' + K.augen(k) + ' Augen');
+      const bild = el('span', 'sk-bild');
+      bild.innerHTML = '<svg viewBox="0 0 34 46" aria-hidden="true" focusable="false">'
+        + kartenBild(K.farbe(k), K.wert(k)) + '</svg>';
+      b.append(bild, ecke(k, false), ecke(k, true));
       return b;
     }
 
