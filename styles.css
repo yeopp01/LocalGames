@@ -1694,7 +1694,317 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 }
 .a-zeile[data-vorn] .a-zahl { color: var(--tinte); font-weight: 500; }
 
+/* ========================================================== 16. Schafkopf */
+
+/* Zwei Sachen halten hier bewusst nicht mit dem Hell-Dunkel-Wechsel mit:
+   das Papier der Karten und der Filz des Tisches. Eine Spielkarte ist hell,
+   auch nachts, und ein Kartentisch ist gruen - das sind keine Farben der
+   Oberflaeche, sondern Farben der Gegenstaende. Dunkelt man sie mit ab, sitzt
+   man vor grauen Rechtecken statt vor einem Blatt.
+
+   Die vier Farbzeichen bekommen jedes seinen eigenen Ton. Rot-Schwarz wie
+   beim franzoesischen Spiel geht nicht: Eichel und Gras waeren dann auf einem
+   Handy nicht auseinanderzuhalten. */
+:root {
+  --sk-eichel: #6E4A22;
+  --sk-gras: #2F6B3A;
+  --sk-herz: #A83228;
+  --sk-schellen: #A8770E;
+  --sk-papier: #FBF7EE;
+  --sk-kante: #D8CEBC;
+  --sk-filz: #3F6147;
+  --sk-filz-tief: #345239;
+  --sk-filz-tinte: #E4EBE2;
+  --sk-ruecken: #7C4A3E;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --sk-filz: #24382B;
+    --sk-filz-tief: #1C2C22;
+    --sk-filz-tinte: #CFDACD;
+    --sk-ruecken: #6A3F35;
+  }
+}
+
+.sk-kopf {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  max-width: 420px;
+  font-size: 13px;
+  color: var(--tinte-leise);
+}
+.sk-kopf b { font-size: 15px; color: var(--tinte); font-weight: 700; }
+
+/* Der Tisch: drei Mitspieler aussen herum, in der Mitte der Stich. Deine
+   Karten liegen ausserhalb - sie brauchen die ganze Breite. */
+.sk-tisch {
+  width: 100%;
+  max-width: 420px;
+  display: grid;
+  grid-template-columns: 66px 1fr 66px;
+  grid-template-rows: auto 1fr;
+  gap: 4px;
+  padding: 10px 8px 12px;
+  border-radius: var(--rund);
+  color: var(--sk-filz-tinte);
+  background:
+    radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--sk-filz) 82%, #fff) 0%, transparent 62%),
+    var(--sk-filz);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .18), inset 0 2px 14px rgba(0, 0, 0, .22);
+}
+.sk-mitspieler {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 5px 2px;
+  border-radius: var(--rund-klein);
+  min-width: 0;
+}
+.sk-mitspieler--oben { grid-area: 1 / 2; }
+.sk-mitspieler--links { grid-area: 2 / 1; align-self: center; }
+.sk-mitspieler--rechts { grid-area: 2 / 3; align-self: center; }
+/* Wer dran ist, bekommt einen hellen Fleck im Filz - kein Rahmen, der auf
+   dem Tuch wie ein Fremdkoerper saesse. */
+.sk-mitspieler[data-dran="ja"] { background: rgba(255, 255, 255, .14); }
+
+.sk-name { font-size: 13px; font-weight: 700; }
+.sk-rolle {
+  font-size: 10px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  opacity: .72;
+  min-height: 12px;
+  text-align: center;
+  line-height: 1.2;
+}
+.sk-mitspieler[data-dran="ja"] .sk-rolle { opacity: .9; }
+.sk-ruecken { display: flex; gap: 1px; flex-wrap: wrap; justify-content: center; max-width: 62px; }
+/* Die Rueckseiten sind kleine Karten und keine Striche: man soll auf einen
+   Blick sehen, wie viel einer noch auf der Hand hat. */
+.sk-rueck {
+  width: 9px;
+  height: 13px;
+  border-radius: 2px;
+  background:
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, .22) 0 1px, transparent 1px 3px),
+    var(--sk-ruecken);
+  box-shadow: 0 0 0 .5px rgba(0, 0, 0, .35);
+}
+
+/* Die vier Plaetze des Stichs liegen dort, wo der Spieler sitzt - so sieht
+   man ohne Nachdenken, wer was gelegt hat. */
+.sk-stich {
+  grid-area: 2 / 2;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  place-items: center;
+  min-height: 176px;
+  position: relative;
+}
+.sk-karte--tisch[data-platz="unten"] { grid-area: 3 / 2; }
+.sk-karte--tisch[data-platz="links"] { grid-area: 2 / 1; }
+.sk-karte--tisch[data-platz="oben"] { grid-area: 1 / 2; }
+.sk-karte--tisch[data-platz="rechts"] { grid-area: 2 / 3; }
+.sk-leer {
+  grid-area: 2 / 2;
+  font-size: 12px;
+  color: inherit;
+  opacity: .55;
+  text-align: center;
+}
+/* Waehrend der Ansage liegt noch nichts auf dem Tisch - dann muss dort auch
+   kein Loch von der Groesse eines Stichs klaffen. */
+.sk-tisch[data-phase="ansage"] .sk-stich,
+.sk-tisch[data-phase="weiter"] .sk-stich { min-height: 84px; }
+
+/* Eine Karte: Wert oben links, Farbzeichen gross darunter, unten dasselbe
+   auf dem Kopf - so wie es auf einem gedruckten Blatt auch steht. Nachgemalt
+   ist nichts: auf fuenfzig Pixeln wird aus einem Kupferstich ein Fleck. */
+.sk-karte {
+  position: relative;
+  display: block;
+  width: 52px;
+  height: 74px;
+  padding: 0;
+  border-radius: 8px;
+  background: var(--sk-papier);
+  border: 1px solid var(--sk-kante);
+  box-shadow: 0 1px 2px rgba(20, 14, 8, .3), 0 4px 10px rgba(20, 14, 8, .16);
+  color: var(--sk-eichel);
+  flex: none;
+}
+.sk-karte[data-farbe="0"] { color: var(--sk-eichel); }
+.sk-karte[data-farbe="1"] { color: var(--sk-gras); }
+.sk-karte[data-farbe="2"] { color: var(--sk-herz); }
+.sk-karte[data-farbe="3"] { color: var(--sk-schellen); }
+
+.sk-wert {
+  position: absolute;
+  top: 3px;
+  left: 5px;
+  font-family: 'DM Mono', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -.04em;
+}
+/* Der Wert steht zweimal auf der Karte. Im Faecher verdeckt die naechste
+   Karte die rechte Haelfte - links oben bleibt er immer sichtbar, und beim
+   Aufnehmen liest man ihn wie auf einem echten Blatt. */
+.sk-wert--unten {
+  top: auto;
+  left: auto;
+  right: 5px;
+  bottom: 3px;
+  transform: rotate(180deg);
+  opacity: .55;
+}
+.sk-zeichen {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+.sk-zeichen svg { width: 30px; height: 30px; display: block; }
+.sk-zeichen .sk-voll { fill: currentColor; }
+.sk-zeichen .sk-aus { fill: var(--sk-papier); }
+
+.sk-karte--tisch { width: 48px; height: 68px; }
+.sk-karte--tisch .sk-zeichen svg { width: 27px; height: 27px; }
+/* Wer den Stich haelt, steht ein Stueck vor - dafuer braucht es keine Farbe,
+   die mit den vier Kartenfarben um Aufmerksamkeit streitet. */
+.sk-karte[data-sticht="ja"] {
+  transform: translateY(-5px);
+  box-shadow: 0 2px 3px rgba(20, 14, 8, .34), 0 10px 18px rgba(20, 14, 8, .3);
+}
+
+/* Deine acht Karten liegen als Faecher: leicht ueberlappend und von der
+   Mitte weg gekippt. Acht Karten nebeneinander passen sonst auf kein Handy. */
+.sk-hand {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  width: 100%;
+  min-height: 92px;
+  padding: 10px 0 2px;
+}
+.sk-hand[data-eng="ja"] .sk-karte--hand { margin-right: -13px; }
+.sk-hand[data-eng="ja"] .sk-karte--hand:last-child { margin-right: 0; }
+.sk-karte--hand {
+  transition: transform .13s ease, box-shadow .13s ease;
+  transform-origin: 50% 130%;
+}
+.sk-karte--hand:not(:disabled):hover,
+.sk-karte--hand:not(:disabled):focus-visible {
+  transform: translateY(-9px);
+  z-index: 4;
+  box-shadow: 0 3px 4px rgba(20, 14, 8, .34), 0 12px 22px rgba(20, 14, 8, .3);
+}
+/* Was gerade nicht gelegt werden darf, sinkt zurueck und verliert Farbe -
+   gesperrt, aber noch lesbar. Ausgrauen allein sieht nach Fehler aus. */
+.sk-karte--hand[data-gesperrt="ja"] {
+  filter: saturate(.25) brightness(.94);
+  opacity: .6;
+  transform: translateY(6px);
+}
+.sk-karte--hand[data-gesperrt="ja"]:hover { transform: translateY(4px); }
+.sk-karte--hand[data-tipp="ja"] {
+  transform: translateY(-12px);
+  z-index: 5;
+  box-shadow: 0 0 0 2px var(--gruen), 0 10px 20px rgba(20, 14, 8, .34);
+}
+
+.sk-karte--mini { width: 32px; height: 46px; border-radius: 5px; box-shadow: 0 1px 2px rgba(20, 14, 8, .25); }
+.sk-karte--mini .sk-wert { font-size: 10px; top: 2px; left: 3px; }
+.sk-karte--mini .sk-wert--unten { display: none; }
+.sk-karte--mini .sk-zeichen svg { width: 17px; height: 17px; }
+.sk-karte--mini[data-sticht="ja"] { transform: none; box-shadow: 0 0 0 2px var(--gruen); }
+
+/* Der Hinweiskasten. Gruen, wenn es passt, rostrot, wenn es besser ginge. */
+.sk-notiz {
+  width: 100%;
+  padding: 11px 13px;
+  border-radius: var(--rund-klein);
+  background: var(--karte);
+  border: 1px solid var(--karte-rand);
+  border-left: 3px solid var(--tinte-still);
+}
+.sk-notiz[data-art="tipp"] { border-left-color: var(--gelb); }
+.sk-notiz[data-art="gut"] { border-left-color: var(--gruen); }
+.sk-notiz[data-art="schlecht"] { border-left-color: var(--rost); }
+.sk-notiz-titel { margin: 0 0 3px; font-size: 14.5px; font-weight: 700; }
+.sk-notiz-text { margin: 0; font-size: 13px; line-height: 1.45; color: var(--tinte-leise); }
+.sk-notiz-zahl {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--tinte-still);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Die Ansage. */
+.sk-ansage { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.sk-frage { margin: 0; font-size: 15.5px; font-weight: 700; }
+.sk-gruppe { display: flex; flex-direction: column; gap: 4px; }
+.sk-gruppe-titel { font-size: 11.5px; color: var(--tinte-still); }
+.sk-knopfreihe { display: flex; flex-wrap: wrap; gap: 6px; }
+.sk-ansageknopf { padding: 8px 12px; font-size: 14px; }
+.sk-weiter { width: 100%; }
+
+.sk-ratliste { display: grid; gap: 4px; margin: 10px 0; }
+.sk-ratzeile {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 11px;
+  border-radius: var(--rund-klein);
+  background: var(--karte);
+  border: 1px solid var(--karte-rand);
+  font-size: 14px;
+}
+.sk-ratzeile[data-gut="ja"] { border-color: var(--gruen); }
+.sk-ratzahl { font-family: 'DM Mono', monospace; color: var(--tinte-leise); font-variant-numeric: tabular-nums; }
+
+/* Die Abrechnung am Ende. */
+.sk-rechnung { display: grid; gap: 2px; margin: 12px 0; width: 100%; max-width: 320px; }
+.sk-rechnung-zeile {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13.5px;
+  color: var(--tinte-leise);
+  padding: 3px 0;
+}
+.sk-rechnung-zeile:last-child {
+  border-top: 1px solid var(--karte-rand);
+  margin-top: 4px;
+  padding-top: 7px;
+  color: var(--tinte);
+  font-weight: 700;
+  font-size: 15px;
+}
+.sk-rechnung-zahl { font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; }
+
+.sk-rueckblick { display: grid; gap: 5px; }
+.sk-rueck-zeile { display: flex; align-items: center; gap: 8px; }
+.sk-rueck-nr { font-size: 11px; color: var(--tinte-still); width: 1ch; }
+.sk-rueck-karten { display: flex; gap: 3px; }
+.sk-rueck-wer { font-size: 11.5px; color: var(--tinte-leise); margin-left: auto; text-align: right; }
+
+.zeile[data-gewaehlt="ja"] { border-color: var(--gruen); }
+
+@media (max-width: 360px) {
+  .sk-karte { width: 42px; height: 60px; }
+  .sk-karte--tisch { width: 38px; height: 55px; }
+}
+
+
 /* Bewegung aus, wenn das Geraet danach fragt. */
 @media (prefers-reduced-motion: reduce) {
   .b-lunte { animation: none; }
+  .sk-karte--hand { transition: none; }
 }

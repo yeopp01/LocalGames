@@ -24,6 +24,7 @@ Enthalten sind bisher:
 | **Bombe** | Eine Silbe, ein Wort, schnell weitergeben – bis es knallt. Die Uhr läuft verdeckt. |
 | **Zwei Wahrheiten** | Drei Sätze über sich, einer erfunden. Die anderen raten reihum und geheim. |
 | **Wer am ehesten** | Eine Frage, geheime Stimmen, aufgedecktes Ergebnis. 45 Fragen, harmlos und frech. |
+| **Schafkopf** | Bayrisch, zu viert, gegen drei rechnende Gegner. Sauspiel, Wenz, Geier, Solo – mit Lehrer, der sagt, was du hättest spielen sollen. |
 
 Über allem liegt ein Dashboard mit der Spielauswahl und eine gemeinsame
 Statistik über alle Partien, samt Sicherung zum Mitnehmen.
@@ -87,6 +88,7 @@ in `index.html` – die App läuft unverändert weiter.
 | `spiele/woerter.js` | Wortschatz für Wördle samt Tipps |
 | `spiele/loeser.js` | Die Rechnung hinter dem Zug-Vorschlag |
 | `spiele/begriffe.js` | Wortpaare für Verräter |
+| `spiele/karten.js` | Das bayrische Blatt: Regeln, Abrechnung und der Kartenrechner |
 | `spiele/runde.js` | Bausteine für die Spiele zu mehreren |
 | `spiele/*.js` | je Datei ein Spiel |
 | `version.js` | Die Versionsnummer, für Seite und Offline-Speicher |
@@ -351,6 +353,84 @@ keine zweimal. Es gibt keinen Sieger – das Spiel notiert deshalb kein
 
 Eine „Partie" ist hier der ganze Abend und nicht die einzelne Frage. Sonst
 stünden nach einer Viertelstunde vierzig Einträge in der Statistik.
+
+## Schafkopf im Detail
+
+Bayrisch, zu viert, kurze Karte: 32 Blatt, jeder acht, 120 Augen, 61 gewinnen.
+Angesagt werden Sauspiel, Wenz, Geier und Farbsolo; abgerechnet wird mit dem
+üblichen Tarif samt Schneider, Schwarz und Laufenden. Die drei Mitspieler
+heißen Vroni, Sepp und Resi und rechnen.
+
+**Wie die Gegner denken.** Sie sehen ihr eigenes Blatt und alles, was liegt –
+die Karten der anderen sehen sie nicht. Aus dem, was sie wissen dürfen, würfeln
+sie zweihundert mögliche Verteilungen der fremden Karten zusammen, spielen jede
+zu Ende und legen die Karte, die am häufigsten für 61 Augen reicht.
+
+Ihr Wissen ist dabei nicht nur „was liegt schon". Wer eine Farbe nicht bedient,
+hat sie nicht mehr – das merken sie sich. Und der Rufsau-Zwang verrät noch
+mehr: Der Spieler hat die gerufene Sau nicht, sonst hätte er nicht rufen
+dürfen. Wer die Rufffarbe bedient, ohne die Sau zu legen, hat sie auch nicht.
+Und fällt die Sau nicht, obwohl ihre Farbe angespielt wurde, dann *ist* der
+Anspieler der Partner – nur er darf davonlaufen. Verteilungen, die dem
+widersprechen, werden gar nicht erst gewürfelt.
+
+Liegen nur noch dreizehn Karten, hört das Schätzen auf: dann wird die Welt
+exakt durchgerechnet, beide Parteien bestmöglich, mit Alpha-Beta. Früher
+umzuschalten kostet das Sechsfache an Rechenzeit und im schlimmsten Fall
+über eine Sekunde – gemessen, nicht geschätzt.
+
+Gegen die reine Faustregel, die in den Ausspielungen steckt, gewinnt dieser
+Rechner **44 von 59** Partien; umgekehrt nur 29 von 59.
+
+**Ob sich ein Blatt lohnt**, wird genauso beantwortet: sechzigmal probeweise
+durchspielen und zählen. Eine Punktetabelle wäre schlechter, denn die gerufene
+Sau liegt irgendwo, und wo, weiß beim Ansagen niemand.
+
+Diese Probe schmeichelt allerdings dem, der ansagt – die Faustregel greift
+lieber an, als dass sie verteidigt. Über 160 durchgespielte Partien gemessen:
+
+| | geschätzt | tatsächlich |
+| --- | --- | --- |
+| Sauspiel | 0,74 | 0,66 |
+| Alleinspiele | 0,69 | 0,61 |
+
+Derselbe Abstand quer durch alle Spielarten, also wird er einmal abgezogen,
+statt für jede Spielart eine eigene Zahl zu erfinden. Ein Alleinspiel braucht
+danach 0,72, damit es angesagt wird. Bei 0,62 spielt jeder Vierte allein, bei
+0,72 jeder Siebte – und das kommt dem nahe, wie am Tisch wirklich gespielt
+wird. Ein Solo spielt man, wenn es sitzt, und nicht, wenn es sich gerade
+eben rechnet.
+
+**Der Lehrer.** Drei Stufen, oben unter der Glühbirne:
+
+* *aus* – nur die Regeln. Unerlaubte Karten bleiben trotzdem gesperrt, und wer
+  auf eine tippt, bekommt gesagt, welcher Zwang gerade greift.
+* *Tipp auf Anfrage* – ein Knopf zeigt auf die Karte, sagt in einem Satz warum,
+  und nennt die Zahlen: „In 240 durchgerechneten Verteilungen reicht es damit
+  in 71 % der Fälle – mit dem Gras-Ober nur in 58 %." In der Ansage heißt
+  derselbe Knopf „Was geht?" und zeigt für jedes mögliche Spiel die Quote.
+* *Mitlesen* – nach jeder deiner Karten ein Urteil. Gerechnet wird still, schon
+  während du überlegst, damit es sofort dasteht. Unter drei Punkten
+  Quotenabstand gilt eine Karte als richtig: zwei Züge, die so eng
+  beieinanderliegen, unterscheiden sich nur im Rauschen des Würfelns. Am Ende
+  steht die Bilanz, bei wie vielen Karten du auf der besten lagst.
+
+**Der Hinweisgeber schummelt nicht.** Er bekommt genau dieselbe Sicht wie ein
+Gegner: dein Blatt und was liegt, sonst nichts. Ein Tipp kann deshalb
+danebengehen – er ist der beste Zug nach dem, was man wissen kann, und nicht
+nach dem, was zufällig der Fall ist. Andersherum wäre er als Lehrer wertlos:
+Von jemandem, der in fremde Karten schaut, lernt man nichts.
+
+**Die Karten sind selbst gezeichnet**, wie die Wortlisten und aus demselben
+Grund – an einem gedruckten Kartensatz hängt eine fremde Lizenz. Vier gefüllte
+Farbzeichen, der Wert zweimal auf der Karte. Ein verkleinerter Kupferstich wäre
+auf fünfzig Pixeln ohnehin nur ein Fleck.
+
+Eine Vereinfachung gegenüber dem Wirtshaus: Angesagt wird **einmal reihum ab
+der Vorhand**, und wer ansagt, sagt gleich was. Die höhere Spielart sticht die
+tiefere, bei gleichem Rang – Wenz gegen Geier – bleibt es beim Näheren an der
+Vorhand. Das führt zum selben Ergebnis wie das übliche Hin und Her, nur
+schneller. Laufende zählen ab drei, beim Wenz und Geier ab zwei.
 
 ## Statistik
 
