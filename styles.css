@@ -2028,20 +2028,18 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   z-index: 4;
   box-shadow: 0 3px 4px rgba(20, 14, 8, .34), 0 12px 22px rgba(20, 14, 8, .3);
 }
-/* Was gelegt werden darf, steht als Gruppe ein Stueck vor. Nicht die
-   gesperrten Karten sind das Auffaellige, sondern die spielbaren - danach
-   sucht man ja. */
-.sk-hand[data-wahl="ja"] .sk-karte--hand:not([data-gesperrt]) { transform: translateY(-5px); }
+/* Die Regelanzeige bewegt nichts. Erst hoben sich die spielbaren Karten und
+   die gesperrten sanken - und weil sich mit jedem Stich aendert, was erlaubt
+   ist, sprang die ganze Hand bei jedem Zugwechsel auf und ab. Bewegung gehoert
+   zum Antippen, nicht zur Auskunft darueber, was geht: Was erlaubt ist, sagt
+   der Schleier, und der liegt still. */
 
 /* Was gerade nicht gelegt werden darf, sinkt zurueck und verblasst. Wichtig
    dabei: die Karte selbst bleibt deckend. Mit opacity wurde sie durchsichtig,
    und weil im Faecher hinter jeder Karte die naechste liegt, sah man beide
    uebereinander - ein Brei statt einer Karte. Der Schleier liegt deshalb
    ueber der Karte und traegt selbst die Papierfarbe. */
-.sk-hand[data-wahl="ja"] .sk-karte--hand[data-gesperrt="ja"] {
-  filter: saturate(.3);
-  transform: translateY(9px);
-}
+.sk-hand[data-wahl="ja"] .sk-karte--hand[data-gesperrt="ja"] { filter: saturate(.3); }
 .sk-karte--hand[data-gesperrt="ja"]::after {
   content: '';
   position: absolute;
@@ -2051,7 +2049,8 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   opacity: .62;
   pointer-events: none;
 }
-.sk-hand[data-wahl="ja"] .sk-karte--hand[data-gesperrt="ja"]:hover { transform: translateY(7px); }
+/* Gesperrte Karten heben sich beim Zeigen nicht - sie liegen fest. */
+.sk-hand .sk-karte--hand[data-gesperrt="ja"]:hover { transform: none; }
 
 /* Nach den Gruppenregeln, damit Zeigen und Tipp sie ueberstimmen. */
 .sk-hand .sk-karte--hand:not(:disabled):not([data-gesperrt]):hover,
