@@ -470,6 +470,28 @@ const Karten = (() => {
         const f = farbe(s);
         const draussen = w.haende.reduce((n, h, q) => (
           q === p ? n : n + h.filter((k) => !ord.trumpf[k] && farbe(k) === f).length), 0);
+        /* Beim Farbsolo nicht in eine Farbe hinein, in der schon jemand frei
+           ist und Trumpf hat: Dort fällt die Sau samt allem, was noch darauf
+           kommt. Genau daran scheitert das frühe Ausspielen – nicht daran,
+           dass es früh wäre.
+
+           Die naheliegende Abhilfe, als Spielerpartei erst Trumpf zu ziehen
+           und die Sau bis dahin zu halten, ist gemessen schlechter: −0,51 für
+           den Spieler und −1,88 für den Mitspieler über 20000 Gaben. Die
+           Farbe zu meiden statt zu warten trifft es.
+
+           Nur beim Solo. Beim Rufspiel ohne Wirkung (±0,0 über 20000 Gaben),
+           beim Wenz und Geier schädlich (+1,6 bzw. +1,7 für die Gegenseite) –
+           dort ist eine lange Farbe die Waffe und nicht der Trumpf. */
+        if (w.sp.art === 'solo') {
+          let jemandFrei = false;
+          for (let q = 0; q < 4; q += 1) {
+            if (q === p) continue;
+            if (!w.haende[q].some((c) => !ord.trumpf[c] && farbe(c) === f)
+                && w.haende[q].some((c) => ord.trumpf[c])) { jemandFrei = true; break; }
+          }
+          if (jemandFrei) continue;
+        }
         if (draussen >= 2) return s;
       }
     }

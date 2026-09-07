@@ -42,51 +42,183 @@
      zwanzig Pixeln hält sie die Form zusammen, und das gedruckte Blatt macht
      es genauso. */
   const ZEICHEN = [
-    /* Eichel: dunkle Frucht unter goldener Kappe.
-
-       Eichel und Schelle waren sich lange zu aehnlich, und die Ursache lag
-       nicht im Ton, sondern im Aufbau: beide golden, beide rund, beide mit
-       Rot darin. Wer zwei Zeichen nur in Feinheiten trennt, trennt sie bei
-       sechzehn Pixeln gar nicht.
-
-       Das gedruckte Blatt macht es ueber die Helligkeit - Eicheln dunkel,
-       Schellen leuchtend gelb. Helligkeit ueberlebt das Verkleinern, weil
-       davon auch dann noch etwas da ist, wenn von der Form nichts mehr
-       uebrig ist. Dazu die Silhouette: die Eichel ist hoch und traegt einen
-       breiten Deckel, die Schelle ist ein Kreis. Das rote Band auf der Kappe
-       ist weg - bei dieser Groesse war es der dritte Ton auf einem Zeichen,
-       das mit zweien auskommt. */
-    '<path class="sk-dunkel" d="M11.1 .8h1.8v2.8h-1.8z"/>'
-      + '<path class="sk-gold" d="M3.6 9.2C3.6 5.9 7.4 3.4 12 3.4s8.4 2.5 8.4 5.8z"/>'
-      + '<path class="sk-frucht" d="M6.4 10h11.2c0 7.2-2.5 12-5.6 12S6.4 17.2 6.4 10z"/>',
-    /* Gras: das Laub, ganz gruen und aus einem Stueck. Eine goldene Rippe lag
-       eine Weile darin - gedacht als Blattader, gewirkt als gelber Strich, der
-       das Zeichen in zwei Haelften schneidet. Bei neun Zeichen auf einer Karte
-       war davon mehr zu sehen als vom Blatt. */
-    '<path class="sk-gruen" d="M12 2.3c3.4 4.5 8 7 8 11.1a4.1 4.1 0 0 1-6.7 3.2c.3 1.9.9 3.2 2 4.4H8.7c1.1-1.2 1.7-2.5 2-4.4A4.1 4.1 0 0 1 4 13.4C4 9.3 8.6 6.8 12 2.3z"/>',
+    /* Eichel: der gruene Kelch mit dem Stiel oben, die goldene Frucht mit
+       rotem Band haengt darunter. Andersherum - Gold oben, Gruen unten -
+       las sich das Zeichen als Pilz, und die Farben sassen ausserdem an den
+       falschen Teilen: der Kelch ist gruen, die Frucht ist gold. */
+    '<path class="sk-dunkel" d="M11.2 1.2h1.6v4h-1.6z"/>'
+      + '<path class="sk-gold" d="M6.4 9.8h11.2c0 6.8-2.5 11.8-5.6 11.8s-5.6-5-5.6-11.8z"/>'
+      + '<rect class="sk-rot" x="6.5" y="11.4" width="11" height="1.9"/>'
+      + '<path class="sk-gruen" d="M4.6 10.4c0-3.5 3.3-6.2 7.4-6.2s7.4 2.7 7.4 6.2z"/>',
+    /* Gras: das gruene Laub mit goldener Rippe. */
+    '<path class="sk-gruen" d="M12 2.3c3.4 4.5 8 7 8 11.1a4.1 4.1 0 0 1-6.7 3.2c.3 1.9.9 3.2 2 4.4H8.7c1.1-1.2 1.7-2.5 2-4.4A4.1 4.1 0 0 1 4 13.4C4 9.3 8.6 6.8 12 2.3z"/>'
+      + '<path class="sk-rippe" d="M12 20V7"/>',
     /* Herz. */
     '<path class="sk-rot" d="M12 21.3C6.4 17.2 3.3 14 3.3 10.2A4.7 4.7 0 0 1 12 7.7a4.7 4.7 0 0 1 8.7 2.5c0 3.8-3.1 7-8.7 11.1z"/>',
-    /* Schellen: die geviertelte Schelle, gold und rot ueber Kreuz, mit den
-       drei Punkten. Der Schlitz allein war zu wenig - eine goldene Scheibe
-       mit rotem Strich sah aus wie eine Muenze; die Vierung ist das, was auf
-       dem gedruckten Blatt eine Schelle zur Schelle macht, und sie traegt
-       auch dann noch, wenn der Punkt nur drei Pixel gross ist.
+    /* Schellen: die Falkenschelle - runder goldener Koerper, oben die Oese
+       zum Anbinden, quer der Schlitz mit den beiden Loechern, unten das Loch
+       fuer den Kloeppel. Die Oese ist wieder da: sie war frueher als
+       Eichelstiel zu lesen, aber der Stiel der Eichel steht jetzt unten, und
+       damit ist der Knubbel oben eindeutig eine Schelle. Ein runder Koerper
+       allein war es nicht - der las sich als Muenze. */
+    '<rect class="sk-gold" x="9.6" y="2.4" width="4.8" height="5" rx="1.4"/>'
+      + '<circle class="sk-punkt" cx="12" cy="4.4" r=".95"/>'
+      + '<circle class="sk-gold" cx="12" cy="14.2" r="7.8"/>'
+      + '<rect class="sk-rot" x="5.6" y="13.1" width="12.8" height="2.2" rx="1.1"/>'
+      + '<circle class="sk-punkt" cx="7.2" cy="14.2" r="1.35"/>'
+      + '<circle class="sk-punkt" cx="16.8" cy="14.2" r="1.35"/>'
+      + '<circle class="sk-rot" cx="12" cy="18.7" r="1.7"/>',
+  ];
 
-       Die Viertel waren eine Weile gruen. Das war doppelt falsch: Gruen
-       gehoert auf diesem Blatt dem Laub, und eine gruen-goldene Scheibe sieht
-       neben einer gold-bernsteinfarbenen Eichel nach derselben Familie aus.
-       Rot trennt sie von beidem - und vom Herz trennt sie ihre Form.
 
-       Die Viertel liegen dabei innen und nicht am Rand: reichten sie bis
-       aussen, waere die halbe Schelle rot und das Zeichen laese sich auf
-       Armlaenge als roter Fleck. So bleibt ein goldener Ring stehen, die
-       Schelle bleibt golden, und rot ist noch etwa ein Viertel der Flaeche. */
-    '<circle class="sk-gold" cx="12" cy="12" r="9.2"/>'
-      + '<path class="sk-rot" d="M5.4 12A6.6 6.6 0 0 1 12 5.4V12z"/>'
-      + '<path class="sk-rot" d="M18.6 12A6.6 6.6 0 0 1 12 18.6V12z"/>'
-      + '<circle class="sk-punkt" cx="12" cy="12" r="1.4"/>'
-      + '<circle class="sk-punkt" cx="15.6" cy="8.4" r="1.4"/>'
-      + '<circle class="sk-punkt" cx="8.4" cy="15.6" r="1.4"/>',
+  /* ------------------------------------------------------- Das Regelwerk
+
+     Was der Rechner spielt, in Worten - nach Spielart und Rolle getrennt,
+     weil dieselbe Regel darin verschieden liegt. Jede Zahl dahinter ist
+     gemessen: gepaarte Partien mit und ohne die Regel, dazu der Bereich, in
+     dem der wahre Wert mit 95 Prozent liegt.
+
+     Die Liste steht hier und nicht nur im README, weil sie zum Spiel gehoert:
+     Wer lernen will, soll nachlesen koennen, wonach die drei am Tisch
+     entscheiden. Auch das, was sich als falsch erwiesen hat - die verworfenen
+     Merksaetze sind der lehrreichere Teil. */
+  const REGELWERK = [
+    { kopf: 'Ansagen', regeln: [
+      { titel: 'Nicht schätzen, sondern durchspielen',
+        gilt: 'alle Spielarten',
+        text: 'Ob ein Blatt reicht, rechnet der Rechner nicht aus einer Punktetabelle, '
+          + 'sondern spielt es 600-mal probeweise durch und zählt, wie oft 61 Augen '
+          + 'zusammenkommen. Die gerufene Sau liegt schließlich irgendwo, und wo, weiß '
+          + 'beim Ansagen niemand.' },
+      { titel: 'Ein Alleinspiel braucht deutlich mehr als die Hälfte',
+        gilt: 'Solo, Wenz, Geier',
+        text: 'Ein Sauspiel wird ab 50 von 100 angesagt, ein Alleinspiel erst ab 72. '
+          + 'Rechnerisch wäre weniger schon lohnend – bei 62 wird aber jede vierte Gabe '
+          + 'allein gespielt, bei 72 jede siebte. Das kommt dem näher, wie am Tisch '
+          + 'wirklich gespielt wird.' },
+      { titel: 'Bei Gleichstand die Farbe rufen, in der deine Augen stehen',
+        gilt: 'Sauspiel',
+        text: 'Sind zwei Rufe rechnerisch nicht zu unterscheiden, entscheidet, wo die '
+          + 'eigenen Augen liegen. Die gerufene Sau gehört dem Partner: Wird die Farbe '
+          + 'angespielt, muss er sie legen und nimmt den Stich – dein Zehner fällt damit '
+          + 'euch zu statt den anderen.',
+        zahl: 'Der Zehner landet zu 71 % bei der eigenen Partei statt zu 41 %.' },
+    ] },
+    { kopf: 'Anspielen', regeln: [
+      { titel: 'Den höchsten Trumpf ziehen, der noch draußen ist',
+        gilt: 'alle Rollen, alle Spielarten',
+        text: 'Hast du den höchsten Trumpf, der noch im Spiel ist, spielst du ihn an – '
+          + 'auch wenn es dein einziger ist. Er holt den Stich und dazu das Anspiel, und '
+          + 'jeder Trumpf, den du herausziehst, kann dir später keinen Stich mehr wegnehmen.',
+        zahl: '+0,56 ± 0,36 beim Sauspiel, +0,63 ± 0,32 beim Solo.' },
+      { titel: 'Nachspielen, wo dein Mitspieler frei ist – mit einer hohen Karte',
+        gilt: 'Solo, Gegenpartei',
+        text: 'Ist einer deiner Mitspieler in einer Farbe schon frei und hat noch Trumpf, '
+          + 'spielst du diese Farbe an. Er sticht, und die Augen fallen euch zu. '
+          + 'Entscheidend ist die hohe Karte: Mit der kleinsten verbrennt er einen Trumpf '
+          + 'für einen Stich ohne Augen.',
+        zahl: '−3,2 und −3,8 für die Spielerpartei, zweimal unabhängig gemessen. Mit '
+          + 'kleiner Karte kehrt es sich um: +5,0 bis +5,5, also schädlich.' },
+      { titel: 'Die blanke Sau anspielen, solange die Farbe läuft',
+        gilt: 'Sauspiel und Solo – nicht als Alleinspieler bei Wenz und Geier',
+        text: 'Wartest du, ist irgendwann jemand blank und sticht sie weg. Beim Wenz und '
+          + 'Geier gilt es für den Alleinspieler nicht: Dort sind nur vier Karten Trumpf, '
+          + 'die Farben sind lang, und wer vorlegt, legt dem Gegner vor.',
+        zahl: 'Die Ausnahme bringt dem Wenz-Spieler 3,4 Punkte, dem Geier-Spieler 2,8.' },
+      { titel: 'Beim Solo nicht in eine Farbe, in der jemand frei ist',
+        gilt: 'Solo, alle Rollen',
+        text: 'Dort fällt die Sau samt allem, was noch daraufkommt. Die naheliegende '
+          + 'Abhilfe – als Spielerpartei erst Trumpf ziehen und die Sau so lange halten – '
+          + 'ist gemessen schlechter. Die Farbe zu meiden trifft es, das Warten nicht.',
+        zahl: 'Farbe meiden: Spieler +0,20 ± 0,13, Gegenpartei −0,98 ± 0,44. Erst Trumpf '
+          + 'ziehen dagegen: Spieler −0,51, Mitspieler −1,88.' },
+      { titel: 'Sonst die kurze Farbe klein anspielen',
+        gilt: 'alle',
+        text: 'Danach bist du dort blank und kannst beim nächsten Mal stechen.' },
+    ] },
+    { kopf: 'Stechen', regeln: [
+      { titel: 'Mit der teuersten Karte, die hält',
+        gilt: 'alle Rollen, alle Spielarten',
+        text: 'Nicht mit der billigsten. Die Augen deiner eigenen Karte fallen in deinen '
+          + 'Stich, wenn er hält – eine teure Karte ist dort keine Ausgabe, sondern eine '
+          + 'Verwahrung. Was eine Karte wirklich kostet, ist ihr Rang: die Kontrolle, die '
+          + 'du hergibst.',
+        zahl: 'Sauspiel +1,9 · Herz-Solo +7,6 · Wenz ±0, dort gibt es nur vier Trümpfe.' },
+      { titel: 'Außer sie ist der höchste Trumpf, den es noch gibt',
+        gilt: 'alle',
+        text: 'Der holt später selbst einen Stich. Ihn für einen herzugeben, den auch eine '
+          + 'kleinere Karte holt, ist ein schlechtes Geschäft.' },
+      { titel: 'Wie fett der Stich schon ist, spielt keine Rolle',
+        gilt: 'alle',
+        text: 'Klingt falsch, ist aber so: Du holst den Stich mit beiden Karten, die Augen '
+          + 'darin fallen so oder so dir zu. Was allein zählt, ist, welche der beiden du '
+          + 'lieber behältst.',
+        zahl: 'Das Kriterium wegzulassen brachte beiden Parteien rund einen halben Punkt.' },
+    ] },
+    { kopf: 'Schmieren', regeln: [
+      { titel: 'Hält der Stich, alles drauf – hält er nicht, höchstens ein Unter',
+        gilt: 'alle Rollen',
+        text: 'Ein König war zu viel: vier Augen, die die Gegenpartei mitnimmt, wenn doch '
+          + 'noch jemand drüberkommt.',
+        zahl: 'Zusammen mit der nächsten Regel: Spieler +1,59 ± 0,38, Mitspieler '
+          + '+0,82 ± 0,28, Gegenpartei −2,07 ± 0,46. Beim Solo −6,0.' },
+      { titel: 'Nie den höchsten Trumpf schmieren',
+        gilt: 'alle – auch als Letzter im Stich',
+        text: 'Unter dem Trumpf des Partners ist er verschenkt. Das gilt sogar dann, wenn '
+          + 'der Stich absolut sicher ist: Er ist einen künftigen Stich wert, unabhängig '
+          + 'vom jetzigen.',
+        zahl: 'Ihn als Letzter doch zu schmieren kostet 0,3 bis 0,4.' },
+      { titel: 'Nicht unterstechen',
+        gilt: 'Sauspiel, Spieler',
+        text: 'Gehört der Stich schon uns und bist du in der angespielten Farbe frei, '
+          + 'darfst du abwerfen oder einen Trumpf drauflegen, der nichts holt. Das zweite '
+          + 'verbrennt einen Trumpf für nichts.',
+        zahl: '+0,52 ± 0,23 für den Spieler, zweimal gemessen. Für die anderen Rollen ohne '
+          + 'Wirkung.' },
+    ] },
+    { kopf: 'Abwerfen', regeln: [
+      { titel: 'Die kurze Farbe blank machen',
+        gilt: 'alle',
+        text: 'Nicht aus der langen werfen. Bist du in einer Farbe blank, kannst du dort '
+          + 'stechen.',
+        zahl: 'Die Gegenprobe kostet: aus der langen werfen +0,2 beim Rufspiel und +0,5 '
+          + 'beim Solo für die Gegenseite.' },
+      { titel: 'Trumpf hält man, Sau und Zehner wirft man nicht',
+        gilt: 'alle',
+        text: 'Vier Stellschrauben dieser Formel wurden durchgemessen – keine ließ sich '
+          + 'verbessern. Was dort steht, stimmt.' },
+    ] },
+    { kopf: 'Was nicht gilt', aus: true, regeln: [
+      { titel: 'Als Gegenspieler immer die Rufsau suchen',
+        gilt: 'Sauspiel',
+        text: 'Klingt zwingend – man will ja wissen, wer zu wem gehört. Stur angewandt '
+          + 'kostet es die Gegenpartei aber Punkte.',
+        zahl: '−1,2 über 4000 gepaarte Sauspiele.' },
+      { titel: 'Als Spielerpartei immer Trumpf ziehen',
+        gilt: 'alle',
+        text: 'In den Anspielen, in denen der Rechner von der Faustregel abweicht, legt er '
+          + 'fast immer Trumpf. Daraus eine allgemeine Regel zu machen ist trotzdem falsch: '
+          + 'Der Vorteil gilt für die 20 Prozent der Anspiele, in denen er abweicht – wendet '
+          + 'man sie auf alle an, verliert man in den übrigen 80 mehr.',
+        zahl: 'Sauspiel −1,9 · Herz-Solo −4,2.' },
+      { titel: 'Kurzer Weg – lange Farbe, langer Weg – kurze Farbe',
+        gilt: 'alle',
+        text: 'In der engen Fassung, die nur zwischen den Farben entscheidet, ohne messbare '
+          + 'Wirkung. Als Vorrang über alles – auch über das Trumpfziehen – schadet sie.',
+        zahl: 'eng: ±0,4 · als Vorrang: −3,2 bis −3,9.' },
+      { titel: 'Nachspielen als allgemeine Regel',
+        gilt: 'alle',
+        text: 'Die Farbe der eigenen Partei einfach fortzusetzen bringt nichts. Erst mit der '
+          + 'Bedingung „der Mitspieler ist dort frei" und einer hohen Karte wird eine Regel '
+          + 'daraus – und auch dann nur beim Solo.',
+        zahl: '±0,4, kein Unterschied.' },
+      { titel: 'Als Spieler die blanke Sau aufheben',
+        gilt: 'alle',
+        text: 'Erst Trumpf ziehen und die Sau bis dahin halten klingt vernünftig und kostet. '
+          + 'Der Schaden kommt nicht vom frühen Anspielen, sondern von der Farbe, in der '
+          + 'schon jemand frei ist – die meidet man, statt zu warten.',
+        zahl: 'Spieler −0,51 ± 0,20, Mitspieler −1,88 ± 0,43 über 20000 Gaben.' },
+    ] },
   ];
 
   const sauKarteVon = (sp) => (sp && sp.art === 'sau' ? K.karte(sp.farbe, 0) : -1);
@@ -312,6 +444,7 @@
     s.werkzeuge([
       { label: 'Anleitung', symbol: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01" stroke-linecap="round"/>', tun: anleitung },
       { label: 'Hinweise', symbol: '<path d="M9 18h6M10 21h4" stroke-linecap="round"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.5.4.8 1 .8 1.6V16h5.4v-.5c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3z"/>', tun: hinweiseWaehlen },
+      { label: 'Regeln des Rechners', symbol: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v16H6.5A2.5 2.5 0 0 0 4 21.5z" stroke-linejoin="round"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H13v16h4.5a2.5 2.5 0 0 1 2.5 2.5z" stroke-linejoin="round"/>', tun: regelwerkZeigen },
       { label: 'Neu geben', symbol: '<path d="M4 12a8 8 0 0 1 13.7-5.6L20 8M20 12a8 8 0 0 1-13.7 5.6L4 16" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 4v4h-4M4 20v-4h4" stroke-linecap="round" stroke-linejoin="round"/>', tun: neuFragen },
     ]);
 
@@ -1146,6 +1279,33 @@
           { text: 'Weiterspielen', art: 'still' },
         ],
       });
+    }
+
+    /* Die Regeln zum Nachlesen. Nach Spielart und Rolle sortiert, mit der
+       gemessenen Wirkung dahinter - wer lernen will, soll auch sehen, wie
+       sicher eine Regel ist und woher sie kommt. */
+    function regelwerkZeigen() {
+      const d = el('div');
+      d.append(el('p', 'notiz', 'Wonach die drei am Tisch entscheiden. Jede Zahl dahinter '
+        + 'ist gemessen: dieselben Gaben mit und ohne die Regel, dazu der Bereich, in dem '
+        + 'der wahre Wert mit 95 Prozent liegt. Ein Pluszeichen heißt: so viele '
+        + 'Prozentpunkte öfter gewinnt, wer die Regel anwendet.'));
+      for (const abschnitt of REGELWERK) {
+        d.append(el('h3', 'sk-regel-kopf', abschnitt.kopf));
+        for (const r of abschnitt.regeln) {
+          const kasten = el('div', 'sk-regel');
+          if (abschnitt.aus) kasten.dataset.aus = 'ja';
+          kasten.append(el('p', 'sk-regel-titel', r.titel));
+          kasten.append(el('p', 'sk-regel-gilt', r.gilt));
+          kasten.append(el('p', 'sk-regel-text', r.text));
+          if (r.zahl) kasten.append(el('p', 'sk-regel-zahl', r.zahl));
+          d.append(kasten);
+        }
+      }
+      d.append(el('p', 'notiz notiz--klein', 'Der Rechner spielt nicht nach diesen Regeln, '
+        + 'sondern rechnet. Sie steuern, wie er eine gewürfelte Verteilung zu Ende spielt, '
+        + 'und sie entscheiden, wenn zwei Karten rechnerisch gleichauf liegen.'));
+      s.blatt({ titel: 'Regeln des Rechners', inhalt: d, aktionen: [{ text: 'Zu' }] });
     }
 
     function anleitung() {

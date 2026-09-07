@@ -2136,6 +2136,42 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .sk-ansageknopf { padding: 8px 12px; font-size: 14px; }
 .sk-weiter { width: 100%; }
 
+/* Das Regelwerk zum Nachlesen. Jede Regel ein Kasten: Titel, wofuer sie
+   gilt, der Satz dahinter, und die gemessene Wirkung als Fussnote. */
+.sk-regel-kopf {
+  margin: 20px 0 8px;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -.01em;
+}
+.sk-regel {
+  padding: 11px 13px;
+  margin-bottom: 6px;
+  border-radius: var(--rund-klein);
+  background: var(--karte);
+  border: 1px solid var(--karte-rand);
+  border-left: 3px solid var(--gruen);
+}
+.sk-regel-titel { margin: 0 0 2px; font-size: 14.5px; font-weight: 700; line-height: 1.3; }
+.sk-regel-gilt {
+  margin: 0 0 6px;
+  font-size: 11px;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  color: var(--tinte-still);
+}
+.sk-regel-text { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--tinte-leise); }
+.sk-regel-zahl {
+  margin: 7px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--tinte-still);
+  font-variant-numeric: tabular-nums;
+}
+/* Die verworfenen Merksaetze tragen die Warnfarbe - was dort steht, soll man
+   gerade nicht nachmachen. */
+.sk-regel[data-aus="ja"] { border-left-color: var(--rost); }
+
 .sk-ratliste { display: grid; gap: 4px; margin: 10px 0; }
 .sk-ratzeile {
   display: flex;
