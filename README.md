@@ -566,6 +566,13 @@ getrennt danach, welche Partei sie anwendet.
 | Farbeln: längste Farbe spielen | dieselbe enge Fassung | ±0,6, kein Unterschied | offen |
 | Weg-Regeln und Farbeln | als Vorrang **über** Trumpfziehen | −3,2 bis −3,9 | verworfen |
 | Womit sticht man? | die Augen **im Stich** mitentscheiden lassen | −0,5 bis −0,7 | verworfen |
+| Den höchsten Trumpf nicht schmieren | er holt später selbst einen Stich | Ruf +1,6 / +0,8 / −2,1, Solo −6,0 | eingebaut |
+| Beim unsicheren Stich höchstens einen Unter schmieren | statt bis zum König | in der Zeile darüber enthalten | eingebaut |
+| Nicht unterstechen | beim Schmieren Farbe vor Trumpf | +0,52 ± 0,23 für den Spieler | eingebaut |
+| Als Letzter den Chef doch schmieren | der Stich ist ja sicher | −0,3 bis −0,4 | verworfen |
+| Als Letzter die kleinste Karte hergeben | statt der Abwurf-Formel | −0,2 bis 0,0 | verworfen |
+| Aus der **langen** Farbe abwerfen | statt die kurze blank zu machen | +0,2 Ruf, +0,5 Solo für die Gegenseite | verworfen |
+| Länge beim Abwerfen ignorieren | | +0,1 bis +0,2 | verworfen |
 | Wann wagt man einen Stich, den man verlieren kann? | Schwelle von 4 bis „nie" | 0,0 überall | wirkungslos |
 
 Die vorletzte Zeile ist die lehrreichste. Der Merksatz „spiel die Farbe nach,
@@ -579,12 +586,31 @@ Ebenso gegen die Erwartung: Jede Zusatzbedingung *schwächt* die Regel. Verlangt
 man, dass der Alleinspieler die Farbe noch bedienen muss — was nach der besten
 Gelegenheit klingt —, bleibt von −3,2 nur −0,8 übrig.
 
-Vier Lehren stehen darin.
+Die drei Zeilen mit dem **höchsten Trumpf** gehören zusammen und sind der
+größte Einzelfund: Er wird nicht geschmiert, nicht zum Stechen hergegeben und
+auch als Letzter nicht — obwohl der Stich dann sicher ist. Er ist einen
+künftigen Stich wert, und zwar unabhängig davon, wie sicher der jetzige ist.
+
+**Gemessen wird seither in zwei Dimensionen**, weil dieselbe Regel darin
+verschieden liegen kann: Spielart (Rufspiel / Solo / Wenz / Geier) und Rolle
+(Spieler / Mitspieler / Gegenspieler). Das lohnt sich. Beim Schmieren gewinnt
+der Spieler +1,6 und sein Mitspieler nur +0,8 — halb so viel, weil der Rufer
+öfter in die Lage kommt. Beim Nichtunterstechen gewinnt allein der Spieler,
+für alle anderen ist es wirkungslos. Und beim Wenz ist die Hälfte aller
+Stech-Entscheidungen gar nicht vorhanden: bei vier Trümpfen gibt es sie nicht.
+
+Fünf Lehren stehen darin.
 
 **Die Fassung entscheidet über das Ergebnis, nicht der Merksatz.** Dieselben
 drei Regeln sind als Vorrang über alles ein Verlust von fast vier Punkten und
 als bloße Farbwahl wirkungslos. Wer eine Regel prüft, prüft immer eine ganz
 bestimmte Auslegung von ihr – und muss sie deshalb hinschreiben.
+
+**Eine Messung, die nichts findet, ist auch ein Ergebnis.** Beim Zugeben als
+Letzter und beim Abwerfen brachte keine einzige der geprüften Fassungen etwas –
+und das heißt: Was dort steht, stimmt. Für das Abwerfen ist damit die
+Streitfrage entschieden, ob man die kurze Farbe blank macht oder aus der langen
+wirft. Die kurze, und die Gegenprobe kostet.
 
 **Manche Regel ist gar keine.** „Wenn viel im Stich liegt, sticht man mit der
 großen Karte" klingt zwingend und ist belanglos: Man holt den Stich mit beiden

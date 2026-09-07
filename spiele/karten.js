@@ -515,10 +515,44 @@ const Karten = (() => {
     const letzter = w.trick.length === 3;
 
     if (unsrer) {
-      // Gehört der Stich schon uns, wird geschmiert – aber nur, wenn er hält.
-      if (letzter || !nochSchlagbar(w, bester)) return teuerst(zuege);
-      const klein = zuege.filter((k) => augen(k) <= 4);
-      return klein.length ? teuerst(klein) : billigst(zuege);
+      /* Gehört der Stich schon uns, wird geschmiert – mit zwei Einschränkungen,
+         beide gemessen.
+
+         Der höchste Trumpf, den es noch gibt, wird nicht geschmiert. Er holt
+         später selbst einen Stich; unter dem Trumpf des Partners ist er
+         verschenkt. Das ist dieselbe Ausnahme wie beim Stechen, nur an der
+         zweiten Stelle – und sie wiegt hier noch schwerer.
+
+         Und hält der Stich nicht sicher, geht höchstens ein Unter drauf. Ein
+         König war zu viel: vier Augen, die die Gegenpartei mitnimmt, wenn doch
+         noch jemand drüberkommt.
+
+         Gepaarte Differenz gegen die alte Fassung, beides zusammen:
+
+            Rufspiel   Spieler +1,59 ± 0,38   Mitspieler +0,82 ± 0,28
+                       Gegenspieler −2,07 ± 0,46
+            Solo       Gegenspieler −6,01 ± 1,34
+            Wenz       Gegenspieler −0,90 ± 0,52
+            Geier      Gegenspieler −0,73 ± 0,47
+
+         Alle drei Rollen gewinnen dabei. Beim Solo und beim Wenz gibt es die
+         Entscheidung für den Alleinspieler nicht – er hat niemanden, dem er
+         schmieren könnte. */
+      let ohneChef = zuege.filter((k) => !(ord.trumpf[k] && obenauf(w, p, k, ang)));
+      /* Und nicht unterstechen. Ist Farbe angespielt und ich dort frei, darf
+         ich abwerfen oder einen Trumpf drauflegen, der nichts holt – das
+         zweite verbrennt einen Trumpf für nichts. Vorher nahm die Regel
+         schlicht die teuerste erlaubte Karte, und das war manchmal genau so
+         ein Trumpf. Zweimal gemessen: +0,60 ± 0,33 und +0,52 ± 0,23 für den
+         Spieler, für Mitspieler und Gegenpartei ohne Wirkung. */
+      if (ang !== 4) {
+        const farbigS = ohneChef.filter((k) => !ord.trumpf[k]);
+        if (farbigS.length) ohneChef = farbigS;
+      }
+      const liste = ohneChef.length ? ohneChef : zuege;
+      if (letzter || !nochSchlagbar(w, bester)) return teuerst(liste);
+      const klein = liste.filter((k) => augen(k) <= 2);
+      return klein.length ? teuerst(klein) : billigst(liste);
     }
 
     /* Womit sticht man?
