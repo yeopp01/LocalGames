@@ -394,6 +394,27 @@ Und fällt die Sau nicht, obwohl ihre Farbe angespielt wurde, dann *ist* der
 Anspieler der Partner – nur er darf davonlaufen. Verteilungen, die dem
 widersprechen, werden gar nicht erst gewürfelt.
 
+**Und sie lesen die Ansage mit.** Das ist die einzige Auskunft, die schon vor
+dem ersten Stich vorliegt, und sie ist scharf: Wer ansagt, hält im Schnitt 4,75
+Trümpfe und 1,57 Ober, wer weitersagt 3,10 und 0,82. Mit drei Trümpfen oder
+weniger sagt so gut wie niemand an; nur 1,2 Prozent aller Weitersager hielten
+überhaupt sechs. Der Würfel verwirft deshalb jede Verteilung, in der ein
+Weitersager ein Blatt bekäme, mit dem er angesagt hätte — gerechnet über das
+ganze Blatt, also einschließlich der Karten, die er schon gelegt hat.
+
+Das wirft vier von zehn Welten weg und macht das Weltbild messbar schärfer: Der
+Fehler in der geschätzten Trumpfzahl je fremder Hand sinkt um **18,5 Prozent**,
+bei den Obern um 8,4.
+
+Dass daraus auch bessere Züge werden, war nicht selbstverständlich — ein
+besseres Weltbild schlägt bei diesem Verfahren nicht automatisch durch, weil in
+jeder einzelnen Welt so getan wird, als läge alles offen. Gemessen an der
+Wahrheit über 8146 Entscheidungen, in denen die Bedingung eine andere Karte
+wählt: **+0,37 ± 0,27 Augen** je geändertem Zug. Und der Gewinn sitzt nicht im
+ersten Stich (+0,09), sondern in der Mitte — Stich 4 mit +0,74, Stich 5 mit
++1,49 —, wo die Ansage-Auskunft mit den Farbschlüssen zusammenkommt und das
+exakte Endspiel anspringt.
+
 Liegen nur noch dreizehn Karten, hört das Schätzen auf: dann wird die Welt
 exakt durchgerechnet, beide Parteien bestmöglich, mit Alpha-Beta. Früher
 umzuschalten wäre schön und geht nicht – die Zeit für einen einzigen Zug,

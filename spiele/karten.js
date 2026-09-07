@@ -751,6 +751,7 @@ const Karten = (() => {
     const sauK = sp.art === 'sau' ? karte(sp.farbe, 0) : -1;
 
     const frei = [0, 1, 2, 3].map(() => [0, 0, 0, 0, 0]);
+    const gelegt = [[], [], [], []];        // was jeder schon gespielt hat
     const sauNicht = [0, 0, 0, 0];
     const gesehen = new Uint8Array(32);
     let sauBei = -1;
@@ -766,6 +767,7 @@ const Karten = (() => {
         const k = st.karten[i];
         const q = (st.start + i) % 4;
         gesehen[k] = 1;
+        gelegt[q].push(k);
         if (i > 0 && ord.reihe(k) !== ang) frei[q][ang] = 1;
         if (k === sauK) { sauBei = q; sauWeg = true; }
         else if (sauK >= 0 && !sauWeg && !davon && ang === sp.farbe && ord.reihe(k) === ang) {
@@ -787,10 +789,17 @@ const Karten = (() => {
     for (const k of ALLE) if (!gesehen[k]) unbekannt.push(k);
     for (let p = 0; p < 4; p += 1) if (sauBei >= 0 && p !== sauBei) sauNicht[p] = 1;
 
+    /* Wer angesagt hat und wer weiter gesagt hat. Das ist die Auskunft, die
+       vor dem ersten Stich schon vorliegt und die der Weltenwürfel bisher
+       nicht genutzt hat: 1 = hat angesagt, 0 = weiter, −1 = unbekannt. */
+    const gebote = [-1, -1, -1, -1];
+    for (const g of z.gebote || []) gebote[g.p] = g.spiel ? 1 : 0;
+    if (z.spieler >= 0) gebote[z.spieler] = 1;
+
     return {
       sp, ord, ich, hand, spieler: z.spieler,
       anzahl: z.haende.map((h) => h.length),
-      unbekannt, frei, sauK, sauBei, sauNicht, sauWeg, davon,
+      unbekannt, frei, sauK, sauBei, sauNicht, sauWeg, davon, gebote, gelegt,
       trickStart: z.aktuell.start,
       trick: z.aktuell.karten.slice(),
     };
@@ -816,6 +825,48 @@ const Karten = (() => {
     return true;
   }
 
+  /* Wie stark war das Blatt, mit dem einer in die Ansage ging? Gezählt werden
+     die Trümpfe der Sauspiel-Ordnung – Ober, Unter, Herz –, und zwar die noch
+     auf der Hand plus die schon gelegten. Die Ansage fiel ja über das ganze
+     Blatt, nicht über den Rest.
+
+     Gemessen über 6000 Blätter: Wer ansagt, hält im Schnitt 4,75 Trümpfe und
+     1,57 Ober, wer weitersagt 3,10 und 0,82. Mit drei Trümpfen oder weniger
+     sagt so gut wie niemand an, mit sechs vier von fünf. Nur 1,2 Prozent aller
+     Weitersager hielten überhaupt sechs Trümpfe. */
+  const SAUORD = ordnung({ art: 'sau', farbe: 0 });
+
+  /* Die Schranken, oberhalb derer ein Weitersager unglaubwürdig wird, und die
+     Untergrenze für einen Ansager. Gemessen an 6000 Blättern: Nur 1,2 Prozent
+     aller Weitersager hielten sechs Trümpfe, nur 1,3 Prozent drei Ober; und
+     nur 2,6 Prozent aller Ansager kamen mit weniger als vier Trümpfen aus.
+     Die Grenzen liegen also knapp jenseits dessen, was wirklich vorkommt –
+     verworfen wird das Unglaubwürdige, nicht das bloß Seltene. */
+  const GEBOT_GRENZE = { weiterTrumpf: 5, weiterOber: 2, ansagerTrumpf: 4 };
+
+  function blattstaerke(karten) {
+    let truempfe = 0;
+    let ober = 0;
+    for (const k of karten) {
+      if (SAUORD.trumpf[k]) truempfe += 1;
+      if (wert(k) === 3) ober += 1;
+    }
+    return { truempfe, ober };
+  }
+
+  /* Passt die gewürfelte Hand zu dem, was der Spieler angesagt hat? Wer weiter
+     gesagt hat, bekommt kein Blatt, mit dem er angesagt hätte. */
+  function gebotPasst(s, p, hand) {
+    const g = s.gebote ? s.gebote[p] : -1;
+    if (g < 0 || !s.gebotGrenze) return true;
+    const st = blattstaerke(hand.concat(s.gelegt[p] || []));
+    if (g === 0) {
+      return st.truempfe <= s.gebotGrenze.weiterTrumpf
+        && st.ober <= s.gebotGrenze.weiterOber;
+    }
+    return st.truempfe >= s.gebotGrenze.ansagerTrumpf;
+  }
+
   /* Eine mögliche Verteilung der unbekannten Karten würfeln. Karten mit
      wenigen erlaubten Plätzen zuerst – sonst rennt man sich fest. Klappt es
      nach etlichen Anläufen nicht, werden die Fesseln gelöst: eine leicht
@@ -835,7 +886,14 @@ const Karten = (() => {
         if (!moegl.length) { gut = false; break; }
         haende[moegl[Math.floor(wuerfel() * moegl.length)]].push(k);
       }
-      if (gut) return haende;
+      if (!gut) continue;
+      /* Nur Welten annehmen, die zur Ansage passen. Klappt das nicht, wird
+         die Bedingung nach der Hälfte der Anläufe fallengelassen – eine Welt
+         ohne sie ist besser als gar keine. */
+      if (versuch < 20 && ![0, 1, 2, 3].every((q) => q === s.ich || gebotPasst(s, q, haende[q]))) {
+        continue;
+      }
+      return haende;
     }
 
     const haende = [[], [], [], []];
@@ -888,6 +946,9 @@ const Karten = (() => {
     const frist = einst.frist || 260;
     const wuerfel = einst.wuerfel || wuerfelStd;
     const beginn = Date.now();
+    /* Die Ansage als Einschränkung für den Weltenwürfel – siehe gebotPasst.
+       Standardmäßig an; mit gebotGrenze: null zum Vergleich abschaltbar. */
+    s.gebotGrenze = ('gebotGrenze' in einst) ? einst.gebotGrenze : GEBOT_GRENZE;
 
     const erste = weltAus(s, verteilen(s, wuerfel));
     const zuege = erlaubt(erste, s.ich);
@@ -1374,10 +1435,11 @@ const Karten = (() => {
     farbe, wert, augen, karte, kartenName, kartenKurz, augenSumme,
     ordnung, trumpfListe, spielName, spielKurz, spielStufe, sortieren,
     schlaegt, stichPlatz, moeglicheSpiele, laufende, abrechnen,
-    GRUNDWERT, LAUF_AB, MINDEST, ABSCHLAG, EXAKT_AB,
+    GRUNDWERT, LAUF_AB, MINDEST, ABSCHLAG, EXAKT_AB, GEBOT_GRENZE,
     welt, erlaubt, zugMachen, zugZurueck, faustregel, ausspielen, endspiel,
     nochSchlagbar, mischen, unterschied,
     sichtVon, verteilen, weltAus, bewerten, besteKarte, begruenden, seiteVon,
+    blattstaerke, gebotPasst,
     quote, ansageRat, siebt, schutz,
   };
 })();

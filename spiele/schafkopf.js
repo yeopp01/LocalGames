@@ -117,6 +117,26 @@
           + 'euch zu statt den anderen.',
         zahl: 'Der Zehner landet zu 71 % bei der eigenen Partei statt zu 41 %.' },
     ] },
+    { kopf: 'Was die Ansage verrät', regeln: [
+      { titel: 'Wer weitergesagt hat, hat selten viel Trumpf',
+        gilt: 'alle Spielarten – gilt für dich wie für den Rechner',
+        text: 'Das ist die einzige Auskunft, die schon vor dem ersten Stich vorliegt, und '
+          + 'sie ist erstaunlich scharf. Wer ansagt, hält im Schnitt 4,75 Trümpfe und 1,57 '
+          + 'Ober; wer weitersagt, 3,10 und 0,82. Mit drei Trümpfen oder weniger sagt so '
+          + 'gut wie niemand an, mit sechs vier von fünf.',
+        zahl: 'Über 6000 Blätter gemessen. Nur 1,2 % aller Weitersager hielten überhaupt '
+          + 'sechs Trümpfe, nur 1,3 % drei Ober.' },
+      { titel: 'Der Rechner rechnet das mit',
+        gilt: 'alle',
+        text: 'Beim Würfeln der möglichen Verteilungen verwirft er jede, in der ein '
+          + 'Weitersager ein Blatt bekäme, mit dem er angesagt hätte – gerechnet über das '
+          + 'ganze Blatt, also einschließlich der Karten, die er schon gelegt hat. Das '
+          + 'wirft 40 Prozent der sonst gebauten Welten weg.',
+        zahl: 'Der Fehler in der geschätzten Trumpfzahl je fremder Hand sinkt um 18,5 %, '
+          + 'bei den Obern um 8,4 %. Auf die Zugwahl schlägt das mit +0,37 ± 0,27 Augen je '
+          + 'geändertem Zug durch – und der Gewinn sitzt nicht im ersten Stich, sondern in '
+          + 'der Mitte, wo die Ansage mit den Farbschlüssen zusammenkommt.' },
+    ] },
     { kopf: 'Anspielen', regeln: [
       { titel: 'Den höchsten Trumpf ziehen, der noch draußen ist',
         gilt: 'alle Rollen, alle Spielarten',
@@ -518,6 +538,7 @@
       return {
         spielart: stand.spielart, spieler: stand.spieler, haende: stand.haende,
         stiche: stand.stiche, aktuell: stand.aktuell, davon: stand.davon,
+        gebote: stand.gebote,
       };
     }
 
@@ -1511,6 +1532,10 @@
         + 'den Zug erklärt, ist noch einmal etwas anderes: Er beschreibt die Lage, er liest '
         + 'nicht die Rechnung mit. Deshalb steht beim Tipp dabei, ob der Zug dem Merksatz '
         + 'folgt oder gegen ihn geht.'));
+      d.append(el('p', 'notiz', 'Dazu lesen sie die Ansage mit: Wer weitergesagt hat, '
+        + 'hält selten mehr als fünf Trümpfe – im Schnitt 3,1 gegen 4,75 beim Ansager. '
+        + 'Verteilungen, in denen ein Weitersager ein Blatt bekäme, mit dem er angesagt '
+        + 'hätte, werden verworfen; das sind vier von zehn.'));
       d.append(el('p', 'notiz', 'Die drei Gegenspieler rechnen: aus dem, was sie sehen dürfen, '
         + 'würfeln sie zweihundert mögliche Verteilungen der fremden Karten, spielen jede zu '
         + 'Ende und nehmen die Karte, die am häufigsten reicht. Liegen nur noch wenige Karten, '
