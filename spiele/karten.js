@@ -225,7 +225,7 @@ const Karten = (() => {
     if (partner >= 0) seite[partner] = 1;
     const gelegt = trick ? trick.slice() : [];
     const w = {
-      sp, ord, seite,
+      sp, ord, seite, spieler,
       haende: haende.map((h) => h.slice()),
       ruf: sp.art === 'sau' ? sp.farbe : -1,
       sauKarte: sp.art === 'sau' ? karte(sp.farbe, 0) : -1,
@@ -573,13 +573,13 @@ const Karten = (() => {
 
          Gegenpartei, zweimal gemessen: Wenz −0,99 und −0,77 ± 0,29,
          Geier −0,74 und −0,83 ± 0,28 für die Spielerpartei. */
-      if (meins === 0 && (w.sp.art === 'wenz' || w.sp.art === 'geier')) {
+      if (w.seite[p] === 0 && (w.sp.art === 'wenz' || w.sp.art === 'geier')) {
         const gewinnt = zuege.filter((k) => schlaegt(k, bester, ang, ord)
           && !(ord.trumpf[k] && obenauf(w, p, k, ang)));
         if (gewinnt.length) {
           const mitU = [];
           for (let q = 0; q < 4; q += 1) {
-            if (q !== p && w.seite[q] === meins) mitU.push(q);
+            if (q !== p && w.seite[q] === w.seite[p]) mitU.push(q);
           }
           const plan = w.haende[p].some((c) => !ord.trumpf[c] && mitU.some((q) => (
             !w.haende[q].some((x) => !ord.trumpf[x] && farbe(x) === farbe(c))
@@ -598,9 +598,25 @@ const Karten = (() => {
          schlicht die teuerste erlaubte Karte, und das war manchmal genau so
          ein Trumpf. Zweimal gemessen: +0,60 ± 0,33 und +0,52 ± 0,23 für den
          Spieler, für Mitspieler und Gegenpartei ohne Wirkung. */
+      /* Und nicht unterstechen – aber nicht für alle gleich.
+
+         Für den Spieler und für die Gegenpartei gilt: gar kein Trumpf. Ihre
+         Trümpfe sind später mehr wert als jeder Stich, den die eigene Partei
+         ohnehin schon hält.
+
+         Für den Ruf-Mitspieler nicht. Er hält öfter einen Trumpf, der den
+         Stich gewinnt – etwa die Herz-Sau über dem Achter des Spielers –, und
+         damit bringt er elf Augen sicher unter, statt sie in der Hand zu
+         behalten, wo sie noch acht höheren Trümpfen begegnen. Ein Trumpf, der
+         drüberkommt, ist eben kein Unterstechen.
+
+         Gemessen gegen die Fassung ohne Unterschied: Spieler +0,49 ± 0,29,
+         Mitspieler +0,28 ± 0,21, Gegenpartei +0,10. */
       if (ang !== 4) {
-        const farbigS = ohneChef.filter((k) => !ord.trumpf[k]);
-        if (farbigS.length) ohneChef = farbigS;
+        const istMitspieler = w.seite[p] === 1 && p !== w.spieler;
+        const brauchbar = ohneChef.filter((k) => !ord.trumpf[k]
+          || (istMitspieler && schlaegt(k, bester, ang, ord)));
+        if (brauchbar.length) ohneChef = brauchbar;
       }
       const liste = ohneChef.length ? ohneChef : zuege;
       if (letzter || !nochSchlagbar(w, bester)) return teuerst(liste);

@@ -190,13 +190,18 @@
           + 'Partner die Führung weg und gewinnt zu wenig dafür.',
         zahl: 'Wenz −0,77 ± 0,29, Geier −0,83 ± 0,28 für die Spielerpartei, zweimal '
           + 'gemessen. Im Rufspiel: Mitspieler −0,92, Spieler −0,21.' },
-      { titel: 'Nicht unterstechen',
-        gilt: 'Sauspiel, Spieler',
+      { titel: 'Nicht unterstechen – außer als Mitspieler mit einem Trumpf, der drüberkommt',
+        gilt: 'alle Rollen, aber verschieden',
         text: 'Gehört der Stich schon uns und bist du in der angespielten Farbe frei, '
-          + 'darfst du abwerfen oder einen Trumpf drauflegen, der nichts holt. Das zweite '
-          + 'verbrennt einen Trumpf für nichts.',
-        zahl: '+0,52 ± 0,23 für den Spieler, zweimal gemessen. Für die anderen Rollen ohne '
-          + 'Wirkung.' },
+          + 'darfst du abwerfen oder Trumpf drauflegen. Für den Spieler und die Gegenpartei '
+          + 'gilt: gar kein Trumpf – ihre Trümpfe sind später mehr wert als ein Stich, den '
+          + 'die eigene Partei ohnehin hält. Für den Ruf-Mitspieler nicht: Er hält öfter '
+          + 'einen Trumpf, der den Stich gewinnt – etwa die Herz-Sau über dem Achter des '
+          + 'Spielers. Damit bringt er elf Augen sicher unter, statt sie in der Hand zu '
+          + 'behalten, wo sie noch acht höheren Trümpfen begegnen. Ein Trumpf, der '
+          + 'drüberkommt, ist eben kein Unterstechen.',
+        zahl: 'Gegen die Fassung ohne Unterschied: Spieler +0,49 ± 0,29, Mitspieler '
+          + '+0,28 ± 0,21, Gegenpartei +0,10.' },
     ] },
     { kopf: 'Abwerfen', regeln: [
       { titel: 'Die kurze Farbe blank machen',
