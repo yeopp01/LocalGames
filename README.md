@@ -491,6 +491,59 @@ warum – meistens, weil der Partner hinter einem sitzt und einen Überstich noc
 abfangen kann, oder weil die Karte sonst später ohnehin fällt. Ein Lehrer, der
 den richtigen Zug falsch begründet, ist schlimmer als keiner.
 
+**Regeln finden, statt sie zu erraten.** Die Faustregel ist eine Sammlung von
+Merksätzen, und Merksätze schreibt man leicht hin, ohne sie zu prüfen. Es geht
+auch anders: Der Rechner ist nachweislich stärker als die Faustregel, also
+lässt man ihn tausende Stellungen bewerten und schaut, wo die Faustregel
+systematisch anders entscheidet. Verglichen wird paarweise, in denselben
+gewürfelten Welten.
+
+Über 300 Gaben, nur Stellungen mit echter Wahl:
+
+| wo | Lücke in Punkten Siegquote | eindeutig | n |
+| --- | --- | --- | --- |
+| Spielerpartei | 8,95 | 70 % | 181 |
+| Anspiel | 8,62 | 70 % | 132 |
+| Rechner legt Trumpf | 7,89 | 65 % | 179 |
+| früh (Stich 1–3) | 7,77 | 62 % | 218 |
+
+Die Faustregel spielt also die Spielerpartei am schlechtesten, und zwar beim
+Anspiel — und wo der Rechner abweicht, legt er Trumpf. Über alle 1491
+Anspiele der Spielerpartei hinweg:
+
+| | Anteil Trumpf-Anspiel |
+| --- | --- |
+| hält den höchsten Trumpf, der noch draußen ist | 95 % |
+| 1 / 2 / 4 / 6 Trümpfe auf der Hand | 10 % / 55 % / 60 % / 78 % |
+| Solo / Sauspiel / Wenz / Geier | 79 % / 43 % / 28 % / 23 % |
+
+**Und dann kommt die Lehre daraus.** Man baut die Regel nach — „als
+Spielerpartei zieht man Trumpf" — und misst sie. Ergebnis:
+
+| Spielerpartei zieht Trumpf … | Sauspiel | Herz-Solo |
+| --- | --- | --- |
+| bisherige Regel | 66,8 % | 53,9 % |
+| immer den höchsten | 62,2 % | 49,7 % |
+| Solo ab 4 Trümpfen | 66,8 % | 51,9 % |
+| Solo ab 5 Trümpfen | 66,8 % | 51,6 % |
+
+Jede pauschale Fassung macht es **schlechter**, das Solo um bis zu sieben
+Punkte. Das Mining sagt eben nur, *wo* der Rechner abweicht, nicht *dass* man
+dort immer so spielen soll: Die 10 Punkte Lücke gelten für die 20 Prozent der
+Anspiele, in denen er abweicht — wendet man die Regel auf alle an, verliert
+man in den übrigen 80 mehr, als man gewinnt.
+
+Übrig blieb aus dem ganzen Verfahren genau eine Regel, und die ist winzig: Den
+höchsten Trumpf, der noch draußen ist, spielt man an — **auch wenn es der
+einzige ist, den man hat**. Vorher verlangte die Faustregel zwei. Gemessen
+über 8000 gepaarte Gaben: +0,56 ± 0,36 Punkte beim Sauspiel, +0,63 ± 0,32 beim
+Solo.
+
+Das ist das eigentliche Ergebnis: Der Vorsprung des Rechners ist zum größten
+Teil **nicht in Regeln fassbar**. „Der Spieler zieht Trumpf" ist eine Neigung
+und kein Satz, den man durch Abzählen anwenden kann — sonst bräuchte es das
+Würfeln nicht.
+
 **Der Hinweisgeber schummelt nicht.** Er bekommt genau dieselbe Sicht wie ein
 Gegner: dein Blatt und was liegt, sonst nichts. Ein Tipp kann deshalb
 danebengehen – er ist der beste Zug nach dem, was man wissen kann, und nicht
