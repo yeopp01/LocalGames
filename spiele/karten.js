@@ -560,6 +560,37 @@ const Karten = (() => {
          Alle drei Rollen gewinnen dabei. Beim Solo und beim Wenz gibt es die
          Entscheidung für den Alleinspieler nicht – er hat niemanden, dem er
          schmieren könnte. */
+      /* Den eigenen Stich übernehmen – nicht wegen der Augen, die fallen so
+         oder so uns zu, sondern wegen des Anspiels. Wer danach ausspielt,
+         kann die Farbe wählen, in der ein Mitspieler schon frei ist; der
+         sticht dann und nimmt die Augen mit.
+
+         Nur beim Wenz und Geier, und nur für die Gegenpartei. Dort sind bloß
+         vier Karten Trumpf, die Farben sind lang, und das Anspiel ist die
+         eigentliche Waffe. Im Rufspiel kostet dasselbe: dem Mitspieler
+         −0,92 ± 0,64, dem Spieler −0,21. Man nimmt dem Partner die Führung
+         weg und gewinnt zu wenig dafür.
+
+         Gegenpartei, zweimal gemessen: Wenz −0,99 und −0,77 ± 0,29,
+         Geier −0,74 und −0,83 ± 0,28 für die Spielerpartei. */
+      if (meins === 0 && (w.sp.art === 'wenz' || w.sp.art === 'geier')) {
+        const gewinnt = zuege.filter((k) => schlaegt(k, bester, ang, ord)
+          && !(ord.trumpf[k] && obenauf(w, p, k, ang)));
+        if (gewinnt.length) {
+          const mitU = [];
+          for (let q = 0; q < 4; q += 1) {
+            if (q !== p && w.seite[q] === meins) mitU.push(q);
+          }
+          const plan = w.haende[p].some((c) => !ord.trumpf[c] && mitU.some((q) => (
+            !w.haende[q].some((x) => !ord.trumpf[x] && farbe(x) === farbe(c))
+            && w.haende[q].some((x) => ord.trumpf[x]))));
+          if (plan) {
+            return gewinnt.reduce((x, y) => (augen(y) > augen(x)
+              || (augen(y) === augen(x) && ord.rang[y] < ord.rang[x]) ? y : x));
+          }
+        }
+      }
+
       let ohneChef = zuege.filter((k) => !(ord.trumpf[k] && obenauf(w, p, k, ang)));
       /* Und nicht unterstechen. Ist Farbe angespielt und ich dort frei, darf
          ich abwerfen oder einen Trumpf drauflegen, der nichts holt – das

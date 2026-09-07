@@ -2,4 +2,4 @@
    Service Worker lesen sie hier - so kann in den Einstellungen nie eine
    andere Zahl stehen als die, mit der die Datei geladen wurde.
    Bei jeder Aenderung an ausgelieferten Dateien hochzaehlen. */
-var VERSION = { nummer: 45, stand: '7. September 2026' };
+var VERSION = { nummer: 46, stand: '7. September 2026' };

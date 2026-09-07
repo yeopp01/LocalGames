@@ -49,12 +49,17 @@
        Zwei Fehler steckten vorher darin, und sie sind verschieden: Die
        Richtung war falsch, die Frucht hing nach unten. Und die Farben sassen
        an den falschen Teilen - der Kelch ist gruen, die Frucht ist gold, nie
-       umgekehrt. Damit die Spitze oben nicht als Pilzhut liest, ist die
-       Frucht oben spitz und der Kelch eine Schale mit Rand, keine Kappe. */
-    '<path class="sk-dunkel" d="M11.2 17.6h1.6v4.4h-1.6z"/>'
-      + '<path class="sk-gold" d="M12 2.2c3.2 0 5.8 4.7 5.8 10.4H6.2C6.2 6.9 8.8 2.2 12 2.2z"/>'
-      + '<rect class="sk-rot" x="6.3" y="10.2" width="11.4" height="1.9"/>'
-      + '<path class="sk-gruen" d="M4.6 12.2h14.8c0 3.7-3.3 6.6-7.4 6.6s-7.4-2.9-7.4-6.6z"/>',
+       umgekehrt.
+
+       Sie ist schmal und hoch, nicht rund: gut anderthalbmal so hoch wie
+       breit. Das ist es, was sie vom Pilz und von der Schelle trennt - eine
+       gedrungene Eichel hat oben eine Kappe und unten einen Bauch, eine
+       laengliche hat eine Frucht und einen Kelch. Im Faecher, wo vom Zeichen
+       nur der linke Streifen zu sehen ist, entscheidet genau das. */
+    '<path class="sk-dunkel" d="M11.2 18.8h1.6v3.8h-1.6z"/>'
+      + '<path class="sk-gold" d="M12 1.4c2.5 0 4.6 5.7 4.6 12.8H7.4C7.4 7.1 9.5 1.4 12 1.4z"/>'
+      + '<rect class="sk-rot" x="7.5" y="11.7" width="9" height="1.9"/>'
+      + '<path class="sk-gruen" d="M5.8 13.9h12.4c0 3.3-2.8 5.9-6.2 5.9s-6.2-2.6-6.2-5.9z"/>',
     /* Gras: das gruene Laub mit goldener Rippe. */
     '<path class="sk-gruen" d="M12 2.3c3.4 4.5 8 7 8 11.1a4.1 4.1 0 0 1-6.7 3.2c.3 1.9.9 3.2 2 4.4H8.7c1.1-1.2 1.7-2.5 2-4.4A4.1 4.1 0 0 1 4 13.4C4 9.3 8.6 6.8 12 2.3z"/>'
       + '<path class="sk-rippe" d="M12 20V7"/>',
