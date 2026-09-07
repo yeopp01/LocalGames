@@ -130,8 +130,8 @@
           + 'spielst du diese Farbe an. Er sticht, und die Augen fallen euch zu. '
           + 'Entscheidend ist die hohe Karte: Mit der kleinsten verbrennt er einen Trumpf '
           + 'für einen Stich ohne Augen.',
-        zahl: '−3,2 und −3,8 für die Spielerpartei, zweimal unabhängig gemessen. Mit '
-          + 'kleiner Karte kehrt es sich um: +5,0 bis +5,5, also schädlich.' },
+        zahl: '+3,2 und +3,8 für die Gegenpartei, zweimal unabhängig gemessen. Mit '
+          + 'kleiner Karte kehrt es sich um: dann kostet dieselbe Regel 5,0 bis 5,5.' },
       { titel: 'Die blanke Sau anspielen, solange die Farbe läuft',
         gilt: 'Sauspiel und Solo – nicht als Alleinspieler bei Wenz und Geier',
         text: 'Wartest du, ist irgendwann jemand blank und sticht sie weg. Beim Wenz und '
@@ -143,8 +143,8 @@
         text: 'Dort fällt die Sau samt allem, was noch daraufkommt. Die naheliegende '
           + 'Abhilfe – als Spielerpartei erst Trumpf ziehen und die Sau so lange halten – '
           + 'ist gemessen schlechter. Die Farbe zu meiden trifft es, das Warten nicht.',
-        zahl: 'Farbe meiden: Spieler +0,20 ± 0,13, Gegenpartei −0,98 ± 0,44. Erst Trumpf '
-          + 'ziehen dagegen: Spieler −0,51, Mitspieler −1,88.' },
+        zahl: 'Farbe meiden: Spieler +0,20 ± 0,13, Gegenpartei +0,98 ± 0,44. Erst Trumpf '
+          + 'ziehen und warten kostet dagegen: Spieler −0,51, Mitspieler −1,88.' },
       { titel: 'Die Rufsau nie mit dem Zehner suchen',
         gilt: 'Sauspiel, Gegenpartei',
         text: 'Spielst du die gerufene Farbe an, muss der Partner die Sau legen – aber wer '
@@ -159,8 +159,9 @@
           + 'kleine Farbkarte kostet dort weniger als ein Trumpf, den man später braucht. '
           + 'Für die Gegenpartei ist es geradezu verheerend – sie spielt dem Alleinspieler '
           + 'damit die Trümpfe frei.',
-        zahl: 'Erzwungener Trumpf im ersten Stich: Spieler −0,58 ± 0,34. Für die '
-          + 'Gegenpartei +3,0 im Rufspiel und +10,2 beim Solo zugunsten des Spielers.' },
+        zahl: 'Erzwungener Trumpf im ersten Stich kostet den Spieler 0,58 ± 0,34 – und '
+          + 'die Gegenpartei 3,0 im Rufspiel und 10,2 beim Solo. Für sie ist es der '
+          + 'teuerste Fehler, den das Regelwerk kennt.' },
       { titel: 'Sonst die kurze Farbe klein anspielen',
         gilt: 'alle',
         text: 'Danach bist du dort blank und kannst beim nächsten Mal stechen.' },
@@ -190,7 +191,8 @@
         text: 'Ein König war zu viel: vier Augen, die die Gegenpartei mitnimmt, wenn doch '
           + 'noch jemand drüberkommt.',
         zahl: 'Zusammen mit der nächsten Regel: Spieler +1,59 ± 0,38, Mitspieler '
-          + '+0,82 ± 0,28, Gegenpartei −2,07 ± 0,46. Beim Solo −6,0.' },
+          + '+0,82 ± 0,28, Gegenpartei +2,07 ± 0,46. Beim Solo +6,0 für die Gegenpartei – '
+          + 'der größte Einzelgewinn im ganzen Regelwerk.' },
       { titel: 'Nie den höchsten Trumpf schmieren',
         gilt: 'alle – auch als Letzter im Stich',
         text: 'Unter dem Trumpf des Partners ist er verschenkt. Das gilt sogar dann, wenn '
@@ -204,8 +206,8 @@
           + 'Unterschied ist das Anspiel: Wer danach ausspielt, kann die Farbe wählen, in '
           + 'der ein Mitspieler frei ist. Im Rufspiel kostet dasselbe, dort nimmt man dem '
           + 'Partner die Führung weg und gewinnt zu wenig dafür.',
-        zahl: 'Wenz −0,77 ± 0,29, Geier −0,83 ± 0,28 für die Spielerpartei, zweimal '
-          + 'gemessen. Im Rufspiel: Mitspieler −0,92, Spieler −0,21.' },
+        zahl: 'Wenz +0,77 ± 0,29, Geier +0,83 ± 0,28 für die Gegenpartei, zweimal '
+          + 'gemessen. Im Rufspiel kostet dasselbe: Mitspieler −0,92, Spieler −0,21.' },
       { titel: 'Nicht unterstechen – außer als Mitspieler mit einem Trumpf, der drüberkommt',
         gilt: 'alle Rollen, aber verschieden',
         text: 'Gehört der Stich schon uns und bist du in der angespielten Farbe frei, '
@@ -224,8 +226,8 @@
         gilt: 'alle',
         text: 'Nicht aus der langen werfen. Bist du in einer Farbe blank, kannst du dort '
           + 'stechen.',
-        zahl: 'Die Gegenprobe kostet: aus der langen werfen +0,2 beim Rufspiel und +0,5 '
-          + 'beim Solo für die Gegenseite.' },
+        zahl: 'Die Gegenprobe kostet: Aus der langen Farbe zu werfen bringt der '
+          + 'Gegenpartei 0,2 Punkte weniger beim Rufspiel und 0,5 weniger beim Solo.' },
       { titel: 'Trumpf hält man, Sau und Zehner wirft man nicht',
         gilt: 'alle',
         text: 'Vier Stellschrauben dieser Formel wurden durchgemessen – keine ließ sich '
@@ -250,14 +252,16 @@
         gilt: 'Sauspiel',
         text: 'Klingt zwingend – man will ja wissen, wer zu wem gehört. Stur angewandt '
           + 'kostet es die Gegenpartei aber Punkte.',
-        zahl: '−1,2 über 4000 gepaarte Sauspiele.' },
-      { titel: 'Als Spielerpartei immer Trumpf ziehen',
+        zahl: 'Kostet die Gegenpartei 1,2 Punkte, über 4000 gepaarte Sauspiele.' },
+      { titel: 'Immer Trumpf ziehen – ohne hinzusehen',
         gilt: 'alle',
-        text: 'In den Anspielen, in denen der Rechner von der Faustregel abweicht, legt er '
-          + 'fast immer Trumpf. Daraus eine allgemeine Regel zu machen ist trotzdem falsch: '
-          + 'Der Vorteil gilt für die 20 Prozent der Anspiele, in denen er abweicht – wendet '
-          + 'man sie auf alle an, verliert man in den übrigen 80 mehr.',
-        zahl: 'Sauspiel −1,9 · Herz-Solo −4,2.' },
+        text: 'Achtung, das ist kein Argument gegen das Trumpfziehen. Der Rechner zieht als '
+          + 'Spielerpartei sehr wohl Trumpf: beim Solo in 79 von 100 Anspielen, beim Sauspiel '
+          + 'in 43. Falsch ist nur, es ohne Bedingung zu tun. Schreibt man „immer den höchsten '
+          + 'Trumpf voraus" fest, gewinnt man in den Lagen, wo es passt, weniger dazu, als man '
+          + 'in den übrigen verliert. Was zählt, ist die Bedingung: Hast du den höchsten '
+          + 'Trumpf, der noch draußen ist? Dann ja, und das steht oben unter Anspielen.',
+        zahl: 'Ohne Bedingung: Sauspiel −1,9 · Herz-Solo −4,2.' },
       { titel: 'Kurzer Weg – lange Farbe, langer Weg – kurze Farbe',
         gilt: 'alle',
         text: 'In der engen Fassung, die nur zwischen den Farben entscheidet, ohne messbare '
@@ -1408,9 +1412,11 @@
       d.append(el('p', 'notiz', 'Wonach die drei am Tisch entscheiden. Jede Zahl dahinter '
         + 'ist gemessen: dieselben Gaben mit und ohne die Regel, dazu der Bereich, in dem '
         + 'der wahre Wert mit 95 Prozent liegt. Ein Pluszeichen heißt: so viele '
-        + 'Prozentpunkte öfter gewinnt, wer die Regel anwendet. Gemessen wird getrennt '
-        + 'nach Spielart und nach Rolle – dieselbe Regel liegt für den Spieler, seinen '
-        + 'Mitspieler und die Gegenpartei oft ganz verschieden.'));
+        + 'Prozentpunkte öfter gewinnt die Partei, die die Regel anwendet – immer aus '
+        + 'ihrer eigenen Sicht, nie aus der des Gegners. Gemessen wird getrennt nach '
+        + 'Spielart und nach Rolle: Dieselbe Regel liegt für den Spieler, seinen '
+        + 'Mitspieler und die Gegenpartei oft ganz verschieden, und manche hilft der '
+        + 'einen Seite und schadet der anderen.'));
       for (const abschnitt of REGELWERK) {
         d.append(el('h3', 'sk-regel-kopf', abschnitt.kopf));
         for (const r of abschnitt.regeln) {

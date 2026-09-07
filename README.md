@@ -550,12 +550,19 @@ Alle bisher geprüften, jeder in der Fassung, die tatsächlich gemessen wurde.
 Gemessen wird immer paarweise – dieselben Gaben mit und ohne Regel – und
 getrennt danach, welche Partei sie anwendet.
 
+**Wie die Zahlen zu lesen sind:** Ein Plus heißt immer, dass die Partei, die
+die Regel anwendet, so viele Prozentpunkte öfter gewinnt — aus *ihrer* Sicht,
+nie aus der des Gegners. Gerechnet wird intern zwar durchgehend die Siegquote
+der Spielerpartei; für die Zeilen der Gegenpartei wird das Vorzeichen deshalb
+gedreht. Ohne das bedeutet dasselbe Zeichen in zwei Zeilen zweierlei, und
+genau daran ist diese Tabelle schon einmal missverstanden worden.
+
 | Merksatz | Fassung | Wirkung | |
 | --- | --- | --- | --- |
 | Mit der teuren Karte stechen, wenn der Stich hält | außer sie ist der höchste Trumpf | +1,9 Sauspiel, **+7,6** Solo | eingebaut |
 | Blanke Sau anspielen | *nicht* als Alleinspieler bei Wenz/Geier | +3,4 Wenz, +2,8 Geier | eingebaut |
 | Den höchsten Trumpf anspielen, der noch draußen ist | auch mit nur einem Trumpf | +0,56 ± 0,36 Sau, +0,63 ± 0,32 Solo | eingebaut |
-| Als Spielerpartei Trumpf ziehen | pauschal, immer | −1,9 Sauspiel, −4,2 Solo | verworfen |
+| Trumpf ziehen **ohne Bedingung** | pauschal, immer – nicht etwa: Trumpf ziehen überhaupt | −1,9 Sauspiel, −4,2 Solo | verworfen |
 | Als Gegenspieler die Rufsau suchen | pauschal, immer | −1,2 | verworfen |
 | Nachspielen | Farbe der eigenen Partei fortsetzen | ±0,4, kein Unterschied | verworfen |
 | Nachspielen gegen ein Solo | **hohe** Karte in eine Farbe, in der der Mitspieler frei ist | **−3,2 / −3,8** für die Spielerpartei | eingebaut |
