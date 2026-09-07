@@ -565,6 +565,8 @@ getrennt danach, welche Partei sie anwendet.
 | Langer Weg – lange Farbe | dieselbe enge Fassung | −0,5 ± 0,5, nicht bestätigt | offen |
 | Farbeln: längste Farbe spielen | dieselbe enge Fassung | ±0,6, kein Unterschied | offen |
 | Weg-Regeln und Farbeln | als Vorrang **über** Trumpfziehen | −3,2 bis −3,9 | verworfen |
+| Womit sticht man? | die Augen **im Stich** mitentscheiden lassen | −0,5 bis −0,7 | verworfen |
+| Wann wagt man einen Stich, den man verlieren kann? | Schwelle von 4 bis „nie" | 0,0 überall | wirkungslos |
 
 Die vorletzte Zeile ist die lehrreichste. Der Merksatz „spiel die Farbe nach,
 in der dein Partner schon frei ist" stimmt — aber nur mit einer **hohen**
@@ -577,12 +579,22 @@ Ebenso gegen die Erwartung: Jede Zusatzbedingung *schwächt* die Regel. Verlangt
 man, dass der Alleinspieler die Farbe noch bedienen muss — was nach der besten
 Gelegenheit klingt —, bleibt von −3,2 nur −0,8 übrig.
 
-Drei Lehren stehen darin.
+Vier Lehren stehen darin.
 
 **Die Fassung entscheidet über das Ergebnis, nicht der Merksatz.** Dieselben
 drei Regeln sind als Vorrang über alles ein Verlust von fast vier Punkten und
 als bloße Farbwahl wirkungslos. Wer eine Regel prüft, prüft immer eine ganz
 bestimmte Auslegung von ihr – und muss sie deshalb hinschreiben.
+
+**Manche Regel ist gar keine.** „Wenn viel im Stich liegt, sticht man mit der
+großen Karte" klingt zwingend und ist belanglos: Man holt den Stich mit beiden
+Karten, die Augen darin fallen so oder so der eigenen Partei zu. Was allein
+zählt, ist, welche der beiden man lieber behält. Das Kriterium herauszunehmen
+brachte beiden Parteien rund einen halben Punkt. Und die Schwelle dafür, einen
+Stich zu wagen, den einem noch jemand abnehmen kann, ist über den ganzen
+Bereich von „ab vier Augen" bis „nie" **exakt wirkungslos** – der Fall kommt zu
+selten vor, um zu zählen. Beides Stellschrauben, an denen man endlos hätte
+drehen können.
 
 **Auch eine richtige Regel kann in der falschen Auslegung schaden.** Nicht nur
 „zu grob gefasst" – wirklich das Vorzeichen umdrehen, wie beim Nachspielen mit
