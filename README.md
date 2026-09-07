@@ -544,6 +544,47 @@ Teil **nicht in Regeln fassbar**. „Der Spieler zieht Trumpf" ist eine Neigung
 und kein Satz, den man durch Abzählen anwenden kann — sonst bräuchte es das
 Würfeln nicht.
 
+### Wo Regeln aufhören
+
+Merksätze an- und auszuschalten beantwortet nicht die eigentliche Frage: *Wann*
+gilt eine Regel? Dafür braucht es den umgekehrten Weg — Stellungen sammeln, zu
+jeder die Merkmale notieren, die ein Mensch am Tisch auch sieht, und darin den
+Baum suchen, der die Wahl des Rechners am besten erklärt.
+
+Über 1480 Anspiele, bei denen wirklich zwischen Trumpf und Farbe zu wählen war,
+beherrscht **ein einziges Merkmal** das Bild: Hältst du den höchsten Trumpf, der
+noch draußen ist?
+
+| | mit Chef-Trumpf | ohne |
+| --- | --- | --- |
+| Spieler | 69 % Trumpf, mit trumpfhaltenden Gegnern **96 %** | 29 % |
+| Mitspieler | **94 %** | 16 % |
+| Gegenspieler | **92 %** | **3 %** |
+
+Und die einzige Ausnahme steht gleich daneben: Haben die Gegner gar keinen
+Trumpf mehr, fällt der Chef-Trumpf von 96 auf **3 Prozent** — man zieht ja
+niemandem mehr etwas heraus.
+
+**Wie weit tragen Regeln?** Das lässt sich beziffern. Zählt man die Blätter des
+Baums, in denen der Rechner sich zu über neun Zehnteln einig ist, kommt man auf:
+
+| Rolle | in Regeln fassbar |
+| --- | --- |
+| Gegenspieler | **89 %** |
+| Spieler | 54 % |
+| Mitspieler | 27 % |
+| zusammen | **59 %** |
+
+Drei von fünf Anspielen folgen also einer Regel, die man aufschreiben kann. Die
+übrigen zwei sind echte Abwägungen, in denen es auf die einzelnen Karten
+ankommt — dort trägt keine Zusammenfassung mehr. Der Versuch, die deutlichste
+dieser offenen Lagen (58 Prozent Trumpf) trotzdem zur Regel zu machen, wurde
+gemessen und kostet: Spieler −0,15, Gegenpartei −0,79.
+
+Das ist die Grenze, und sie ist keine Schwäche des Verfahrens, sondern eine
+Aussage über das Spiel: Genau in diesen 41 Prozent verdient sich das Rechnen
+seinen Platz.
+
 ### Was von den Merksätzen übrig blieb
 
 Alle bisher geprüften, jeder in der Fassung, die tatsächlich gemessen wurde.

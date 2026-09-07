@@ -233,6 +233,42 @@
         text: 'Vier Stellschrauben dieser Formel wurden durchgemessen – keine ließ sich '
           + 'verbessern. Was dort steht, stimmt.' },
     ] },
+    { kopf: 'Wann Trumpf anspielen', regeln: [
+      { titel: 'Die eine Frage, die fast alles entscheidet',
+        gilt: 'alle Rollen, alle Spielarten',
+        text: 'Hältst du den höchsten Trumpf, der überhaupt noch draußen ist? Aus 1480 '
+          + 'Anspielen, bei denen der Rechner zwischen Trumpf und Farbe wählen konnte, '
+          + 'sagt dieses eine Merkmal fast alles voraus.',
+        zahl: 'Mit Chef-Trumpf: Spieler 96 %, Mitspieler 94 %, Gegenspieler 92 % Trumpf. '
+          + 'Ohne: 29 %, 16 %, 3 %.' },
+      { titel: 'Die Ausnahme: wenn die Gegner keinen Trumpf mehr haben',
+        gilt: 'alle Rollen',
+        text: 'Dann zieht man niemandem mehr etwas heraus, und der höchste Trumpf ist als '
+          + 'Stichkarte für später besser aufgehoben. Das ist die einzige Lage, in der man '
+          + 'den Chef-Trumpf nicht anspielt.',
+        zahl: 'Mit Chef-Trumpf, aber trumpffreien Gegnern: nur noch 3 % Trumpf statt 96 %.' },
+      { titel: 'Als Gegenspieler ohne den höchsten Trumpf: gar kein Trumpf',
+        gilt: 'Gegenpartei',
+        text: 'Die schärfste Regel im ganzen Spiel. Wer als Gegenspieler Trumpf anspielt, '
+          + 'ohne den höchsten zu halten, spielt dem Alleinspieler die Trümpfe frei.',
+        zahl: 'In 398 solchen Lagen spielt der Rechner 3 % Trumpf. 89 Prozent aller '
+          + 'Anspiele der Gegenpartei folgen allein dieser einen Frage.' },
+      { titel: 'Als Spieler ohne den höchsten Trumpf: je später, desto weniger',
+        gilt: 'Spieler',
+        text: 'Früh und wenn ohnehin schon wenig fremder Trumpf unterwegs ist, lohnt es '
+          + 'noch etwa jedes zweite Mal. Ab der Mitte des Spiels praktisch nicht mehr.',
+        zahl: 'Früh mit wenig fremdem Trumpf 58 %, früh mit viel 25 %, ab Stich 5 nur '
+          + 'noch 7 %.' },
+      { titel: 'Und wo keine Regel mehr hilft',
+        gilt: 'zur Einordnung',
+        text: 'Von den 1480 Anspielen fallen 59 Prozent in Lagen, in denen der Rechner sich '
+          + 'zu über neun Zehnteln einig ist – die lassen sich als Regel aufschreiben. Die '
+          + 'übrigen 41 Prozent sind echte Abwägungen, in denen es auf die einzelnen Karten '
+          + 'ankommt und keine Zusammenfassung mehr trägt. Der Versuch, die 58-Prozent-Lage '
+          + 'trotzdem zur Regel zu machen, wurde gemessen und kostet.',
+        zahl: 'Fassbar: Gegenspieler 89 %, Spieler 54 %, Mitspieler 27 %. Die erzwungene '
+          + 'Regel für die offene Lage: Spieler −0,15, Gegenpartei −0,79.' },
+    ] },
     { kopf: 'Zu selten zum Messen', regeln: [
       { titel: 'Sich trumpffrei machen',
         gilt: 'Solo, Gegenpartei – ein echter Sonderfall',
