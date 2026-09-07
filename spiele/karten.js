@@ -862,6 +862,12 @@ const Karten = (() => {
     }
     werte.sort((a, b) => b.nutzen - a.nutzen);
     for (const e of werte) e.regel = regelStimmen.get(e.karte) || 0;
+    /* Welche Karte die Faustregel am häufigsten gelegt hätte. Nicht für die
+       Wahl – die trifft die Rechnung –, sondern damit hinterher gesagt werden
+       kann, ob der Zug ein Zug nach Merksatz ist oder einer gegen ihn. */
+    let regelWahl = -1;
+    let regelBeste = -1;
+    for (const [kk, n] of regelStimmen) if (n > regelBeste) { regelBeste = n; regelWahl = kk; }
 
     /* Gleichstand: Alles, was sich vom Besten nicht unterscheiden laesst,
        steht rechnerisch gleichauf – und dann entschied bisher die dritte
@@ -889,7 +895,7 @@ const Karten = (() => {
         werte.unshift(wahl);
       }
     }
-    return { werte, welten, einzig: false, gleichauf };
+    return { werte, welten, einzig: false, gleichauf, regelWahl, regelAnteil: welten ? regelBeste / welten : 0 };
   }
 
   const besteKarte = (s, opt) => bewerten(s, opt).werte[0].karte;
@@ -927,6 +933,24 @@ const Karten = (() => {
     const ord = s.ord;
     const meins = seite;                        // gehöre ich zur Spielerpartei?
     const trumpf = ord.trumpf[k] === 1;
+    const alle = zuege || [k];
+
+    /* Ist c die höchste Karte ihrer Reihe, die überhaupt noch draußen ist?
+       Gerechnet aus der Sicht, also aus dem, was man wissen darf – nicht aus
+       den fremden Blättern wie in der Faustregel. Der Hinweisgeber schummelt
+       auch hier nicht; er kann sich deshalb irren, wenn die höchste Karte
+       zufällig in einer Hand liegt, die man nicht sieht. */
+    const chef = (c) => !s.unbekannt.some((x) => ord.reihe(x) === ord.reihe(c)
+      && ord.rang[x] > ord.rang[c]);
+
+    /* Wurde eine wertvollere Karte zurückgehalten, weil sie gerade der höchste
+       Trumpf ist? Das ist die Regel, die am häufigsten den Ausschlag gibt, und
+       ohne diesen Satz sieht der Zug nach Geiz aus. */
+    const geschont = () => alle.filter((c) => c !== k && augen(c) > augen(k)
+      && ord.trumpf[c] && chef(c));
+    const chefSatz = (liste) => 'Den ' + kartenName(liste[0]) + ' behältst du: '
+      + 'er ist der höchste Trumpf, den es noch gibt, und holt später selbst '
+      + 'einen Stich. Hier wäre er nur eine teure Münze.';
 
     if (!s.trick.length) {
       if (trumpf) {
@@ -938,6 +962,18 @@ const Karten = (() => {
         }
         if (augen(k) === 0) return 'Klein antrumpfen – das kostet nichts und zieht trotzdem.';
         return 'Mit Trumpf anspielen und die Führung behalten.';
+      }
+      /* Nachspielen gegen ein Solo, in der Reihenfolge, in der die Faustregel
+         es auch prüft: gleich hinter dem Trumpfziehen. */
+      if (!meins && s.sp.art === 'solo' && !trumpf) {
+        const freieMit = [0, 1, 2, 3].filter((q) => q !== s.ich && q !== s.spieler
+          && s.frei[q][farbe(k)]);
+        if (freieMit.length) {
+          return 'Nachspielen: In dieser Farbe ist einer deiner Mitspieler schon '
+            + 'frei – er sticht, und die ' + augen(k) + ' Augen fallen euch zu statt '
+            + 'dem Alleinspieler. Deshalb eine hohe Karte und keine kleine: mit der '
+            + 'kleinsten verbrennt er einen Trumpf für einen Stich ohne Augen.';
+        }
       }
       if (s.sp.art === 'sau' && farbe(k) === s.sp.farbe && !s.sauWeg && !meins) {
         return 'Die Sau suchen: wer sie hat, muss sie legen. Danach weißt du, '
@@ -987,11 +1023,15 @@ const Karten = (() => {
         return 'Drüber – auch wenn der Stich schon uns gehört, ist es hier billiger, '
           + 'ihn selbst zu machen.';
       }
+      const geschontS = geschont();
+      if (geschontS.length) {
+        return 'Stechen – aber nicht mit der dicksten Karte. ' + chefSatz(geschontS)
+          + ' ' + kartenName(k) + ' holt den Stich genauso.';
+      }
       if (!billiger.length) {
-        return 'Stechen: der Stich ist ' + imStich + (imStich === 1 ? ' Auge' : ' Augen')
-          + ' wert' + (letzter ? ' und nach dir kommt keiner mehr.'
-            : ', und billiger kommst du nicht drüber – alles andere, was reicht, '
-              + 'kostet dich mehr.');
+        return 'Stechen: billiger kommst du nicht drüber – alles andere, was '
+          + 'reicht, kostet dich mehr.'
+          + (letzter ? ' Nach dir kommt keiner mehr, der Stich ist sicher.' : '');
       }
       /* Die teure Karte ist gewollt. Dann muss auch dastehen, warum – und was
          sie kostet, wenn es schiefgeht. */
@@ -1020,6 +1060,18 @@ const Karten = (() => {
 
     if (unsrer) {
       const sicher = letzter || !s.unbekannt.some((c) => schlaegt(c, bester, ang, ord));
+      const geschontU = geschont();
+      if (geschontU.length) {
+        return 'Der Stich gehört schon uns, aber nicht alles gehört darauf. '
+          + chefSatz(geschontU) + ' ' + kartenName(k) + ' tut es hier auch.';
+      }
+      /* Trumpf unter dem Trumpf des Partners ist verbrannt – dafür gibt es
+         seit der Messung eine eigene Regel, also auch einen eigenen Satz. */
+      if (!trumpf && ang !== 4 && alle.some((c) => ord.trumpf[c])) {
+        return 'Nicht unterstechen: Du könntest hier Trumpf drauflegen, aber er '
+          + 'käme unter den des Partners und wäre verbrannt. Der Stich gehört '
+          + 'ohnehin uns – dann lieber Farbe drauf und den Trumpf behalten.';
+      }
       if (augen(k) >= 10) {
         return 'Schmieren: der Stich gehört schon uns'
           + (sicher ? ' und kann nicht mehr weg' : ' und hält voraussichtlich')
@@ -1027,8 +1079,13 @@ const Karten = (() => {
           + 'am besten aufgehoben.';
       }
       if (augen(k) >= 4) {
-        return 'Ein König drauf: etwas Zählbares, ohne gleich den Zehner zu riskieren – '
-          + 'sicher genug für vier Augen ist der Stich, für zehn noch nicht.';
+        return 'Ein König drauf – so viel Zählbares trägt der Stich, weil er hält. '
+          + 'Wäre er nicht sicher, ginge höchstens ein Unter darauf.';
+      }
+      if (augen(k) === 2 && !sicher) {
+        return 'Ein Unter drauf, mehr nicht: Der Stich gehört uns, aber sicher ist '
+          + 'er nicht. Kommt doch noch jemand drüber, nimmt er nur zwei Augen mit '
+          + 'statt vier oder zehn.';
       }
       return 'Noch nichts verschenken – der Stich ist nicht sicher genug für die dicken Karten.';
     }

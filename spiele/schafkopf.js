@@ -548,7 +548,7 @@
           ? 'Du hast gar keine Wahl – nur diese eine Karte ist erlaubt.'
           : K.begruenden(K.sichtVon(zustand(), ICH), beste.karte, meineSeite(),
             rat.werte.map((e) => e.karte)),
-        zahl: rat.einzig ? '' : zahlSatz(rat, beste),
+        zahl: rat.einzig ? '' : zahlSatz(rat, beste) + ' ' + herkunftSatz(rat),
       };
       sichern();
       zeichnen();
@@ -575,6 +575,22 @@
       }
       return kopf + ', mit ' + K.kartenName(zweite.karte) + ' nur in '
         + prozentText(zweite.quote) + '.';
+    }
+
+    /* Ein Satz darüber, woher der Zug kommt. Die Rechner spielen nicht nach
+       Merksätzen, sondern rechnen – die Merksätze stecken nur in ihren
+       Ausspielungen und entscheiden bei Gleichstand. Wenn die Empfehlung
+       gegen die Faustregel geht, soll das dastehen, damit niemand einen
+       Merksatz ableitet, den es nicht gibt. */
+    function herkunftSatz(rat) {
+      if (!rat || rat.regelWahl == null || rat.regelWahl < 0) return '';
+      const beste = rat.werte[0].karte;
+      if (rat.regelWahl === beste) {
+        return 'Das ist auch der Zug nach der Faustregel.';
+      }
+      return 'Nach der Faustregel wäre ' + K.kartenName(rat.regelWahl) + ' dran – '
+        + 'der Rechner entscheidet hier gegen den Merksatz, weil die durchgerechneten '
+        + 'Verteilungen anders ausgehen. Die drei Mitspieler tun dasselbe.';
     }
 
     /* Das Urteil nach deinem Zug. Es kommt aus derselben Rechnung wie der
@@ -1164,6 +1180,14 @@
         + 'ist das die eigentliche Übung: legen, das Urteil lesen, zurücknehmen, es besser '
         + 'machen. Die Rechner würfeln danach neu und antworten deshalb anders als vorher; '
         + 'wie oft du zurückgenommen hast, steht in der Statistik.'));
+      d.append(el('p', 'notiz', 'Wichtig zum Verständnis der Hinweise: Die drei Mitspieler '
+        + 'spielen nicht nach Merksätzen, sondern rechnen – und der Tipp benutzt genau '
+        + 'dieselbe Rechnung, nur aus deiner Sicht. Merksätze stecken an zwei Stellen darin: '
+        + 'Sie steuern, wie eine gewürfelte Verteilung zu Ende gespielt wird, und sie '
+        + 'entscheiden, wenn zwei Karten rechnerisch gleichauf liegen. Der Satz, der dir '
+        + 'den Zug erklärt, ist noch einmal etwas anderes: Er beschreibt die Lage, er liest '
+        + 'nicht die Rechnung mit. Deshalb steht beim Tipp dabei, ob der Zug dem Merksatz '
+        + 'folgt oder gegen ihn geht.'));
       d.append(el('p', 'notiz', 'Die drei Gegenspieler rechnen: aus dem, was sie sehen dürfen, '
         + 'würfeln sie zweihundert mögliche Verteilungen der fremden Karten, spielen jede zu '
         + 'Ende und nehmen die Karte, die am häufigsten reicht. Liegen nur noch wenige Karten, '
