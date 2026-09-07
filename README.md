@@ -557,18 +557,36 @@ getrennt danach, welche Partei sie anwendet.
 | Den höchsten Trumpf anspielen, der noch draußen ist | auch mit nur einem Trumpf | +0,56 ± 0,36 Sau, +0,63 ± 0,32 Solo | eingebaut |
 | Als Spielerpartei Trumpf ziehen | pauschal, immer | −1,9 Sauspiel, −4,2 Solo | verworfen |
 | Als Gegenspieler die Rufsau suchen | pauschal, immer | −1,2 | verworfen |
-| Nachspielen | Farbe der eigenen Partei fortsetzen | ±0,4, kein Unterschied | offen |
+| Nachspielen | Farbe der eigenen Partei fortsetzen | ±0,4, kein Unterschied | verworfen |
+| Nachspielen gegen ein Solo | **hohe** Karte in eine Farbe, in der der Mitspieler frei ist | **−3,2 / −3,8** für die Spielerpartei | eingebaut |
+| dasselbe mit kleiner Karte | sonst gleich | +5,0 bis +5,5, also schädlich | verworfen |
+| dasselbe, Spieler muss bedienen | zusätzliche Bedingung | −0,8, Wirkung weg | verworfen |
 | Kurzer Weg – lange Farbe | nur die Farbwahl, überstimmt nichts | ±0,4, kein Unterschied | offen |
 | Langer Weg – lange Farbe | dieselbe enge Fassung | −0,5 ± 0,5, nicht bestätigt | offen |
 | Farbeln: längste Farbe spielen | dieselbe enge Fassung | ±0,6, kein Unterschied | offen |
 | Weg-Regeln und Farbeln | als Vorrang **über** Trumpfziehen | −3,2 bis −3,9 | verworfen |
 
-Zwei Lehren stehen darin.
+Die vorletzte Zeile ist die lehrreichste. Der Merksatz „spiel die Farbe nach,
+in der dein Partner schon frei ist" stimmt — aber nur mit einer **hohen**
+Karte. Mit der kleinsten angespielt verbrennt der Partner einen Trumpf für
+einen Stich ohne Augen, und aus dem Gewinn von drei Punkten wird ein Verlust
+von fünf. Zwischen der richtigen und der schädlichen Auslegung desselben
+Satzes liegen acht Punkte.
+
+Ebenso gegen die Erwartung: Jede Zusatzbedingung *schwächt* die Regel. Verlangt
+man, dass der Alleinspieler die Farbe noch bedienen muss — was nach der besten
+Gelegenheit klingt —, bleibt von −3,2 nur −0,8 übrig.
+
+Drei Lehren stehen darin.
 
 **Die Fassung entscheidet über das Ergebnis, nicht der Merksatz.** Dieselben
 drei Regeln sind als Vorrang über alles ein Verlust von fast vier Punkten und
 als bloße Farbwahl wirkungslos. Wer eine Regel prüft, prüft immer eine ganz
 bestimmte Auslegung von ihr – und muss sie deshalb hinschreiben.
+
+**Auch eine richtige Regel kann in der falschen Auslegung schaden.** Nicht nur
+„zu grob gefasst" – wirklich das Vorzeichen umdrehen, wie beim Nachspielen mit
+kleiner statt hoher Karte.
 
 **Und: Der erste Treffer ist meistens keiner.** „Langer Weg – lange Farbe" kam
 beim Wenz zuerst auf −1,18 ± 1,00 und sah aus wie ein Fund. Mit 14 000 statt

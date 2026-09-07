@@ -431,6 +431,38 @@ const Karten = (() => {
 
        Der Gegenpartei nützt sie dagegen überall, auch dort. Deshalb hängt sie
        an der Partei und nicht nur an der Spielart. */
+    /* Nachspielen gegen ein Solo: eine hohe Karte in einer Farbe anspielen,
+       in der ein Mitspieler schon frei ist. Er sticht, und die Augen der hohen
+       Karte fallen der Gegenpartei zu statt dem Alleinspieler.
+
+       Zwei Feinheiten, beide gemessen und beide gegen die Erwartung:
+
+       Es muss eine hohe Karte sein. Mit der kleinsten angespielt verbrennt der
+       Mitspieler einen Trumpf für einen Stich ohne Augen – das kostet die
+       Gegenpartei 5,0 bis 5,5 Punkte, statt ihr zu nützen.
+
+       Und es darf keine weitere Bedingung dazu. Verlangt man zusätzlich, dass
+       der Alleinspieler die Farbe noch bedienen muss, bleibt von der Wirkung
+       nichts übrig (−0,8 statt −3,2); dasselbe, wenn man sie auf eigene
+       Trumpfschwäche einschränkt.
+
+       Zweimal unabhängig gemessen, je rund 1750 gepaarte Gaben:
+       Herz-Solo −3,22 ± 1,79, Eichel-Solo −3,83 ± 1,95 für die Spielerpartei.
+
+       Nur beim Farbsolo. Beim Sauspiel wirkungslos (+0,50 ± 0,74), beim Wenz
+       schädlich – dort gibt es nur vier Trümpfe zu stechen. */
+    if (meins === 0 && w.sp.art === 'solo') {
+      const mitspieler = [];
+      for (let q = 0; q < 4; q += 1) {
+        if (q !== p && w.seite[q] === meins) mitspieler.push(q);
+      }
+      const sticht = (f) => mitspieler.some((q) => (
+        !w.haende[q].some((c) => !ord.trumpf[c] && farbe(c) === f)
+        && w.haende[q].some((c) => ord.trumpf[c])));
+      const nach = zuege.filter((k) => !ord.trumpf[k] && sticht(farbe(k)));
+      if (nach.length) return nach.reduce((a, b) => (ord.rang[b] > ord.rang[a] ? b : a));
+    }
+
     const zurueckhalten = (w.sp.art === 'wenz' || w.sp.art === 'geier') && meins === 1;
     const saeue = zurueckhalten ? [] : zuege.filter((k) => !ord.trumpf[k] && wert(k) === 0);
     if (saeue.length) {
