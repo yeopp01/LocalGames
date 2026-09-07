@@ -544,6 +544,38 @@ Teil **nicht in Regeln fassbar**. „Der Spieler zieht Trumpf" ist eine Neigung
 und kein Satz, den man durch Abzählen anwenden kann — sonst bräuchte es das
 Würfeln nicht.
 
+### Was von den Merksätzen übrig blieb
+
+Alle bisher geprüften, jeder in der Fassung, die tatsächlich gemessen wurde.
+Gemessen wird immer paarweise – dieselben Gaben mit und ohne Regel – und
+getrennt danach, welche Partei sie anwendet.
+
+| Merksatz | Fassung | Wirkung | |
+| --- | --- | --- | --- |
+| Mit der teuren Karte stechen, wenn der Stich hält | außer sie ist der höchste Trumpf | +1,9 Sauspiel, **+7,6** Solo | eingebaut |
+| Blanke Sau anspielen | *nicht* als Alleinspieler bei Wenz/Geier | +3,4 Wenz, +2,8 Geier | eingebaut |
+| Den höchsten Trumpf anspielen, der noch draußen ist | auch mit nur einem Trumpf | +0,56 ± 0,36 Sau, +0,63 ± 0,32 Solo | eingebaut |
+| Als Spielerpartei Trumpf ziehen | pauschal, immer | −1,9 Sauspiel, −4,2 Solo | verworfen |
+| Als Gegenspieler die Rufsau suchen | pauschal, immer | −1,2 | verworfen |
+| Nachspielen | Farbe der eigenen Partei fortsetzen | ±0,4, kein Unterschied | offen |
+| Kurzer Weg – lange Farbe | nur die Farbwahl, überstimmt nichts | ±0,4, kein Unterschied | offen |
+| Langer Weg – lange Farbe | dieselbe enge Fassung | −0,5 ± 0,5, nicht bestätigt | offen |
+| Farbeln: längste Farbe spielen | dieselbe enge Fassung | ±0,6, kein Unterschied | offen |
+| Weg-Regeln und Farbeln | als Vorrang **über** Trumpfziehen | −3,2 bis −3,9 | verworfen |
+
+Zwei Lehren stehen darin.
+
+**Die Fassung entscheidet über das Ergebnis, nicht der Merksatz.** Dieselben
+drei Regeln sind als Vorrang über alles ein Verlust von fast vier Punkten und
+als bloße Farbwahl wirkungslos. Wer eine Regel prüft, prüft immer eine ganz
+bestimmte Auslegung von ihr – und muss sie deshalb hinschreiben.
+
+**Und: Der erste Treffer ist meistens keiner.** „Langer Weg – lange Farbe" kam
+beim Wenz zuerst auf −1,18 ± 1,00 und sah aus wie ein Fund. Mit 14 000 statt
+4 000 Gaben blieben −0,50 ± 0,53 übrig, also nichts. Bei zwölf Vergleichen
+nebeneinander liefert der Zufall ungefähr einen Treffer auf diesem Niveau —
+wer den ersten nimmt und aufhört, baut sich sein Ergebnis selbst.
+
 **Der Hinweisgeber schummelt nicht.** Er bekommt genau dieselbe Sicht wie ein
 Gegner: dein Blatt und was liegt, sonst nichts. Ein Tipp kann deshalb
 danebengehen – er ist der beste Zug nach dem, was man wissen kann, und nicht
