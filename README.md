@@ -565,6 +565,9 @@ getrennt danach, welche Partei sie anwendet.
 | Langer Weg – lange Farbe | dieselbe enge Fassung | −0,5 ± 0,5, nicht bestätigt | offen |
 | Farbeln: längste Farbe spielen | dieselbe enge Fassung | ±0,6, kein Unterschied | offen |
 | Weg-Regeln und Farbeln | als Vorrang **über** Trumpfziehen | −3,2 bis −3,9 | verworfen |
+| Im ersten Stich Trumpf ziehen | erzwungen, statt Farbe | Spieler −0,58 · Gegenpartei +3,0 Ruf, +10,2 Solo | verworfen |
+| Die Rufsau mit dem Zehner suchen | Gegenpartei spielt die Rufffarbe teuer an | ±0,00 – die Formel tut es ohnehin nie | schon drin |
+| Sich trumpffrei machen | kleinen Trumpf abwerfen, um schmieren zu können | greift 17× in 1000 Gaben, +2,4 ± 2,2 | nicht prüfbar |
 | Womit sticht man? | die Augen **im Stich** mitentscheiden lassen | −0,5 bis −0,7 | verworfen |
 | Den höchsten Trumpf nicht schmieren | er holt später selbst einen Stich | Ruf +1,6 / +0,8 / −2,1, Solo −6,0 | eingebaut |
 | Beim unsicheren Stich höchstens einen Unter schmieren | statt bis zum König | in der Zeile darüber enthalten | eingebaut |
@@ -599,12 +602,22 @@ der Spieler +1,6 und sein Mitspieler nur +0,8 — halb so viel, weil der Rufer
 für alle anderen ist es wirkungslos. Und beim Wenz ist die Hälfte aller
 Stech-Entscheidungen gar nicht vorhanden: bei vier Trümpfen gibt es sie nicht.
 
-Fünf Lehren stehen darin.
+Sechs Lehren stehen darin.
 
 **Die Fassung entscheidet über das Ergebnis, nicht der Merksatz.** Dieselben
 drei Regeln sind als Vorrang über alles ein Verlust von fast vier Punkten und
 als bloße Farbwahl wirkungslos. Wer eine Regel prüft, prüft immer eine ganz
 bestimmte Auslegung von ihr – und muss sie deshalb hinschreiben.
+
+**Manche Regel ist zu selten, um geprüft zu werden.** „Sich trumpffrei machen"
+– den letzten, nutzlosen Trumpf abwerfen, damit man beim nächsten Trumpfstich
+schmieren kann statt zuzugeben – kommt nach Einschätzung eines Spielers zweimal
+in tausend Gaben vor. Selbst eine großzügig gefasste Version greift nur 17-mal
+in tausend, und schon darauf ist die Wirkung nicht von Rauschen zu trennen. Für
+die enge Fassung bräuchte es rund das Sechzigfache an Partien. Sie ist deshalb
+nicht eingebaut — nicht weil sie falsch wäre, sondern weil dieses Verfahren sie
+nicht sehen kann. Das ist eine Grenze der Methode und keine Aussage über die
+Regel.
 
 **Eine Messung, die nichts findet, ist auch ein Ergebnis.** Beim Zugeben als
 Letzter und beim Abwerfen brachte keine einzige der geprüften Fassungen etwas –

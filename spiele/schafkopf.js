@@ -145,6 +145,22 @@
           + 'ist gemessen schlechter. Die Farbe zu meiden trifft es, das Warten nicht.',
         zahl: 'Farbe meiden: Spieler +0,20 ± 0,13, Gegenpartei −0,98 ± 0,44. Erst Trumpf '
           + 'ziehen dagegen: Spieler −0,51, Mitspieler −1,88.' },
+      { titel: 'Die Rufsau nie mit dem Zehner suchen',
+        gilt: 'Sauspiel, Gegenpartei',
+        text: 'Spielst du die gerufene Farbe an, muss der Partner die Sau legen – aber wer '
+          + 'in der Farbe frei ist, sticht darüber. Dann fallen dein Zehner und die Sau '
+          + 'zusammen: 21 Augen auf einen Schlag, und zwar an die Gegenseite. Suchen darf '
+          + 'man, aber nur mit einer Karte, die nichts kostet.',
+        zahl: 'In der Faustregel ändert das Verbot nichts (±0,00): Sie spielt die '
+          + 'Rufffarbe ohnehin nie teuer an. Der Merksatz steht hier für den Menschen.' },
+      { titel: 'Im ersten Stich nicht auf Biegen und Brechen Trumpf ziehen',
+        gilt: 'alle Rollen',
+        text: 'Auch als Spieler nicht. Im ersten Stich ist noch niemand blank, und eine '
+          + 'kleine Farbkarte kostet dort weniger als ein Trumpf, den man später braucht. '
+          + 'Für die Gegenpartei ist es geradezu verheerend – sie spielt dem Alleinspieler '
+          + 'damit die Trümpfe frei.',
+        zahl: 'Erzwungener Trumpf im ersten Stich: Spieler −0,58 ± 0,34. Für die '
+          + 'Gegenpartei +3,0 im Rufspiel und +10,2 beim Solo zugunsten des Spielers.' },
       { titel: 'Sonst die kurze Farbe klein anspielen',
         gilt: 'alle',
         text: 'Danach bist du dort blank und kannst beim nächsten Mal stechen.' },
@@ -214,6 +230,20 @@
         gilt: 'alle',
         text: 'Vier Stellschrauben dieser Formel wurden durchgemessen – keine ließ sich '
           + 'verbessern. Was dort steht, stimmt.' },
+    ] },
+    { kopf: 'Zu selten zum Messen', regeln: [
+      { titel: 'Sich trumpffrei machen',
+        gilt: 'Solo, Gegenpartei – ein echter Sonderfall',
+        text: 'Man ist hinten dran, der Alleinspieler sticht mit etwas Höherem, als man '
+          + 'selbst hat. Dann wirft man den kleinen Trumpf trotzdem hinein, um trumpffrei '
+          + 'zu werden: Beim nächsten Trumpfstich muss man dann nicht zugeben, sondern '
+          + 'kann schmieren. Es lohnt nur, wenn mit dem eigenen Trumpf ohnehin nichts mehr '
+          + 'zu holen ist und man Augen auf der Hand hat, die weg sollen.',
+        zahl: 'Nicht eingebaut, weil nicht prüfbar. Eine großzügige Fassung greift in 17 '
+          + 'von 1000 Gaben, und selbst darauf ist die Wirkung nicht von Rauschen zu '
+          + 'trennen (+2,4 ± 2,2). Die enge Fassung kommt zweimal in tausend Gaben vor – '
+          + 'dafür bräuchte es etwa das Sechzigfache an Partien. Dass sie stimmt, ist gut '
+          + 'möglich; hier steht sie, damit sie nicht vergessen wird.' },
     ] },
     { kopf: 'Was nicht gilt', aus: true, regeln: [
       { titel: 'Als Gegenspieler immer die Rufsau suchen',
@@ -1378,7 +1408,9 @@
       d.append(el('p', 'notiz', 'Wonach die drei am Tisch entscheiden. Jede Zahl dahinter '
         + 'ist gemessen: dieselben Gaben mit und ohne die Regel, dazu der Bereich, in dem '
         + 'der wahre Wert mit 95 Prozent liegt. Ein Pluszeichen heißt: so viele '
-        + 'Prozentpunkte öfter gewinnt, wer die Regel anwendet.'));
+        + 'Prozentpunkte öfter gewinnt, wer die Regel anwendet. Gemessen wird getrennt '
+        + 'nach Spielart und nach Rolle – dieselbe Regel liegt für den Spieler, seinen '
+        + 'Mitspieler und die Gegenpartei oft ganz verschieden.'));
       for (const abschnitt of REGELWERK) {
         d.append(el('h3', 'sk-regel-kopf', abschnitt.kopf));
         for (const r of abschnitt.regeln) {
