@@ -508,6 +508,8 @@ const Karten = (() => {
       }
       return bestes;
     }
+    // Ohne erlaubte Karte gaebe es nichts zu waehlen; das darf nicht werfen.
+    if (!truempfe.length) return zuege.length ? zuege[0] : hand[0];
     return truempfe.reduce((a, b) => (ord.rang[b] < ord.rang[a] ? b : a));
   }
 
@@ -840,7 +842,11 @@ const Karten = (() => {
     haende[s.ich] = s.hand.slice();
     const rest = mischen(s.unbekannt.slice(), wuerfel);
     for (const k of rest) {
-      const p = plaetze.find((q) => haende[q].length < s.anzahl[q]);
+      /* Der Notausgang muss auch dann eine Hand finden, wenn die Zahlen nicht
+         aufgehen - lieber eine Karte zu viel als eine Ausnahme, die den Zug des
+         Rechners abbricht und das Spiel stehen laesst. */
+      const p = plaetze.find((q) => haende[q].length < s.anzahl[q])
+        || plaetze.reduce((x, y) => (haende[y].length < haende[x].length ? y : x));
       haende[p].push(k);
     }
     return haende;
@@ -1053,6 +1059,16 @@ const Karten = (() => {
         return 'Die Sau anspielen, solange die Farbe noch läuft. Wartest du, '
           + 'ist irgendwann jemand blank und sticht sie weg.';
       }
+      /* Warum eine Sau liegen bleibt, die man eigentlich anspielen würde. Ohne
+         diesen Satz sieht der Zug aus, als hätte der Rechner sie übersehen. */
+      const gemieden = s.hand.filter((c) => !ord.trumpf[c] && wert(c) === 0
+        && [0, 1, 2, 3].some((q) => q !== s.ich && s.frei[q][farbe(c)]));
+      if (s.sp.art === 'solo' && gemieden.length && farbe(k) !== farbe(gemieden[0])) {
+        return kartenName(gemieden[0]) + ' bleibt liegen: In der Farbe ist schon '
+          + 'jemand frei, und beim Solo hat fast jeder noch Trumpf – die Sau fiele '
+          + 'samt allem, was noch daraufkommt. Sie aufzuheben und erst Trumpf zu '
+          + 'ziehen wäre auch falsch; man meidet die Farbe, statt zu warten.';
+      }
       const lang = s.hand.filter((c) => !ord.trumpf[c] && farbe(c) === farbe(k)).length;
       if (lang <= 2) {
         return 'Klein anspielen und die Farbe loswerden. Bist du dort blank, '
@@ -1089,7 +1105,26 @@ const Karten = (() => {
 
     if (schlaegt(k, bester, ang, ord)) {
       if (unsrer) {
-        return 'Drüber – auch wenn der Stich schon uns gehört, ist es hier billiger, '
+        /* Den eigenen Stich zu übernehmen sieht nach Unsinn aus – die Augen
+           fallen ja so oder so uns zu. Der Grund liegt woanders, und er muss
+           dastehen, sonst wirkt der Zug willkürlich. */
+        const hoeher = s.unbekannt.filter((c) => ord.reihe(c) === ord.reihe(k)
+          && ord.rang[c] > ord.rang[k]);
+        if (augen(k) >= 10 && hoeher.length) {
+          return 'Übernehmen, um die Augen unterzubringen. Der Stich gehört zwar schon '
+            + 'uns, aber die ' + augen(k) + ' Augen sind in deiner Hand nicht sicher: '
+            + hoeher.length + (hoeher.length === 1 ? ' höhere Karte ist' : ' höhere Karten sind')
+            + ' noch unterwegs. Auf einem Stich, den ihr macht, sind sie gezählt.';
+        }
+        const langeFarbe = [0, 1, 2, 3].some((f) => s.hand.some((c) => !ord.trumpf[c]
+          && farbe(c) === f) && [0, 1, 2, 3].some((q) => q !== s.ich && q !== s.spieler
+            && s.frei[q][f]));
+        if ((s.sp.art === 'wenz' || s.sp.art === 'geier') && !meins && langeFarbe) {
+          return 'Den Stich selbst holen, um das Anspiel zu bekommen. An den Augen ändert '
+            + 'das nichts – die fallen so oder so eurer Partei zu. Aber wer ausspielt, '
+            + 'wählt die Farbe, und du hast eine, in der ein Mitspieler schon frei ist.';
+        }
+        return 'Drüber – auch wenn der Stich schon uns gehört, ist es hier besser, '
           + 'ihn selbst zu machen.';
       }
       const geschontS = geschont();
@@ -1136,10 +1171,15 @@ const Karten = (() => {
       }
       /* Trumpf unter dem Trumpf des Partners ist verbrannt – dafür gibt es
          seit der Messung eine eigene Regel, also auch einen eigenen Satz. */
-      if (!trumpf && ang !== 4 && alle.some((c) => ord.trumpf[c])) {
-        return 'Nicht unterstechen: Du könntest hier Trumpf drauflegen, aber er '
-          + 'käme unter den des Partners und wäre verbrannt. Der Stich gehört '
-          + 'ohnehin uns – dann lieber Farbe drauf und den Trumpf behalten.';
+      /* Nicht unterstechen – aber der Satz stimmt nur, wenn die Trümpfe, die
+         hier lägen, tatsächlich unter dem des Partners bleiben. Käme einer
+         drüber, wäre das kein Unterstechen, sondern das Unterbringen der
+         eigenen Augen; darüber entscheidet der Zweig weiter oben. */
+      const nutzlos = alle.filter((c) => ord.trumpf[c] && !schlaegt(c, bester, ang, ord));
+      if (!trumpf && ang !== 4 && nutzlos.length) {
+        return 'Nicht unterstechen: Du könntest hier Trumpf drauflegen, aber er käme '
+          + 'unter den des Partners und wäre verbrannt. Der Stich gehört ohnehin uns – '
+          + 'dann lieber Farbe drauf und den Trumpf behalten.';
       }
       if (augen(k) >= 10) {
         return 'Schmieren: der Stich gehört schon uns'

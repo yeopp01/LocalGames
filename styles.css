@@ -574,6 +574,9 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .s-gitter {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
+  /* Zeilen ausdrücklich gleich hoch: implizite auto-Zeilen bekämen sonst
+     erst ihre Inhaltshöhe, und eine noch leere Zeile bliebe niedriger. */
+  grid-template-rows: repeat(6, 1fr);
   width: min(330px, 86vw);
   aspect-ratio: 1;
   border: 2px solid var(--tinte);
@@ -701,6 +704,9 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .z-brett {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  /* Zeilen ausdrücklich gleich hoch: implizite auto-Zeilen richten sich sonst
+     nach ihrem Inhalt, und eine leere Zeile bliebe niedriger als eine volle. */
+  grid-template-rows: repeat(4, 1fr);
   gap: 6px;
   width: min(340px, 88vw);
   aspect-ratio: 1;

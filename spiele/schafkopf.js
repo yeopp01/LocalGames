@@ -383,10 +383,39 @@
       };
     }
 
+    /* Geht der gespeicherte Stand überhaupt auf? Jede der 32 Karten muss
+       genau einmal vorkommen – auf einer Hand, in einem fertigen Stich oder
+       auf dem Tisch. Ein Stand aus einer älteren Fassung oder eine halb
+       geschriebene Sicherung kann das verletzen, und dann rechnet der Rechner
+       an einer Lage, die es nicht geben kann: Er verteilt Karten auf Hände,
+       die schon voll sind, und bricht mitten im Zug ab. Auf dem Schirm bleibt
+       dann „überlegt …" stehen, für immer.
+
+       Lieber neu geben als das. Eine Gabe ist schnell nachgeholt, ein
+       eingefrorenes Spiel nicht. */
+    function standStimmig(a) {
+      if (a.phase !== 'spiel' && a.phase !== 'ende') return true;
+      if (!a.spielart || a.spieler < 0) return false;
+      const gesehen = new Uint8Array(32);
+      let n = 0;
+      const zaehle = (liste) => {
+        for (const k of liste || []) {
+          if (typeof k !== 'number' || k < 0 || k > 31 || gesehen[k]) return false;
+          gesehen[k] = 1;
+          n += 1;
+        }
+        return true;
+      };
+      for (const h of a.haende) if (!zaehle(h)) return false;
+      for (const st of a.stiche || []) if (!zaehle(st.karten)) return false;
+      if (!zaehle(a.aktuell && a.aktuell.karten)) return false;
+      return n === 32;
+    }
+
     function laden() {
       const a = s.erinnert();
       if (a && Array.isArray(a.haende) && a.haende.length === 4 && a.phase
-          && ['ansage', 'spiel', 'ende'].includes(a.phase)) {
+          && ['ansage', 'spiel', 'ende'].includes(a.phase) && standStimmig(a)) {
         if (!Array.isArray(a.konto)) a.konto = [0, 0, 0, 0];
         if (!a.lehre) a.lehre = 'tipp';
         if (typeof a.zurueck !== 'number') a.zurueck = 0;
@@ -519,10 +548,16 @@
       zeichnen();
       spaeter(() => {
         const oben = bestesGebot();
-        const rat = K.ansageRat(stand.haende[p], stand.zeiger, {
-          proben: 400,
-          stufeAb: oben ? K.spielStufe(oben.spiel) : 0,
-        });
+        let rat = { wahl: null };
+        try {
+          rat = K.ansageRat(stand.haende[p], stand.zeiger, {
+            proben: 400,
+            stufeAb: oben ? K.spielStufe(oben.spiel) : 0,
+          });
+        } catch (e) {
+          // Im Zweifel sagt er weiter – hängen bleiben darf die Ansage nicht.
+          rat = { wahl: null };
+        }
         stand.gebote.push({ p, spiel: rat.wahl ? rat.wahl.spiel : null });
         stand.zeiger += 1;
         denkt = false;
@@ -580,7 +615,9 @@
           spaeter(() => {
             if (stand.phase !== 'spiel' || stand.amZug !== ICH) return;
             if (stand.stiche.length * 4 + stand.aktuell.karten.length !== merker) return;
-            vorabRat = K.bewerten(K.sichtVon(zustand(), ICH), { proben: 240, frist: 300 });
+            try {
+              vorabRat = K.bewerten(K.sichtVon(zustand(), ICH), { proben: 240, frist: 300 });
+            } catch (e) { vorabRat = null; }
           }, 30);
         }
         zeichnen();
@@ -590,7 +627,25 @@
       zeichnen();
       spaeter(() => {
         const p = stand.amZug;
-        const karte = K.besteKarte(K.sichtVon(zustand(), p), { proben: 200, frist: 240 });
+        /* Notbremse. Fliegt hier eine Ausnahme, bliebe denkt auf true und das
+           Spiel stünde für immer bei „überlegt …" – ein Spiel, das man allein
+           gegen den Rechner spielt, darf nie stehenbleiben. Also: was auch
+           schiefgeht, es wird eine erlaubte Karte gelegt. Die Faustregel
+           kommt ohne das Würfeln aus und ist der kürzere Weg; scheitert auch
+           sie, tut es die erste erlaubte Karte. */
+        let karte = -1;
+        try {
+          karte = K.besteKarte(K.sichtVon(zustand(), p), { proben: 200, frist: 240 });
+        } catch (e) {
+          try {
+            karte = K.faustregel(weltJetzt(), p);
+          } catch (e2) {
+            karte = -1;
+          }
+          const erlaubt = erlaubteJetzt(p);
+          if (erlaubt.indexOf(karte) < 0) karte = erlaubt[0];
+          s.toast('Der Rechner hat sich verrechnet – er legt einfach.');
+        }
         denkt = false;
         legen(karte);
       }, DENKZEIT);
