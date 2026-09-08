@@ -805,6 +805,110 @@ const Karten = (() => {
     };
   }
 
+  /* ================================================================ Wissen
+
+     Alles, was sich aus einer Sicht ableiten laesst, in lesbarer Form. Der
+     Rechner rechnet damit ohnehin; hier wird es herausgegeben, damit ein
+     Mensch dasselbe sehen kann, ohne es sich merken zu muessen.
+
+     Nichts davon ist geraten und nichts erschlichen: Es steht alles in dem,
+     was auf dem Tisch lag. */
+
+  /* Welche Karten koennen den laufenden Stich ueberhaupt noch schlagen?
+     Gezaehlt werden nur Karten, die noch jemand halten kann, der auch noch
+     legen muss - wer schon gelegt hat, kommt nicht mehr, und wer in der Farbe
+     frei ist, kann sie nicht haben. */
+  function gefahr(s) {
+    if (!s.trick.length) return [];
+    const ord = s.ord;
+    const ang = ord.reihe(s.trick[0]);
+    const bester = s.trick[stichPlatz(s.trick, ord)];
+    const folgende = [];
+    for (let i = s.trick.length + 1; i < 4; i += 1) folgende.push((s.trickStart + i) % 4);
+    return s.unbekannt.filter((c) => schlaegt(c, bester, ang, ord)
+      && folgende.some((q) => !s.frei[q][ord.reihe(c)]));
+  }
+
+  /* Der hoechste Trumpf, den es ausserhalb der eigenen Hand noch gibt. */
+  function hoechsterFremd(s) {
+    const ord = s.ord;
+    let best = -1;
+    for (const c of s.unbekannt) {
+      if (ord.trumpf[c] && (best < 0 || ord.rang[c] > ord.rang[best])) best = c;
+    }
+    return best;
+  }
+
+  function wissen(z, ich) {
+    const s = sichtVon(z, ich);
+    const ord = s.ord;
+
+    // Augen: was in fertigen Stichen liegt, und wem sie gehoeren.
+    let meine = 0;
+    let fremde = 0;
+    for (const st of z.stiche) {
+      const a = augenSumme(st.karten);
+      const unser = st.sieger === ich
+        || (s.sp.art === 'sau' && s.sauBei >= 0
+          && ((s.sauBei === ich && st.sieger === s.spieler)
+            || (s.spieler === ich && st.sieger === s.sauBei)))
+        || (s.sp.art !== 'sau' && s.spieler !== ich && st.sieger !== s.spieler);
+      if (unser) meine += a; else fremde += a;
+    }
+
+    const freiListe = [];
+    for (let q = 0; q < 4; q += 1) {
+      if (q === ich) continue;
+      for (let r = 0; r < 5; r += 1) if (s.frei[q][r]) freiListe.push({ wer: q, reihe: r });
+    }
+
+    /* Wer musste teuer zugeben, ohne den Stich zu bekommen? Wer einen Zehner
+       oder eine Sau auf einen verlorenen Stich legt, hatte in der Farbe nichts
+       Billigeres mehr. Sind alle kleineren Karten der Farbe ohnehin schon
+       gesehen, ist es kein Verdacht mehr, sondern sicher: Er ist dort blank
+       oder leer. */
+    const zwaenge = [];
+    for (const st of z.stiche) {
+      const ang2 = ord.reihe(st.karten[0]);
+      const sieger2 = (st.start + stichPlatz(st.karten, ord)) % 4;
+      for (let i = 0; i < st.karten.length; i += 1) {
+        const q = (st.start + i) % 4;
+        const k = st.karten[i];
+        if (q === ich || q === sieger2) continue;
+        if (ord.reihe(k) !== ang2 || augen(k) < 10) continue;
+        // Gibt es in dieser Reihe noch kleinere Karten, die niemand gesehen hat?
+        const kleinerOffen = s.unbekannt.some((c) => ord.reihe(c) === ang2
+          && ord.rang[c] < ord.rang[k]);
+        zwaenge.push({ wer: q, karte: k, reihe: ang2, sicher: !kleinerOffen });
+      }
+    }
+
+    const meineT = s.hand.filter((k) => ord.trumpf[k]);
+    const fremdChef = hoechsterFremd(s);
+    const meinChef = meineT.length
+      ? meineT.reduce((a, b) => (ord.rang[b] > ord.rang[a] ? b : a)) : -1;
+
+    return {
+      sicht: s,
+      augenMeine: meine,
+      augenFremde: fremde,
+      augenOffen: 120 - meine - fremde,
+      frei: freiListe,
+      hoheDraussen: s.unbekannt.filter((c) => augen(c) >= 10 || ord.rang[c] >= 100 + 7)
+        .sort((a, b) => ord.rang[b] - ord.rang[a]),
+      truempfeDraussen: s.unbekannt.filter((c) => ord.trumpf[c]).length,
+      meineTruempfe: meineT.length,
+      fremdChef,
+      habeChef: meinChef >= 0 && (fremdChef < 0 || ord.rang[meinChef] > ord.rang[fremdChef]),
+      meinChefTrumpf: meinChef,
+      gefahr: gefahr(s),
+      zwaenge,
+      sauBei: s.sauBei,
+      sauNicht: s.sauNicht,
+      sauWeg: s.sauWeg,
+    };
+  }
+
   const wuerfelStd = Math.random;
 
   function mischen(liste, wuerfel) {
@@ -1439,6 +1543,7 @@ const Karten = (() => {
     welt, erlaubt, zugMachen, zugZurueck, faustregel, ausspielen, endspiel,
     nochSchlagbar, mischen, unterschied,
     sichtVon, verteilen, weltAus, bewerten, besteKarte, begruenden, seiteVon,
+    wissen, gefahr, hoechsterFremd,
     blattstaerke, gebotPasst,
     quote, ansageRat, siebt, schutz,
   };

@@ -598,6 +598,7 @@
     s.werkzeuge([
       { label: 'Anleitung', symbol: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01" stroke-linecap="round"/>', tun: anleitung },
       { label: 'Hinweise', symbol: '<path d="M9 18h6M10 21h4" stroke-linecap="round"/><path d="M12 3a6 6 0 0 0-3.5 10.9c.5.4.8 1 .8 1.6V16h5.4v-.5c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3z"/>', tun: hinweiseWaehlen },
+      { label: 'Was du wissen kannst', symbol: '<path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z" stroke-linejoin="round"/><circle cx="12" cy="12" r="2.6"/>', tun: wissenZeigen },
       { label: 'Regeln des Rechners', symbol: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11v16H6.5A2.5 2.5 0 0 0 4 21.5z" stroke-linejoin="round"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H13v16h4.5a2.5 2.5 0 0 1 2.5 2.5z" stroke-linejoin="round"/>', tun: regelwerkZeigen },
       { label: 'Neu geben', symbol: '<path d="M4 12a8 8 0 0 1 13.7-5.6L20 8M20 12a8 8 0 0 1-13.7 5.6L4 16" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 4v4h-4M4 20v-4h4" stroke-linecap="round" stroke-linejoin="round"/>', tun: neuFragen },
     ]);
@@ -1239,6 +1240,22 @@
       dranKasten.append(el('span', 'sk-dran-text', stand.amZug === ICH
         ? 'Du bist dran'
         : NAMEN[stand.amZug] + ' überlegt …'));
+
+      /* Die eine Auskunft, die zu wichtig ist, um sie hinter einem Knopf zu
+         verstecken: Kann das, was liegt, überhaupt noch geschlagen werden?
+         Gehört der Stich dann uns, sind die Augen sicher – und genau dann
+         schmiert man. Gerechnet wird aus der Sicht: nur Karten, die noch
+         jemand halten kann, der auch noch legen muss. */
+      if (stand.amZug === ICH && stand.lehre !== 'aus' && stand.aktuell.karten.length) {
+        const wi = K.wissen(zustand(), ICH);
+        if (!wi.gefahr.length) {
+          const platz = K.stichPlatz(stand.aktuell.karten, ord());
+          const fuehrer = (stand.aktuell.start + platz) % 4;
+          const unser = K.seiteVon(wi.sicht, fuehrer) === meineSeite();
+          dranKasten.append(el('span', 'sk-dran-zusatz',
+            unser ? '· Stich ist sicher – schmieren' : '· Stich ist entschieden'));
+        }
+      }
     }
 
     function tischZeichnen() {
@@ -1464,6 +1481,109 @@
     /* Die Regeln zum Nachlesen. Nach Spielart und Rolle sortiert, mit der
        gemessenen Wirkung dahinter - wer lernen will, soll auch sehen, wie
        sicher eine Regel ist und woher sie kommt. */
+    /* Was sich aus dem Verlauf ableiten laesst – in Worten. Der Rechner
+       rechnet ohnehin damit; hier steht es, damit man es sehen kann, ohne es
+       sich merken zu muessen. Geraten ist nichts davon: Es steht alles in
+       dem, was auf dem Tisch lag. */
+    function wissenZeigen() {
+      if (stand.phase !== 'spiel' && stand.phase !== 'ende') {
+        s.blatt({
+          titel: 'Was du wissen kannst',
+          inhalt: 'Noch ist nichts gespielt – sobald die erste Karte liegt, steht hier, '
+            + 'was sich daraus ableiten lässt.',
+          aktionen: [{ text: 'Gut' }],
+        });
+        return;
+      }
+      const wi = K.wissen(zustand(), ICH);
+      const ord2 = ord();
+      const d = el('div');
+      const satz = (text, art) => {
+        const k = el('div', 'sk-wissen' + (art ? ' sk-wissen--' + art : ''));
+        k.append(el('p', 'sk-wissen-text', text));
+        d.append(k);
+      };
+      const kopf = (t) => d.append(el('h3', 'sk-regel-kopf', t));
+
+      kopf('Augen');
+      satz((partnerBekannt() ? 'Eure Partei hat ' : 'Du hast ') + wi.augenMeine
+        + ', die andere Seite ' + wi.augenFremde + '. Es liegen noch '
+        + wi.augenOffen + ' im Spiel.'
+        + (partnerBekannt()
+          ? ' Zum Gewinnen braucht ' + (meineSeite() ? 'ihr 61' : 'ihr 60') + '.'
+          : ' Wer dein Partner ist, weißt du noch nicht – gezählt ist nur, was du selbst gemacht hast.'));
+
+      kopf('Trumpf');
+      satz('Draußen sind noch ' + wi.truempfeDraussen
+        + (wi.truempfeDraussen === 1 ? ' Trumpf' : ' Trümpfe') + ', du hältst '
+        + wi.meineTruempfe + '.');
+      if (wi.habeChef) {
+        satz('Du hältst den höchsten Trumpf, den es überhaupt noch gibt: '
+          + K.kartenName(wi.meinChefTrumpf) + '. Solange du ihn hast, kann dir niemand '
+          + 'einen Stich wegnehmen, den du damit holst.', 'gut');
+      } else if (wi.fremdChef >= 0) {
+        satz('Der höchste Trumpf, der noch draußen ist: ' + K.kartenName(wi.fremdChef)
+          + '. Den hält jemand anderes.');
+      }
+
+      if (wi.hoheDraussen.length) {
+        kopf('Was noch kommen kann');
+        satz(wi.hoheDraussen.slice(0, 8).map(K.kartenName).join(', ')
+          + (wi.hoheDraussen.length > 8 ? ' und weitere' : '') + '.');
+      }
+
+      if (stand.aktuell.karten.length) {
+        kopf('Der laufende Stich');
+        if (!wi.gefahr.length) {
+          satz('Nichts, was noch jemand legen kann, schlägt das hier. Der Stich ist '
+            + 'entschieden.', 'gut');
+        } else {
+          satz(wi.gefahr.length + (wi.gefahr.length === 1 ? ' Karte kann' : ' Karten können')
+            + ' noch drüber: ' + wi.gefahr.slice(0, 6).map(K.kartenName).join(', ')
+            + (wi.gefahr.length > 6 ? ' und weitere' : '') + '.');
+        }
+      }
+
+      const freiTexte = [];
+      for (const f of wi.frei) {
+        freiTexte.push(NAMEN[f.wer] + ' ist frei in '
+          + (f.reihe === 4 ? 'Trumpf' : K.FARBEN[f.reihe]));
+      }
+      const zwangTexte = [];
+      for (const z2 of wi.zwaenge) {
+        zwangTexte.push(NAMEN[z2.wer] + ' musste ' + K.kartenName(z2.karte)
+          + ' zugeben, ohne den Stich zu bekommen – '
+          + (z2.sicher
+            ? 'kleinere ' + (z2.reihe === 4 ? 'Trümpfe' : K.FARBEN[z2.reihe]) + ' hat er keine mehr.'
+            : 'er hatte dort vermutlich nichts Billigeres.'));
+      }
+      if (freiTexte.length || zwangTexte.length) {
+        kopf('Was sich schließen lässt');
+        for (const t of freiTexte) satz(t);
+        for (const t of zwangTexte) satz(t, 'schluss');
+      }
+
+      if (stand.spielart.art === 'sau') {
+        kopf('Die Rufsau');
+        const sauName = K.kartenName(K.karte(stand.spielart.farbe, 0));
+        if (wi.sauWeg) {
+          satz(sauName + ' ist gefallen. Damit steht fest, wer zu wem gehört.');
+        } else if (wi.sauBei === ICH) {
+          satz('Du hast ' + sauName + ' – du bist der Partner. Die anderen wissen das noch nicht.');
+        } else {
+          const raus = [0, 1, 2, 3].filter((q) => q !== ICH && wi.sauNicht[q]);
+          satz(sauName + ' ist noch nicht gefallen.'
+            + (raus.length
+              ? ' Ausgeschlossen ist sie bei ' + raus.map((q) => NAMEN[q]).join(' und ') + '.'
+              : ' Wer sie hat, ist noch offen.'));
+        }
+      }
+
+      d.append(el('p', 'notiz notiz--klein', 'Nichts davon ist geraten und nichts erschlichen – '
+        + 'es steht alles in dem, was auf dem Tisch lag. Genau damit rechnet auch der Rechner.'));
+      s.blatt({ titel: 'Was du wissen kannst', inhalt: d, aktionen: [{ text: 'Zu' }] });
+    }
+
     function regelwerkZeigen() {
       const d = el('div');
       d.append(el('p', 'notiz', 'Wonach die drei am Tisch entscheiden. Jede Zahl dahinter '

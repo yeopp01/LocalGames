@@ -2112,6 +2112,23 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .sk-dran[data-wer="ich"] .sk-dran-punkt { background: var(--gruen); }
 @keyframes sk-pochen { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
 
+/* Der Zusatz in der Dran-Zeile: der Stich ist entschieden. */
+.sk-dran-zusatz { font-weight: 500; opacity: .85; }
+
+/* Die Wissensanzeige: je ein Satz als Zeile, Schluesse abgesetzt. */
+.sk-wissen {
+  padding: 9px 12px;
+  margin-bottom: 5px;
+  border-radius: var(--rund-klein);
+  background: var(--karte);
+  border: 1px solid var(--karte-rand);
+  border-left: 3px solid var(--tinte-still);
+}
+.sk-wissen--gut { border-left-color: var(--gruen); }
+.sk-wissen--schluss { border-left-color: var(--gelb); }
+.sk-wissen-text { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--tinte-leise); }
+.sk-wissen--gut .sk-wissen-text { color: var(--tinte); }
+
 /* Der Hinweiskasten. Gruen, wenn es passt, rostrot, wenn es besser ginge. */
 .sk-notiz {
   width: 100%;
