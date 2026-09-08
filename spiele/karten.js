@@ -883,6 +883,45 @@ const Karten = (() => {
       }
     }
 
+    /* Wer koennte der Partner sein? Solange die Rufsau nicht gefallen ist,
+       ist das offen - aber nicht ganz. Drei Verhaltensweisen verschieben die
+       Wahrscheinlichkeit messbar, gemessen an 1185 Mitspielern, solange die
+       Sau noch lag. Grundwahrscheinlichkeit 33 Prozent:
+
+         die Rufffarbe angespielt   60 %   (er darf sie nur mit der Sau
+                                            anspielen oder davonlaufen)
+         dem Spieler geschmiert     57 %
+         Trumpf angespielt          55 %
+
+       Das sind Indizien und keine Beweise - jedes zweite Mal liegt man
+       daneben. Die Folklore, wonach Gegenspieler die Sau suchen, gilt an
+       diesem Tisch gerade nicht. */
+    const INDIZ = [
+      { id: 'ruf', text: 'hat die Rufffarbe angespielt', quote: 60 },
+      { id: 'schmier', text: 'hat dem Spieler geschmiert', quote: 57 },
+      { id: 'trumpf', text: 'hat Trumpf angespielt', quote: 55 },
+    ];
+    const teamIndizien = [];
+    if (s.sp.art === 'sau' && !s.sauWeg && s.sauBei < 0) {
+      for (let q = 0; q < 4; q += 1) {
+        if (q === ich || q === s.spieler || s.sauNicht[q]) continue;
+        const gefunden = new Set();
+        for (const st of z.stiche) {
+          const platzT = stichPlatz(st.karten, ord);
+          const fuehrerT = (st.start + platzT) % 4;
+          for (let i2 = 0; i2 < st.karten.length; i2 += 1) {
+            if ((st.start + i2) % 4 !== q) continue;
+            const k = st.karten[i2];
+            if (i2 === 0 && ord.trumpf[k]) gefunden.add('trumpf');
+            if (i2 === 0 && !ord.trumpf[k] && farbe(k) === s.sp.farbe) gefunden.add('ruf');
+            if (i2 > 0 && fuehrerT === s.spieler && augen(k) >= 10) gefunden.add('schmier');
+          }
+        }
+        const treffer = INDIZ.filter((x) => gefunden.has(x.id));
+        if (treffer.length) teamIndizien.push({ wer: q, indizien: treffer });
+      }
+    }
+
     const meineT = s.hand.filter((k) => ord.trumpf[k]);
     const fremdChef = hoechsterFremd(s);
     const meinChef = meineT.length
@@ -903,6 +942,7 @@ const Karten = (() => {
       meinChefTrumpf: meinChef,
       gefahr: gefahr(s),
       zwaenge,
+      teamIndizien,
       sauBei: s.sauBei,
       sauNicht: s.sauNicht,
       sauWeg: s.sauWeg,

@@ -2126,6 +2126,8 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 }
 .sk-wissen--gut { border-left-color: var(--gruen); }
 .sk-wissen--schluss { border-left-color: var(--gelb); }
+/* Was nur ein Indiz ist, traegt die Warnfarbe - man kann sich darauf irren. */
+.sk-wissen--warnung { border-left-color: var(--rost); }
 .sk-wissen-text { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--tinte-leise); }
 .sk-wissen--gut .sk-wissen-text { color: var(--tinte); }
 

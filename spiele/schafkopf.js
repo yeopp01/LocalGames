@@ -213,6 +213,16 @@
         zahl: 'Zusammen mit der nächsten Regel: Spieler +1,59 ± 0,38, Mitspieler '
           + '+0,82 ± 0,28, Gegenpartei +2,07 ± 0,46. Beim Solo +6,0 für die Gegenpartei – '
           + 'der größte Einzelgewinn im ganzen Regelwerk.' },
+      { titel: 'Die Sau schmiert man – auch wenn sie die höchste ihrer Farbe ist',
+        gilt: 'alle Rollen, alle Spielarten',
+        text: 'Die naheliegende Sorge, man verschenke damit eine Karte, die später selbst '
+          + 'einen Stich holt, ist gemessen falsch. Ein sicherer Stich bringt die elf Augen '
+          + 'jetzt; eine aufgehobene Farb-Sau holt womöglich nie einen, weil sie jemand '
+          + 'sticht – beim Solo mit vierzehn Trümpfen fast sicher. Für den Zehner gilt '
+          + 'dasselbe noch stärker.',
+        zahl: 'Die Sau zu schonen kostet: Rufspiel −0,69 für die Gegenpartei, Herz-Solo '
+          + '−8,42. Sau und Zehner zu schonen: −3,02 und −14,93. Beim Wenz −0,49 bzw. −3,52, '
+          + 'beim Geier −0,29 bzw. −3,96.' },
       { titel: 'Nie den höchsten Trumpf schmieren',
         gilt: 'alle – auch als Letzter im Stich',
         text: 'Unter dem Trumpf des Partners ist er verschenkt. Das gilt sogar dann, wenn '
@@ -1561,6 +1571,19 @@
         kopf('Was sich schließen lässt');
         for (const t of freiTexte) satz(t);
         for (const t of zwangTexte) satz(t, 'schluss');
+      }
+
+      if (wi.teamIndizien.length) {
+        kopf('Wer könnte dein Partner sein?');
+        for (const t of wi.teamIndizien) {
+          const beste = t.indizien.reduce((a2, b2) => (b2.quote > a2.quote ? b2 : a2));
+          satz(NAMEN[t.wer] + ' ' + t.indizien.map((x) => x.text).join(' und ') + '. '
+            + 'Wer das tut, ist in ' + beste.quote + ' von 100 Fällen der Partner – '
+            + 'gegenüber 33, wenn man gar nichts weiß.', 'schluss');
+        }
+        satz('Das sind Indizien, keine Beweise: Bei 60 von 100 liegt man immer noch '
+          + 'jedes zweite bis dritte Mal daneben. Wer darauf setzt und sich irrt, '
+          + 'schmiert dem Gegner.', 'warnung');
       }
 
       if (stand.spielart.art === 'sau') {
