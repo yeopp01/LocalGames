@@ -44,7 +44,9 @@
   const ZEICHEN = [
     /* Eichel: die goldene Frucht mit der Spitze nach oben, darunter der
        gruene Kelch, unten der Stiel. So steht sie auf dem gedruckten Blatt -
-       nicht so, wie sie am Baum haengt.
+       nicht so, wie sie am Baum haengt. Der Kelch ist breiter als die Frucht
+       und unten rund wie eine Schale - so ist er gedruckt, und so liest er
+       sich auch bei zwanzig Pixeln noch als Kelch und nicht als Sockel.
 
        Zwei Fehler steckten vorher darin, und sie sind verschieden: Die
        Richtung war falsch, die Frucht hing nach unten. Und die Farben sassen
@@ -62,25 +64,31 @@
     '<path class="sk-dunkel" d="M11.2 19.4h1.6v3.6h-1.6z"/>'
       + '<path class="sk-gold" d="M7.8 14.6V5.4a4.2 4.2 0 0 1 8.4 0v9.2z"/>'
       + '<rect class="sk-rot" x="7.9" y="11.9" width="8.2" height="2"/>'
-      + '<path class="sk-gruen" d="M6.2 14.3h11.6c0 3.1-2.6 5.6-5.8 5.6s-5.8-2.5-5.8-5.6z"/>',
+      + '<path class="sk-gruen" d="M5.8 13.8c0-.9 1.1-1.5 2.4-1.5h7.6c1.3 0 2.4.6 2.4 1.5 0 3.3-2.8 5.9-6.2 5.9s-6.2-2.6-6.2-5.9z"/>',
     /* Gras: das gruene Laub mit goldener Rippe. */
     '<path class="sk-gruen" d="M12 2.3c3.4 4.5 8 7 8 11.1a4.1 4.1 0 0 1-6.7 3.2c.3 1.9.9 3.2 2 4.4H8.7c1.1-1.2 1.7-2.5 2-4.4A4.1 4.1 0 0 1 4 13.4C4 9.3 8.6 6.8 12 2.3z"/>'
       + '<path class="sk-rippe" d="M12 20V7"/>',
     /* Herz. */
     '<path class="sk-rot" d="M12 21.3C6.4 17.2 3.3 14 3.3 10.2A4.7 4.7 0 0 1 12 7.7a4.7 4.7 0 0 1 8.7 2.5c0 3.8-3.1 7-8.7 11.1z"/>',
-    /* Schellen: die Falkenschelle - runder goldener Koerper, oben die Oese
-       zum Anbinden, quer der Schlitz mit den beiden Loechern, unten das Loch
-       fuer den Kloeppel. Die Oese ist wieder da: sie war frueher als
-       Eichelstiel zu lesen, aber der Stiel der Eichel steht jetzt unten, und
-       damit ist der Knubbel oben eindeutig eine Schelle. Ein runder Koerper
-       allein war es nicht - der las sich als Muenze. */
-    '<rect class="sk-gold" x="9.6" y="2.4" width="4.8" height="5" rx="1.4"/>'
-      + '<circle class="sk-punkt" cx="12" cy="4.4" r=".95"/>'
-      + '<circle class="sk-gold" cx="12" cy="14.2" r="7.8"/>'
-      + '<rect class="sk-rot" x="5.6" y="13.1" width="12.8" height="2.2" rx="1.1"/>'
-      + '<circle class="sk-punkt" cx="7.2" cy="14.2" r="1.35"/>'
-      + '<circle class="sk-punkt" cx="16.8" cy="14.2" r="1.35"/>'
-      + '<circle class="sk-rot" cx="12" cy="18.7" r="1.7"/>',
+    /* Schellen: die Schelle des bayerischen Blatts, wie sie gedruckt wird -
+       eine gelbe Kugel, unter der Mitte ein gruenes Band mit der Naht, darunter
+       der rote Kranz aus Blaettern, und ganz unten haengt der blaue Kloeppel
+       heraus. Die Oese oben ist weg: sie war eine Falkenschelle, kein
+       Kartenzeichen, und sie liess das Zeichen wie eine Eichel mit Knubbel
+       aussehen. Dass hier keine Loecher und kein Schlitz sind, ist Absicht -
+       das gedruckte Blatt hat sie auch nicht. Der Kloeppel unten ist das,
+       was die Schelle von einer Muenze unterscheidet.
+
+       Die Kugel ist mit Radius 8 um (12, 11) gezeichnet. Band und Kranz sind
+       Kreisabschnitte derselben Kugel, nicht aufgelegte Rechtecke - so
+       bleibt der Umriss auch da rund, wo die Farbe wechselt. Die Sehnen:
+       bei y = 12.2 halbe Breite 7.91, bei y = 14.4 halbe Breite 7.24. */
+    '<circle class="sk-blau" cx="12" cy="20.3" r="1.55"/>'
+      + '<circle class="sk-gold" cx="12" cy="11" r="8"/>'
+      + '<path class="sk-rot" d="M4.76 14.4A8 8 0 0 0 19.24 14.4z"/>'
+      + '<path class="sk-ader" d="M12 18.9L7.4 14.4M12 18.9L10.4 14.4M12 18.9L13.6 14.4M12 18.9L16.6 14.4"/>'
+      + '<path class="sk-gruen" d="M4.09 12.2A8 8 0 0 0 4.76 14.4H19.24A8 8 0 0 0 19.91 12.2z"/>'
+      + '<path class="sk-naht" d="M4.3 13.3H19.7"/>',
   ];
 
 

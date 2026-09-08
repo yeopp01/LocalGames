@@ -1723,7 +1723,10 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
      aus wie eine Abbildung eines Blatts und nicht wie eines. Die Kontur ist
      aus demselben Grund fast schwarz und nicht mehr braun. */
   --sk-gruen: #1E7A3C;                   /* Laub - und nur das Laub */
-  --sk-gold: #F2B705;
+  /* Gelb, nicht Gold: die Schelle und die Eichelfrucht sind auf dem Blatt
+     zitronengelb gedruckt, ein Bernsteinton sah nach Messing aus. */
+  --sk-gold: #F5DA0B;
+  --sk-blau: #2E9BD8;                    /* der Kloeppel der Schelle */
   /* Die Eichelfrucht ist dunkel, und das ist keine Geschmacksfrage: Eichel
      und Schelle waren beide golden und beide rund, und damit bei sechzehn
      Pixeln dasselbe Zeichen. Auf dem gedruckten Blatt sind die Eicheln dunkel
@@ -1962,6 +1965,7 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .sk-karte .sk-frucht { fill: var(--sk-frucht); }
 .sk-karte .sk-gold { fill: var(--sk-gold); }
 .sk-karte .sk-rot { fill: var(--sk-rot); }
+.sk-karte .sk-blau { fill: var(--sk-blau); }
 .sk-karte .sk-dunkel { fill: var(--sk-stiel); }
 /* Die Figuren tragen dieselben vier Farben wie die Zeichen: goldener Hut,
    roter Rock, helles Gesicht. */
@@ -1969,6 +1973,11 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .sk-karte .sk-rock { fill: var(--sk-rot); }
 .sk-karte .sk-haut { fill: var(--sk-haut); }
 .sk-karte .sk-punkt { fill: var(--sk-kontur); }
+/* Naht und Blattadern der Schelle: Linien, keine Flaechen. Sie skalieren mit
+   dem Zeichen und duerfen auf dem Neuner zu einem Hauch werden - dort
+   traegt der Farbwechsel das Zeichen, nicht die Zeichnung darin. */
+.sk-karte .sk-naht { fill: none; stroke: var(--sk-kontur); stroke-width: .8; stroke-dasharray: 1.5 1.1; }
+.sk-karte .sk-ader { fill: none; stroke: var(--sk-kontur); stroke-width: .5; stroke-linecap: round; }
 .sk-karte .sk-aus { fill: var(--sk-papier); stroke: none; }
 
 /* Die dunkle Kontur um jede Form. Sie ist keine Zierde: bei zwanzig Pixeln
@@ -1979,6 +1988,7 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .sk-karte .sk-frucht,
 .sk-karte .sk-gold,
 .sk-karte .sk-rot,
+.sk-karte .sk-blau,
 .sk-karte .sk-dunkel,
 .sk-karte .sk-hut,
 .sk-karte .sk-rock,
