@@ -980,35 +980,61 @@ const Karten = (() => {
      Weitersager hielten überhaupt sechs Trümpfe. */
   const SAUORD = ordnung({ art: 'sau', farbe: 0 });
 
-  /* Die Schranken, oberhalb derer ein Weitersager unglaubwürdig wird, und die
-     Untergrenze für einen Ansager. Gemessen an 6000 Blättern: Nur 1,2 Prozent
-     aller Weitersager hielten sechs Trümpfe, nur 1,3 Prozent drei Ober; und
-     nur 2,6 Prozent aller Ansager kamen mit weniger als vier Trümpfen aus.
-     Die Grenzen liegen also knapp jenseits dessen, was wirklich vorkommt –
-     verworfen wird das Unglaubwürdige, nicht das bloß Seltene. */
-  const GEBOT_GRENZE = { weiterTrumpf: 5, weiterOber: 2, ansagerTrumpf: 4 };
+  /* Wie viele Trümpfe hält, wer ansagt? Gemessen an 1400 Gaben, und zwar in
+     der Ordnung, die er auch angesagt hat:
 
-  function blattstaerke(karten) {
+        Sauspiel   4,69 im Schnitt, nie unter 4
+        Solo       6,61 im Schnitt, nie unter 6
+        Wenz       2,71 im Schnitt, nie unter 2
+        Geier      2,68 im Schnitt, nie unter 2
+
+     Hier stand vorher eine einzige Zahl – vier –, und gezählt wurde in der
+     Sauspiel-Ordnung. Für ein Sauspiel geht das auf. Für ein Solo war es
+     grob falsch: Ein Solospieler hält sieben Trümpfe, die Schranke verlangte
+     vier, und die zählte bei einem Eichel-Solo auch noch die falschen Karten.
+     Der Weltenwürfel gab dem Solisten damit regelmäßig ein Blatt, das er nie
+     angesagt hätte – und die Gegenpartei hielt Stiche für sicher, die es
+     nicht waren. */
+  const ANSAGER_TRUMPF = { sau: 4, solo: 6, wenz: 2, geier: 2 };
+  const GEBOT_GRENZE = { weiterTrumpf: 5, weiterOber: 2, weiterSolo: 6 };
+
+  function blattstaerke(karten, ord) {
+    const o = ord || SAUORD;
     let truempfe = 0;
     let ober = 0;
     for (const k of karten) {
-      if (SAUORD.trumpf[k]) truempfe += 1;
+      if (o.trumpf[k]) truempfe += 1;
       if (wert(k) === 3) ober += 1;
     }
     return { truempfe, ober };
   }
 
-  /* Passt die gewürfelte Hand zu dem, was der Spieler angesagt hat? Wer weiter
-     gesagt hat, bekommt kein Blatt, mit dem er angesagt hätte. */
+  /* Passt die gewürfelte Hand zu dem, was der Spieler angesagt hat?
+
+     Für den Ansager wird in der Ordnung gezählt, die er angesagt hat – das
+     ist die, über die er entschieden hat.
+
+     Für einen Weitersager gilt zweierlei: Er darf kein Blatt haben, mit dem er
+     ein Sauspiel angesagt hätte, und keines, mit dem ein Solo drin gewesen
+     wäre. Das zweite ist die schärfere Bedingung: Wer sechs Trümpfe in
+     irgendeiner Farbe hat, sagt an. */
   function gebotPasst(s, p, hand) {
     const g = s.gebote ? s.gebote[p] : -1;
     if (g < 0 || !s.gebotGrenze) return true;
-    const st = blattstaerke(hand.concat(s.gelegt[p] || []));
-    if (g === 0) {
-      return st.truempfe <= s.gebotGrenze.weiterTrumpf
-        && st.ober <= s.gebotGrenze.weiterOber;
+    const alle = hand.concat(s.gelegt[p] || []);
+    if (g === 1) {
+      const grenze = ANSAGER_TRUMPF[s.sp.art] || 4;
+      return blattstaerke(alle, s.ord).truempfe >= grenze;
     }
-    return st.truempfe >= s.gebotGrenze.ansagerTrumpf;
+    const st = blattstaerke(alle, SAUORD);
+    if (st.truempfe > s.gebotGrenze.weiterTrumpf || st.ober > s.gebotGrenze.weiterOber) {
+      return false;
+    }
+    for (let f = 0; f < 4; f += 1) {
+      const so = ordnung({ art: 'solo', farbe: f });
+      if (blattstaerke(alle, so).truempfe >= s.gebotGrenze.weiterSolo) return false;
+    }
+    return true;
   }
 
   /* Eine mögliche Verteilung der unbekannten Karten würfeln. Karten mit
@@ -1579,7 +1605,7 @@ const Karten = (() => {
     farbe, wert, augen, karte, kartenName, kartenKurz, augenSumme,
     ordnung, trumpfListe, spielName, spielKurz, spielStufe, sortieren,
     schlaegt, stichPlatz, moeglicheSpiele, laufende, abrechnen,
-    GRUNDWERT, LAUF_AB, MINDEST, ABSCHLAG, EXAKT_AB, GEBOT_GRENZE,
+    GRUNDWERT, LAUF_AB, MINDEST, ABSCHLAG, EXAKT_AB, GEBOT_GRENZE, ANSAGER_TRUMPF,
     welt, erlaubt, zugMachen, zugZurueck, faustregel, ausspielen, endspiel,
     nochSchlagbar, mischen, unterschied,
     sichtVon, verteilen, weltAus, bewerten, besteKarte, begruenden, seiteVon,

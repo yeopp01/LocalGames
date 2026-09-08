@@ -1743,8 +1743,15 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
      Handkarte. Hoehe, Schriftgrad, Ueberlappung und die Breite des Tisches
      rechnen sich daraus. Ein Handy hat andere Karten als ein Bildschirm,
      ohne dass dafuer ein zweites Stylesheet noetig waere. */
-  --sk-b: 74px;                          /* Handkarte */
-  --sk-t: 60px;                          /* Karte auf dem Tisch */
+  /* Die Breite des Fensters allein reicht als Mass nicht: ein Laptop ist
+     breit wie ein Bildschirm, aber flach wie ein Handy im Querformat. Dort
+     wuchsen die Karten so, dass die eigene Hand und die Knoepfe unter den
+     Rand rutschten. Deshalb deckelt die Hoehe die Kartenbreite mit: Tisch,
+     Dran-Zeile, Hand und Leiste brauchen zusammen gut das Viereinhalbfache
+     einer Handkarte plus etwa 280 Pixel Rahmen. */
+  --sk-hoch: max(46px, calc(21.7vh - 67px));
+  --sk-b: min(74px, var(--sk-hoch));    /* Handkarte */
+  --sk-t: calc(var(--sk-b) * .81);       /* Karte auf dem Tisch */
   --sk-breit: 420px;                     /* wie breit der Tisch werden darf */
   --sk-papier: #FAF4E7;
   --sk-faser: rgba(122, 92, 44, .022);   /* die Faser im Papier, kaum sichtbar */
@@ -1786,7 +1793,9 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   width: 100%;
   max-width: var(--sk-breit);
   display: grid;
-  grid-template-columns: calc(var(--sk-t) * 1.2) 1fr calc(var(--sk-t) * 1.2);
+  /* Die Seitenspalten muessen die Marke unter dem Namen tragen koennen -
+     "Schellen-Solo" ist das laengste, was dort je steht. */
+  grid-template-columns: minmax(84px, calc(var(--sk-t) * 1.45)) 1fr minmax(84px, calc(var(--sk-t) * 1.45));
   grid-template-rows: auto 1fr;
   gap: 2px;
   padding: 8px 6px 10px;
@@ -1817,36 +1826,81 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 }
 
 .sk-name { font-size: 13px; font-weight: 700; }
+/* Die Rolle unter dem Namen ist eine Marke, kein Fluestern: wer spielt,
+   traegt seine Spielart auf Gold, der Partner ein helles Schild. Die Gebote
+   waehrend der Ansage bleiben leise - sie sind Geschichte, sobald einer
+   spielt. Wo nichts steht, bleibt die Zeile leer, damit die Namen nicht
+   huepfen. */
 .sk-rolle {
-  font-size: 10px;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  opacity: .72;
-  min-height: 12px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  min-height: 17px;
+  line-height: 17px;
+  padding: 0 6px;
+  border-radius: 999px;
   text-align: center;
-  line-height: 1.2;
+  white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: .72;
 }
-.sk-mitspieler[data-dran="ja"] .sk-rolle { opacity: .9; }
-.sk-ruecken { display: flex; gap: 1px; flex-wrap: wrap; justify-content: center; max-width: 62px; }
-/* Die Rueckseiten sind kleine Karten und keine Striche: man soll auf einen
-   Blick sehen, wie viel einer noch auf der Hand hat.
+.sk-rolle:empty { padding: 0; }
+.sk-rolle[data-art="weiter"] { text-transform: uppercase; font-weight: 600; font-size: 9.5px; }
+.sk-rolle[data-art="gebot"] { opacity: .9; }
+.sk-rolle[data-art="spielt"] {
+  opacity: 1;
+  background: var(--sk-gold);
+  color: #241B12;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .35);
+}
+.sk-rolle[data-art="partner"] {
+  opacity: 1;
+  background: rgba(255, 255, 255, .88);
+  color: #241B12;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .25);
+}
+/* Die Restkarten: eine einzelne Rueckseite und daneben die Zahl.
 
-   Auf dem Karton steht das Zeichen der Sammlung: die vier Kacheln des
-   LocalGames-Logos, hier in den Farben des Blatts. Das passt genau, weil
-   beide dasselbe zaehlen - vier Kacheln, vier Farben. Die vierte Kachel ist
-   die des Papiers: Gruen, Rot und Gold sind alles, was ein Schafkopfblatt an
-   Farben kennt, und eine erfundene vierte waere eine Farbe zu viel. */
+   Vorher lagen dort acht winzige Kaertchen nebeneinander. Acht Rechtecke von
+   neun Pixeln Breite sind kein Kartenpaeckchen, sondern ein Strichcode - und
+   abzaehlen liess sich daraus ohnehin nichts. Eine Karte in lesbarer Groesse
+   und eine Ziffer sagen dasselbe schneller und sehen wie Karten aus. */
+.sk-ruecken { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.sk-faecher { display: flex; align-items: center; }
+/* Gezeichnet wird nur die oberste Karte. Alle acht nebeneinander waren ein
+   Strichcode, und selbst drei angedeutete Kanten sind bei siebzehn Pixeln
+   Kartenbreite nur noch Rauschen. */
+.sk-rueck { display: none; }
+.sk-faecher .sk-rueck:last-child { display: block; }
 .sk-rueck {
-  width: 9px;
-  height: 13px;
-  border-radius: 2px;
+  width: calc(var(--sk-t) * .34);
+  height: calc(var(--sk-t) * .49);
+  min-width: 19px;
+  min-height: 27px;
+  max-width: 26px;
+  max-height: 37px;
+  border-radius: calc(var(--sk-t) * .05);
+  flex: none;
+  /* Auf dem Karton steht das Zeichen der Sammlung: die vier Kacheln des
+     LocalGames-Logos in den Farben des Blatts. Die Masse sind Prozente, damit
+     dasselbe Muster am Handy und am Bildschirm aufgeht. */
   background:
-    linear-gradient(var(--sk-gruen) 0 0) 1.2px 2.8px / 3.2px 3.2px no-repeat,
-    linear-gradient(var(--sk-rot) 0 0) 4.6px 2.8px / 3.2px 3.2px no-repeat,
-    linear-gradient(var(--sk-gold) 0 0) 1.2px 6.4px / 3.2px 3.2px no-repeat,
-    linear-gradient(var(--sk-papier) 0 0) 4.6px 6.4px / 3.2px 3.2px no-repeat,
+    linear-gradient(var(--sk-gruen) 0 0) 33% 36% / 19% 16% no-repeat,
+    linear-gradient(var(--sk-rot) 0 0) 67% 36% / 19% 16% no-repeat,
+    linear-gradient(var(--sk-gold) 0 0) 33% 64% / 19% 16% no-repeat,
+    linear-gradient(var(--sk-papier) 0 0) 67% 64% / 19% 16% no-repeat,
     var(--sk-ruecken);
-  box-shadow: 0 0 0 .5px rgba(0, 0, 0, .35);
+  box-shadow: inset 0 0 0 1px rgba(246, 230, 206, .3), 0 1px 2px rgba(0, 0, 0, .5);
+}
+
+.sk-restzahl {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  opacity: .9;
+  min-width: 1ch;
 }
 
 /* Die vier Plaetze des Stichs liegen dort, wo der Spieler sitzt - so sieht
@@ -2274,11 +2328,14 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 /* Fast jedes Handy liegt zwischen 360 und 430 Punkten breit. Dort stand
    bisher die unterste Stufe - genau da, wo die Karten am kleinsten waren
    und am meisten drauf sein muss. Jetzt gibt es dazwischen zwei Stufen. */
-@media (min-width: 380px) { :root { --sk-b: 80px; --sk-t: 64px; --sk-breit: 97vw; } }
-@media (min-width: 430px) { :root { --sk-b: 86px; --sk-t: 70px; --sk-breit: 96vw; } }
-@media (min-width: 560px) { :root { --sk-b: 94px; --sk-t: 76px; --sk-breit: min(96vw, 580px); } }
-@media (min-width: 820px) { :root { --sk-b: 108px; --sk-t: 88px; --sk-breit: min(92vw, 680px); } }
-@media (min-width: 1150px) { :root { --sk-b: 122px; --sk-t: 100px; --sk-breit: min(88vw, 780px); } }
+/* Ab der Bildschirmgroesse haengt auch die Tischbreite an der Karte: werden
+   die Karten wegen der Hoehe kleiner, soll der Tisch nicht als leere Wiese
+   um sie herumliegen. */
+@media (min-width: 380px) { :root { --sk-b: min(80px, var(--sk-hoch)); --sk-breit: 97vw; } }
+@media (min-width: 430px) { :root { --sk-b: min(86px, var(--sk-hoch)); --sk-breit: 96vw; } }
+@media (min-width: 560px) { :root { --sk-b: min(94px, var(--sk-hoch)); --sk-breit: min(96vw, 580px, max(420px, calc(var(--sk-b) * 7.2))); } }
+@media (min-width: 820px) { :root { --sk-b: min(108px, var(--sk-hoch)); --sk-breit: min(92vw, 680px, max(420px, calc(var(--sk-b) * 7.2))); } }
+@media (min-width: 1150px) { :root { --sk-b: min(122px, var(--sk-hoch)); --sk-breit: min(88vw, 780px, max(420px, calc(var(--sk-b) * 7.2))); } }
 
 /* Die Trumpfmarke und der Eckindex ruecken mit. */
 .sk-trumpfpunkt {

@@ -1348,10 +1348,20 @@
       for (const i of [1, 2, 3]) {
         const m = mitspieler[i];
         m.dataset.dran = stand.phase === 'spiel' && stand.amZug === i && !stand.stichFertig ? 'ja' : 'nein';
-        m.querySelector('.sk-rolle').textContent = rolleVon(i);
+        const rolle = rolleVon(i);
+        const rolleEl = m.querySelector('.sk-rolle');
+        rolleEl.textContent = rolle.text;
+        rolleEl.dataset.art = rolle.art;
+        /* Die Restkarten liegen als kleiner Faecher unter dem Namen, dazu die
+           Zahl. Der Faecher zeigt auf einen Blick "noch viel" oder "fast
+           fertig", die Zahl sagt es genau - beides zusammen liest sich
+           schneller als acht Kacheln, die in zwei Zeilen umbrechen. */
         const ruecken = m.querySelector('.sk-ruecken');
         ruecken.replaceChildren();
-        for (let n = 0; n < stand.haende[i].length; n += 1) ruecken.append(el('span', 'sk-rueck'));
+        const zahl = stand.haende[i].length;
+        const faecher = el('span', 'sk-faecher');
+        for (let n = 0; n < zahl; n += 1) faecher.append(el('span', 'sk-rueck'));
+        ruecken.append(faecher, el('span', 'sk-restzahl', zahl ? String(zahl) : ''));
       }
       stichKasten.replaceChildren();
       const st = stand.aktuell;
@@ -1371,17 +1381,20 @@
       }
     }
 
+    /* Was unter dem Namen steht: beim Alleinspieler die Spielart selbst,
+       nicht bloss das Wort "spielt" - "Eichel-Sau" sagt wer und was in
+       einem. Die Art steuert, wie kraeftig die Marke gezeichnet wird. */
     function rolleVon(p) {
       if (stand.phase === 'ansage') {
         const g = stand.gebote.find((x) => x.p === p);
-        if (!g) return '';
-        return g.spiel ? K.spielKurz(g.spiel) : 'weiter';
+        if (!g) return { text: '', art: '' };
+        return g.spiel ? { text: K.spielKurz(g.spiel), art: 'gebot' } : { text: 'weiter', art: 'weiter' };
       }
-      if (stand.phase !== 'spiel' && stand.phase !== 'ende') return '';
-      if (p === stand.spieler) return 'spielt';
+      if (stand.phase !== 'spiel' && stand.phase !== 'ende') return { text: '', art: '' };
+      if (p === stand.spieler) return { text: K.spielKurz(stand.spielart), art: 'spielt' };
       if (stand.spielart.art === 'sau' && p === stand.partner
-          && (partnerBekannt() || stand.phase === 'ende')) return 'Partner';
-      return '';
+          && (partnerBekannt() || stand.phase === 'ende')) return { text: 'Partner', art: 'partner' };
+      return { text: '', art: '' };
     }
 
     function handZeichnen() {
