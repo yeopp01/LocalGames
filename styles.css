@@ -2078,6 +2078,13 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   z-index: 5;
   box-shadow: 0 0 0 2px var(--gruen), 0 10px 20px rgba(20, 14, 8, .34);
 }
+/* Die vorgewaehlte Karte: schon halb aus dem Faecher, mit dunklem Rand -
+   nicht gruen, das ist der Tipp. Sie liegt so, bis du dran bist. */
+.sk-hand .sk-karte--hand[data-vorgewaehlt="ja"] {
+  transform: translateY(-13px);
+  z-index: 5;
+  box-shadow: 0 0 0 2px var(--tinte-leise), 0 10px 20px rgba(20, 14, 8, .34);
+}
 
 .sk-karte--mini { width: 40px; height: 57px; border-radius: 5px; box-shadow: 0 1px 2px rgba(20, 14, 8, .25); }
 .sk-karte--mini .sk-ecke--unten { display: none; }
@@ -2239,6 +2246,19 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   font-size: 15px;
 }
 .sk-rechnung-zahl { font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; }
+
+/* Der letzte Stich im Blatt: vier Karten in Legereihenfolge, darunter wer sie gab. */
+.sk-letzter { display: flex; justify-content: center; gap: 8px; margin: 2px 0 10px; }
+.sk-letzter-karte {
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--tinte-leise);
+}
+.sk-letzter-karte[data-sticht="ja"] { color: var(--tinte); font-weight: 700; }
+.sk-letzter-wer { margin: 0 0 12px; text-align: center; font-weight: 700; }
+.sk-letzter-davor { margin: 0 0 6px; font-size: 11px; color: var(--tinte-still); text-transform: uppercase; letter-spacing: .06em; }
 
 .sk-rueckblick { display: grid; gap: 5px; }
 .sk-rueck-zeile { display: flex; align-items: center; gap: 8px; }

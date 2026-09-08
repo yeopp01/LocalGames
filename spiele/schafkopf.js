@@ -642,6 +642,7 @@
     /* --------------------------------------------------------------- Gabe */
 
     function geben() {
+      vorwahl = null;
       const stapel = K.ALLE.slice();
       K.mischen(stapel, Math.random);
       const neu = frisch(stand);
@@ -872,9 +873,32 @@
       stand.notiz = null;
       tipp = null;
       vorabRat = null;
+      vorwahl = null;
       sichern();
       zeichnen();
       zugWeiter();
+    }
+
+    /* Ein Klick auf die Hand. Bist du dran, fällt die Karte; sonst wird sie
+       vorgemerkt. Zwei Klicks kurz hintereinander sind einer: Der zweite
+       eines Doppelklicks träfe sonst die Karte, die nach dem Legen an
+       dieselbe Stelle rückt – und merkte sie für den nächsten Stich vor. */
+    function karteGeklickt(karte) {
+      if (stand.phase !== 'spiel') return;
+      const jetzt = Date.now();
+      if (jetzt < sperreBis) return;
+      sperreBis = jetzt + KLICKSPERRE;
+      if (stand.amZug !== ICH || denkt || stand.stichFertig) { vorwaehlen(karte); return; }
+      vorwahl = null;
+      deineKarte(karte);
+    }
+
+    function vorwaehlen(karte) {
+      if (stand.haende[ICH].indexOf(karte) < 0) return;
+      // Noch einmal dieselbe Karte: die Vorwahl ist wieder aufgehoben.
+      vorwahl = vorwahl === karte ? null : karte;
+      handZeichnen();
+      dranZeichnen();
     }
 
     /* Deine Karte – erst prüfen, dann urteilen, dann legen. */
@@ -1209,7 +1233,9 @@
       tippKnopf.textContent = stand.phase === 'ansage' ? 'Was geht?' : 'Tipp';
       zurueckKnopf.hidden = stand.phase !== 'spiel';
       zurueckKnopf.disabled = !kannZurueck();
-      leiste.hidden = tippKnopf.hidden && zurueckKnopf.hidden;
+      stichKnopf.hidden = stand.phase !== 'spiel';
+      stichKnopf.disabled = !stand.stiche.length;
+      leiste.hidden = tippKnopf.hidden && zurueckKnopf.hidden && stichKnopf.hidden;
     }
 
     /* Oben links: wer spielt, und was. Bisher stand dort nur die Spielart -
@@ -1268,6 +1294,13 @@
 
     const kontoText = () => (stand.konto[ICH] > 0 ? '+' : '') + stand.konto[ICH];
 
+    /* Was du schon vorgemerkt hast, steht in der Dran-Zeile – dann sieht
+       man auch ohne Blick auf die Hand, dass gleich etwas fällt. */
+    function vorwahlZusatz() {
+      if (vorwahl === null) return;
+      dranKasten.append(el('span', 'sk-dran-zusatz', '· du legst ' + K.kartenName(vorwahl)));
+    }
+
     function dranZeichnen() {
       dranKasten.replaceChildren();
       if (stand.phase !== 'spiel') { dranKasten.hidden = true; return; }
@@ -1283,6 +1316,7 @@
         dranKasten.append(el('span', 'sk-dran-text',
           (sieger === ICH ? 'Du machst den Stich' : NAMEN[sieger] + ' macht den Stich')
           + ' · ' + a + (a === 1 ? ' Auge' : ' Augen')));
+        vorwahlZusatz();
         return;
       }
 
@@ -1291,6 +1325,7 @@
       dranKasten.append(el('span', 'sk-dran-text', stand.amZug === ICH
         ? 'Du bist dran'
         : NAMEN[stand.amZug] + ' überlegt …'));
+      if (stand.amZug !== ICH) vorwahlZusatz();
 
       /* Die eine Auskunft, die zu wichtig ist, um sie hinter einem Knopf zu
          verstecken: Kann das, was liegt, überhaupt noch geschlagen werden?
@@ -1375,7 +1410,8 @@
         if (i === trumpfEnde && i > 0) b.dataset.gruppe = 'farbe';
         if (erlaubt && erlaubt.indexOf(k) < 0) b.dataset.gesperrt = 'ja';
         if (tipp && tipp.karte === k) b.dataset.tipp = 'ja';
-        b.addEventListener('click', () => deineKarte(k));
+        if (vorwahl === k) b.dataset.vorgewaehlt = 'ja';
+        b.addEventListener('click', () => karteGeklickt(k));
         if (!erlaubt) b.disabled = stand.phase !== 'spiel';
         handKasten.append(b);
       }
@@ -1496,9 +1532,10 @@
       endeKasten.append(l);
     }
 
-    function sticheZeigen() {
+    /* Die Stiche von Nummer `von` bis vor `bis`, je eine Zeile. */
+    function stichZeilen(von, bis) {
       const d = el('div', 'sk-rueckblick');
-      for (let i = 0; i < stand.stiche.length; i += 1) {
+      for (let i = von; i < bis; i += 1) {
         const st = stand.stiche[i];
         const z = el('div', 'sk-rueck-zeile');
         z.append(el('span', 'sk-rueck-nr', String(i + 1)));
@@ -1514,7 +1551,42 @@
           NAMEN[st.sieger] + ' · ' + K.augenSumme(st.karten)));
         d.append(z);
       }
-      s.blatt({ titel: 'Die acht Stiche', inhalt: d, aktionen: [{ text: 'Zu' }] });
+      return d;
+    }
+
+    function sticheZeigen() {
+      s.blatt({ titel: 'Die acht Stiche', inhalt: stichZeilen(0, stand.stiche.length),
+        aktionen: [{ text: 'Zu' }] });
+    }
+
+    /* Mitten im Spiel: der letzte Stich groß, in Legereihenfolge und mit dem
+       Namen dessen, der die Karte gab. Die früheren stehen klein darunter –
+       wer schon zählt, findet sie so, ohne dass sie das Bild bestimmen. */
+    function letztenStichZeigen() {
+      const n = stand.stiche.length;
+      if (!n) return;
+      const st = stand.stiche[n - 1];
+      const d = el('div');
+      const reihe = el('div', 'sk-letzter');
+      for (let j = 0; j < 4; j += 1) {
+        const p = (st.start + j) % 4;
+        const feld = el('div', 'sk-letzter-karte');
+        const k = karteBauen(st.karten[j], 'sk-karte--tisch');
+        k.disabled = true;
+        if (p === st.sieger) { k.dataset.sticht = 'ja'; feld.dataset.sticht = 'ja'; }
+        feld.append(k, el('span', null, NAMEN[p]));
+        reihe.append(feld);
+      }
+      d.append(reihe);
+      const a = K.augenSumme(st.karten);
+      d.append(el('p', 'sk-letzter-wer',
+        (st.sieger === ICH ? 'Du machst den Stich' : NAMEN[st.sieger] + ' macht den Stich')
+        + ' · ' + a + (a === 1 ? ' Auge' : ' Augen')));
+      if (n > 1) {
+        d.append(el('p', 'sk-letzter-davor', 'Davor'));
+        d.append(stichZeilen(0, n - 1));
+      }
+      s.blatt({ titel: 'Stich ' + n, inhalt: d, aktionen: [{ text: 'Zu' }] });
     }
 
     function neuFragen() {
