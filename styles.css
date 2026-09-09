@@ -1744,12 +1744,17 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
      rechnen sich daraus. Ein Handy hat andere Karten als ein Bildschirm,
      ohne dass dafuer ein zweites Stylesheet noetig waere. */
   /* Die Breite des Fensters allein reicht als Mass nicht: ein Laptop ist
-     breit wie ein Bildschirm, aber flach wie ein Handy im Querformat. Dort
-     wuchsen die Karten so, dass die eigene Hand und die Knoepfe unter den
-     Rand rutschten. Deshalb deckelt die Hoehe die Kartenbreite mit: Tisch,
-     Dran-Zeile, Hand und Leiste brauchen zusammen gut das Viereinhalbfache
-     einer Handkarte plus etwa 280 Pixel Rahmen. */
-  --sk-hoch: max(46px, calc(21.7vh - 67px));
+     breit wie ein Bildschirm, aber flach wie ein Handy im Hochformat. Dort
+     waehlte die Breite die groessten Karten, und Hand und Knopfleiste
+     rutschten unter den Fensterrand.
+
+     Deshalb deckelt die Hoehe die Kartenbreite mit. Gemessen: Von der
+     Oberkante bis unter die Knopfleiste braucht das Brett das 5,4-fache
+     einer Handkarte plus rund 300 Pixel fuer Kopfzeile, Dran-Zeile und
+     Abstaende. Nach der Karte aufgeloest und acht Pixel Luft gelassen,
+     bleibt 18,5vh - 58px. Die 46 Pixel darunter sind die Grenze, unter der
+     eine Karte nicht mehr lesbar ist - dann wird lieber gescrollt. */
+  --sk-hoch: max(46px, calc(18.5vh - 58px));
   --sk-b: min(74px, var(--sk-hoch));    /* Handkarte */
   --sk-t: calc(var(--sk-b) * .81);       /* Karte auf dem Tisch */
   --sk-breit: 420px;                     /* wie breit der Tisch werden darf */
@@ -1875,24 +1880,28 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .sk-rueck { display: none; }
 .sk-faecher .sk-rueck:last-child { display: block; }
 .sk-rueck {
-  width: calc(var(--sk-t) * .34);
-  height: calc(var(--sk-t) * .49);
-  min-width: 19px;
-  min-height: 27px;
-  max-width: 26px;
-  max-height: 37px;
-  border-radius: calc(var(--sk-t) * .05);
+  width: calc(var(--sk-t) * .36);
+  height: calc(var(--sk-t) * .52);
+  min-width: 20px;
+  min-height: 29px;
+  max-width: 28px;
+  max-height: 40px;
+  border-radius: 3px;
   flex: none;
-  /* Auf dem Karton steht das Zeichen der Sammlung: die vier Kacheln des
-     LocalGames-Logos in den Farben des Blatts. Die Masse sind Prozente, damit
-     dasselbe Muster am Handy und am Bildschirm aufgeht. */
+  /* Auf dem Karton stand bisher das Zeichen der Sammlung: vier Kacheln in den
+     Farben des Blatts. Auf einer Karte von zwanzig Pixeln wurden daraus vier
+     bunte Punkte, und die Karte sah aus wie ein Wuerfel. Ein gedruckter
+     Kartenruecken traegt an dieser Stelle ohnehin kein Bild, sondern einen
+     doppelten Rand und ein feines Muster - und das haelt jede Groesse aus. */
   background:
-    linear-gradient(var(--sk-gruen) 0 0) 33% 36% / 19% 16% no-repeat,
-    linear-gradient(var(--sk-rot) 0 0) 67% 36% / 19% 16% no-repeat,
-    linear-gradient(var(--sk-gold) 0 0) 33% 64% / 19% 16% no-repeat,
-    linear-gradient(var(--sk-papier) 0 0) 67% 64% / 19% 16% no-repeat,
+    repeating-linear-gradient(45deg,
+      rgba(246, 230, 206, .10) 0 1px, transparent 1px 4px),
     var(--sk-ruecken);
-  box-shadow: inset 0 0 0 1px rgba(246, 230, 206, .3), 0 1px 2px rgba(0, 0, 0, .5);
+  border: 1px solid rgba(246, 230, 206, .72);
+  box-shadow:
+    inset 0 0 0 1.5px var(--sk-ruecken),
+    inset 0 0 0 2.5px rgba(246, 230, 206, .42),
+    0 1px 2px rgba(0, 0, 0, .5);
 }
 
 .sk-restzahl {
