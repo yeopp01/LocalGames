@@ -6,7 +6,7 @@
 Eine Zeile je Akzeptanzkriterium. Gepflegt wird der Status in der Spec
 selbst, hier steht er zusammengefasst.
 
-**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 1 zurückgestellt · 351 fertig
+**Gesamt:** 1 in arbeit · 0 geplant · 0 offen · 1 zurückgestellt · 352 fertig
 
 ## Nach Spezifikation
 
@@ -27,7 +27,7 @@ selbst, hier steht er zusammengefasst.
 | [Weg](10-raetsel/zip.md)                           | -         | -       | -     | -              | 20     |
 | [Galgenmännchen](20-wortspiele/galgen.md)          | -         | -       | -     | -              | 14     |
 | [Wördle](20-wortspiele/wordle.md)                  | -         | -       | -     | -              | 24     |
-| [Schafkopf](30-brett-und-karten/schafkopf.md)      | 2         | -       | -     | -              | 33     |
+| [Schafkopf](30-brett-und-karten/schafkopf.md)      | 1         | -       | -     | -              | 34     |
 | [Vier gewinnt](30-brett-und-karten/viergewinnt.md) | -         | -       | -     | -              | 16     |
 | [2048](30-brett-und-karten/zweitausend.md)         | -         | -       | -     | -              | 13     |
 | [Wer am ehesten](40-zu-mehreren/amehesten.md)      | -         | -       | -     | -              | 11     |
@@ -36,12 +36,11 @@ selbst, hier steht er zusammengefasst.
 | [Verräter](40-zu-mehreren/verraeter.md)            | -         | -       | -     | 1              | 15     |
 | [Zwei Wahrheiten](40-zu-mehreren/wahrheiten.md)    | -         | -       | -     | -              | 10     |
 
-## In Arbeit (2)
+## In Arbeit (1)
 
 | Spec      | AC                                        | Titel                           | Anmerkung  |
 | --------- | ----------------------------------------- | ------------------------------- | ---------- |
 | schafkopf | [AC-18](30-brett-und-karten/schafkopf.md) | Wenz- und Geier-Ansager gewogen | Die Gegner |
-| schafkopf | [AC-19](30-brett-und-karten/schafkopf.md) | Fertige Stiche zählen mit       | Die Gegner |
 
 ## Zurückgestellt (1)
 
@@ -49,7 +48,7 @@ selbst, hier steht er zusammengefasst.
 | --------- | ------------------------------------ | -------------------------- | -------------------------------------------- |
 | verraeter | [AC-13](40-zu-mehreren/verraeter.md) | Stimmen übers Netz sammeln | braucht eine Verbindung zwischen den Geräten |
 
-## Fertig (351)
+## Fertig (352)
 
 | Spec          | AC                                          | Titel                                  | Anmerkung                    |
 | ------------- | ------------------------------------------- | -------------------------------------- | ---------------------------- |
@@ -300,6 +299,7 @@ selbst, hier steht er zusammengefasst.
 | schafkopf     | [AC-15](30-brett-und-karten/schafkopf.md)   | Ende zeigt die Rechnung                | Abrechnung                   |
 | schafkopf     | [AC-16](30-brett-und-karten/schafkopf.md)   | Gegner sehen nur Erlaubtes             | Die Gegner                   |
 | schafkopf     | [AC-17](30-brett-und-karten/schafkopf.md)   | Schlüsse aus dem Verlauf               | Die Gegner                   |
+| schafkopf     | [AC-19](30-brett-und-karten/schafkopf.md)   | Fertige Stiche zählen mit              | Die Gegner                   |
 | schafkopf     | [AC-20](30-brett-und-karten/schafkopf.md)   | Sau nicht vor den Zehner               | Die Gegner                   |
 | schafkopf     | [AC-21](30-brett-und-karten/schafkopf.md)   | Exaktes Endspiel ab dreizehn           | Die Gegner                   |
 | schafkopf     | [AC-22](30-brett-und-karten/schafkopf.md)   | Rechnen friert nichts ein              | Die Gegner                   |

@@ -1,7 +1,7 @@
 # Schafkopf
 
 **Datei:** [`spiele/schafkopf.js`](../../spiele/schafkopf.js) · [`spiele/karten.js`](../../spiele/karten.js)
-**Stand:** 33/35 fertig · 2 in arbeit
+**Stand:** 34/35 fertig · 1 in arbeit
 
 ## Zweck
 
@@ -112,7 +112,7 @@ drei Stufen erklärt Züge aus derselben Sicht, die ein Mensch am Tisch hat.
   auch ansagen würde – Sauen, Zehner und freie Farben zählen mit, nicht nur die
   Trümpfe, und schon gelegte Karten gehören zum Blatt. Findet sich in den
   Anläufen keine angenommene Verteilung, nehmen sie die glaubwürdigste.
-- **AC-19** `in-arbeit` **Fertige Stiche zählen mit** — Ob eine Karte für 61
+- **AC-19** `fertig` **Fertige Stiche zählen mit** — Ob eine Karte für 61
   Augen reicht, rechnet der Rechner samt der Augen, die in fertigen Stichen
   schon bei der jeweiligen Partei liegen – nicht ab null beim laufenden Stich.
   Wem ein fertiger Stich gehört, entscheidet die jeweilige Verteilung.

@@ -826,6 +826,10 @@ const Karten = (() => {
       sp, ord, ich, hand, spieler: z.spieler,
       anzahl: z.haende.map((h) => h.length),
       unbekannt, frei, sauK, sauBei, sauNicht, sauWeg, davon, gebote, gelegt,
+      stiche: z.stiche.map((st) => ({
+        sieger: st.sieger != null ? st.sieger : (st.start + stichPlatz(st.karten, ord)) % 4,
+        augen: augenSumme(st.karten),
+      })),
       trickStart: z.aktuell.start,
       trick: z.aktuell.karten.slice(),
     };
@@ -1167,9 +1171,20 @@ const Karten = (() => {
       regelStimmen.set(regelZug, (regelStimmen.get(regelZug) || 0) + 1);
       const meineSeite = w.seite[s.ich] ? 0 : 1;
       const schwelle = w.seite[s.ich] ? 61 : 60;
+      /* Die Welt beginnt beim laufenden Stich, ihre Punkte bei null. Was schon
+         in fertigen Stichen liegt, gehört aber mit zur Rechnung, sonst steht
+         die Schwelle von 61 an der falschen Stelle: Die Gegenpartei zählte
+         alle bisherigen Augen des Spielers als ihre eigenen, der Spieler keine
+         einzige. Beim Wenz hielt sich die Gegenpartei damit vom vierten Stich
+         an in 95 bis 100 von 100 Welten für den Sieger – und wo alles gewonnen
+         scheint, entscheidet nur noch der Gleichstand. Welcher Partei ein
+         Stich gehört, sagt die jeweilige Welt; beim Sauspiel steht der Partner
+         erst dort fest. */
+      const bisher = (s.stiche || []).reduce((n, st) => n + (w.seite[st.sieger] ? st.augen : 0), 0);
       for (const e of werte) {
         zugMachen(w, e.karte);
-        const punkte0 = w.offen <= EXAKT_AB ? endspiel(w, -1, 1000) : ausspielen(w).punkte[0];
+        const punkte0 = bisher
+          + (w.offen <= EXAKT_AB ? endspiel(w, -1, 1000) : ausspielen(w).punkte[0]);
         zugZurueck(w);
         const meine = meineSeite === 0 ? punkte0 : 120 - punkte0;
         const gut = meine >= schwelle ? 1 : 0;
