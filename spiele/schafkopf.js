@@ -533,13 +533,27 @@
 
     function laden() {
       const a = s.erinnert();
+      /* 'weiter' gehört dazu: der Augenblick nach „zusammengeworfen", bis neu
+         gegeben wird. Fehlte es hier, ging beim Neuladen genau dann der Stand
+         über den Abend verloren. */
       if (a && Array.isArray(a.haende) && a.haende.length === 4 && a.phase
-          && ['ansage', 'spiel', 'ende'].includes(a.phase) && standStimmig(a)) {
+          && ['ansage', 'spiel', 'ende', 'weiter'].includes(a.phase) && standStimmig(a)) {
         if (!Array.isArray(a.konto)) a.konto = [0, 0, 0, 0];
         if (!a.lehre) a.lehre = 'tipp';
         if (typeof a.zurueck !== 'number') a.zurueck = 0;
         if (typeof a.rueckstand !== 'string') a.rueckstand = null;
         return a;
+      }
+      /* Wird ein Stand verworfen, weil er nicht aufgeht, bleibt wenigstens der
+         Abend: Stand, Zahl der Gaben, Lehrer-Stufe. Neu gegeben wird ohnehin. */
+      if (a && Array.isArray(a.konto) && a.konto.length === 4
+          && a.konto.every((n) => typeof n === 'number')) {
+        return frisch({
+          geber: Number.isInteger(a.geber) ? a.geber : 2,
+          lehre: typeof a.lehre === 'string' ? a.lehre : 'tipp',
+          konto: a.konto,
+          gaben: typeof a.gaben === 'number' ? a.gaben : 0,
+        });
       }
       return frisch(null);
     }
@@ -1023,11 +1037,20 @@
     function warumNicht(karte, erlaubt) {
       const o = ord();
       const st = stand.aktuell.karten;
+      const ang = st.length ? o.reihe(st[0]) : -1;
+      const kannBedienen = st.length > 0 && stand.haende[ICH].some((k) => o.reihe(k) === ang);
       let text;
       if (!st.length) {
-        text = 'Die Rufsau darfst du nicht anspielen – außer du legst sie selbst. '
-          + 'Mit vier Karten dieser Farbe dürftest du davonlaufen, aber so viele hast du nicht.';
-      } else if (o.reihe(st[0]) === 4) {
+        text = 'Die Rufffarbe darfst du nur mit der Sau selbst anspielen – du hältst die '
+          + 'gerufene Sau. Mit vier Karten dieser Farbe dürftest du davonlaufen, aber so '
+          + 'viele hast du nicht.';
+      } else if (!kannBedienen && karte === sauKarte()) {
+        /* Dieser Fall fehlte: Wer nicht bedienen kann, darf abwerfen – nur die
+           Rufsau nicht. Das Blatt nannte stattdessen Farb- oder Trumpfzwang,
+           obwohl gar keine Karte der Farbe mehr da war. */
+        text = 'Die Rufsau darfst du nicht abwerfen, solange du noch eine andere Karte '
+          + 'hast – sie gehört in einen Stich ihrer Farbe. Leg eine andere.';
+      } else if (ang === 4) {
         text = 'Trumpf ist angespielt, und du hast noch Trumpf – den musst du zugeben.';
       } else if (erlaubt.length === 1 && erlaubt[0] === sauKarte()) {
         text = 'Deine Farbe ist gesucht: die Rufsau muss fallen.';
@@ -1337,9 +1360,13 @@
         if (!wi.gefahr.length) {
           const platz = K.stichPlatz(stand.aktuell.karten, ord());
           const fuehrer = (stand.aktuell.start + platz) % 4;
-          const unser = K.seiteVon(wi.sicht, fuehrer) === meineSeite();
+          // Wem er gehört, sagt nur, wer die Parteien kennt – wie in begruenden.
+          const klar = partnerBekannt() || stand.partner === ICH
+            || fuehrer === ICH || fuehrer === stand.spieler;
+          const unser = klar && K.seiteVon(wi.sicht, fuehrer) === meineSeite();
           dranKasten.append(el('span', 'sk-dran-zusatz',
-            unser ? '· Stich ist sicher – schmieren' : '· Stich ist entschieden'));
+            unser ? '· Stich ist sicher – schmieren'
+              : klar ? '· Stich ist entschieden' : '· Stich ist entschieden, für wen ist offen'));
         }
       }
     }
@@ -1783,7 +1810,8 @@
         + 'sticht Wenz und Geier, die stechen das Sauspiel; bei gleichem Rang zählt, wer näher '
         + 'an der Vorhand sitzt. Mag keiner, wird neu gegeben.'));
       d.append(el('p', 'notiz', 'Abgerechnet wird mit dem üblichen Tarif: Sauspiel 10, '
-        + 'Alleinspiel 50. Dazu 10 für Schneider – die Verliererpartei bleibt unter 31 Augen –, '
+        + 'Alleinspiel 50. Dazu 10 für Schneider – der Spieler gewinnt ihn ab 91 Augen und '
+        + 'verliert ihn mit 30 oder weniger, die Gegenpartei ist also schon mit 30 frei –, '
         + '10 für Schwarz, also gar kein Stich, und 10 je Laufendem. Laufende sind die obersten '
         + 'Trümpfe in ununterbrochener Reihe in einer Hand oder Partei; sie zählen ab drei, beim '
         + 'Wenz und Geier ab zwei. Der Alleinspieler bekommt oder zahlt das Ganze dreifach.'));
@@ -1834,14 +1862,17 @@
     const punkte = partien.reduce((s, p) => s + (typeof p.punkte === 'number' ? p.punkte : 0), 0);
     raus.push({ wert: (punkte > 0 ? '+' : '') + punkte, label: 'Punkte gesamt' });
 
-    const selbst = partien.filter((p) => p.alsSpieler);
+    // Siegquoten nur aus Partien mit Urteil, wie überall im Rahmen.
+    const mitUrteil = (p) => typeof p.gewonnen === 'boolean';
+    const selbst = partien.filter((p) => p.alsSpieler && mitUrteil(p));
     if (selbst.length) {
       raus.push({
         wert: selbst.filter((p) => p.gewonnen).length + '/' + selbst.length,
         label: 'Siege als Spieler',
       });
     }
-    const allein = partien.filter((p) => p.alsSpieler && p.spielart && p.spielart !== 'sau');
+    const allein = partien.filter((p) => p.alsSpieler && mitUrteil(p)
+      && p.spielart && p.spielart !== 'sau');
     if (allein.length) {
       raus.push({
         wert: allein.filter((p) => p.gewonnen).length + '/' + allein.length,
@@ -1857,11 +1888,13 @@
     }
     /* Wie oft lag die eigene Karte auf der besten? Nur aus Partien, in denen
        das Mitlesen anlag – sonst wurde nichts gezählt. */
-    const zurueck = partien.reduce((n, p) => n + (p.zurueck || 0), 0);
+    const zurueck = partien.reduce((n, p) => n + (typeof p.zurueck === 'number' ? p.zurueck : 0), 0);
     if (zurueck) {
       raus.push({ wert: String(zurueck), label: zurueck === 1 ? 'Zug zurück' : 'Züge zurück' });
     }
-    const gemessen = partien.filter((p) => p.gezaehlt > 0);
+    // Fehlte treffer, wurde die Summe NaN und die Kennzahl „NaN %".
+    const gemessen = partien.filter((p) => typeof p.gezaehlt === 'number' && p.gezaehlt > 0
+      && typeof p.treffer === 'number');
     if (gemessen.length) {
       const t = gemessen.reduce((s, p) => s + p.treffer, 0);
       const g = gemessen.reduce((s, p) => s + p.gezaehlt, 0);

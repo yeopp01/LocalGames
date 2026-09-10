@@ -6,7 +6,7 @@
 Eine Zeile je Akzeptanzkriterium. Gepflegt wird der Status in der Spec
 selbst, hier steht er zusammengefasst.
 
-**Gesamt:** 3 in arbeit · 0 geplant · 7 offen · 1 zurückgestellt · 343 fertig
+**Gesamt:** 3 in arbeit · 0 geplant · 0 offen · 1 zurückgestellt · 350 fertig
 
 ## Nach Spezifikation
 
@@ -15,7 +15,7 @@ selbst, hier steht er zusammengefasst.
 | [Auswahl und Navigation](00-rahmen/auswahl.md)     | -         | -       | -     | -              | 15     |
 | [Datenschutz](00-rahmen/datenschutz.md)            | -         | -       | -     | -              | 11     |
 | [Offline und Versionen](00-rahmen/offline.md)      | -         | -       | -     | -              | 14     |
-| [Spielschnittstelle](00-rahmen/schnittstelle.md)   | -         | -       | 1     | -              | 11     |
+| [Spielschnittstelle](00-rahmen/schnittstelle.md)   | -         | -       | -     | -              | 12     |
 | [Sicherung](00-rahmen/sicherung.md)                | -         | -       | -     | -              | 14     |
 | [Statistik](00-rahmen/statistik.md)                | -         | -       | -     | -              | 14     |
 | [Zahlencode](10-raetsel/mastermind.md)             | -         | -       | -     | -              | 15     |
@@ -27,7 +27,7 @@ selbst, hier steht er zusammengefasst.
 | [Weg](10-raetsel/zip.md)                           | -         | -       | -     | -              | 20     |
 | [Galgenmännchen](20-wortspiele/galgen.md)          | -         | -       | -     | -              | 14     |
 | [Wördle](20-wortspiele/wordle.md)                  | -         | -       | -     | -              | 24     |
-| [Schafkopf](30-brett-und-karten/schafkopf.md)      | 3         | -       | 6     | -              | 26     |
+| [Schafkopf](30-brett-und-karten/schafkopf.md)      | 3         | -       | -     | -              | 32     |
 | [Vier gewinnt](30-brett-und-karten/viergewinnt.md) | -         | -       | -     | -              | 16     |
 | [2048](30-brett-und-karten/zweitausend.md)         | -         | -       | -     | -              | 13     |
 | [Wer am ehesten](40-zu-mehreren/amehesten.md)      | -         | -       | -     | -              | 11     |
@@ -44,25 +44,13 @@ selbst, hier steht er zusammengefasst.
 | schafkopf | [AC-19](30-brett-und-karten/schafkopf.md) | Fertige Stiche zählen mit       | Die Gegner |
 | schafkopf | [AC-20](30-brett-und-karten/schafkopf.md) | Sau nicht vor den Zehner        | Die Gegner |
 
-## Offen (7)
-
-| Spec          | AC                                        | Titel                              | Anmerkung              |
-| ------------- | ----------------------------------------- | ---------------------------------- | ---------------------- |
-| schnittstelle | [AC-12](00-rahmen/schnittstelle.md)       | Auswertung verträgt Lücken         | Urteil und Auswertung  |
-| schafkopf     | [AC-10](30-brett-und-karten/schafkopf.md) | Gesperrte Karte mit Grund          | Spielregeln beim Legen |
-| schafkopf     | [AC-14](30-brett-und-karten/schafkopf.md) | Schneidergrenze wie am Tisch       | Abrechnung             |
-| schafkopf     | [AC-17](30-brett-und-karten/schafkopf.md) | Schlüsse aus dem Verlauf           | Die Gegner             |
-| schafkopf     | [AC-28](30-brett-und-karten/schafkopf.md) | Begründung nur mit Geprüftem       | Der Lehrer             |
-| schafkopf     | [AC-33](30-brett-und-karten/schafkopf.md) | Abendstand überlebt Zusammenwerfen | Speicher und Statistik |
-| schafkopf     | [AC-35](30-brett-und-karten/schafkopf.md) | Auswertung verträgt Lücken         | Speicher und Statistik |
-
 ## Zurückgestellt (1)
 
 | Spec      | AC                                   | Titel                      | Anmerkung                                    |
 | --------- | ------------------------------------ | -------------------------- | -------------------------------------------- |
 | verraeter | [AC-13](40-zu-mehreren/verraeter.md) | Stimmen übers Netz sammeln | braucht eine Verbindung zwischen den Geräten |
 
-## Fertig (343)
+## Fertig (350)
 
 | Spec          | AC                                          | Titel                                  | Anmerkung                    |
 | ------------- | ------------------------------------------- | -------------------------------------- | ---------------------------- |
@@ -117,6 +105,7 @@ selbst, hier steht er zusammengefasst.
 | schnittstelle | [AC-9](00-rahmen/schnittstelle.md)          | `gewonnen` ist dreiwertig              | Urteil und Auswertung        |
 | schnittstelle | [AC-10](00-rahmen/schnittstelle.md)         | `ohneSiege` ist nur Anzeige            | Urteil und Auswertung        |
 | schnittstelle | [AC-11](00-rahmen/schnittstelle.md)         | Auswertung liefert Kennzahlen          | Urteil und Auswertung        |
+| schnittstelle | [AC-12](00-rahmen/schnittstelle.md)         | Auswertung verträgt Lücken             | Urteil und Auswertung        |
 | sicherung     | [AC-1](00-rahmen/sicherung.md)              | Sichern an zwei Stellen                | Sichern                      |
 | sicherung     | [AC-2](00-rahmen/sicherung.md)              | Datei mit allen Partien                | Sichern                      |
 | sicherung     | [AC-3](00-rahmen/sicherung.md)              | Laufende Partien bleiben daheim        | Sichern                      |
@@ -304,11 +293,14 @@ selbst, hier steht er zusammengefasst.
 | schafkopf     | [AC-7](30-brett-und-karten/schafkopf.md)    | Rechner sagen durchgerechnet an        | Ansage                       |
 | schafkopf     | [AC-8](30-brett-und-karten/schafkopf.md)    | Farb- und Trumpfzwang                  | Spielregeln beim Legen       |
 | schafkopf     | [AC-9](30-brett-und-karten/schafkopf.md)    | Rufsau-Zwang                           | Spielregeln beim Legen       |
+| schafkopf     | [AC-10](30-brett-und-karten/schafkopf.md)   | Gesperrte Karte mit Grund              | Spielregeln beim Legen       |
 | schafkopf     | [AC-11](30-brett-und-karten/schafkopf.md)   | Letzter Stich einsehbar                | Spielregeln beim Legen       |
 | schafkopf     | [AC-12](30-brett-und-karten/schafkopf.md)   | Karte vorwählen                        | Spielregeln beim Legen       |
 | schafkopf     | [AC-13](30-brett-und-karten/schafkopf.md)   | Tarif mit Laufenden                    | Abrechnung                   |
+| schafkopf     | [AC-14](30-brett-und-karten/schafkopf.md)   | Schneidergrenze wie am Tisch           | Abrechnung                   |
 | schafkopf     | [AC-15](30-brett-und-karten/schafkopf.md)   | Ende zeigt die Rechnung                | Abrechnung                   |
 | schafkopf     | [AC-16](30-brett-und-karten/schafkopf.md)   | Gegner sehen nur Erlaubtes             | Die Gegner                   |
+| schafkopf     | [AC-17](30-brett-und-karten/schafkopf.md)   | Schlüsse aus dem Verlauf               | Die Gegner                   |
 | schafkopf     | [AC-21](30-brett-und-karten/schafkopf.md)   | Exaktes Endspiel ab dreizehn           | Die Gegner                   |
 | schafkopf     | [AC-22](30-brett-und-karten/schafkopf.md)   | Rechnen friert nichts ein              | Die Gegner                   |
 | schafkopf     | [AC-23](30-brett-und-karten/schafkopf.md)   | Drei Lehrer-Stufen                     | Der Lehrer                   |
@@ -316,11 +308,14 @@ selbst, hier steht er zusammengefasst.
 | schafkopf     | [AC-25](30-brett-und-karten/schafkopf.md)   | Gleichauf entscheidet die Farbe        | Der Lehrer                   |
 | schafkopf     | [AC-26](30-brett-und-karten/schafkopf.md)   | Mitlesen mit Bilanz                    | Der Lehrer                   |
 | schafkopf     | [AC-27](30-brett-und-karten/schafkopf.md)   | Hinweis schaut nicht rein              | Der Lehrer                   |
+| schafkopf     | [AC-28](30-brett-und-karten/schafkopf.md)   | Begründung nur mit Geprüftem           | Der Lehrer                   |
 | schafkopf     | [AC-29](30-brett-und-karten/schafkopf.md)   | Was du wissen kannst                   | Der Lehrer                   |
 | schafkopf     | [AC-30](30-brett-und-karten/schafkopf.md)   | Passt in flache Fenster                | Darstellung                  |
 | schafkopf     | [AC-31](30-brett-und-karten/schafkopf.md)   | Selbst gezeichnete Karten              | Darstellung                  |
 | schafkopf     | [AC-32](30-brett-und-karten/schafkopf.md)   | Spielstand überlebt Schließen          | Speicher und Statistik       |
+| schafkopf     | [AC-33](30-brett-und-karten/schafkopf.md)   | Abendstand überlebt Zusammenwerfen     | Speicher und Statistik       |
 | schafkopf     | [AC-34](30-brett-und-karten/schafkopf.md)   | Partie in der Statistik                | Speicher und Statistik       |
+| schafkopf     | [AC-35](30-brett-und-karten/schafkopf.md)   | Auswertung verträgt Lücken             | Speicher und Statistik       |
 | viergewinnt   | [AC-1](30-brett-und-karten/viergewinnt.md)  | Sieben mal sechs Felder                | Brett und Gegner             |
 | viergewinnt   | [AC-2](30-brett-und-karten/viergewinnt.md)  | Drei Stufen gegen den Rechner          | Brett und Gegner             |
 | viergewinnt   | [AC-3](30-brett-und-karten/viergewinnt.md)  | Sofortsieg wird genommen               | Brett und Gegner             |

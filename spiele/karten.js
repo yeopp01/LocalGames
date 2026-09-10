@@ -181,8 +181,11 @@ const Karten = (() => {
     }
     const augenGegner = 120 - augenSpieler;
     const gewonnen = augenSpieler >= 61;
-    const verlorene = gewonnen ? augenGegner : augenSpieler;
-    const schneider = verlorene <= 30;
+    /* Schneiderfrei ist die Spielerpartei mit 31 Augen, die Gegenpartei schon
+       mit 30 – so wird am Tisch gezählt. Schneider gewinnt der Spieler also
+       erst ab 91 Augen und verliert ihn mit 30 oder weniger. Vorher galt für
+       beide dieselbe Grenze, und schon 90 zu 30 kostete die Gegenpartei 10. */
+    const schneider = gewonnen ? augenSpieler >= 91 : augenSpieler <= 30;
     const schwarz = gewonnen ? sticheGegner === 0 : sticheSpieler === 0;
 
     const lauf = laufende(startHaende, sp, seite);
@@ -770,8 +773,13 @@ const Karten = (() => {
         gelegt[q].push(k);
         if (i > 0 && ord.reihe(k) !== ang) frei[q][ang] = 1;
         if (k === sauK) { sauBei = q; sauWeg = true; }
-        else if (sauK >= 0 && !sauWeg && !davon && ang === sp.farbe && ord.reihe(k) === ang) {
-          sauNicht[q] = 1;                     // bedient, ohne die Sau zu legen
+        else if (i > 0 && sauK >= 0 && !sauWeg && !davon && ang === sp.farbe && ord.reihe(k) === ang) {
+          /* Bedient, ohne die Sau zu legen. Erst ab der zweiten Karte: Der
+             Anspieler bedient nicht, er spielt an – und wer mit einer kleinen
+             Karte davonläuft, hält die Sau gerade. Vorher galt er hier als
+             „hat sie nicht" und zugleich als ihr Halter; dann passte die Sau
+             zu keinem, und die Welten legten sie irgendwohin. */
+          sauNicht[q] = 1;
         }
       }
       // Farbe gesucht, Sau nicht gefallen: der Anspieler ist davongelaufen.
@@ -1312,7 +1320,14 @@ const Karten = (() => {
     const platz = stichPlatz(s.trick, ord);
     const bester = s.trick[platz];
     const fuehrer = (s.trickStart + platz) % 4;
-    const unsrer = seiteVon(s, fuehrer) === meins;
+    /* Wem der Stich gehört, steht beim Sauspiel erst fest, wenn man weiß, wer
+       zu wem gehört – vorher ist von zwei Leuten offen, wer der Partner ist.
+       seiteVon zählt sie dann zur Gegenpartei, und daraus wurde „der Stich
+       gehört schon uns", obwohl der Führende genauso gut der Partner des
+       Spielers sein konnte. */
+    const fuehrerKlar = s.sp.art !== 'sau' || s.sauBei >= 0
+      || fuehrer === s.spieler || fuehrer === s.ich;
+    const unsrer = fuehrerKlar && seiteVon(s, fuehrer) === meins;
     const imStich = augenSumme(s.trick);
     const letzter = s.trick.length === 3;
 
@@ -1391,6 +1406,12 @@ const Karten = (() => {
           + 'womöglich ohne jemanden im Rücken.';
       }
       return satz.trim();
+    }
+
+    if (!fuehrerKlar) {
+      return 'Du kommst nicht drüber, und wem der Stich gehört, ist noch offen – solange '
+        + 'die Rufsau nicht gefallen ist, kann der Führende zu jeder Seite gehören. '
+        + (augen(k) === 0 ? 'Also nichts Zählbares drauf.' : kartenName(k) + ' kommt trotzdem drauf.');
     }
 
     if (unsrer) {

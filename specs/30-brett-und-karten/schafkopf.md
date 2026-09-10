@@ -1,7 +1,7 @@
 # Schafkopf
 
 **Datei:** [`spiele/schafkopf.js`](../../spiele/schafkopf.js) · [`spiele/karten.js`](../../spiele/karten.js)
-**Stand:** 26/35 fertig · 3 in arbeit · 6 offen
+**Stand:** 32/35 fertig · 3 in arbeit
 
 ## Zweck
 
@@ -59,7 +59,7 @@ drei Stufen erklärt Züge aus derselben Sicht, die ein Mensch am Tisch hat.
   außer er hält vier Karten davon: Dann darf er davonlaufen, und die Sau ist
   danach frei. Abwerfen darf er sie nicht, solange er noch eine andere Karte
   hat.
-- **AC-10** `offen` **Gesperrte Karte mit Grund** — Ist der Mensch dran, sind
+- **AC-10** `fertig` **Gesperrte Karte mit Grund** — Ist der Mensch dran, sind
   unerlaubte Karten sichtbar gedämpft. Wer trotzdem eine antippt, legt nichts
   und bekommt in einem Blatt „Die geht nicht" genau den Zwang genannt, der
   greift – Farbzwang, Trumpfzwang, Rufsau muss fallen, Rufffarbe nicht
@@ -82,7 +82,7 @@ drei Stufen erklärt Züge aus derselben Sicht, die ein Mensch am Tisch hat.
   den ausgeteilten Blättern, und zählen ab drei, beim Wenz und Geier ab zwei.
   Beim Sauspiel bekommt oder zahlt jeder den einfachen Wert, der Alleinspieler
   den dreifachen; die vier Beträge ergeben zusammen immer null.
-- **AC-14** `offen` **Schneidergrenze wie am Tisch** — Die Spielerpartei ist
+- **AC-14** `fertig` **Schneidergrenze wie am Tisch** — Die Spielerpartei ist
   mit 31 Augen schneiderfrei, die Gegenpartei schon mit 30: Schneider gewinnt
   der Spieler erst ab 91 Augen, Schneider verliert er mit 30 oder weniger.
   Schwarz ist, wer keinen einzigen Stich macht. Die Anleitung im Spiel nennt
@@ -99,11 +99,12 @@ drei Stufen erklärt Züge aus derselben Sicht, die ein Mensch am Tisch hat.
   allein aus seinem Blatt, dem Gelegten, der Ansage und der Kartenzahl je
   Hand. Zwei Lagen, die sich nur darin unterscheiden, wer welche fremde Karte
   hält, ergeben für ihn dieselbe Sicht.
-- **AC-17** `offen` **Schlüsse aus dem Verlauf** — Die gewürfelten
+- **AC-17** `fertig` **Schlüsse aus dem Verlauf** — Die gewürfelten
   Verteilungen widersprechen nie dem, was sich wissen lässt: Wer nicht bedient,
   hat die Farbe nicht. Der Spieler hat die Rufsau nicht; wer die Rufffarbe
-  bedient, ohne die Sau zu legen, auch nicht; fällt sie trotz angespielter
-  Farbe nicht, hält sie der Anspieler. Weitersagern werden, solange sich eine
+  bedient, ohne die Sau zu legen, auch nicht – der Anspieler bedient dabei nicht,
+  er spielt an; fällt sie trotz angespielter Farbe nicht, hält sie der
+  Anspieler. Weitersagern werden, solange sich eine
   passende Verteilung findet, keine Blätter zugewürfelt, mit denen sie
   angesagt hätten.
 - **AC-18** `in-arbeit` **Wenz- und Geier-Ansager gewogen** — Beim Wenz und
@@ -157,12 +158,14 @@ drei Stufen erklärt Züge aus derselben Sicht, die ein Mensch am Tisch hat.
 - **AC-27** `fertig` **Hinweis schaut nicht rein** — Tipp, Urteil, „Was geht?",
   „Was du wissen kannst" und die Dran-Zeile rechnen aus derselben Sicht wie ein
   Gegner: dein Blatt, was liegt, die Ansage. Ein Tipp kann deshalb danebengehen.
-- **AC-28** `offen` **Begründung nur mit Geprüftem** — Kein Satz behauptet, was
+- **AC-28** `fertig` **Begründung nur mit Geprüftem** — Kein Satz behauptet, was
   aus deiner Sicht nicht feststeht. „Billiger kommst du nicht drüber" steht nur,
   wenn keine billigere erlaubte Karte den Stich holt; empfiehlt der Rechner die
   teurere, nennt er die verworfene billigere und den Grund. „Der Stich gehört
   schon uns" oder „Stich ist sicher – schmieren" steht nur, wenn feststeht, zu
-  welcher Partei der Führende gehört.
+  welcher Partei der Führende gehört. Steht es nicht fest, sagt der Satz, dass
+  es offen ist, und die Dran-Zeile heißt „Stich ist entschieden, für wen ist
+  offen".
 - **AC-29** `fertig` **Was du wissen kannst** — Ein Blatt fasst zusammen, was
   sich aus dem Verlauf ableiten lässt: Augen je Seite, Trümpfe draußen und wer
   den höchsten hält, hohe Karten unterwegs, was den laufenden Stich noch
@@ -188,14 +191,15 @@ drei Stufen erklärt Züge aus derselben Sicht, die ein Mensch am Tisch hat.
   wieder da, samt Geboten, Stichen und Lehrer-Zählern, und die Rechner machen
   weiter. Ein Stand, in dem nicht jede Karte genau einmal vorkommt, wird
   verworfen und neu gegeben. Tipp und Vorwahl sind flüchtig.
-- **AC-33** `offen` **Abendstand überlebt Zusammenwerfen** — Stand über den
+- **AC-33** `fertig` **Abendstand überlebt Zusammenwerfen** — Stand über den
   Abend, Zahl der Gaben und Lehrer-Stufe bleiben auch dann erhalten, wenn die
-  App genau im Moment „zusammengeworfen" geschlossen oder neu geladen wird.
+  App genau im Moment „zusammengeworfen" geschlossen oder neu geladen wird –
+  und ebenso, wenn ein unstimmiger Stand verworfen und neu gegeben wird.
 - **AC-34** `fertig` **Partie in der Statistik** — Jede zu Ende gespielte Gabe
   wird mit `gewonnen` (aus deiner Sicht), `dauer`, `spielart`, `alsSpieler`,
   `augen`, `punkte`, `hilfen`, `treffer`, `gezaehlt` und `zurueck` notiert.
   „Neu geben" und zusammengeworfene Gaben notieren nichts.
-- **AC-35** `offen` **Auswertung verträgt Lücken** — Die Statistik zeigt Punkte
+- **AC-35** `fertig` **Auswertung verträgt Lücken** — Die Statistik zeigt Punkte
   gesamt, Siege als Spieler, Siege im Alleinspiel, Augen im Schnitt,
   zurückgenommene Züge und den Anteil bester Karten. Eine leere Partienliste
   zeigt nur „Punkte gesamt" mit 0; fehlende Felder erzeugen nie `NaN`, und

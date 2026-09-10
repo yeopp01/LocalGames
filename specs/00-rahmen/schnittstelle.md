@@ -1,7 +1,7 @@
 # Spielschnittstelle
 
 **Datei:** [`app.js`](../../app.js)
-**Stand:** 11/12 fertig · 1 offen
+**Stand:** 12/12 fertig
 
 ## Zweck
 
@@ -68,10 +68,10 @@ Rahmen ein Spiel kennen muss.
   den allgemeinen Kennzahlen steht. `hilfe` bietet `dauerText`, `beste(partien,
   feld)` (kleinster Wert über 0 aus gewonnenen Partien, sonst 0) und
   `prozent(a, b)`. `zusatz(partien, { el })` darf ein Element darunter hängen.
-- **AC-12** `offen` **Auswertung verträgt Lücken** — Jede `auswertung` und
+- **AC-12** `fertig` **Auswertung verträgt Lücken** — Jede `auswertung` und
   jeder `zusatz` kommen mit einer leeren Liste und mit Partien aus, denen Felder
-  fehlen, ohne zu werfen und ohne „NaN" oder „undefined" anzuzeigen. Zahlencode
-  zeigt bei einem Sieg ohne `zuege` „NaN" als „Versuche je Sieg".
+  fehlen, ohne zu werfen und ohne „NaN", „undefined" oder „Infinity" anzuzeigen.
+  Nachgeprüft an allen 16 Spielen mit je 400 zufällig lückenhaften Listen.
 
 ## Randfälle
 

@@ -45,6 +45,21 @@ test('Galgenmännchen: Schnitt mit Komma, fehlende Fehler zählen nicht als fehl
   await expect(kennzahl(block(page), 'ohne Fehler')).toHaveText('1');
 });
 
+test('Schafkopf: Siegquoten nur mit Urteil, kein „NaN" bei fehlenden Feldern', async ({ page }) => {
+  await oeffnen(page, '#/statistik/schafkopf', {
+    partien: [
+      partie('schafkopf', { gewonnen: true, alsSpieler: true, spielart: 'solo', punkte: 150, gezaehlt: 4, treffer: 2, zurueck: 1 }),
+      partie('schafkopf', { alsSpieler: true, spielart: 'wenz' }),
+      partie('schafkopf', { gewonnen: false, gezaehlt: 3 }),
+    ],
+  });
+  await expect(kennzahl(block(page), 'Punkte gesamt')).toHaveText('+150');
+  await expect(kennzahl(block(page), 'Siege als Spieler')).toHaveText('1/1');
+  await expect(kennzahl(block(page), 'Siege im Alleinspiel')).toHaveText('1/1');
+  await expect(kennzahl(block(page), 'beste Karte')).toHaveText('50 %');
+  await expect(kennzahl(block(page), 'Zug zurück')).toHaveText('1');
+});
+
 test('Verräter: die Quote rechnet nur über Runden mit Urteil', async ({ page }) => {
   await oeffnen(page, '#/statistik/verraeter', {
     partien: [partie('verraeter', { gewonnen: true, spieler: 5 }), partie('verraeter', { spieler: 5 })],

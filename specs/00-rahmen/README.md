@@ -8,13 +8,13 @@ die Schnittstelle, über die sich ein Spiel anmeldet. Code in
 
 <!-- board:start -->
 
-| Spezifikation                          | Stand                  |
-| -------------------------------------- | ---------------------- |
-| [Auswahl und Navigation](auswahl.md)   | 15/15 fertig           |
-| [Datenschutz](datenschutz.md)          | 11/11 fertig           |
-| [Offline und Versionen](offline.md)    | 14/14 fertig           |
-| [Spielschnittstelle](schnittstelle.md) | 11/12 fertig · 1 offen |
-| [Sicherung](sicherung.md)              | 14/14 fertig           |
-| [Statistik](statistik.md)              | 14/14 fertig           |
+| Spezifikation                          | Stand        |
+| -------------------------------------- | ------------ |
+| [Auswahl und Navigation](auswahl.md)   | 15/15 fertig |
+| [Datenschutz](datenschutz.md)          | 11/11 fertig |
+| [Offline und Versionen](offline.md)    | 14/14 fertig |
+| [Spielschnittstelle](schnittstelle.md) | 12/12 fertig |
+| [Sicherung](sicherung.md)              | 14/14 fertig |
+| [Statistik](statistik.md)              | 14/14 fertig |
 
 <!-- board:end -->
