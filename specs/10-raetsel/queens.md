@@ -1,7 +1,7 @@
 # Damen
 
 **Datei:** [`spiele/queens.js`](../../spiele/queens.js)
-**Stand:** 17/18 fertig · 1 offen
+**Stand:** 18/18 fertig
 
 ## Zweck
 
@@ -75,11 +75,13 @@ werden muss.
 - **AC-13** `fertig` **Ohne Raten geprüft** — Bevor ein Rätsel ausgegeben wird,
   muss es sich allein mit den beiden Schlüssen des Hinweises vom leeren Brett
   bis zur letzten Dame lösen lassen.
-- **AC-14** `offen` **Nie ein Rate-Rätsel** — Auch wenn viele Anläufe scheitern,
-  erscheint kein Rätsel, das Probieren verlangt, und das Spiel bricht nicht ab.
-  Heute gibt der Erzeuger nach 720 erfolglosen Anläufen ein eindeutiges, aber
-  nur mit Raten lösbares Rätsel aus – und findet er nicht einmal das, auch auf
-  leicht nicht, bricht `frisch` mit einem Fehler ab.
+- **AC-14** `fertig` **Nie ein Rate-Rätsel** — Es erscheint nie ein Rätsel, das
+  Probieren verlangt, und das Spiel bricht nicht ab. Kommt auf der gewählten
+  Stufe binnen 0,6 Sekunden kein ohne Raten lösbares Rätsel zustande, weicht
+  die Erzeugung auf die nächstkleinere Stufe aus und sagt das in einer Meldung
+  („Auf schwer kam gerade kein Rätsel zustande – hier eins auf mittel.").
+  Gelingt auch leicht nicht, erscheint ein fest hinterlegtes, nachgeprüftes
+  6 × 6-Rätsel.
 
 ### Ende, Speicher und Statistik
 
@@ -111,6 +113,7 @@ werden muss.
 | RF-4 | Nach einem gelösten Rätsel das Spiel neu öffnen       | Es beginnt ein frisches Rätsel der Stufe leicht.                             |
 | RF-5 | Fenster wird während der Partie schmaler              | Das Brett wird neu gebaut, der Spielstand bleibt.                            |
 | RF-6 | Eigenes Kreuz auf einem Feld, das keine Dame trägt    | Gilt als Notiz; der Hinweis rechnet es als ausgeschlossen und meldet nichts. |
+| RF-7 | Erzeuger liefert auf keiner Stufe ein Rätsel          | Kein Absturz: das hinterlegte 6 × 6-Rätsel, bei mittel/schwer mit Meldung.   |
 
 ## Hintergrund
 
@@ -125,22 +128,35 @@ Damenzellen in ein Nachbargebiet, das diese Lösung dann doppelt belegt – die
 echte Lösung bleibt unberührt, das Gebiet bleibt zusammenhängend.
 
 Danach die zweite Hürde: Der Prüfer kennt genau die beiden Schlüsse des
-Hinweises und wendet sie bis zum Stillstand an. Bleibt er vor der letzten Dame
-stehen, wird das Rätsel verworfen. Die geläufigen Fälle – eine Farbe ganz in
-einer Zeile räumt diese Zeile – fallen aus der gemeinsamen Abdeckung von
-selbst ab.
+Hinweises und wendet sie bis zum Stillstand an. Die geläufigen Fälle – eine
+Farbe ganz in einer Zeile räumt diese Zeile – fallen aus der gemeinsamen
+Abdeckung von selbst ab. Bleibt er vor der letzten Dame stehen, wird
+nachgeholfen: Ein Feld, das an der Stelle noch in Frage kommt (nie eine
+Damenzelle), wandert ins Nachbargebiet, und der Umbau bleibt nur, wenn der
+Prüfer danach weiter kommt. Auf schwer verwarf der Erzeuger sonst zwei von drei
+eindeutigen Rätseln; nachgeholfen gelingt es bei gut neun von zehn in wenigen
+Millisekunden. Auf rohen, noch mehrdeutigen Gebieten lohnt es sich nicht – das
+war langsamer als neu zu würfeln. Mehr als die Hälfte aller Anläufe ging
+außerdem verloren, weil das Wachsen schon aufgab, wenn in einer Runde zufällig
+jedes Gebiet ein zugebautes Randfeld zog.
 
-Der Hinweis sucht jedes Mal neu, statt in der gemerkten Lösung nachzusehen.
-Für den Fehlerbefund (AC-10) zählt er dabei alle Lösungen des Rätsels durch;
-der Befund folgt aus dem Rätsel, eine Begründung gibt er dafür bewusst nicht.
+Gesucht wird gegen eine Frist statt gegen eine feste Zahl Anläufe, damit ein
+langsames Handy genauso bald ausweicht wie ein PC. Der Hinweis sucht jedes Mal
+neu, statt in der gemerkten Lösung nachzusehen. Für den Fehlerbefund (AC-10)
+zählt er dabei alle Lösungen des Rätsels durch; der Befund folgt aus dem
+Rätsel, eine Begründung gibt er dafür bewusst nicht.
 
-Nachgemessen mit einem Wegwerf-Skript gegen `spiele/queens.js`:
+Nachgemessen mit einem Wegwerf-Skript gegen `spiele/queens.js`, je 500 Rätsel,
+alle eindeutig und ohne Raten lösbar, nie ausgewichen:
 
-| Stufe  | Rätsel | eindeutig | ohne Raten | Anläufe höchstens (von 720) | Rechenzeit Schnitt / max |
-| ------ | ------ | --------- | ---------- | --------------------------- | ------------------------ |
-| leicht | 360    | 360       | 360        | 51                          | 2 ms / 11 ms             |
-| mittel | 360    | 360       | 360        | 98                          | 6 ms / 22 ms             |
-| schwer | 360    | 360       | 360        | 488                         | 160 ms / 1,7 s           |
+| Stufe  | Anläufe Median / max vorher | nachher | Rechenzeit Median / max vorher | nachher        |
+| ------ | --------------------------- | ------- | ------------------------------ | -------------- |
+| leicht | 5 / 53                      | 2 / 14  | 0,4 ms / 6 ms                  | 0,4 ms / 12 ms |
+| mittel | 14 / 163                    | 4 / 26  | 1,9 ms / 30 ms                 | 1,7 ms / 28 ms |
+| schwer | 33 / 337 (von 720)          | 7 / 57  | 18 ms / 395 ms                 | 10 ms / 107 ms |
 
-Auf schwer liegt der schlechteste Lauf also schon bei zwei Dritteln des
-Anlaufbudgets – daher AC-14.
+Vorher gab es nach 720 Anläufen ein eindeutiges, aber nur mit Raten lösbares
+Rätsel als Notnagel, und lieferte der Erzeuger gar nichts, brach das Spiel ab.
+Mit nur einem Anlauf je Stufe erzwungen (je 300-mal) wich die Erzeugung
+aus – etwa schwer 34-mal auf schwer, 57-mal auf mittel, 209-mal auf leicht –,
+und jedes ausgegebene Rätsel war ohne Raten lösbar.

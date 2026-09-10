@@ -91,7 +91,10 @@
         }
         if (!gesetzt) rand.splice(rand.indexOf(auswahl), 1);
       }
-      if (!bewegung) return null;      // eingeklemmt, neu versuchen
+      // Nur aufgeben, wenn wirklich kein Gebiet mehr wachsen kann. Früher genügte
+      // eine Runde, in der zufällig jedes Gebiet ein zugebautes Randfeld zog –
+      // auf 8 × 8 verwarf das mehr als die Hälfte aller Anläufe.
+      if (!bewegung && !raender.some((r) => r.length)) return null;
     }
     return gebiet;
   }
@@ -185,7 +188,9 @@
      eine ihrer Damenzellen in ein Nachbargebiet umgehängt, das diese Lösung
      dann doppelt belegt – die echte Lösung bleibt davon unberührt. */
   function eindeutigMachen(k, gebiet, damen) {
-    for (let runde = 0; runde < 400; runde += 1) {
+    // Wer eindeutig wird, schafft das gemessen in höchstens gut 50 Runden;
+    // was länger braucht, dreht sich im Kreis und kostet nur Zeit.
+    for (let runde = 0; runde < 80; runde += 1) {
       const alt = andereLoesung(k, gebiet, damen);
       if (!alt) return true;
 
@@ -227,8 +232,12 @@
           Zeile liegt, räumt diese Zeile, und umgekehrt.
 
      Bleibt der Kessel stehen, bevor alle k Damen stehen, käme man nur noch
-     durchs Probieren weiter – so ein Rätsel lassen wir gar nicht erst zu. */
-  function ohneRatenLoesbar(k, gebiet) {
+     durchs Probieren weiter – so ein Rätsel lassen wir gar nicht erst zu.
+
+     Weil jeder Schluss zwingend ist, heißt „bis zur letzten Dame“ zugleich
+     „genau eine Lösung“. Zurück kommt außerdem, wie weit er gekommen ist:
+     daran richtet sich nachhelfen aus. */
+  function herleiten(k, gebiet) {
     const geht = new Array(k * k).fill(true);
     const damen = [];
 
@@ -257,13 +266,20 @@
       return raus;
     };
 
+    const ergebnis = (fertig) => {
+      let raus = 0;
+      for (let i = 0; i < k * k; i += 1) if (!geht[i]) raus += 1;
+      // Eine Dame wiegt mehr als jedes Kreuz – sie räumt ohnehin mehrere Felder.
+      return { fertig, wert: fertig ? Infinity : damen.length * k * k + raus, geht };
+    };
+
     while (damen.length < k) {
       let bewegung = false;
 
       for (const pruef of einheiten) {
         if (damen.some(pruef)) continue;
         const frei = felderVon(pruef);
-        if (!frei.length) return false;           // Sackgasse, dürfte nicht sein
+        if (!frei.length) return { fertig: false, wert: -1, geht };   // Sackgasse, dürfte nicht sein
         if (frei.length === 1) { setzen(frei[0]); bewegung = true; }
       }
       if (bewegung) continue;
@@ -278,29 +294,82 @@
         }
         if (bewegung) break;
       }
-      if (!bewegung) return false;                // nur noch Raten hülfe weiter
+      if (!bewegung) return ergebnis(false);      // nur noch Raten hülfe weiter
+    }
+    return ergebnis(true);
+  }
+
+  const ohneRatenLoesbar = (k, gebiet) => herleiten(k, gebiet).fertig;
+
+  /* Bleibt der Prüfer bei einem eindeutigen Rätsel stehen, wird es nicht
+     weggeworfen, sondern umgebaut – wie beim Nachschärfen: Ein Feld, das an
+     der Stelle noch als Platz in Frage kommt, wandert ins Nachbargebiet. Die
+     geplante Lösung bleibt gültig, weil keine Damenzelle wandert und jedes
+     Gebiet zusammenhängt. Behalten wird ein Umbau nur, wenn der Prüfer danach
+     weiter kommt; stockt es ganz, würfelt raetselBauen neu.
+     Auf schwer verwarf der Erzeuger sonst zwei von drei eindeutigen Rätseln
+     und brauchte im schlechtesten Fall Hunderte Anläufe. */
+  function nachhelfen(k, gebiet, damen) {
+    const dameDa = new Set(damen.map((s, z) => z * k + s));
+    let bisher = herleiten(k, gebiet);
+
+    while (!bisher.fertig) {
+      let besser = null;
+      const kandidaten = mischen([...Array(k * k).keys()].filter((i) => bisher.geht[i] && !dameDa.has(i)));
+      suche: for (const zelle of kandidaten) {
+        if (!bleibtHeil(gebiet, zelle, k)) continue;
+        const von = gebiet[zelle];
+        for (const n of mischen(nachbarnVon(zelle, k))) {
+          if (gebiet[n] === von) continue;
+          gebiet[zelle] = gebiet[n];
+          const neu = herleiten(k, gebiet);
+          if (neu.wert > bisher.wert) { besser = neu; break suche; }
+          gebiet[zelle] = von;
+        }
+      }
+      // Jeder behaltene Umbau hebt den Wert, darum endet die Schleife sicher.
+      if (!besser) return false;
+      bisher = besser;
     }
     return true;
   }
 
-  function raetselBauen(stufe) {
-    const k = STUFEN[stufe].kanten;
-    let notnagel = null;               // eindeutig, aber nur mit Probieren
+  /* Die Suche läuft gegen eine Uhr statt gegen eine feste Zahl Anläufe: Auf
+     einem langsamen Handy soll sie genauso bald aufgeben wie am PC. Die Frist
+     ist ein Vielfaches dessen, was ein Rätsel im schlechtesten gemessenen Fall
+     braucht (Hintergrund in der Spec) – sie fängt nur Ausreißer ab. */
+  const FRIST_MS = 600;
 
-    for (let versuch = 0; versuch < 120; versuch += 1) {
+  function raetselBauen(stufe, frist = FRIST_MS) {
+    const k = STUFEN[stufe].kanten;
+    const bis = Date.now() + frist;
+
+    do {
       const damen = stellungSuchen(k);
       if (!damen) continue;
-      for (let wuchs = 0; wuchs < 6; wuchs += 1) {
-        const gebiet = gebieteWachsen(k, damen);
-        if (!gebiet) continue;
-        if (!eindeutigMachen(k, gebiet, damen) || loesungen(k, gebiet) !== 1) continue;
-        const fertig = { kanten: k, gebiet, damen };
-        if (ohneRatenLoesbar(k, gebiet)) return fertig;
-        if (!notnagel) notnagel = fertig;
-      }
-    }
-    return notnagel;                   // besser als gar kein Rätsel
+      const gebiet = gebieteWachsen(k, damen);
+      if (!gebiet) continue;
+      // Nachgeholfen wird nur bei eindeutigen Rätseln: Denen fehlt meist nur
+      // wenig. Auf rohen Gebieten braucht es so viele Umbauten, dass neu
+      // würfeln billiger ist.
+      if (!eindeutigMachen(k, gebiet, damen)) continue;
+      if (!nachhelfen(k, gebiet, damen)) continue;
+      // Doppelt genäht: Der Prüfer schließt eine zweite Lösung schon aus.
+      if (loesungen(k, gebiet) !== 1) continue;
+      return { kanten: k, gebiet, damen };
+    } while (Date.now() < bis);
+    return null;
   }
+
+  /* Letzte Rückfallebene, falls selbst auf leicht bis zur Frist nichts
+     entsteht – gemessen kommt das nicht vor, aber ein Rätsel, das Probieren
+     verlangt, oder ein Absturz wären schlechter als ein bekanntes Rätsel.
+     Einmal erzeugt und mit ohneRatenLoesbar und loesungen nachgeprüft. */
+  const ERSATZ = {
+    kanten: 6,
+    gebiet: '000005103205133225133425334425333555'.split('').map(Number),
+    damen: [2, 0, 4, 1, 3, 5],
+  };
 
   /* ------------------------------------------------------------------ Spiel */
 
@@ -311,13 +380,27 @@
     let zieht = null;          // Streichen statt Tippen
     let gemaltGerade = false;  // merkt sich, dass gestrichen wurde
 
+    /* Findet die Suche bis zur Frist nichts, weicht sie auf die nächstkleinere
+       Stufe aus und sagt das – lieber ein kleineres Brett als ein Rätsel, das
+       Probieren verlangt, oder gar keins. */
     function frisch(stufe) {
-      const r = raetselBauen(stufe) || raetselBauen('leicht');
+      const reihe = Object.keys(STUFEN);
+      let r = null;
+      let wirklich = stufe;
+      for (let i = reihe.indexOf(stufe); i >= 0 && !r; i -= 1) {
+        wirklich = reihe[i];
+        r = raetselBauen(wirklich);
+      }
+      if (!r) { wirklich = 'leicht'; r = ERSATZ; }
+      if (wirklich !== stufe) {
+        s.toast('Auf ' + STUFEN[stufe].name + ' kam gerade kein Rätsel zustande – hier eins auf ' + STUFEN[wirklich].name + '.');
+      }
       return {
-        stufe: r.kanten === STUFEN[stufe].kanten ? stufe : 'leicht',
+        stufe: wirklich,
         kanten: r.kanten,
-        gebiet: r.gebiet,
-        damen: r.damen,
+        // Kopien, damit ein Stand nie das Ersatzrätsel selbst in der Hand hält.
+        gebiet: r.gebiet.slice(),
+        damen: r.damen.slice(),
         feld: new Array(r.kanten * r.kanten).fill(LEER),
         verbraucht: 0,
         seit: Date.now(),
@@ -467,7 +550,7 @@
 
     const losgelassen = () => { zieht = null; };
     window.addEventListener('pointerup', losgelassen);
-    window.addEventListener('pointercancel', () => { zieht = null; });
+    window.addEventListener('pointercancel', losgelassen);
 
     /* ---------------------------------------------------------------- Zug */
 
@@ -596,8 +679,8 @@
 
     /* Alle Lösungen des Rätsels – ohne Rücksicht auf das, was auf dem Brett
        liegt. Gesucht wird jedes Mal neu, statt in stand.damen nachzusehen:
-       so stimmt die Antwort auch bei einem Notnagel-Rätsel mit mehreren
-       Lösungen, und der Hinweis kennt weiterhin keine „richtige“ Lösung. */
+       so stimmt die Antwort auch bei einem gespeicherten Rätsel aus einer
+       älteren Fassung, und der Hinweis kennt weiterhin keine „richtige“ Lösung. */
     function alleLoesungen() {
       const k = stand.kanten;
       const gefunden = [];
@@ -967,6 +1050,7 @@
         clearInterval(uhr);
         window.removeEventListener('resize', beiGroesse);
         window.removeEventListener('pointerup', losgelassen);
+        window.removeEventListener('pointercancel', losgelassen);
         if (!stand.fertig) sichern();
       },
     };

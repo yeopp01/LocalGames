@@ -6,7 +6,7 @@
 Eine Zeile je Akzeptanzkriterium. Gepflegt wird der Status in der Spec
 selbst, hier steht er zusammengefasst.
 
-**Gesamt:** 3 in arbeit · 0 geplant · 10 offen · 1 zurückgestellt · 336 fertig
+**Gesamt:** 3 in arbeit · 0 geplant · 9 offen · 1 zurückgestellt · 337 fertig
 
 ## Nach Spezifikation
 
@@ -21,7 +21,7 @@ selbst, hier steht er zusammengefasst.
 | [Zahlencode](10-raetsel/mastermind.md)             | -         | -       | -     | -              | 15     |
 | [Minenfeld](10-raetsel/minen.md)                   | -         | -       | -     | -              | 12     |
 | [Nonogramm](10-raetsel/nonogramm.md)               | -         | -       | -     | -              | 15     |
-| [Damen](10-raetsel/queens.md)                      | -         | -       | 1     | -              | 17     |
+| [Damen](10-raetsel/queens.md)                      | -         | -       | -     | -              | 18     |
 | [Mini-Sudoku](10-raetsel/sudoku.md)                | -         | -       | -     | -              | 18     |
 | [Tango](10-raetsel/tango.md)                       | -         | -       | -     | -              | 14     |
 | [Weg](10-raetsel/zip.md)                           | -         | -       | 2     | -              | 15     |
@@ -44,12 +44,11 @@ selbst, hier steht er zusammengefasst.
 | schafkopf | [AC-19](30-brett-und-karten/schafkopf.md) | Fertige Stiche zählen mit       | Die Gegner |
 | schafkopf | [AC-20](30-brett-und-karten/schafkopf.md) | Sau nicht vor den Zehner        | Die Gegner |
 
-## Offen (10)
+## Offen (9)
 
 | Spec          | AC                                        | Titel                              | Anmerkung              |
 | ------------- | ----------------------------------------- | ---------------------------------- | ---------------------- |
 | schnittstelle | [AC-12](00-rahmen/schnittstelle.md)       | Auswertung verträgt Lücken         | Urteil und Auswertung  |
-| queens        | [AC-14](10-raetsel/queens.md)             | Nie ein Rate-Rätsel                | Erzeugung              |
 | zip           | [AC-10](10-raetsel/zip.md)                | Ohne Raten lösbar                  | Hinweise und Erzeugung |
 | zip           | [AC-11](10-raetsel/zip.md)                | Hinweis nennt seinen Grund         | Hinweise und Erzeugung |
 | schafkopf     | [AC-10](30-brett-und-karten/schafkopf.md) | Gesperrte Karte mit Grund          | Spielregeln beim Legen |
@@ -65,7 +64,7 @@ selbst, hier steht er zusammengefasst.
 | --------- | ------------------------------------ | -------------------------- | -------------------------------------------- |
 | verraeter | [AC-13](40-zu-mehreren/verraeter.md) | Stimmen übers Netz sammeln | braucht eine Verbindung zwischen den Geräten |
 
-## Fertig (336)
+## Fertig (337)
 
 | Spec          | AC                                          | Titel                                  | Anmerkung                    |
 | ------------- | ------------------------------------------- | -------------------------------------- | ---------------------------- |
@@ -202,6 +201,7 @@ selbst, hier steht er zusammengefasst.
 | queens        | [AC-11](10-raetsel/queens.md)               | Hinweise werden gezählt                | Konflikte und Hinweise       |
 | queens        | [AC-12](10-raetsel/queens.md)               | Genau eine Lösung                      | Erzeugung                    |
 | queens        | [AC-13](10-raetsel/queens.md)               | Ohne Raten geprüft                     | Erzeugung                    |
+| queens        | [AC-14](10-raetsel/queens.md)               | Nie ein Rate-Rätsel                    | Erzeugung                    |
 | queens        | [AC-15](10-raetsel/queens.md)               | Sieg bei voller Lösung                 | Ende, Speicher und Statistik |
 | queens        | [AC-16](10-raetsel/queens.md)               | Partie überlebt Schließen              | Ende, Speicher und Statistik |
 | queens        | [AC-17](10-raetsel/queens.md)               | Partie in der Statistik                | Ende, Speicher und Statistik |
