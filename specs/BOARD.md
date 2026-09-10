@@ -6,7 +6,7 @@
 Eine Zeile je Akzeptanzkriterium. Gepflegt wird der Status in der Spec
 selbst, hier steht er zusammengefasst.
 
-**Gesamt:** 3 in arbeit · 0 geplant · 9 offen · 1 zurückgestellt · 337 fertig
+**Gesamt:** 3 in arbeit · 0 geplant · 7 offen · 1 zurückgestellt · 342 fertig
 
 ## Nach Spezifikation
 
@@ -24,7 +24,7 @@ selbst, hier steht er zusammengefasst.
 | [Damen](10-raetsel/queens.md)                      | -         | -       | -     | -              | 18     |
 | [Mini-Sudoku](10-raetsel/sudoku.md)                | -         | -       | -     | -              | 18     |
 | [Tango](10-raetsel/tango.md)                       | -         | -       | -     | -              | 14     |
-| [Weg](10-raetsel/zip.md)                           | -         | -       | 2     | -              | 15     |
+| [Weg](10-raetsel/zip.md)                           | -         | -       | -     | -              | 20     |
 | [Galgenmännchen](20-wortspiele/galgen.md)          | -         | -       | -     | -              | 14     |
 | [Wördle](20-wortspiele/wordle.md)                  | -         | -       | -     | -              | 24     |
 | [Schafkopf](30-brett-und-karten/schafkopf.md)      | 3         | -       | 6     | -              | 26     |
@@ -44,13 +44,11 @@ selbst, hier steht er zusammengefasst.
 | schafkopf | [AC-19](30-brett-und-karten/schafkopf.md) | Fertige Stiche zählen mit       | Die Gegner |
 | schafkopf | [AC-20](30-brett-und-karten/schafkopf.md) | Sau nicht vor den Zehner        | Die Gegner |
 
-## Offen (9)
+## Offen (7)
 
 | Spec          | AC                                        | Titel                              | Anmerkung              |
 | ------------- | ----------------------------------------- | ---------------------------------- | ---------------------- |
 | schnittstelle | [AC-12](00-rahmen/schnittstelle.md)       | Auswertung verträgt Lücken         | Urteil und Auswertung  |
-| zip           | [AC-10](10-raetsel/zip.md)                | Ohne Raten lösbar                  | Hinweise und Erzeugung |
-| zip           | [AC-11](10-raetsel/zip.md)                | Hinweis nennt seinen Grund         | Hinweise und Erzeugung |
 | schafkopf     | [AC-10](30-brett-und-karten/schafkopf.md) | Gesperrte Karte mit Grund          | Spielregeln beim Legen |
 | schafkopf     | [AC-14](30-brett-und-karten/schafkopf.md) | Schneidergrenze wie am Tisch       | Abrechnung             |
 | schafkopf     | [AC-17](30-brett-und-karten/schafkopf.md) | Schlüsse aus dem Verlauf           | Die Gegner             |
@@ -64,7 +62,7 @@ selbst, hier steht er zusammengefasst.
 | --------- | ------------------------------------ | -------------------------- | -------------------------------------------- |
 | verraeter | [AC-13](40-zu-mehreren/verraeter.md) | Stimmen übers Netz sammeln | braucht eine Verbindung zwischen den Geräten |
 
-## Fertig (337)
+## Fertig (342)
 
 | Spec          | AC                                          | Titel                                  | Anmerkung                    |
 | ------------- | ------------------------------------------- | -------------------------------------- | ---------------------------- |
@@ -247,12 +245,17 @@ selbst, hier steht er zusammengefasst.
 | zip           | [AC-7](10-raetsel/zip.md)                   | Unerlaubtes wird abgewiesen            | Eingabe                      |
 | zip           | [AC-8](10-raetsel/zip.md)                   | Weg als Linie                          | Eingabe                      |
 | zip           | [AC-9](10-raetsel/zip.md)                   | Genau ein Weg                          | Hinweise und Erzeugung       |
+| zip           | [AC-10](10-raetsel/zip.md)                  | Ohne Raten lösbar                      | Hinweise und Erzeugung       |
+| zip           | [AC-11](10-raetsel/zip.md)                  | Hinweis nennt seinen Grund             | Hinweise und Erzeugung       |
 | zip           | [AC-12](10-raetsel/zip.md)                  | Irrweg wird erkannt                    | Hinweise und Erzeugung       |
 | zip           | [AC-13](10-raetsel/zip.md)                  | Hinweise werden gezählt                | Hinweise und Erzeugung       |
 | zip           | [AC-14](10-raetsel/zip.md)                  | Sieg am letzten Feld                   | Ende, Speicher und Statistik |
 | zip           | [AC-15](10-raetsel/zip.md)                  | Partie überlebt Schließen              | Ende, Speicher und Statistik |
 | zip           | [AC-16](10-raetsel/zip.md)                  | Partie in der Statistik                | Ende, Speicher und Statistik |
 | zip           | [AC-17](10-raetsel/zip.md)                  | Anleitung erklärt alles                | Ende, Speicher und Statistik |
+| zip           | [AC-18](10-raetsel/zip.md)                  | Ein Satz Schlüsse                      | Hinweise und Erzeugung       |
+| zip           | [AC-19](10-raetsel/zip.md)                  | Merklinien aus dem Hinweis             | Hinweise und Erzeugung       |
+| zip           | [AC-20](10-raetsel/zip.md)                  | Altes Rätsel wird ersetzt              | Hinweise und Erzeugung       |
 | galgen        | [AC-1](20-wortspiele/galgen.md)             | Wort aus der Wördle-Liste              | Regeln und Eingabe           |
 | galgen        | [AC-2](20-wortspiele/galgen.md)             | Treffer an allen Stellen               | Regeln und Eingabe           |
 | galgen        | [AC-3](20-wortspiele/galgen.md)             | Tafel und Tastatur                     | Regeln und Eingabe           |

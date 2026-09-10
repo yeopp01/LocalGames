@@ -4,8 +4,9 @@
    die Zahlen der Reihe nach abklappert. Ein Hamiltonpfad mit Zwischenzielen.
 
    Der Generator würfelt zuerst einen solchen Weg über das ganze Brett und
-   setzt die Zahlen darauf ab. Ist die Aufgabe dann noch mehrdeutig, kommt
-   eine weitere Zahl dazu, bis genau ein Weg übrig bleibt.
+   setzt die Zahlen darauf ab. Kommen die Schlüsse (siehe unten) damit nicht
+   bis zum Ende, kommt eine weitere Zahl dazu; danach fliegt wieder heraus,
+   was sie nicht brauchen. Der Hinweis zieht dieselben Schlüsse.
 */
 
 (() => {
@@ -88,161 +89,274 @@
     return null;
   }
 
-  /* Zählt Wege, die alle Felder berühren und die Zahlen der Reihe nach
-     mitnehmen – Abbruch bei der zweiten Lösung.
+  /* Hin und her, Zeile für Zeile – geht immer. Nur der Notnagel, falls die
+     Zufallssuche wider Erwarten leer ausgeht; ohne ihn gäbe es gar kein
+     Rätsel. */
+  function schlange(k) {
+    const weg = [];
+    for (let z = 0; z < k; z += 1) {
+      for (let s = 0; s < k; s += 1) weg.push(z * k + (z % 2 ? k - 1 - s : s));
+    }
+    return weg;
+  }
 
-     Der Suchbaum ist riesig, deshalb wird an drei Stellen gespart:
-     die Nachbarschaft steht vorher fest statt bei jedem Schritt neu,
-     ein Ast wird verworfen, sobald ein freies Feld nicht mehr betreten
-     und wieder verlassen werden könnte, und probiert wird zuerst dort,
-     wo die wenigsten Anschlüsse übrig sind. */
-  function loesungen(k, zahlAn, hoechste, mauern) {
-    const anzahl = k * k;
-    const start = zahlAn.indexOf(1);
-    const ziel = zahlAn.indexOf(hoechste);
-    if (start < 0 || ziel < 0) return 0;
+  /* ------------------------------------------------------------ Schlüsse
 
-    // Millionenfach gebraucht – jedes Mal ein frisches Feld zu bauen kostete
-    // mehr als die Suche selbst.
-    const nachbarn = [];
-    for (let i = 0; i < anzahl; i += 1) nachbarn.push(nachbarnVon(i, k, mauern));
+     Erzeuger und Hinweis teilen sich genau diese Schlüsse. Ein Rätsel wird
+     nur ausgegeben, wenn sie es vom leeren Brett bis zum letzten Feld
+     herleiten – und weil jeder Schluss für sich zwingend ist, gibt es dann
+     auch nur einen Weg. Eine eigene Eindeutigkeitssuche braucht es nicht.
 
-    const besucht = new Uint8Array(anzahl);
-    const marke = new Int32Array(anzahl);      // Lauf-Nummer statt Set zum Leeren
-    const stapel = new Int32Array(anzahl + 1);
-    let laufNr = 0;
+     Gedacht wird in Verbindungen zwischen zwei Nachbarfeldern. „Fest" ist
+     eine Verbindung, die der Weg sicher benutzt: gezogen oder hergeleitet.
+     Jedes Feld braucht zwei davon, die 1 und die höchste Zahl als Enden nur
+     eine. Eine noch offene Verbindung scheidet aus, wenn
+       – eines der beiden Felder schon genug feste hat („voll"),
+       – beide Felder schon über feste Verbindungen zusammenhängen („Ring"),
+       – sie die 1 mit der höchsten Zahl verbände, bevor alle Felder dran
+         sind („Schluss"),
+       – die Zahlen entlang des Wegs dann nicht mehr der Reihe nach kämen
+         („Reihe").
+     Mauern zählen gar nicht erst als Verbindung. Der Schluss daraus heißt
+     Zwang: Hat ein Feld nur noch so viele mögliche Verbindungen, wie es
+     braucht, benutzt der Weg sie alle. Das lässt sich in einem Satz
+     begründen und am Brett nachzählen.
 
-    let gefunden = 0;
-    let schritte = 0;
-    let abgebrochen = false;
-    let offen = anzahl;
+     Ein zweiter Schluss („die einzige Verbindung zwischen zwei Teilen des
+     Bretts muss benutzt werden") war erwogen. Unter 600 gebauten Rätseln
+     hat er ein einziges Mal etwas gefunden, das der Zwang nicht fand – zu
+     selten, um einen eigenen Hinweistext zu tragen. Übrig bleibt davon die
+     Prüfung auf Zusammenhang.
 
-    /* Ein Ast ist tot, wenn nicht mehr alle freien Felder erreichbar sind –
-       oder wenn eines von ihnen weniger als zwei Anschlüsse hat. Es müsste ja
-       betreten und wieder verlassen werden; nur das Zielfeld darf mit einem
-       auskommen, dort hört der Weg auf. Beides in einem Durchgang. */
-    const restTaugt = (kopf) => {
-      laufNr += 1;
-      let gesehen = 0;
-      let oben = 0;
-      marke[kopf] = laufNr;
-      stapel[oben] = kopf;
-      oben += 1;
-      while (oben) {
-        oben -= 1;
-        const i = stapel[oben];
-        for (const j of nachbarn[i]) {
-          if (besucht[j] || marke[j] === laufNr) continue;
-          marke[j] = laufNr;
-          gesehen += 1;
-          stapel[oben] = j;
-          oben += 1;
+     Was nicht mehr aufgehen kann, meldet sich als Widerspruch: ein Feld ohne
+     genug Nachbarn (Sackgasse), ein abgeschnittener Teil, ein Ring, Zahlen
+     außer der Reihe. So erkennt der Hinweis einen Irrweg an einem Grund
+     statt an der Lösung. */
+
+  function brettVon(k, zahlAn, hoechste, mauern) {
+    const n = k * k;
+    const nb = [];
+    for (let i = 0; i < n; i += 1) nb.push(nachbarnVon(i, k, mauern));
+    const bedarf = [];
+    for (let i = 0; i < n; i += 1) bedarf.push(zahlAn[i] === 1 || zahlAn[i] === hoechste ? 1 : 2);
+    return { k, n, nb, zahlAn, hoechste, bedarf, mauern };
+  }
+
+  const kanteZerlegen = (e) => {
+    const t = e.indexOf(':');
+    return [Number(e.slice(0, t)), Number(e.slice(t + 1))];
+  };
+
+  /* Ein einziger Schluss aus den festen Verbindungen – der erste, der sich
+     findet, mit allem, was der Hinweis für seine Begründung braucht.
+     `vorne` ist ein Feld, auf das zuerst geschaut wird: für den Hinweis die
+     Spitze des gezogenen Wegs, weil ein Schluss dort sofort weiterhilft. */
+  function naechsterSchluss(b, fest, vorne = -1) {
+    const { n, nb, zahlAn, hoechste, bedarf } = b;
+    const an = [];
+    for (let i = 0; i < n; i += 1) an.push([]);
+    for (const e of fest) {
+      const [x, y] = kanteZerlegen(e);
+      an[x].push(y);
+      an[y].push(x);
+    }
+    for (let i = 0; i < n; i += 1) {
+      if (an[i].length > bedarf[i]) return { art: 'widerspruch', grund: 'voll', zelle: i };
+    }
+
+    /* Die festen Verbindungen zerfallen in Stücke. Jedes ist eine Kette;
+       gelaufen wird von einem Ende, damit die Zahlen gleich in Wegrichtung
+       vorliegen. Ein Feld, das dabei nie erreicht wird, liegt auf einem Ring. */
+    const stueckVon = new Int32Array(n).fill(-1);
+    const stuecke = [];
+    for (let i = 0; i < n; i += 1) {
+      if (stueckVon[i] >= 0 || an[i].length > 1) continue;
+      const zellen = [];
+      let vor = -1;
+      let hier = i;
+      while (hier !== undefined) {
+        stueckVon[hier] = stuecke.length;
+        zellen.push(hier);
+        const weiter = an[hier][0] !== vor ? an[hier][0] : an[hier][1];
+        vor = hier;
+        hier = weiter;
+      }
+      const zahlen = [];
+      for (const z of zellen) if (zahlAn[z]) zahlen.push(zahlAn[z]);
+      stuecke.push({ zellen, zahlen, eins: zahlen.includes(1), ende: zahlen.includes(hoechste) });
+    }
+    for (let i = 0; i < n; i += 1) {
+      if (stueckVon[i] < 0) return { art: 'widerspruch', grund: 'ring', zelle: i };
+    }
+    for (const st of stuecke) {
+      const z = st.zahlen;
+      for (let p = 1; p < z.length; p += 1) {
+        if (Math.abs(z[p] - z[p - 1]) !== 1 || z[p] - z[p - 1] !== z[1] - z[0]) {
+          return { art: 'widerspruch', grund: 'reihe', folge: [z[p - 1], z[p]], zelle: st.zellen[0] };
         }
       }
-      if (gesehen !== offen) return false;
-
-      for (let v = 0; v < anzahl; v += 1) {
-        if (besucht[v]) continue;
-        let grad = 0;
-        for (const w of nachbarn[v]) if (!besucht[w] || w === kopf) grad += 1;
-        if (grad < (v === ziel ? 1 : 2)) return false;
+      if (st.eins && st.ende) {
+        return st.zellen.length === n ? { art: 'geloest' } : { art: 'widerspruch', grund: 'schluss', zelle: st.zellen[0] };
       }
-      return true;
+    }
+
+    // Die Zahlen eines Stücks, vom Ende `zelle` aus gelesen.
+    const vonEnde = (st, zelle) => (st.zellen[0] === zelle ? st.zahlen : st.zahlen.slice().reverse());
+
+    const grundGegen = (x, y) => {
+      if (an[y].length >= bedarf[y]) return { grund: 'voll', zelle: y };
+      if (an[x].length >= bedarf[x]) return { grund: 'voll', zelle: x };
+      const sx = stuecke[stueckVon[x]];
+      const sy = stuecke[stueckVon[y]];
+      if (sx === sy) return { grund: 'ring' };
+      if (((sx.eins && sy.ende) || (sx.ende && sy.eins)) && sx.zellen.length + sy.zellen.length < n) {
+        return { grund: 'schluss' };
+      }
+      const A = vonEnde(sx, x);
+      const B = vonEnde(sy, y);
+      if (A.length && B.length) {
+        const d = B[0] - A[0];
+        if (Math.abs(d) !== 1 || (A.length > 1 && A[1] - A[0] !== -d) || (B.length > 1 && B[1] - B[0] !== d)) {
+          return { grund: 'reihe', folge: [...A.slice(0, 2).reverse(), ...B.slice(0, 2)] };
+        }
+      }
+      return null;
     };
 
-    const weiter = (i, tiefe, naechsteZahl) => {
-      if (gefunden > 1 || abgebrochen) return;
-      schritte += 1;
-      // Harte Bremse: lieber "nicht eindeutig" melden als hängen bleiben.
-      if (schritte > 120000) { abgebrochen = true; return; }
-      besucht[i] = 1;
-      offen -= 1;
-
-      if (tiefe === anzahl) {
-        if (i === ziel && naechsteZahl > hoechste) gefunden += 1;
-        besucht[i] = 0;
-        offen += 1;
-        return;
+    // Für jedes Feld die offenen Verbindungen, die noch in Frage kommen.
+    const frei = [];
+    for (let i = 0; i < n; i += 1) frei.push([]);
+    for (let i = 0; i < n; i += 1) {
+      for (const j of nb[i]) {
+        if (j < i || an[i].includes(j)) continue;
+        if (grundGegen(i, j)) continue;
+        frei[i].push(j);
+        frei[j].push(i);
       }
+    }
 
-      // Erst sammeln, dann nach Enge sortieren: Wo es nur noch einen Ausgang
-      // gibt, entscheidet sich der Ast am schnellsten.
-      const zuege = [];
-      for (const j of nachbarn[i]) {
-        if (besucht[j]) continue;
-        const zahl = zahlAn[j];
-        if (zahl && zahl !== naechsteZahl) continue;      // Zahlen nur der Reihe nach
-        if (!zahl && naechsteZahl > hoechste && j === ziel) continue;
-        besucht[j] = 1;
-        offen -= 1;
-        const geht = restTaugt(j);
-        besucht[j] = 0;
-        offen += 1;
-        if (!geht) continue;
-        let eng = 0;
-        for (const w of nachbarn[j]) if (!besucht[w]) eng += 1;
-        zuege.push([eng, j, zahl]);
+    for (let i = 0; i < n; i += 1) {
+      if (an[i].length + frei[i].length < bedarf[i]) return { art: 'widerspruch', grund: 'sackgasse', zelle: i };
+    }
+
+    // Kommt der Weg über das, was noch möglich ist, überhaupt überall hin?
+    const erreicht = new Uint8Array(n);
+    const stapel = [0];
+    erreicht[0] = 1;
+    let gesehen = 1;
+    while (stapel.length) {
+      const v = stapel.pop();
+      for (const w of an[v].concat(frei[v])) {
+        if (erreicht[w]) continue;
+        erreicht[w] = 1;
+        gesehen += 1;
+        stapel.push(w);
       }
-      zuege.sort((a, b) => a[0] - b[0]);
+    }
+    if (gesehen < n) {
+      // Genannt wird der kleinere Teil – den sieht man auf dem Brett schneller.
+      const draussen = [];
+      const drinnen = [];
+      for (let i = 0; i < n; i += 1) (erreicht[i] ? drinnen : draussen).push(i);
+      const teil = draussen.length <= drinnen.length ? draussen : drinnen;
+      return { art: 'widerspruch', grund: 'getrennt', zellen: teil, zelle: teil[0] };
+    }
 
-      for (const [, j, zahl] of zuege) {
-        weiter(j, tiefe + 1, zahl ? naechsteZahl + 1 : naechsteZahl);
-        if (gefunden > 1 || abgebrochen) break;
+    const reihenfolge = vorne >= 0 ? [vorne] : [];
+    for (let i = 0; i < n; i += 1) if (i !== vorne) reihenfolge.push(i);
+
+    for (const i of reihenfolge) {
+      if (an[i].length >= bedarf[i] || an[i].length + frei[i].length !== bedarf[i]) continue;
+      // Für die Begründung: warum jede andere Richtung ausscheidet.
+      const raus = [];
+      for (const j of nachbarnVon(i, b.k)) {
+        if (an[i].includes(j) || frei[i].includes(j)) continue;
+        raus.push({ zelle: j, ...(nb[i].includes(j) ? grundGegen(i, j) : { grund: 'mauer' }) });
       }
-      besucht[i] = 0;
-      offen += 1;
-    };
+      return {
+        art: 'zwang',
+        zelle: i,
+        schon: an[i].slice(),
+        ziele: frei[i].slice(),
+        neu: frei[i].map((j) => kante(i, j)),
+        raus,
+      };
+    }
+    return null;
+  }
 
-    weiter(start, 1, 2);
-    return abgebrochen ? 2 : gefunden;
+  /* Schlüsse ziehen, bis nichts mehr geht. Jeder Schluss legt mindestens
+     eine Verbindung fest, und mehr als n − 1 passen nicht aufs Brett – die
+     Schleife endet also von selbst; die Grenze ist nur Gurt und Hosenträger. */
+  function schliessen(b, fest) {
+    const f = new Set(fest);
+    for (let runde = 0; runde <= 2 * b.n; runde += 1) {
+      const s = naechsterSchluss(b, f);
+      if (!s || s.art === 'widerspruch') return { geloest: false, fest: f, schluss: s };
+      if (s.art === 'geloest') return { geloest: true, fest: f };
+      for (const e of s.neu) f.add(e);
+    }
+    return { geloest: false, fest: f, schluss: null };
   }
 
   function raetselBauen(stufe) {
     const { kanten: k, ziele, mauern: mauerZahl } = STUFEN[stufe];
-    for (let versuch = 0; versuch < 30; versuch += 1) {
-      const weg = wegSuchen(k);
-      if (!weg) continue;
-      const mauern = mauernWaehlen(k, weg, mauerZahl);
+    const n = k * k;
+    const weg = wegSuchen(k) || schlange(k);
+    const mauern = mauernWaehlen(k, weg, mauerZahl);
 
-      // Zahlen auf dem Weg verteilen: Anfang, Ende und dazwischen verteilt.
-      const stellen = new Set([0, weg.length - 1]);
-      while (stellen.size < ziele) {
-        stellen.add(1 + Math.floor(Math.random() * (weg.length - 2)));
-      }
-
-      let sortiert = [...stellen].sort((a, b) => a - b);
-      const zahlAn = new Array(k * k).fill(0);
+    const zahlAn = new Array(n).fill(0);
+    let hoechste = 0;
+    const aufgabe = (stellen) => {
+      zahlAn.fill(0);
+      const sortiert = [...stellen].sort((a, b) => a - b);
       sortiert.forEach((pos, nr) => { zahlAn[weg[pos]] = nr + 1; });
+      hoechste = sortiert.length;
+      return brettVon(k, zahlAn, hoechste, mauern);
+    };
 
-      // Solange nachschärfen, bis genau ein Weg übrig bleibt.
-      let versuche = 0;
-      while (loesungen(k, zahlAn, sortiert.length, mauern) !== 1 && versuche < 8) {
-        const frei = [...Array(weg.length).keys()].filter((p) => !stellen.has(p));
-        if (!frei.length) break;
-        stellen.add(frei[Math.floor(Math.random() * frei.length)]);
-        sortiert = [...stellen].sort((a, b) => a - b);
-        zahlAn.fill(0);
-        sortiert.forEach((pos, nr) => { zahlAn[weg[pos]] = nr + 1; });
-        versuche += 1;
-      }
+    // Anfang, Ende und ein paar Zahlen dazwischen.
+    const stellen = new Set([0, n - 1]);
+    while (stellen.size < ziele) stellen.add(1 + Math.floor(Math.random() * (n - 2)));
 
-      if (loesungen(k, zahlAn, sortiert.length, mauern) === 1) {
-        return {
-          kanten: k,
-          zahlAn,
-          hoechste: sortiert.length,
-          loesung: weg,
-          mauern: [...mauern],
-        };
-      }
+    /* Kommen die Schlüsse nicht bis zum Ende, bekommt ein Feld eine Zahl, an
+       dem sie hängen geblieben sind. Das endet sicher: sind alle Felder
+       nummeriert, ergibt sich jede Verbindung schon aus der Reihe. */
+    let stand = schliessen(aufgabe(stellen), []);
+    while (!stand.geloest) {
+      const grad = new Array(n).fill(0);
+      for (const e of stand.fest) for (const z of kanteZerlegen(e)) grad[z] += 1;
+      let offen = [];
+      for (let p = 1; p < n - 1; p += 1) if (!stellen.has(p) && grad[weg[p]] < 2) offen.push(p);
+      if (!offen.length) offen = [...Array(n).keys()].filter((p) => !stellen.has(p));
+      stellen.add(offen[Math.floor(Math.random() * offen.length)]);
+      stand = schliessen(aufgabe(stellen), []);
     }
-    return null;
+
+    /* Nachgeschobene Zahlen machen das Rätsel oft leichter als nötig. Was
+       sich wieder wegnehmen lässt, ohne dass die Schlüsse steckenbleiben,
+       fliegt raus – bis auf die Grundzahl der Stufe. */
+    for (const p of mischen([...stellen].filter((x) => x !== 0 && x !== n - 1))) {
+      if (stellen.size <= ziele) break;
+      stellen.delete(p);
+      if (!schliessen(aufgabe(stellen), []).geloest) stellen.add(p);
+    }
+    aufgabe(stellen);
+
+    return {
+      kanten: k,
+      zahlAn: zahlAn.slice(),
+      hoechste,
+      loesung: weg,
+      mauern: [...mauern],
+    };
   }
 
   /* ------------------------------------------------------------------ Spiel */
 
   function starten(wurzel, s) {
     const el = s.el;
+    let ersetzt = false;    // Wurde ein gespeichertes Rätsel verworfen? Für die Meldung.
     let stand = laden();
     let zieht = null;       // Zeiger-Nummer, solange gewischt wird
     let uhr = null;
@@ -251,14 +365,18 @@
     const mauernUebernehmen = () => { mauern = new Set(stand.mauern || []); };
 
     function frisch(stufe) {
-      const r = raetselBauen(stufe) || raetselBauen('leicht');
+      const r = raetselBauen(stufe);
       return {
-        stufe: r.kanten === STUFEN[stufe].kanten ? stufe : 'leicht',
+        stufe,
         kanten: r.kanten,
         zahlAn: r.zahlAn,
         hoechste: r.hoechste,
+        /* Wird im Spiel nicht mehr gelesen. Bleibt drin, damit eine Sicherung
+           von hier in einer älteren Fassung noch lädt – deren Hinweis griff
+           darauf zu. */
         loesung: r.loesung,
         mauern: r.mauern || [],
+        notizen: [],          // Merklinien aus Hinweisen, als Kanten "a:b"
         pfad: [],
         verbraucht: 0,
         seit: Date.now(),
@@ -269,10 +387,19 @@
 
     function laden() {
       const alt = s.erinnert();
-      if (alt && Array.isArray(alt.pfad) && alt.kanten && !alt.fertig) {
-        alt.seit = Date.now();
+      if (alt && Array.isArray(alt.pfad) && alt.kanten && !alt.fertig
+        && Array.isArray(alt.zahlAn) && alt.zahlAn.length === alt.kanten * alt.kanten) {
         if (!Array.isArray(alt.mauern)) alt.mauern = [];   // Rätsel von früher
-        return alt;
+        if (!Array.isArray(alt.notizen)) alt.notizen = [];
+        /* Frühere Fassungen haben nur auf genau einen Weg geachtet, nicht
+           darauf, dass er sich herleiten lässt. Mit so einem Rätsel käme der
+           Hinweis irgendwann nicht weiter – dann lieber gleich ein neues. */
+        if (schliessen(brettVon(alt.kanten, alt.zahlAn, alt.hoechste, new Set(alt.mauern)), []).geloest) {
+          alt.seit = Date.now();
+          return alt;
+        }
+        ersetzt = true;
+        return frisch(STUFEN[alt.stufe] && STUFEN[alt.stufe].kanten === alt.kanten ? alt.stufe : 'leicht');
       }
       return frisch('leicht');
     }
@@ -452,39 +579,205 @@
       pruefenObFertig();
     }
 
+    /* ------------------------------------------------------------ Hinweis */
+
+    const platzName = (i) => 'Zeile ' + (Math.floor(i / stand.kanten) + 1) + ', Spalte ' + ((i % stand.kanten) + 1);
+    const gross = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+    const aufzaehlen = (teile) => (teile.length < 2 ? teile.join('')
+      : teile.slice(0, -1).join(', ') + ' und ' + teile[teile.length - 1]);
+    const istEnde = (i) => stand.zahlAn[i] === 1 || stand.zahlAn[i] === stand.hoechste;
+    // Nummerierte Felder heißen nach ihrer Zahl – so findet man sie am schnellsten.
+    const feldName = (i) => (stand.zahlAn[i] ? 'die ' + stand.zahlAn[i] : 'das Feld in ' + platzName(i));
+    const richtung = (von, nach) => {
+      const k = stand.kanten;
+      if (nach === von - k) return 'oben';
+      if (nach === von + k) return 'unten';
+      return nach === von - 1 ? 'links' : 'rechts';
+    };
+
+    // Was als sicher gilt: der gezogene Weg und die Merklinien.
+    const festJetzt = () => {
+      const f = new Set(stand.notizen);
+      for (let p = 1; p < stand.pfad.length; p += 1) f.add(kante(stand.pfad[p - 1], stand.pfad[p]));
+      return f;
+    };
+
+    function ausschlussText(i, r) {
+      const wo = richtung(i, r.zelle);
+      switch (r.grund) {
+        case 'mauer': return wo + ' steht eine Mauer';
+        case 'voll':
+          if (istEnde(r.zelle)) return wo + ' hat die ' + stand.zahlAn[r.zelle] + ' ihre einzige Verbindung schon';
+          return wo + ' ist ' + (stand.zahlAn[r.zelle] ? 'die ' + stand.zahlAn[r.zelle] : 'das Nachbarfeld') + ' schon zweimal verbunden';
+        case 'ring': return 'nach ' + wo + ' schlösse sich der Weg zu einem Ring';
+        case 'schluss': return 'nach ' + wo + ' hingen die 1 und die ' + stand.hoechste + ' aneinander, bevor alle Felder dran sind';
+        default: return 'nach ' + wo + ' kämen die Zahlen in der Folge ' + r.folge.join(', ') + ' statt der Reihe nach';
+      }
+    }
+
+    function zwangText(sch) {
+      const i = sch.zelle;
+      const saetze = [];
+      if (istEnde(i)) {
+        saetze.push(gross(feldName(i)) + ' ist ' + (stand.zahlAn[i] === 1 ? 'der Anfang' : 'das Ende')
+          + ' des Wegs und hat genau eine Verbindung.');
+      } else if (sch.schon.length) {
+        saetze.push(gross(feldName(i)) + ' ist von ' + richtung(i, sch.schon[0]) + ' her schon verbunden und muss noch weiter.');
+      } else {
+        saetze.push(gross(feldName(i)) + ' muss betreten und wieder verlassen werden.');
+      }
+      const rand = nachbarnVon(i, stand.kanten).length;
+      if (rand < 4) saetze.push((stand.zahlAn[i] ? 'Sie' : 'Es') + (rand === 2 ? ' liegt in der Ecke.' : ' liegt am Rand.'));
+      const gruende = sch.raus.map((r) => ausschlussText(i, r));
+      if (gruende.length) saetze.push(gross(aufzaehlen(gruende)) + '.');
+      const wege = sch.ziele.map((j) => richtung(i, j));
+      saetze.push((wege.length === 1 ? 'Bleibt nur ' : 'Bleiben nur ') + aufzaehlen(wege) + ' – dort muss der Weg entlang.');
+      return saetze.join(' ');
+    }
+
+    function widerspruchText(w) {
+      switch (w.grund) {
+        case 'sackgasse':
+          return gross(feldName(w.zelle)) + ' hat nicht mehr genug freie Nachbarn, um '
+            + (istEnde(w.zelle) ? 'erreicht' : 'betreten und wieder verlassen') + ' zu werden – eine Sackgasse.';
+        case 'getrennt':
+          return (w.zellen.length === 1 ? gross(feldName(w.zelle)) + ' ist'
+            : w.zellen.length + ' Felder, darunter ' + feldName(w.zelle) + ', sind')
+            + ' vom Rest abgeschnitten – der Weg käme nicht mehr überall hin.';
+        case 'ring': return 'Der Weg hätte sich zu einem Ring geschlossen.';
+        case 'schluss': return 'Die 1 und die ' + stand.hoechste + ' hingen schon aneinander, obwohl noch Felder frei sind.';
+        case 'reihe': return 'Die ' + w.folge.join(' und die ') + ' lägen direkt hintereinander.';
+        /* Bleibt „voll": Der gezogene Weg kann ein Feld nicht zweimal
+           betreten, zu viele Verbindungen entstehen also nur zusammen mit
+           Merklinien – das darf der Satz dann auch so sagen. */
+        default:
+          return 'Die gestrichelten Linien legen für ' + feldName(w.zelle) + ' schon '
+            + (istEnde(w.zelle) ? 'die einzige Verbindung' : 'beide Verbindungen') + ' fest, dein Weg käme noch dazu.';
+      }
+    }
+
+    /* Was an der Spitze des Wegs hängt, wird gleich gezogen – dafür ist der
+       Hinweis ja da. Alles andere bleibt als Merklinie liegen, bis der Weg
+       dort ankommt; sonst müsste man sich den Schluss merken. */
+    function einzeichnen(neu) {
+      const offen = new Set(neu);
+      const pfad = stand.pfad;
+      const eins = stand.zahlAn.indexOf(1);
+      if (!pfad.length && [...offen].some((e) => kanteZerlegen(e).includes(eins))) pfad.push(eins);
+      let weiter = pfad.length > 0;
+      while (weiter) {
+        weiter = false;
+        const kopf = pfad[pfad.length - 1];
+        for (const e of offen) {
+          const [x, y] = kanteZerlegen(e);
+          const dort = x === kopf ? y : y === kopf ? x : -1;
+          if (dort < 0 || pfad.includes(dort)) continue;
+          if (stand.zahlAn[dort] && stand.zahlAn[dort] !== erreichteZahl(pfad) + 1) continue;
+          pfad.push(dort);
+          offen.delete(e);
+          weiter = true;
+          break;
+        }
+      }
+      for (const e of offen) if (!stand.notizen.includes(e)) stand.notizen.push(e);
+    }
+
+    // Den Weg entlang aller sicheren Verbindungen so weit ziehen, wie sie reichen.
+    function linienFolgen() {
+      const f = festJetzt();
+      const pfad = stand.pfad;
+      if (!pfad.length) pfad.push(stand.zahlAn.indexOf(1));
+      for (let weiter = true; weiter;) {
+        weiter = false;
+        const kopf = pfad[pfad.length - 1];
+        for (const j of nachbarnVon(kopf, stand.kanten, mauern)) {
+          if (pfad.includes(j) || !f.has(kante(kopf, j))) continue;
+          pfad.push(j);
+          weiter = true;
+          break;
+        }
+      }
+    }
+
+    /* Der Hinweis schaut nicht in stand.loesung. Er zieht dieselben Schlüsse
+       wie der Erzeuger und nennt einen davon samt Grund. */
     function hinweis() {
       if (stand.fertig) return;
       stand.hilfen += 1;
       sichern();
 
-      // Wie weit stimmt der eigene Weg mit der Lösung überein?
-      let gleich = 0;
-      while (gleich < stand.pfad.length && stand.pfad[gleich] === stand.loesung[gleich]) gleich += 1;
+      const b = brettVon(stand.kanten, stand.zahlAn, stand.hoechste, mauern);
+      const pfad = stand.pfad;
 
-      if (gleich < stand.pfad.length) {
-        s.blatt({
-          titel: 'Ab hier führt es in die Irre',
-          inhalt: 'Die ersten ' + gleich + ' Felder stimmen mit der Lösung überein, danach geht es woanders lang. '
-            + 'Soll ich bis dorthin zurücknehmen?',
-          aktionen: [
-            { text: 'Zurücknehmen', tun: () => { stand.pfad = stand.pfad.slice(0, gleich); sichern(); zeichnen(); } },
-            { text: 'Selbst suchen', art: 'still' },
-          ],
-        });
-        return;
+      /* Falsches kommt zuerst. Vom leeren Brett aus leiten die Schlüsse das
+         ganze Rätsel her; ein gezogener Schritt, der dort nicht vorkommt,
+         führt in die Irre. Als Grund wird gesucht, woran es scheitert – nicht
+         „weil die Lösung anders aussieht". */
+      const hergeleitet = schliessen(b, []);
+      if (hergeleitet.geloest) {
+        stand.notizen = stand.notizen.filter((e) => hergeleitet.fest.has(e));
+        let gut = Math.min(1, pfad.length);
+        while (gut < pfad.length && hergeleitet.fest.has(kante(pfad[gut - 1], pfad[gut]))) gut += 1;
+        if (gut < pfad.length) {
+          const sofort = naechsterSchluss(b, festJetzt());
+          const spaeter = schliessen(b, festJetzt()).schluss;
+          let grund;
+          if (sofort && sofort.art === 'widerspruch') {
+            grund = widerspruchText(sofort);
+          } else if (spaeter && spaeter.art === 'widerspruch') {
+            grund = 'Zieht man von dort nur zwingende Schritte weiter, geht es nicht auf: ' + widerspruchText(spaeter);
+          } else {
+            grund = 'Aus Zahlen und Mauern lässt sich herleiten, dass der Weg dort nicht entlangführt.';
+          }
+          s.blatt({
+            titel: 'Ab hier führt es in die Irre',
+            inhalt: 'Die ersten ' + gut + ' Felder stimmen, der Schritt auf ' + platzName(pfad[gut]) + ' nicht. '
+              + grund + ' Soll ich bis dorthin zurücknehmen?',
+            aktionen: [
+              { text: 'Zurücknehmen', tun: () => { stand.pfad = stand.pfad.slice(0, gut); sichern(); zeichnen(); } },
+              { text: 'Selbst suchen', art: 'still' },
+            ],
+          });
+          return;
+        }
       }
 
-      const naechstes = stand.loesung[gleich];
-      const z = Math.floor(naechstes / stand.kanten) + 1;
-      const sp = (naechstes % stand.kanten) + 1;
-      s.blatt({
-        titel: 'Der nächste Schritt',
-        inhalt: 'Von hier geht es weiter auf Zeile ' + z + ', Spalte ' + sp + '.',
-        aktionen: [
-          { text: 'Gehen', tun: () => { stand.pfad.push(naechstes); sichern(); zeichnen(); pruefenObFertig(); } },
-          { text: 'Selbst gehen', art: 'still' },
-        ],
-      });
+      const spitze = pfad.length ? pfad[pfad.length - 1] : stand.zahlAn.indexOf(1);
+      const sch = naechsterSchluss(b, festJetzt(), spitze);
+
+      if (sch && sch.art === 'zwang') {
+        s.blatt({
+          titel: sch.ziele.length === 1 ? 'Nur eine Richtung bleibt' : 'Nur noch zwei Nachbarn',
+          inhalt: zwangText(sch),
+          aktionen: [
+            { text: 'Einzeichnen', tun: () => { einzeichnen(sch.neu); sichern(); zeichnen(); pruefenObFertig(); } },
+            { text: 'Selbst ziehen', art: 'still' },
+          ],
+        });
+      } else if (sch && sch.art === 'geloest') {
+        s.blatt({
+          titel: 'Alles hergeleitet',
+          inhalt: 'Die gestrichelten Linien und dein Weg ergeben zusammen schon den ganzen Weg. '
+            + 'Zieh ihn entlang der Linien bis zur ' + stand.hoechste + '.',
+          aktionen: [
+            { text: 'Nachziehen', tun: () => { linienFolgen(); sichern(); zeichnen(); pruefenObFertig(); } },
+            { text: 'Selbst ziehen', art: 'still' },
+          ],
+        });
+      } else if (sch) {
+        s.blatt({
+          titel: 'So geht es nicht mehr auf',
+          inhalt: widerspruchText(sch) + ' Nimm ein paar Schritte zurück.',
+          aktionen: [{ text: 'Verstanden' }],
+        });
+      } else {
+        s.blatt({
+          titel: 'Hier sehe ich nichts Zwingendes',
+          inhalt: 'Mit den einfachen Schlüssen komme ich gerade nicht weiter. Bei einem frisch gebauten '
+            + 'Rätsel sollte das nicht vorkommen.',
+          aktionen: [{ text: 'Verstanden' }],
+        });
+      }
     }
 
     function pruefenObFertig() {
@@ -542,6 +835,18 @@
         strich.setAttribute('stroke-linecap', 'round');
         linie.append(strich);
       }
+      // Merklinien aus Hinweisen – unter dem Weg, damit gezogene Stücke sie verdecken.
+      for (const e of stand.notizen) {
+        const [a, c] = kanteZerlegen(e);
+        const strich = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        strich.setAttribute('x1', String((a % k) + 0.5)); strich.setAttribute('y1', String(Math.floor(a / k) + 0.5));
+        strich.setAttribute('x2', String((c % k) + 0.5)); strich.setAttribute('y2', String(Math.floor(c / k) + 0.5));
+        strich.setAttribute('class', 'p-notiz');
+        strich.setAttribute('stroke-width', '0.12');
+        strich.setAttribute('stroke-dasharray', '0.16 0.12');
+        strich.setAttribute('stroke-linecap', 'round');
+        linie.append(strich);
+      }
       if (stand.pfad.length > 1) {
         const zug = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
         zug.setAttribute('points', stand.pfad
@@ -585,8 +890,9 @@
       endeKasten.append(l);
     }
 
-    /* Ein 7×7-Rätsel zu bauen kostet ein paar Sekunden. Damit die Oberfläche
-       nicht einfach einfriert, erst melden, dann im nächsten Anlauf rechnen. */
+    /* Ein 7×7-Rätsel ist meist in Millisekunden gebaut, auf einem langsamen
+       Handy im schlechtesten Fall spürbar länger. Damit die Oberfläche dann
+       nicht stumm einfriert, erst melden, dann im nächsten Anlauf rechnen. */
     function neu(stufe) {
       const bauen = () => {
         stand = frisch(stufe);
@@ -606,7 +912,7 @@
     function neuFragen() {
       s.blatt({
         titel: 'Neues Rätsel',
-        inhalt: 'Leicht ist 5 × 5, mittel 6 × 6, schwer 7 × 7. Jedes Rätsel hat genau einen möglichen Weg.',
+        inhalt: 'Leicht ist 5 × 5, mittel 6 × 6, schwer 7 × 7. Jedes Rätsel hat genau einen möglichen Weg, und der lässt sich ohne Raten herleiten.',
         aktionen: [
           { text: 'Leicht', tun: () => neu('leicht') },
           { text: 'Mittel', art: 'still', tun: () => neu('mittel') },
@@ -631,6 +937,7 @@
     gitterBauen();
     sichern();
     zeichnen();
+    if (ersetzt) s.toast('Das gespeicherte Rätsel stammte aus einer älteren Fassung und ließ sich nicht ohne Raten lösen – hier ist ein neues.');
     uhr = setInterval(() => { if (!stand.fertig) kopfZeichnen(); }, 1000);
 
     return {

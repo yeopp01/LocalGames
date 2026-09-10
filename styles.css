@@ -1237,6 +1237,9 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .p-linie polyline { stroke: color-mix(in srgb, #4573B8 70%, transparent); }
 /* Mauern liegen zwischen zwei Feldern und sind kraeftiger als die Gitterlinien. */
 .p-linie .p-mauer { stroke: var(--tinte); }
+/* Merklinien aus dem Hinweis: dieselbe Farbe wie der Weg, aber duenn und
+   gestrichelt – hergeleitet, noch nicht gezogen. */
+.p-linie .p-notiz { stroke: color-mix(in srgb, #4573B8 80%, transparent); }
 
 /* Die abgeleiteten Kreuze liegen auf vielen Feldern gleichzeitig – ein Hauch
    unter jedem einzelnen ergäbe über das halbe Brett einen Schleier. Sie
