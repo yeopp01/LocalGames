@@ -93,7 +93,23 @@ try {
   for (const s of schritte) {
     if (s.taste) await page.keyboard.press(s.taste);
     else if (s.klick.startsWith('css=')) await page.locator(s.klick.slice(4)).first().click();
-    else await page.getByText(s.klick, { exact: false }).locator('visible=true').first().click();
+    else {
+      // Erst ein Knopf mit genau diesem Namen, dann genau dieser Text, erst
+      // zuletzt ein Teiltreffer – sonst trifft „Schwer" den Absatz
+      // „… schwer 7 × 7" statt des Knopfs darunter.
+      const kandidaten = [
+        page.getByRole('button', { name: s.klick, exact: true }),
+        page.getByText(s.klick, { exact: true }),
+        page.getByText(s.klick, { exact: false }),
+      ];
+      let ziel = null;
+      for (const k of kandidaten) {
+        const sichtbar = k.locator('visible=true');
+        if (await sichtbar.count()) { ziel = sichtbar.first(); break; }
+      }
+      if (!ziel) throw new Error(`Nichts Sichtbares zum Anklicken: "${s.klick}"`);
+      await ziel.click();
+    }
     await page.waitForTimeout(150);
   }
   await page.waitForTimeout(Number(opt.warte));
