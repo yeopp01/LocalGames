@@ -1,7 +1,7 @@
 # Vier gewinnt
 
 **Datei:** [`spiele/viergewinnt.js`](../../spiele/viergewinnt.js)
-**Stand:** 12/16 fertig · 4 offen
+**Stand:** 16/16 fertig
 
 ## Zweck
 
@@ -25,7 +25,7 @@ schnelle Partie auf dem Handy wie am Rechner.
 - **AC-3** `fertig` **Sofortsieg wird genommen** — Kann der Rechner mit seinem
   Stein gewinnen, tut er es auf jeder Stufe, auch auf leicht. Ebenso spielt er
   einen erzwungenen Sieg, den er innerhalb seiner Rechentiefe sieht.
-- **AC-4** `offen` **Drohung wird immer blockiert** — Kann der Mensch im
+- **AC-4** `fertig` **Drohung wird immer blockiert** — Kann der Mensch im
   nächsten Zug vier in eine Reihe legen und lässt sich das mit einem Stein
   verhindern, legt der Rechner diesen Stein auf jeder Stufe. Das Danebengreifen
   auf leicht und mittel darf nie eine offene Niederlage übersehen.
@@ -33,10 +33,11 @@ schnelle Partie auf dem Handy wie am Rechner.
   der Stein sofort sichtbar, oben steht „Rechner am Zug", unter dem Titel „Der
   Rechner überlegt …". Erst danach rechnet der Rechner. Tipps aufs Brett und
   „Zug zurück" werden angenommen, sobald er gelegt hat, vorher nicht.
-- **AC-6** `offen` **Überlegen friert nicht ein** — Auch auf schwer bleibt die
+- **AC-6** `fertig` **Überlegen friert nicht ein** — Auch auf schwer bleibt die
   App bedienbar, während der Rechner überlegt: Zurück, Menü und Werkzeuge
-  reagieren ohne spürbare Verzögerung, weil die Rechnung die Seite nicht am
-  Stück blockiert.
+  reagieren ohne spürbare Verzögerung, weil die Rechnung nicht auf der Seite,
+  sondern in einem Worker läuft. Wer währenddessen das Spiel verlässt oder eine
+  neue Partie beginnt, bekommt keinen nachträglichen Stein des Rechners.
 - **AC-7** `fertig` **Wer beginnt** — Eine Partie aus „Neue Partie" beginnt
   der Mensch bzw. Rot. Nach dem Ende gegen den Rechner beginnt, wer verloren
   hat: nach einer Niederlage der Mensch, nach Sieg oder Unentschieden der
@@ -72,7 +73,7 @@ schnelle Partie auf dem Handy wie am Rechner.
   Brett, Stufe und Verlauf fürs Zurücknehmen. War der Rechner am Zug, zieht er
   gleich. Eine beendete Partie wird nicht wiederhergestellt; ein Stand aus einer
   älteren Fassung ohne Verlauf läuft als Partie gegen den Rechner weiter.
-- **AC-12** `offen` **Zu zweit übersteht Schließen** — Eine laufende Partie zu
+- **AC-12** `fertig` **Zu zweit übersteht Schließen** — Eine laufende Partie zu
   zweit steht nach dem Wiederöffnen unverändert als Partie zu zweit da – auch
   wenn Gelb am Zug ist. Niemand außer den beiden legt einen Stein.
 - **AC-13** `fertig` **Gegen den Rechner mit Urteil** — Eine beendete Partie
@@ -85,7 +86,7 @@ schnelle Partie auf dem Handy wie am Rechner.
   nicht in der Siegquote – siehe
   [Partien ohne Urteil](../../README.md#partien-ohne-urteil). Das Ende sagt
   „Zählt als Runde, nicht als Sieg."
-- **AC-15** `offen` **Dauer zählt nur Spielzeit** — `dauer` enthält nur die
+- **AC-15** `fertig` **Dauer zählt nur Spielzeit** — `dauer` enthält nur die
   Zeit, in der die Partie offen war. Eine Partie, die über Nacht geschlossen
   lag, bringt nicht die Nacht als Spielzeit in die Statistik.
 - **AC-16** `fertig` **Auswertung verträgt Lücken** — Die Statistik zeigt je
@@ -115,7 +116,7 @@ seiner Rechentiefe bewertet er offene Dreier und Zweier und die Mittelspalte,
 durch die die meisten Viererreihen laufen; fremde Dreier wiegen etwas schwerer
 als eigene.
 
-Gemessen gegen den Code (Wegwerf-Skript, Node am PC, Stand dieser Spec):
+Gemessen gegen den Code vor Version 60 (Wegwerf-Skript, Node am PC):
 
 | Stufe | Sofortsieg genommen | Drohung blockiert | Rechenzeit Median | Rechenzeit max |
 | --- | --- | --- | --- | --- |
@@ -123,11 +124,16 @@ Gemessen gegen den Code (Wegwerf-Skript, Node am PC, Stand dieser Spec):
 | mittel | 400 / 400 | 92 % | 3–4 ms | 21–59 ms |
 | schwer | 50 / 50 | 100 % | 34–45 ms | 137–434 ms |
 
-Das Danebengreifen wählt zufällig unter allen übrigen Spalten, sobald der
-beste Zug nicht selbst entscheidet – steht eine Drohung, sind das genau die
-verlierenden. Daher AC-4. Die Rechnung läuft am Stück auf der Seite; auf einem
-Handy dürfte die schlimmste Stellung auf schwer ein Mehrfaches dauern. Daher
-AC-6.
+Das Danebengreifen wählte damals zufällig unter allen übrigen Spalten, sobald
+der beste Zug nicht selbst entschied – stand eine Drohung, waren das genau die
+verlierenden. Seit Version 60 greift der Rechner nur noch unter den Zügen
+daneben, die nicht sofort verlieren (AC-4).
+
+Die Rechnung lief am Stück auf der Seite. Mit sechsfach gebremster CPU, wie
+auf einem langsamen Handy, blockierten die ersten drei Züge auf schwer die
+Seite 248, 281 und 170 ms lang. Seit Version 60 rechnet ein Worker, dem die
+Funktionen als Text mitgegeben werden – es bleibt eine einzige Fassung der
+Rechnung (AC-6). Geht kein Worker, wird wie früher auf der Seite gerechnet.
 
 „Zug zurück" nimmt gegen den Rechner zwei Steine, weil ein halber Schritt
 nichts brächte: man stünde vor demselben Brett, nur wäre der Rechner am Zug.

@@ -488,14 +488,17 @@
 
     auswertung(partien, hilfe) {
       if (!partien.length) return [];
-      const gefunden = partien.filter((p) => p.gewonnen).length;
-      const leute = partien.map((p) => p.spieler || 0).filter(Boolean);
+      // Die Quote rechnet nur über Runden mit Urteil. Eine ohne das Feld – etwa
+      // aus einer alten Sicherung – zählt weder dafür noch dagegen.
+      const mitUrteil = partien.filter((p) => typeof p.gewonnen === 'boolean');
+      const gefunden = mitUrteil.filter((p) => p.gewonnen).length;
+      const leute = partien.map((p) => p.spieler).filter((n) => typeof n === 'number' && n > 0);
       const schnitt = leute.length
         ? Math.round(leute.reduce((a, b) => a + b, 0) / leute.length)
         : 0;
       return [
         { wert: String(partien.length), label: partien.length === 1 ? 'Runde' : 'Runden' },
-        { wert: hilfe.prozent(gefunden, partien.length), label: 'Verräter gefunden' },
+        { wert: hilfe.prozent(gefunden, mitUrteil.length), label: 'Verräter gefunden' },
         { wert: schnitt ? 'zu ' + schnitt : '–', label: 'meist gespielt' },
       ];
     },

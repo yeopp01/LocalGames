@@ -123,7 +123,7 @@
     const zuege = moeglich(brett);
     if (!zuege.length) return -1;
 
-    // Auf der leichten Stufe greift der Rechner ab und zu daneben – aber nie
+    // Auf leicht und mittel greift der Rechner ab und zu daneben – aber nie
     // so, dass er einen sofortigen Sieg oder eine offene Niederlage übersieht.
     const bewertet = zuege.map((s) => {
       const z = freieZeile(brett, s);
@@ -136,11 +136,39 @@
     bewertet.sort((a, b) => b.wert - a.wert);
     const beste = bewertet[0];
     if (Math.abs(beste.wert) > 90000) return beste.spalte;
-    if (Math.random() < STUFEN[stufe].schludert && bewertet.length > 1) {
-      return bewertet[1 + Math.floor(Math.random() * (bewertet.length - 1))].spalte;
+    // Daneben nur unter den Zügen, die nicht sofort verlieren. Vorher war jede
+    // Spalte erlaubt – bei einer Drohung also genau die verlierenden, und
+    // „leicht" ließ jede dritte offene Reihe durch.
+    const daneben = bewertet.slice(1).filter((b) => b.wert > -90000);
+    if (Math.random() < STUFEN[stufe].schludert && daneben.length) {
+      return daneben[Math.floor(Math.random() * daneben.length)].spalte;
     }
     return beste.spalte;
   }
+
+  /* Der Rechner rechnet in einem eigenen Worker. Auf „schwer" braucht ein Zug
+     am Rechner bis zu einer halben Sekunde, auf dem Handy ein Mehrfaches –
+     auf der Seite selbst stünde so lange alles still, auch Zurück und Menü.
+     Der Worker bekommt dieselben Funktionen als Text, damit es nur eine
+     Fassung der Rechnung gibt. */
+  const WORKER_QUELLE = [
+    'const SPALTEN = ' + SPALTEN,
+    'const ZEILEN = ' + ZEILEN,
+    'const LEER = ' + LEER,
+    'const MENSCH = ' + MENSCH,
+    'const RECHNER = ' + RECHNER,
+    'const STUFEN = ' + JSON.stringify(STUFEN),
+    'const FENSTER = ' + JSON.stringify(FENSTER),
+    'const REIHENFOLGE = ' + JSON.stringify(REIHENFOLGE),
+    'const feld = ' + feld,
+    'const freieZeile = ' + freieZeile,
+    'const moeglich = ' + moeglich,
+    String(sieger),
+    String(bewerten),
+    String(minimax),
+    String(bestesZug),
+    'onmessage = (e) => postMessage({ nr: e.data.nr, spalte: bestesZug(e.data.brett, e.data.stufe) })',
+  ].join(';\n');
 
   /* ------------------------------------------------------------------ Spiel */
 
@@ -156,7 +184,8 @@
         brett: new Array(SPALTEN * ZEILEN).fill(LEER),
         amZug: anfang || MENSCH,
         zuege: 0,
-        begonnen: Date.now(),
+        verbraucht: 0,
+        seit: Date.now(),
         fertig: null,            // null | 'sieg' | 'pleite' | 'remis'
         siegfelder: null,
         verlauf: [],             // { i, wer } je gelegtem Stein, fürs Zurücknehmen
@@ -168,12 +197,76 @@
       if (alt && Array.isArray(alt.brett) && alt.brett.length === SPALTEN * ZEILEN && !alt.fertig) {
         if (!Array.isArray(alt.verlauf)) alt.verlauf = [];   // Partien von früher
         if (alt.modus !== 'zwei') alt.modus = 'rechner';
+        alt.verbraucht = alt.verbraucht || 0;
+        alt.seit = Date.now();
         return alt;
       }
       return frisch('mittel', MENSCH, 'rechner');
     }
 
-    const sichern = () => s.merken(stand);
+    /* Die Spielzeit zählt nur, solange die Partie offen ist. Die Uhrzeit seit
+       dem ersten Stein brachte eine über Nacht liegen gelassene Partie mit
+       der Nacht in die Statistik. */
+    const zeitJetzt = () => stand.verbraucht + (stand.fertig ? 0 : Date.now() - stand.seit);
+    function sichern() {
+      if (!stand.fertig) {
+        stand.verbraucht = zeitJetzt();
+        stand.seit = Date.now();
+      }
+      s.merken(stand);
+    }
+
+    /* Rechnen im Worker, siehe WORKER_QUELLE. Geht kein Worker, wird wie
+       früher auf der Seite gerechnet. Eine Antwort zählt nur, wenn noch auf
+       genau diesen Auftrag gewartet wird – nach „Neue Partie" oder dem
+       Verlassen ist sie wertlos. */
+    let arbeiter = null;
+    let arbeiterAdresse = null;
+    let warten = null;          // { nr, brett, stufe, fertig }
+    let auftraege = 0;
+    let denkUhr = null;
+
+    function arbeiterWeg() {
+      if (arbeiter) arbeiter.terminate();
+      if (arbeiterAdresse) URL.revokeObjectURL(arbeiterAdresse);
+      arbeiter = null;
+      arbeiterAdresse = null;
+    }
+
+    function aufDerSeite() {
+      const w = warten;
+      warten = null;
+      if (w) w.fertig(bestesZug(w.brett, w.stufe));
+    }
+
+    function rechnen(brett, stufe, fertig) {
+      auftraege += 1;
+      warten = { nr: auftraege, brett: brett.slice(), stufe, fertig };
+      try {
+        if (!arbeiter) {
+          arbeiterAdresse = URL.createObjectURL(new Blob([WORKER_QUELLE], { type: 'text/javascript' }));
+          arbeiter = new Worker(arbeiterAdresse);
+          arbeiter.onmessage = (e) => {
+            if (!warten || e.data.nr !== warten.nr) return;
+            const f = warten.fertig;
+            warten = null;
+            f(e.data.spalte);
+          };
+          arbeiter.onerror = () => { arbeiterWeg(); aufDerSeite(); };
+        }
+        arbeiter.postMessage({ nr: warten.nr, brett: warten.brett, stufe });
+      } catch (e) {
+        arbeiterWeg();
+        aufDerSeite();
+      }
+    }
+
+    function denkenAbbrechen() {
+      clearTimeout(denkUhr);
+      denkUhr = null;
+      warten = null;
+      denkt = false;
+    }
     const vorbei = () => stand.fertig !== null;
     const zuZweit = () => stand.modus === 'zwei';
 
@@ -248,15 +341,17 @@
       denkt = true;
       s.unter('Der Rechner überlegt …');
       // Kurz Luft lassen, damit der eigene Stein schon liegt, wenn es rechnet.
-      setTimeout(() => {
-        const spalte = bestesZug(stand.brett, stand.stufe);
-        denkt = false;
-        if (spalte < 0 || vorbei()) { zeichnen(); return; }
-        const z = freieZeile(stand.brett, spalte);
-        setzen(z, spalte, RECHNER);
-        if (!vorbei()) stand.amZug = MENSCH;
-        sichern();
-        zeichnen();
+      denkUhr = setTimeout(() => {
+        denkUhr = null;
+        rechnen(stand.brett, stand.stufe, (spalte) => {
+          denkt = false;
+          if (spalte < 0 || vorbei()) { zeichnen(); return; }
+          const z = freieZeile(stand.brett, spalte);
+          setzen(z, spalte, RECHNER);
+          if (!vorbei()) stand.amZug = MENSCH;
+          sichern();
+          zeichnen();
+        });
       }, 220);
     }
 
@@ -301,10 +396,11 @@
     }
 
     function abschluss(ausgang) {
+      stand.verbraucht = zeitJetzt();
       stand.fertig = ausgang;
       const partie = {
         remis: ausgang === 'remis',
-        dauer: Date.now() - stand.begonnen,
+        dauer: stand.verbraucht,
         zuege: stand.zuege,
       };
 
@@ -404,6 +500,8 @@
     }
 
     function neu(stufe, anfang, modus) {
+      // Eine Rechnung für das alte Brett darf auf dem neuen keinen Stein legen.
+      denkenAbbrechen();
       stand = frisch(stufe, anfang, modus);
       sichern();
       zeichnen();
@@ -447,9 +545,17 @@
 
     sichern();
     zeichnen();
-    if (!vorbei() && stand.amZug === RECHNER) denkenLassen();
+    // Zu zweit ist Gelb ein Mensch – der Rechner legt dort nie einen Stein.
+    if (!vorbei() && !zuZweit() && stand.amZug === RECHNER) denkenLassen();
 
-    return { ende: () => { if (!vorbei()) sichern(); } };
+    return {
+      ende: () => {
+        // Sonst legt ein Nachzügler nach dem Verlassen noch einen Stein.
+        denkenAbbrechen();
+        arbeiterWeg();
+        if (!vorbei()) sichern();
+      },
+    };
   }
 
   /* ----------------------------------------------------------- Statistik */

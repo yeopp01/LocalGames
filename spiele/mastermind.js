@@ -99,18 +99,33 @@
         code,
         versuche: [],
         hilfen: 0,
-        begonnen: Date.now(),
+        verbraucht: 0,
+        seit: Date.now(),
         fertig: null,      // null | 'sieg' | 'pleite'
       };
     }
 
     function laden() {
       const alt = s.erinnert();
-      if (alt && alt.code && Array.isArray(alt.versuche) && !alt.fertig) return alt;
+      if (alt && alt.code && Array.isArray(alt.versuche) && !alt.fertig) {
+        alt.verbraucht = alt.verbraucht || 0;
+        alt.seit = Date.now();
+        return alt;
+      }
       return frisch('normal');
     }
 
-    const sichern = () => s.merken(stand);
+    /* Die Spielzeit zählt nur, solange das Spiel offen ist – wie bei Damen und
+       Weg. Vorher war sie die Uhrzeit seit dem Anlegen des Codes, und eine
+       über Nacht liegen gelassene Partie brachte die Nacht mit. */
+    const zeitJetzt = () => stand.verbraucht + (stand.fertig ? 0 : Date.now() - stand.seit);
+    function sichern() {
+      if (!stand.fertig) {
+        stand.verbraucht = zeitJetzt();
+        stand.seit = Date.now();
+      }
+      s.merken(stand);
+    }
     const vorbei = () => stand.fertig !== null;
     const maxVersuche = () => STUFEN[stand.stufe].versuche;
 
@@ -174,10 +189,11 @@
     }
 
     function abschluss(ausgang) {
+      stand.verbraucht = zeitJetzt();
       stand.fertig = ausgang;
       s.notieren({
         gewonnen: ausgang === 'sieg',
-        dauer: Date.now() - stand.begonnen,
+        dauer: stand.verbraucht,
         zuege: stand.versuche.length,
         hilfen: stand.hilfen,
         stufe: stand.stufe,
@@ -323,13 +339,20 @@
     sichern();
     zeichnen();
 
-    return { ende: () => window.removeEventListener('keydown', taste) };
+    return {
+      ende: () => {
+        window.removeEventListener('keydown', taste);
+        if (!vorbei()) sichern();
+      },
+    };
   }
 
   /* ----------------------------------------------------------- Statistik */
 
   function auswertung(partien) {
-    const siege = partien.filter((p) => p.gewonnen);
+    // Siege ohne Zugzahl – etwa aus einer alten Sicherung – fallen aus dem
+    // Schnitt, statt ihn zu „NaN" zu machen.
+    const siege = partien.filter((p) => p.gewonnen && typeof p.zuege === 'number' && p.zuege > 0);
     const schnitt = siege.length
       ? (siege.reduce((s, p) => s + p.zuege, 0) / siege.length).toFixed(1).replace('.', ',')
       : '–';

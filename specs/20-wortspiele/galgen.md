@@ -1,7 +1,7 @@
 # Galgenmännchen
 
 **Datei:** [`spiele/galgen.js`](../../spiele/galgen.js)
-**Stand:** 11/13 fertig · 2 offen
+**Stand:** 14/14 fertig
 
 ## Zweck
 
@@ -52,22 +52,24 @@ oder an der Tastatur, und mit einer Umschreibung für den, der festhängt.
   Zurück, Neuladen oder Neustart der App mit Wort, geratenen Buchstaben und Tipp
   wieder da. Nach einer beendeten Runde beginnt ein frisches Wort.
 - **AC-9** `fertig` **Partie in der Statistik** — Jede beendete Runde wird mit
-  `gewonnen`, `dauer` (Zeit seit dem Ziehen des Wortes), `fehler`, `zuege` und
+  `gewonnen`, `dauer` (Spielzeit, siehe AC-14), `fehler`, `zuege` und
   `buchstaben` (beide: Zahl aller geratenen Buchstaben), `hilfen` (1 mit Tipp,
   sonst 0) und `wort` notiert.
 - **AC-10** `fertig` **Kennzahlen je Spiel** — Die Statistik zeigt „Fehler je
   Sieg", die Zahl der Siege „ohne Fehler" und die allgemeinen Kennzahlen des
   Rahmens; ohne Siege steht „–" und „0".
-- **AC-11** `offen` **Fehler je Sieg mit Komma** — „Fehler je Sieg" steht wie die
-  übrigen Kennzahlen mit Dezimalkomma, etwa „1,5". Heute erscheint ein Punkt
-  („1.5").
-- **AC-12** `offen` **Lückenhafte Partien verfälschen nichts** — Siege ohne Zahl in
-  `fehler` gehen weder in „Fehler je Sieg" noch in „ohne Fehler" ein. Heute zählen
-  sie als fehlerfrei.
+- **AC-11** `fertig` **Fehler je Sieg mit Komma** — „Fehler je Sieg" steht wie die
+  übrigen Kennzahlen mit Dezimalkomma, etwa „1,5".
+- **AC-12** `fertig` **Lückenhafte Partien verfälschen nichts** — Siege ohne Zahl in
+  `fehler` gehen weder in „Fehler je Sieg" noch in „ohne Fehler" ein.
 - **AC-13** `fertig` **Anleitung als Blatt** — Das Werkzeug „Anleitung" öffnet ein
   Blatt „Galgenmännchen": fünf Buchstaben, Treffer an allen Stellen, nach 11
   Fehlern verloren, Tastatur samt Umlauten, und dass der Tipp keinen Fehler
   kostet, aber in der Statistik vermerkt wird.
+- **AC-14** `fertig` **Spielzeit ohne Pausen** — `dauer` zählt nur die Zeit, in
+  der die Runde offen war. Eine über Nacht geschlossene Runde bringt die Nacht
+  nicht in die Spielzeit; bis Version 59 war es die Uhrzeit seit dem Ziehen des
+  Wortes.
 
 ## Randfälle
 

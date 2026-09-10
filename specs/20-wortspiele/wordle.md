@@ -1,7 +1,7 @@
 # Wördle
 
 **Datei:** [`spiele/wordle.js`](../../spiele/wordle.js) · [`spiele/woerter.js`](../../spiele/woerter.js) · [`spiele/loeser.js`](../../spiele/loeser.js)
-**Stand:** 21/23 fertig · 2 offen
+**Stand:** 23/24 fertig · 1 offen
 
 ## Zweck
 
@@ -103,11 +103,11 @@ verrät. Der Wortschatz ist selbst geschrieben und liegt auf dem Gerät.
 ### Speicher und Statistik
 
 - **AC-19** `fertig` **Stand überlebt Schließen** — Wort, geprüfte Versuche,
-  verratene Buchstaben, Tipp, Zahl der Vorschläge und Startzeit stehen nach
+  verratene Buchstaben, Tipp, Zahl der Vorschläge und Spielzeit stehen nach
   Zurück, Neuladen oder Neustart der App wieder da. Auch eine beendete Partie
   erscheint mit ihrem Ergebnis, ohne ein zweites Mal notiert zu werden.
 - **AC-20** `fertig` **Partie in der Statistik** — Jede beendete Partie wird mit
-  `gewonnen`, `dauer` (Zeit seit dem Ziehen des Wortes), `zuege` (geprüfte
+  `gewonnen`, `dauer` (Spielzeit, siehe AC-24), `zuege` (geprüfte
   Versuche, 1–6), `hilfen` (Zählung aus AC-14) und `wort` notiert. Die Statistik
   zeigt „Züge je Sieg", die längste Folge von Siegen und die allgemeinen
   Kennzahlen des Rahmens.
@@ -115,13 +115,16 @@ verrät. Der Wortschatz ist selbst geschrieben und liegt auf dem Gerät.
   viele Siege in 1 bis 6 Zügen gelangen, je Balken getrennt in „ohne Hilfe" und
   „mit Hilfe". Verlorene Partien und solche ohne `zuege` zwischen 1 und 6 bleiben
   draußen.
-- **AC-22** `offen` **Lückenhafte Partien verfälschen nichts** — Eine leere Liste
-  zeigt „–" und „0". Siege ohne Zahl in `zuege` gehen nicht in „Züge je Sieg" ein.
-  Heute zählt ein fehlendes `zuege` als 0 und drückt den Schnitt, ein Wert, der
-  keine Zahl ist, ergibt „NaN".
+- **AC-22** `fertig` **Lückenhafte Partien verfälschen nichts** — Eine leere Liste
+  zeigt „–" und „0". Siege ohne Zahl in `zuege` gehen nicht in „Züge je Sieg" ein
+  – weder als 0 noch als „NaN".
 - **AC-23** `fertig` **Regeln als Blatt** — Das Werkzeug „Regeln" öffnet ein Blatt
   „Wördle" mit den drei Farben, den Umlaut-Tasten, den sechs Versuchen, dem
   Schreibplatz samt Pfeiltasten und den drei Hilfen.
+- **AC-24** `fertig` **Spielzeit ohne Pausen** — `dauer` zählt nur die Zeit, in
+  der das Spiel offen war. Eine über Nacht geschlossene Partie bringt die Nacht
+  nicht in die Spielzeit; bis Version 59 war es die Uhrzeit seit dem Ziehen des
+  Wortes.
 
 ## Randfälle
 

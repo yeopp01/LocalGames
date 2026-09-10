@@ -1,7 +1,7 @@
 # Zahlencode
 
 **Datei:** [`spiele/mastermind.js`](../../spiele/mastermind.js)
-**Stand:** 13/15 fertig · 2 offen
+**Stand:** 15/15 fertig
 
 ## Zweck
 
@@ -67,18 +67,17 @@ zeigt, welcher Zug am meisten verrät – zum Lernen oder wenn man feststeckt.
 - **AC-11** `fertig` **Partie überlebt Schließen** — Nach Zurück, Neuladen oder
   Neustart stehen Code, alle Versuche und die Hinweiszahl wieder da. Eine
   beendete Partie wird nicht wiederhergestellt.
-- **AC-12** `offen` **Spielzeit ohne Pausen** — Die notierte `dauer` zählt nur
-  die Zeit, in der das Spiel offen war, wie bei Damen und Weg. Heute ist sie
-  die Uhrzeit seit dem Anlegen des Codes – eine über Nacht liegen gelassene
-  Partie geht mit Stunden in die Spielzeit ein.
+- **AC-12** `fertig` **Spielzeit ohne Pausen** — Die notierte `dauer` zählt nur
+  die Zeit, in der das Spiel offen war, wie bei Damen und Weg. Eine über Nacht
+  geschlossene Partie bringt die Nacht nicht in die Spielzeit.
 - **AC-13** `fertig` **Partie in der Statistik** — Jede beendete Partie, auch
   eine verlorene, wird mit `gewonnen` (`true` oder `false`), `dauer`, `zuege`,
   `hilfen` und `stufe` notiert. Die Statistik zeigt „Versuche je Sieg" und
   „bester Lauf" und „–", solange es keinen Sieg gibt; der Rahmen ergänzt
   „Siege ohne Hinweis", „Züge im Schnitt" und „Hinweise gesamt".
-- **AC-14** `offen` **Lückenhafte Partien vertragen** — Gewonnene Partien ohne
-  `zuege` (etwa aus einer fremden oder alten Sicherung) werden in „Versuche je
-  Sieg" übergangen. Heute steht dort dann „NaN".
+- **AC-14** `fertig` **Lückenhafte Partien vertragen** — Gewonnene Partien ohne
+  Zahl in `zuege` (etwa aus einer fremden oder alten Sicherung) werden in
+  „Versuche je Sieg" und „bester Lauf" übergangen.
 - **AC-15** `fertig` **Anleitung erklärt alles** — Das Blatt „Anleitung" nennt
   Stellenzahl und Ziffernvorrat, dass Ziffern mehrfach vorkommen dürfen, die
   Bedeutung der beiden Punktarten, dass ihre Reihenfolge nichts verrät, und

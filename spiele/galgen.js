@@ -37,18 +37,33 @@
         wort: zufallsWort(),
         geraten: [],
         beschreibung: false,
-        begonnen: Date.now(),
+        verbraucht: 0,
+        seit: Date.now(),
         fertig: null,        // null | 'sieg' | 'pleite'
       };
     }
 
     function laden() {
       const alt = s.erinnert();
-      if (alt && alt.wort && Array.isArray(alt.geraten) && !alt.fertig) return alt;
+      if (alt && alt.wort && Array.isArray(alt.geraten) && !alt.fertig) {
+        alt.verbraucht = alt.verbraucht || 0;
+        alt.seit = Date.now();
+        return alt;
+      }
       return frisch();
     }
 
-    const sichern = () => s.merken(stand);
+    /* Die Spielzeit zählt nur, solange die Runde offen ist. Die Uhrzeit seit
+       dem Ziehen des Wortes brachte eine über Nacht liegen gelassene Runde
+       mit der Nacht in die Statistik. */
+    const zeitJetzt = () => stand.verbraucht + (stand.fertig ? 0 : Date.now() - stand.seit);
+    function sichern() {
+      if (!stand.fertig) {
+        stand.verbraucht = zeitJetzt();
+        stand.seit = Date.now();
+      }
+      s.merken(stand);
+    }
     const buchstaben = () => [...stand.wort];
     const fehler = () => stand.geraten.filter((c) => !buchstaben().includes(c));
     const offen = () => buchstaben().filter((c) => !stand.geraten.includes(c));
@@ -107,10 +122,11 @@
     }
 
     function abschluss(ausgang) {
+      stand.verbraucht = zeitJetzt();
       stand.fertig = ausgang;
       s.notieren({
         gewonnen: ausgang === 'sieg',
-        dauer: Date.now() - stand.begonnen,
+        dauer: stand.verbraucht,
         fehler: fehler().length,
         zuege: stand.geraten.length,
         buchstaben: stand.geraten.length,
@@ -197,17 +213,24 @@
     sichern();
     zeichnen();
 
-    return { ende: () => window.removeEventListener('keydown', taste) };
+    return {
+      ende: () => {
+        window.removeEventListener('keydown', taste);
+        if (!vorbei()) sichern();
+      },
+    };
   }
 
   /* ----------------------------------------------------------- Statistik */
 
   function auswertung(partien) {
-    const siege = partien.filter((p) => p.gewonnen);
+    // Nur Siege mit gezählten Fehlern: Ein fehlendes Feld hieß vorher
+    // „fehlerfrei" und drückte den Schnitt.
+    const siege = partien.filter((p) => p.gewonnen && typeof p.fehler === 'number');
     const schnitt = siege.length
-      ? (siege.reduce((s, p) => s + (p.fehler || 0), 0) / siege.length).toFixed(1)
+      ? (siege.reduce((s, p) => s + p.fehler, 0) / siege.length).toFixed(1).replace('.', ',')
       : '–';
-    const makellos = siege.filter((p) => !p.fehler).length;
+    const makellos = siege.filter((p) => p.fehler === 0).length;
     return [
       { wert: String(schnitt), label: 'Fehler je Sieg' },
       { wert: String(makellos), label: 'ohne Fehler' },

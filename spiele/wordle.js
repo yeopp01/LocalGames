@@ -43,7 +43,8 @@
         verraten: 0,
         beschreibung: false,
         vorschlaege: 0,
-        begonnen: Date.now(),
+        verbraucht: 0,
+        seit: Date.now(),
         fertig: null,
       };
     }
@@ -51,10 +52,22 @@
     function laden() {
       const alt = s.erinnert();
       if (!alt || !alt.wort || !Array.isArray(alt.versuche)) return frisch();
+      alt.verbraucht = alt.verbraucht || 0;
+      alt.seit = Date.now();
       return alt;
     }
 
-    const sichern = () => s.merken(stand);
+    /* Die Spielzeit zählt nur, solange das Spiel offen ist. Die Uhrzeit seit
+       dem Ziehen des Wortes brachte eine über Nacht liegen gelassene Partie
+       mit der Nacht in die Statistik. */
+    const zeitJetzt = () => stand.verbraucht + (stand.fertig ? 0 : Date.now() - stand.seit);
+    function sichern() {
+      if (!stand.fertig) {
+        stand.verbraucht = zeitJetzt();
+        stand.seit = Date.now();
+      }
+      s.merken(stand);
+    }
     const vorbei = () => stand.fertig !== null;
 
     /* ------------------------------------------------------------- Aufbau */
@@ -278,10 +291,11 @@
     }
 
     function abschluss(ausgang) {
+      stand.verbraucht = zeitJetzt();
       stand.fertig = ausgang;
       s.notieren({
         gewonnen: ausgang === 'sieg',
-        dauer: Date.now() - stand.begonnen,
+        dauer: stand.verbraucht,
         zuege: stand.versuche.length,
         hilfen: (stand.beschreibung ? 1 : 0) + stand.verraten + stand.vorschlaege,
         wort: stand.wort,
@@ -399,15 +413,22 @@
     sichern();
     zeichnen();
 
-    return { ende: () => window.removeEventListener('keydown', taste) };
+    return {
+      ende: () => {
+        window.removeEventListener('keydown', taste);
+        if (!vorbei()) sichern();
+      },
+    };
   }
 
   /* ----------------------------------------------------------- Statistik */
 
   function auswertung(partien, hilfe) {
-    const siege = partien.filter((p) => p.gewonnen);
+    // Nur Siege mit gezählten Zügen: Ein fehlendes Feld zählte vorher als 0
+    // und drückte den Schnitt, ein Text ergab „NaN".
+    const siege = partien.filter((p) => p.gewonnen && typeof p.zuege === 'number' && p.zuege > 0);
     const schnitt = siege.length
-      ? (siege.reduce((s, p) => s + (p.zuege || 0), 0) / siege.length).toFixed(1).replace(String.fromCharCode(46), String.fromCharCode(44))
+      ? (siege.reduce((s, p) => s + p.zuege, 0) / siege.length).toFixed(1).replace('.', ',')
       : '–';
     let serie = 0;
     let beste = 0;

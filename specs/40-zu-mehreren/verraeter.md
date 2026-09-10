@@ -1,7 +1,7 @@
 # Verräter
 
 **Datei:** [`spiele/verraeter.js`](../../spiele/verraeter.js), Wortpaare [`spiele/begriffe.js`](../../spiele/begriffe.js)
-**Stand:** 13/16 fertig · 2 offen · 1 zurückgestellt
+**Stand:** 14/16 fertig · 1 offen · 1 zurückgestellt
 
 ## Zweck
 
@@ -93,11 +93,11 @@ aller.
   (`handy`, `code`). Eine vor der Auflösung abgebrochene Runde wird nicht
   notiert. Die Auswertung zeigt Runden, „Verräter gefunden" und die übliche
   Spielerzahl, bei leerer Liste nichts.
-- **AC-16** `offen` **Quote nur aus Urteilen** — „Verräter gefunden" rechnet
+- **AC-16** `fertig` **Quote nur aus Urteilen** — „Verräter gefunden" rechnet
   nur über Partien, deren `gewonnen` wahr oder falsch ist; eine Partie ohne das
-  Feld (etwa aus einer alten Sicherung) zählt weder dafür noch dagegen. Heute
-  teilt die Auswertung durch alle Partien: `[{ gewonnen: true }, {}]` ergibt
-  50 % statt 100 %.
+  Feld (etwa aus einer alten Sicherung) zählt weder dafür noch dagegen:
+  `[{ gewonnen: true }, {}]` ergibt 100 %. „meist gespielt" zählt nur
+  Spielerzahlen, die Zahlen sind.
 
 ## Randfälle
 

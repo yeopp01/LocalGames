@@ -8,7 +8,7 @@ die Lösung zu schauen.
 
 | Spezifikation               | Stand                  |
 | --------------------------- | ---------------------- |
-| [Zahlencode](mastermind.md) | 13/15 fertig · 2 offen |
+| [Zahlencode](mastermind.md) | 15/15 fertig           |
 | [Minenfeld](minen.md)       | 12/12 fertig           |
 | [Nonogramm](nonogramm.md)   | 13/15 fertig · 2 offen |
 | [Damen](queens.md)          | 17/18 fertig · 1 offen |
