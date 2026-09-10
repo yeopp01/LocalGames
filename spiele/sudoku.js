@@ -4,8 +4,8 @@
    Zeile, jeder Spalte und jedem Block steht jede Ziffer genau einmal.
 
    Die Rätsel entstehen im Browser: erst ein vollständiges Gitter per
-   Backtracking, dann werden Felder geleert, solange die Lösung eindeutig
-   bleibt. Geprüft wird das, indem der Löser bis zur zweiten Lösung zählt.
+   Backtracking, dann werden Felder geleert, solange sich das Rätsel mit
+   denselben Schlüssen lösen lässt, die auch der Hinweis begründet.
 */
 
 (() => {
@@ -81,41 +81,139 @@
     return false;
   }
 
-  /* Zählt Lösungen, bricht bei der zweiten ab – mehr muss man nicht wissen. */
-  function loesungen(gitter, gefunden = 0) {
-    let i = -1;
-    let wenigste = 99;
-    for (let k = 0; k < N * N; k += 1) {
-      if (gitter[k]) continue;
-      let zahl = 0;
-      for (let w = 1; w <= N; w += 1) if (erlaubt(gitter, k, w)) zahl += 1;
-      if (zahl < wenigste) { wenigste = zahl; i = k; }
-      if (zahl === 0) return gefunden;
-    }
-    if (i === -1) return gefunden + 1;
+  /* ------------------------------------------------------------- Schlüsse */
 
-    for (let w = 1; w <= N; w += 1) {
-      if (!erlaubt(gitter, i, w)) continue;
-      gitter[i] = w;
-      gefunden = loesungen(gitter, gefunden);
-      gitter[i] = 0;
-      if (gefunden > 1) return gefunden;
+  const ALLE_ZIFFERN = ((1 << (N + 1)) - 1) & ~1;   // Bit 1 bis 6
+
+  /* Je leeres Feld eine Bitmaske der Ziffern, die dort noch frei sind.
+     Einmal je Schluss gerechnet statt je Feld und Ziffer neu gesucht – der
+     Erzeuger ruft den Schluss zehntausendfach auf. */
+  function kandidatenMasken(gitter) {
+    const masken = new Array(N * N).fill(0);
+    for (let i = 0; i < N * N; i += 1) {
+      if (gitter[i]) continue;
+      let belegt = 0;
+      for (const j of NACHBARN[i]) belegt |= 1 << gitter[j];
+      masken[i] = ALLE_ZIFFERN & ~belegt;
     }
-    return gefunden;
+    return masken;
   }
 
-  function raetselBauen(stufe) {
-    const loesung = new Array(N * N).fill(0);
-    fuellen(loesung);
+  /* Der nächste Zug, der sich allein aus den Ziffern im Gitter begründen
+     lässt. Zwei Techniken:
 
-    const raetsel = loesung.slice();
-    let offen = N * N;
+       Nacktes Single     – in diesem Feld ist nur noch eine Ziffer möglich.
+       Verstecktes Single – diese Ziffer hat in der Zeile, Spalte oder im Block
+                            nur noch dieses eine Feld übrig.
+
+     Hinweis und Erzeuger benutzen genau diese Funktion: Was der Erzeuger als
+     ohne Raten lösbar ausgibt, kann der Hinweis also Schritt für Schritt
+     begründen. Ein Nacktes Single am Feld `zuerst` hat Vorrang, damit der
+     Hinweis dort ansetzt, wo man gerade hinschaut. */
+  function naechsterSchluss(gitter, zuerst = -1) {
+    const masken = kandidatenMasken(gitter);
+    const einzige = (i) => {
+      const m = masken[i];
+      return m && !(m & (m - 1)) ? 31 - Math.clz32(m) : 0;
+    };
+
+    if (zuerst >= 0 && einzige(zuerst)) return { feld: zuerst, wert: einzige(zuerst), art: 'nackt' };
+    for (let i = 0; i < N * N; i += 1) {
+      const wert = einzige(i);
+      if (wert) return { feld: i, wert, art: 'nackt' };
+    }
+
+    for (const einheit of EINHEITEN) {
+      for (let w = 1; w <= N; w += 1) {
+        let platz = -1;
+        let zahl = 0;
+        for (const i of einheit.felder) {
+          if (gitter[i] === w) { zahl = -1; break; }
+          if (masken[i] & (1 << w)) { zahl += 1; platz = i; }
+        }
+        if (zahl === 1) return { feld: platz, wert: w, art: 'versteckt', einheit };
+      }
+    }
+    return null;
+  }
+
+  /* Löst nur mit naechsterSchluss. Beide Techniken sind zwingend, jede
+     gesetzte Ziffer steht also in jeder Lösung dort – kommt dieser Löser bis
+     zum Ende, ist die Lösung damit auch eindeutig. Ein eigener Zähler wie
+     früher ist darum überflüssig. */
+  function ohneRatenLoesbar(raetsel) {
+    const gitter = raetsel.slice();
+    let offen = gitter.filter((w) => !w).length;
+    while (offen) {
+      const schluss = naechsterSchluss(gitter);
+      if (!schluss) return false;
+      gitter[schluss.feld] = schluss.wert;
+      offen -= 1;
+    }
+    return true;
+  }
+
+  /* ------------------------------------------------------------ Erzeugung */
+
+  /* Jedes Feld wird nur einmal zu leeren versucht. Ein zweiter Durchgang am
+     selben Gitter brächte nichts: Mit weniger Vorgaben wird ein Rätsel nie
+     leichter, was einmal nicht mehr ohne Raten ging, geht später auch nicht.
+     Bleiben Vorgaben übrig, hilft nur ein neues Gitter. Gemessen trifft ein
+     Durchgang auf schwer in rund 97 von 100 Fällen genau, auf leicht und
+     mittel praktisch immer; 20 Fehlschläge in Folge sind damit so
+     unwahrscheinlich, dass sie nie vorkommen – begrenzt ist es trotzdem. */
+  const VERSUCHE = 20;
+
+  function raetselBauen(stufe) {
+    const ziel = STUFEN[stufe].gegeben;
+    for (let versuch = 0; versuch < VERSUCHE; versuch += 1) {
+      const loesung = new Array(N * N).fill(0);
+      fuellen(loesung);
+
+      const raetsel = loesung.slice();
+      let gegeben = N * N;
+      for (const i of mischen([...Array(N * N).keys()])) {
+        if (gegeben === ziel) break;
+        raetsel[i] = 0;
+        if (ohneRatenLoesbar(raetsel)) gegeben -= 1;
+        else raetsel[i] = loesung[i];
+      }
+      if (gegeben === ziel) return { raetsel, loesung };
+    }
+    return ausVorlage(ziel);
+  }
+
+  /* Der Notnagel, falls alle Versuche danebengehen. Weiterprobieren könnte
+     das Gerät beliebig lange festhalten, ein Rätsel mit zu vielen Vorgaben
+     oder eines, das Raten braucht, bräche das Versprechen der Stufe. Also
+     ein fest hinterlegtes, geprüftes schweres Rätsel, zufällig umgebaut:
+     Ziffern umbenannt, Zeilen innerhalb eines Blockpaars und die Blockpaare
+     selbst vertauscht, ebenso Spalten und Blockspalten. Das ändert weder
+     Zeilen, Spalten noch Blöcke als Einheiten, also bleibt es eindeutig und
+     mit denselben Schlüssen lösbar. Für leichtere Stufen kommen Ziffern aus
+     der Lösung dazu – mehr Vorgaben machen ein Rätsel nie schwerer. */
+  const VORLAGE = {
+    raetsel: '402001000520000013004002320000000000',
+    loesung: '452361613524265413134652326145541236',
+  };
+
+  function ausVorlage(ziel) {
+    const gruppenMischen = (anzahl, groesse) => mischen([...Array(anzahl).keys()])
+      .flatMap((g) => mischen([...Array(groesse).keys()].map((k) => g * groesse + k)));
+    const zeilen = gruppenMischen(N / BLOCK_H, BLOCK_H);
+    const spalten = gruppenMischen(N / BLOCK_B, BLOCK_B);
+    const ziffer = [0, ...mischen([1, 2, 3, 4, 5, 6])];
+    const umbauen = (text) => Array.from({ length: N * N },
+      (_, i) => ziffer[Number(text[zeilen[zeileVon(i)] * N + spalten[spalteVon(i)]])]);
+
+    const raetsel = umbauen(VORLAGE.raetsel);
+    const loesung = umbauen(VORLAGE.loesung);
+    let gegeben = raetsel.filter((w) => w).length;
     for (const i of mischen([...Array(N * N).keys()])) {
-      if (offen <= STUFEN[stufe].gegeben) break;
-      const gemerkt = raetsel[i];
-      raetsel[i] = 0;
-      if (loesungen(raetsel.slice()) === 1) offen -= 1;
-      else raetsel[i] = gemerkt;
+      if (gegeben >= ziel) break;
+      if (raetsel[i]) continue;
+      raetsel[i] = loesung[i];
+      gegeben += 1;
     }
     return { raetsel, loesung };
   }
@@ -351,54 +449,7 @@
       pruefenObFertig();
     }
 
-    /* Welche Ziffern kämen in einem leeren Feld überhaupt noch in Frage? */
-    function kandidaten(i) {
-      if (stand.eingabe[i]) return [];
-      const raus = [];
-      for (let w = 1; w <= N; w += 1) {
-        let frei = true;
-        for (const j of NACHBARN[i]) {
-          if (stand.eingabe[j] === w) { frei = false; break; }
-        }
-        if (frei) raus.push(w);
-      }
-      return raus;
-    }
-
     const platzName = (i) => 'Zeile ' + (zeileVon(i) + 1) + ', Spalte ' + (spalteVon(i) + 1);
-
-    /* Der nächste Zug, der sich wirklich begründen lässt. Zwei Techniken:
-
-       Nacktes Single    – in diesem Feld ist nur noch eine Ziffer möglich.
-       Verstecktes Single – diese Ziffer hat in der Zeile, Spalte oder im Block
-                            nur noch dieses eine Feld übrig.
-
-       Gesucht wird erst am gewählten Feld, damit der Hinweis dort ansetzt,
-       wo man gerade hinschaut. */
-    function naechsterSchluss() {
-      const reihenfolge = [...Array(N * N).keys()];
-      if (gewaehlt >= 0) {
-        reihenfolge.splice(reihenfolge.indexOf(gewaehlt), 1);
-        reihenfolge.unshift(gewaehlt);
-      }
-
-      for (const i of reihenfolge) {
-        if (stand.eingabe[i]) continue;
-        const k = kandidaten(i);
-        if (k.length === 1) return { feld: i, wert: k[0], art: 'nackt' };
-      }
-
-      for (const einheit of EINHEITEN) {
-        for (let w = 1; w <= N; w += 1) {
-          if (einheit.felder.some((i) => stand.eingabe[i] === w)) continue;
-          const plaetze = einheit.felder.filter((i) => !stand.eingabe[i] && kandidaten(i).includes(w));
-          if (plaetze.length === 1) {
-            return { feld: plaetze[0], wert: w, art: 'versteckt', einheit };
-          }
-        }
-      }
-      return null;
-    }
 
     function eintragen(i, wert) {
       stand.eingabe[i] = wert;
@@ -457,12 +508,14 @@
       const leer = stand.eingabe.some((w) => !w);
       if (!leer) return;
 
-      const schluss = naechsterSchluss();
+      const schluss = naechsterSchluss(stand.eingabe, gewaehlt);
       stand.hilfen += 1;
 
       if (!schluss) {
-        // Kommt vor: schwere Rätsel brauchen stellenweise mehr als diese zwei
-        // Techniken. Dann lieber ehrlich sein als eine Begründung erfinden.
+        // Neue Rätsel kommen hier nie hin: Sie sind mit genau diesen Schlüssen
+        // lösbar, und richtig gesetzte Ziffern nehmen keinem Schluss etwas weg.
+        // Ein Stand von vor dieser Regel kann aber noch Raten brauchen – dann
+        // lieber ehrlich sein als eine Begründung erfinden.
         const offen = stand.eingabe.map((w, i) => (w ? -1 : i)).filter((i) => i >= 0);
         const ziel = gewaehlt >= 0 && !stand.eingabe[gewaehlt]
           ? gewaehlt

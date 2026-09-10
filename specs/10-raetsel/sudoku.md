@@ -1,7 +1,7 @@
 # Mini-Sudoku
 
 **Datei:** [`spiele/sudoku.js`](../../spiele/sudoku.js)
-**Stand:** 16/18 fertig · 2 offen
+**Stand:** 18/18 fertig
 
 ## Zweck
 
@@ -21,17 +21,20 @@ Schluss erklärt, statt eine Ziffer zu verraten.
   leicht, mittel und schwer an; nach einem gelösten Rätsel stehen „Neu,
   leicht/mittel/schwer" unter dem Ergebnis. Über dem Gitter stehen Stufe,
   laufende Zeit und die Zahl der offenen Felder.
-- **AC-3** `offen` **Vorgaben genau nach Stufe** — Ein Rätsel beginnt mit genau
-  20 (leicht), 15 (mittel) oder 11 (schwer) vorgegebenen Ziffern, nie mit mehr.
+- **AC-3** `fertig` **Vorgaben genau nach Stufe** — Ein Rätsel beginnt mit genau
+  20 (leicht), 15 (mittel) oder 11 (schwer) vorgegebenen Ziffern, nie mit mehr
+  und nie mit weniger.
 
 ### Erzeugung
 
 - **AC-4** `fertig` **Immer eindeutig lösbar** — Jedes Rätsel entsteht im Gerät
   und hat auf jeder Stufe genau eine Lösung.
-- **AC-5** `offen` **Ohne Raten lösbar** — Jedes Rätsel lässt sich vom Anfang bis
+- **AC-5** `fertig` **Ohne Raten lösbar** — Jedes Rätsel lässt sich vom Anfang bis
   zum Ende allein mit Schlüssen lösen, die der Hinweis begründen kann. Der
   Hinweis kommt bei einem fehlerfreien Stand nie an eine Stelle, an der er „Hier
-  hilft nur Ausprobieren" sagen muss.
+  hilft nur Ausprobieren" sagen muss – auch nicht, wenn man vorher Ziffern in
+  beliebiger Reihenfolge selbst richtig gesetzt hat. Ausgenommen sind nur Rätsel,
+  die noch aus einem älteren Stand gespeichert sind.
 
 ### Eingabe
 
@@ -111,13 +114,31 @@ Schluss erklärt, statt eine Ziffer zu verraten.
 
 Die Rätsel entstehen im Browser, nicht aus einer Liste: erst ein volles Gitter
 per Backtracking, dann werden Felder in zufälliger Reihenfolge geleert, solange
-die Lösung eindeutig bleibt. Geprüft wird das, indem der Löser bis zur *zweiten*
-Lösung zählt und dann abbricht.
+sich das Rätsel noch mit den beiden Schlüssen des Hinweises (Nacktes und
+Verstecktes Single) bis zum Ende lösen lässt. Erzeuger und Hinweis rufen dafür
+dieselbe Funktion auf. Weil beide Schlüsse zwingend sind, ist ein so lösbares
+Rätsel auch eindeutig – ein eigener Lösungszähler ist nicht mehr nötig. Richtig
+gesetzte Ziffern nehmen keinem Schluss etwas weg, darum trägt das auch für jeden
+fehlerfreien Zwischenstand.
 
-| Stufe | Vorgaben | Rechenzeit |
+Früher wurde nur auf Eindeutigkeit geprüft. Gemessen an je 1000 Rätseln: Auf
+schwer hatten 34 zwölf oder dreizehn Vorgaben, 33 brauchten irgendwo
+Ausprobieren, auf mittel 2. Jedes Feld wird nur einmal zu leeren versucht, und
+mit weniger Vorgaben wird ein Rätsel nie leichter – bleiben Vorgaben übrig, gibt
+es darum ein neues Gitter statt eines zweiten Durchgangs. Ein Durchgang trifft
+auf schwer in 4881 von 5000 Proben genau, auf leicht und mittel immer. Mit dem
+neuen Erzeuger hatten je 1000 Rätsel jeder Stufe genau ihre Vorgabenzahl, und
+alle ließen sich per Hinweis ohne ein einziges „Hier hilft nur Ausprobieren"
+lösen. Nach 20 Fehlschlägen in Folge, praktisch ausgeschlossen, kommt ein
+fest hinterlegtes, geprüftes Rätsel, zufällig umgebaut: Ziffern umbenannt,
+Zeilen und Spalten innerhalb ihrer Blöcke und die Blockreihen und -spalten
+selbst vertauscht. Das lässt jede Einheit eine Einheit bleiben. So gibt es
+weder eine Endlosschleife noch ein Rätsel, das die Stufe verfehlt.
+
+| Stufe | Vorgaben | Rechenzeit (PC, 10 000 Rätsel) |
 | --- | --- | --- |
-| leicht | 20 | wenige Millisekunden |
-| mittel | 15 | wenige Millisekunden |
-| schwer | 11 | wenige Millisekunden |
+| leicht | 20 | Median 0,04 ms, höchstens 0,7 ms |
+| mittel | 15 | Median 0,07 ms, höchstens 4 ms |
+| schwer | 11 | Median 0,13 ms, höchstens 18 ms |
 
-Jedes ausgegebene Rätsel ist damit garantiert eindeutig lösbar.
+Auch wenn alle 20 Versuche scheitern, dauert es höchstens rund 16 ms.

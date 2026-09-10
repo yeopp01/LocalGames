@@ -6,7 +6,7 @@
 Eine Zeile je Akzeptanzkriterium. Gepflegt wird der Status in der Spec
 selbst, hier steht er zusammengefasst.
 
-**Gesamt:** 3 in arbeit · 0 geplant · 12 offen · 1 zurückgestellt · 334 fertig
+**Gesamt:** 3 in arbeit · 0 geplant · 10 offen · 1 zurückgestellt · 336 fertig
 
 ## Nach Spezifikation
 
@@ -22,7 +22,7 @@ selbst, hier steht er zusammengefasst.
 | [Minenfeld](10-raetsel/minen.md)                   | -         | -       | -     | -              | 12     |
 | [Nonogramm](10-raetsel/nonogramm.md)               | -         | -       | -     | -              | 15     |
 | [Damen](10-raetsel/queens.md)                      | -         | -       | 1     | -              | 17     |
-| [Mini-Sudoku](10-raetsel/sudoku.md)                | -         | -       | 2     | -              | 16     |
+| [Mini-Sudoku](10-raetsel/sudoku.md)                | -         | -       | -     | -              | 18     |
 | [Tango](10-raetsel/tango.md)                       | -         | -       | -     | -              | 14     |
 | [Weg](10-raetsel/zip.md)                           | -         | -       | 2     | -              | 15     |
 | [Galgenmännchen](20-wortspiele/galgen.md)          | -         | -       | -     | -              | 14     |
@@ -44,14 +44,12 @@ selbst, hier steht er zusammengefasst.
 | schafkopf | [AC-19](30-brett-und-karten/schafkopf.md) | Fertige Stiche zählen mit       | Die Gegner |
 | schafkopf | [AC-20](30-brett-und-karten/schafkopf.md) | Sau nicht vor den Zehner        | Die Gegner |
 
-## Offen (12)
+## Offen (10)
 
 | Spec          | AC                                        | Titel                              | Anmerkung              |
 | ------------- | ----------------------------------------- | ---------------------------------- | ---------------------- |
 | schnittstelle | [AC-12](00-rahmen/schnittstelle.md)       | Auswertung verträgt Lücken         | Urteil und Auswertung  |
 | queens        | [AC-14](10-raetsel/queens.md)             | Nie ein Rate-Rätsel                | Erzeugung              |
-| sudoku        | [AC-3](10-raetsel/sudoku.md)              | Vorgaben genau nach Stufe          | Feld und Stufen        |
-| sudoku        | [AC-5](10-raetsel/sudoku.md)              | Ohne Raten lösbar                  | Erzeugung              |
 | zip           | [AC-10](10-raetsel/zip.md)                | Ohne Raten lösbar                  | Hinweise und Erzeugung |
 | zip           | [AC-11](10-raetsel/zip.md)                | Hinweis nennt seinen Grund         | Hinweise und Erzeugung |
 | schafkopf     | [AC-10](30-brett-und-karten/schafkopf.md) | Gesperrte Karte mit Grund          | Spielregeln beim Legen |
@@ -67,7 +65,7 @@ selbst, hier steht er zusammengefasst.
 | --------- | ------------------------------------ | -------------------------- | -------------------------------------------- |
 | verraeter | [AC-13](40-zu-mehreren/verraeter.md) | Stimmen übers Netz sammeln | braucht eine Verbindung zwischen den Geräten |
 
-## Fertig (334)
+## Fertig (336)
 
 | Spec          | AC                                          | Titel                                  | Anmerkung                    |
 | ------------- | ------------------------------------------- | -------------------------------------- | ---------------------------- |
@@ -210,7 +208,9 @@ selbst, hier steht er zusammengefasst.
 | queens        | [AC-18](10-raetsel/queens.md)               | Anleitung erklärt alles                | Ende, Speicher und Statistik |
 | sudoku        | [AC-1](10-raetsel/sudoku.md)                | Sechs mal sechs                        | Feld und Stufen              |
 | sudoku        | [AC-2](10-raetsel/sudoku.md)                | Drei Stufen wählbar                    | Feld und Stufen              |
+| sudoku        | [AC-3](10-raetsel/sudoku.md)                | Vorgaben genau nach Stufe              | Feld und Stufen              |
 | sudoku        | [AC-4](10-raetsel/sudoku.md)                | Immer eindeutig lösbar                 | Erzeugung                    |
+| sudoku        | [AC-5](10-raetsel/sudoku.md)                | Ohne Raten lösbar                      | Erzeugung                    |
 | sudoku        | [AC-6](10-raetsel/sudoku.md)                | Feld wählen, Ziffer setzen             | Eingabe                      |
 | sudoku        | [AC-7](10-raetsel/sudoku.md)                | Bedienung per Tastatur                 | Eingabe                      |
 | sudoku        | [AC-8](10-raetsel/sudoku.md)                | Notizen als Kandidaten                 | Eingabe                      |
