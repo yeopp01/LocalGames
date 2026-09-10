@@ -37,7 +37,8 @@ Abstimmung und eine Uhr. Es kennt kein einzelnes Spiel.
   mit höchstens 14 Zeichen. Ohne gemerkte Namen – oder mit weniger als der
   Mindestzahl – beginnt er mit „Spieler 1" bis „Spieler 3". Ein leer gelassenes
   Feld wird wieder zu „Spieler n", Namen kommen ohne Rand-Leerzeichen beim
-  Spiel an.
+  Spiel an. Jede Änderung an Zahl oder Namen meldet `aendern(namen)` sofort,
+  damit ein Spiel Einstellungen daneben an die Spielerzahl anpassen kann.
 - **AC-5** `fertig` **Code-Aufbau auf einem Schirm** — `codeAufbau` bündelt
   Codefeld mit „Würfeln", die Spielerzahl und „Ich bin Nummer" auf einem
   Schirm. Die eigene Nummer geht nie über die Spielerzahl und rutscht mit, wenn

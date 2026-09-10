@@ -1,7 +1,7 @@
 # Wördle
 
 **Datei:** [`spiele/wordle.js`](../../spiele/wordle.js) · [`spiele/woerter.js`](../../spiele/woerter.js) · [`spiele/loeser.js`](../../spiele/loeser.js)
-**Stand:** 23/24 fertig · 1 offen
+**Stand:** 24/24 fertig
 
 ## Zweck
 
@@ -65,11 +65,10 @@ verrät. Der Wortschatz ist selbst geschrieben und liegt auf dem Gerät.
   Wörter, die selbst noch Lösung sein können, tragen „kann die Lösung sein". Bei
   höchstens zwölf passenden Wörtern stehen sie alle darunter, bei höchstens zwei
   werden genau diese vorgeschlagen.
-- **AC-12** `offen` **Beste Züge richtig sortiert** — Angezeigt werden die drei
-  Züge mit dem kleinsten ø-Rest, aufsteigend; ein Wort, das noch Lösung sein
-  kann, steht nur bei gleichem Rest vorn. Heute wird ein solches Wort auch mit bis
-  zu 0,4 mehr Rest vorgezogen: im ersten Zug steht `LINSE` (ø 14,9) vor `LASTE`
-  (ø 14,5).
+- **AC-12** `fertig` **Beste Züge richtig sortiert** — Angezeigt werden die drei
+  Züge mit dem kleinsten ø-Rest, aufsteigend und mit Dezimalkomma; ein Wort, das
+  noch Lösung sein kann, steht nur bei gleichem Rest vorn. Vor dem ersten
+  Versuch sind das `LASTE` (ø 14,5), `LASER` (ø 14,8) und `LERNT` (ø 14,9).
 - **AC-13** `fertig` **Vorschlag ohne Denkpause** — Auch der aufwendigste Aufruf –
   noch nichts geraten, alle Lösungswörter offen – ist am Rechner in unter einer
   Viertelsekunde fertig.
@@ -180,6 +179,10 @@ Ein Lösungswort braucht zusätzlich seinen Tipp und gehört nach `LOESUNGEN`.
 
 Das ist der Informationsgehalt (Entropie) eines Zuges, nur in der Form
 „so viele Wörter bleiben danach übrig". Gemessen an der eigenen Wortliste
-löst diese Strategie in im Schnitt **2,8 Zügen**, schlechtester Fall 5.
+löst diese Strategie im Schnitt in **2,98 Zügen**, schlechtester Fall 5
+(nachgemessen mit Version 61 über alle 396 Lösungswörter, stets dem ersten
+Vorschlag folgend). Bis Version 60 bekam ein Wort, das selbst noch Lösung sein
+kann, 0,4 Punkte Vorsprung; das ergab 3,03 Züge und eine Anzeige, die nicht
+aufsteigend sortiert war.
 Der aufwendigste Aufruf – noch nichts geraten, alle 396 Kandidaten offen –
 braucht rund 210 ms.

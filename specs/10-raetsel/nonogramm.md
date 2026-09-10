@@ -1,7 +1,7 @@
 # Nonogramm
 
 **Datei:** [`spiele/nonogramm.js`](../../spiele/nonogramm.js)
-**Stand:** 13/15 fertig · 2 offen
+**Stand:** 15/15 fertig
 
 ## Zweck
 
@@ -41,7 +41,7 @@ gleichermaßen, von 5 × 5 für zwischendurch bis 10 × 10 für länger.
   man mit einfachem Tippen im eingeschalteten Modus „Kreuze setzen", mit langem
   Drücken (400 ms) oder mit der rechten Maustaste. Im Modus und mit der rechten
   Maustaste nimmt dieselbe Geste das Kreuz wieder weg.
-- **AC-8** `offen` **Langes Drücken schaltet Kreuz** — Langes Drücken schaltet
+- **AC-8** `fertig` **Langes Drücken schaltet Kreuz** — Langes Drücken schaltet
   das Kreuz um, unabhängig vom Modus: Aus einem Kreuz wird ein freies Feld, aus
   einem freien oder gefüllten Feld ein Kreuz – so, wie die Anleitung es
   verspricht („Nochmal dasselbe nimmt das Kreuz wieder weg").
@@ -53,10 +53,11 @@ gleichermaßen, von 5 × 5 für zwischendurch bis 10 × 10 für länger.
   das allein folgt – Zeilen zuerst. Die Begründung stützt sich nur auf richtig
   gesetzte Felder und Kreuze. „Eintragen" übernimmt das Feld, „Selbst machen"
   nicht.
-- **AC-10** `offen` **Warnung bei falschen Feldern** — Widerspricht ein gefülltes
+- **AC-10** `fertig` **Warnung bei falschen Feldern** — Widerspricht ein gefülltes
   Feld oder ein Kreuz dem Bild, sieht der Spieler zuerst die Warnung „Da stimmt
-  etwas nicht" und kann sie lesen und schließen, bevor ein Hinweis auf ein
-  einzelnes Feld erscheint. Das Gitter selbst markiert keine Fehler.
+  etwas nicht" mit „Selbst suchen" und „Hinweis trotzdem". Erst „Hinweis
+  trotzdem" zeigt einen Hinweis auf ein einzelnes Feld, der die falschen
+  Angaben ausblendet. Das Gitter selbst markiert keine Fehler.
 
 ### Ende, Speicher und Statistik
 

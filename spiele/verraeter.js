@@ -121,10 +121,11 @@
     }
 
     function aufbauHandy() {
-      boden.append(wahlBlock('Fassung', FASSUNGEN.map((f) => ({
+      const fassungBlock = wahlBlock('Fassung', FASSUNGEN.map((f) => ({
         id: f.id, name: f.name, unter: f.unter,
         gesperrt: (einst.namen ? einst.namen.length : 3) < f.ab,
-      })), einst.fassung, (id) => { einst.fassung = id; merken(); zeigeAufbau(); }));
+      })), einst.fassung, (id) => { einst.fassung = id; merken(); zeigeAufbau(); });
+      boden.append(fassungBlock);
 
       boden.append(themaBlock());
       boden.append(zeitBlock());
@@ -134,6 +135,20 @@
         min: 3,
         max: 12,
         knopfText: 'Rollen verteilen',
+        /* Ob „Zwei Verräter" wählbar ist, entscheidet der Zähler – nicht die
+           Namen der letzten Runde, wie früher. Die Liste wird gleich
+           mitgemerkt, sonst setzt der nächste Klick auf eine Fassung den
+           Zähler wieder zurück. */
+        aendern(namen) {
+          einst.namen = namen;
+          merken();
+          for (const f of FASSUNGEN) {
+            const b = fassungBlock.querySelector('[data-id="' + f.id + '"]');
+            if (!b) continue;
+            b.disabled = namen.length < f.ab;
+            b.title = b.disabled ? 'Dafür seid ihr zu wenige.' : '';
+          }
+        },
         weiter(namen) {
           einst.namen = namen;
           /* „Zwei Verräter" braucht fünf Leute – wer die Gruppe nachträglich
@@ -190,6 +205,7 @@
       for (const p of punkte) {
         const b = el('button', 'v-wahl-knopf', null);
         b.type = 'button';
+        b.dataset.id = p.id;
         b.append(el('span', 'v-wahl-name', p.name));
         if (p.unter) b.append(el('span', 'v-wahl-unter', p.unter));
         if (p.id === gewaehlt) b.dataset.an = 'ja';

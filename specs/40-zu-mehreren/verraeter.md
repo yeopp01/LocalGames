@@ -1,7 +1,7 @@
 # Verräter
 
 **Datei:** [`spiele/verraeter.js`](../../spiele/verraeter.js), Wortpaare [`spiele/begriffe.js`](../../spiele/begriffe.js)
-**Stand:** 14/16 fertig · 1 offen · 1 zurückgestellt
+**Stand:** 15/16 fertig · 1 zurückgestellt
 
 ## Zweck
 
@@ -23,12 +23,11 @@ aller.
   und das Thema, aber kein Wort. *Zwei Verräter:* wie blind, nur zu zweit; jeder
   erfährt, dass es einen zweiten gibt, aber nicht, wer es ist. Alle anderen
   sehen in jeder Fassung „Euer Wort" und das erste Wort des Paares.
-- **AC-3** `offen` **Zwei Verräter ab fünf** — Die Fassung „Zwei Verräter" ist
-  wählbar, sobald der Zähler auf fünf oder mehr steht, und darunter gesperrt.
-  Wird die Gruppe nach der Wahl unter fünf verkleinert, gilt beim Verteilen
-  still „Doppelgänger". Heute hängt die Sperre an den gemerkten Namen der
-  letzten Runde statt am Zähler: beim ersten Öffnen ist die Fassung auch zu
-  fünft gesperrt und erst nach einer gespielten Runde zu fünft wählbar.
+- **AC-3** `fertig` **Zwei Verräter ab fünf** — Die Fassung „Zwei Verräter" ist
+  wählbar, sobald der Zähler im Aufbau auf fünf oder mehr steht, und darunter
+  gesperrt – auch beim ersten Öffnen. Zahl und Namen bleiben stehen, wenn danach
+  Fassung, Thema oder Zeit gewählt wird. Wird die Gruppe nach der Wahl unter
+  fünf verkleinert, gilt beim Verteilen still „Doppelgänger".
 - **AC-4** `fertig` **Thema und Redezeit wählbar** — Mit einem Handy wählt man
   „Bunt gemischt" oder eines der zehn Themen und die Zeit zum Reden: ohne Uhr,
   2 oder 4 Minuten. Die Uhr läuft sichtbar auf dem Redeschirm und meldet am

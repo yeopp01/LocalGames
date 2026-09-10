@@ -6,7 +6,7 @@
 Eine Zeile je Akzeptanzkriterium. Gepflegt wird der Status in der Spec
 selbst, hier steht er zusammengefasst.
 
-**Gesamt:** 3 in arbeit · 0 geplant · 17 offen · 1 zurückgestellt · 329 fertig
+**Gesamt:** 3 in arbeit · 0 geplant · 12 offen · 1 zurückgestellt · 334 fertig
 
 ## Nach Spezifikation
 
@@ -20,20 +20,20 @@ selbst, hier steht er zusammengefasst.
 | [Statistik](00-rahmen/statistik.md)                | -         | -       | -     | -              | 14     |
 | [Zahlencode](10-raetsel/mastermind.md)             | -         | -       | -     | -              | 15     |
 | [Minenfeld](10-raetsel/minen.md)                   | -         | -       | -     | -              | 12     |
-| [Nonogramm](10-raetsel/nonogramm.md)               | -         | -       | 2     | -              | 13     |
+| [Nonogramm](10-raetsel/nonogramm.md)               | -         | -       | -     | -              | 15     |
 | [Damen](10-raetsel/queens.md)                      | -         | -       | 1     | -              | 17     |
 | [Mini-Sudoku](10-raetsel/sudoku.md)                | -         | -       | 2     | -              | 16     |
 | [Tango](10-raetsel/tango.md)                       | -         | -       | -     | -              | 14     |
 | [Weg](10-raetsel/zip.md)                           | -         | -       | 2     | -              | 15     |
 | [Galgenmännchen](20-wortspiele/galgen.md)          | -         | -       | -     | -              | 14     |
-| [Wördle](20-wortspiele/wordle.md)                  | -         | -       | 1     | -              | 23     |
+| [Wördle](20-wortspiele/wordle.md)                  | -         | -       | -     | -              | 24     |
 | [Schafkopf](30-brett-und-karten/schafkopf.md)      | 3         | -       | 6     | -              | 26     |
 | [Vier gewinnt](30-brett-und-karten/viergewinnt.md) | -         | -       | -     | -              | 16     |
 | [2048](30-brett-und-karten/zweitausend.md)         | -         | -       | -     | -              | 13     |
-| [Wer am ehesten](40-zu-mehreren/amehesten.md)      | -         | -       | 1     | -              | 10     |
+| [Wer am ehesten](40-zu-mehreren/amehesten.md)      | -         | -       | -     | -              | 11     |
 | [Bombe](40-zu-mehreren/bombe.md)                   | -         | -       | -     | -              | 11     |
 | [Bausteine für Runden](40-zu-mehreren/runde.md)    | -         | -       | -     | -              | 12     |
-| [Verräter](40-zu-mehreren/verraeter.md)            | -         | -       | 1     | 1              | 14     |
+| [Verräter](40-zu-mehreren/verraeter.md)            | -         | -       | -     | 1              | 15     |
 | [Zwei Wahrheiten](40-zu-mehreren/wahrheiten.md)    | -         | -       | -     | -              | 10     |
 
 ## In Arbeit (3)
@@ -44,27 +44,22 @@ selbst, hier steht er zusammengefasst.
 | schafkopf | [AC-19](30-brett-und-karten/schafkopf.md) | Fertige Stiche zählen mit       | Die Gegner |
 | schafkopf | [AC-20](30-brett-und-karten/schafkopf.md) | Sau nicht vor den Zehner        | Die Gegner |
 
-## Offen (17)
+## Offen (12)
 
 | Spec          | AC                                        | Titel                              | Anmerkung              |
 | ------------- | ----------------------------------------- | ---------------------------------- | ---------------------- |
 | schnittstelle | [AC-12](00-rahmen/schnittstelle.md)       | Auswertung verträgt Lücken         | Urteil und Auswertung  |
-| nonogramm     | [AC-8](10-raetsel/nonogramm.md)           | Langes Drücken schaltet Kreuz      | Eingabe                |
-| nonogramm     | [AC-10](10-raetsel/nonogramm.md)          | Warnung bei falschen Feldern       | Fehler und Hinweise    |
 | queens        | [AC-14](10-raetsel/queens.md)             | Nie ein Rate-Rätsel                | Erzeugung              |
 | sudoku        | [AC-3](10-raetsel/sudoku.md)              | Vorgaben genau nach Stufe          | Feld und Stufen        |
 | sudoku        | [AC-5](10-raetsel/sudoku.md)              | Ohne Raten lösbar                  | Erzeugung              |
 | zip           | [AC-10](10-raetsel/zip.md)                | Ohne Raten lösbar                  | Hinweise und Erzeugung |
 | zip           | [AC-11](10-raetsel/zip.md)                | Hinweis nennt seinen Grund         | Hinweise und Erzeugung |
-| wordle        | [AC-12](20-wortspiele/wordle.md)          | Beste Züge richtig sortiert        | Hilfen                 |
 | schafkopf     | [AC-10](30-brett-und-karten/schafkopf.md) | Gesperrte Karte mit Grund          | Spielregeln beim Legen |
 | schafkopf     | [AC-14](30-brett-und-karten/schafkopf.md) | Schneidergrenze wie am Tisch       | Abrechnung             |
 | schafkopf     | [AC-17](30-brett-und-karten/schafkopf.md) | Schlüsse aus dem Verlauf           | Die Gegner             |
 | schafkopf     | [AC-28](30-brett-und-karten/schafkopf.md) | Begründung nur mit Geprüftem       | Der Lehrer             |
 | schafkopf     | [AC-33](30-brett-und-karten/schafkopf.md) | Abendstand überlebt Zusammenwerfen | Speicher und Statistik |
 | schafkopf     | [AC-35](30-brett-und-karten/schafkopf.md) | Auswertung verträgt Lücken         | Speicher und Statistik |
-| amehesten     | [AC-10](40-zu-mehreren/amehesten.md)      | Abend überlebt das Zuklappen       | Statistik              |
-| verraeter     | [AC-3](40-zu-mehreren/verraeter.md)       | Zwei Verräter ab fünf              | Runde und Fassungen    |
 
 ## Zurückgestellt (1)
 
@@ -72,7 +67,7 @@ selbst, hier steht er zusammengefasst.
 | --------- | ------------------------------------ | -------------------------- | -------------------------------------------- |
 | verraeter | [AC-13](40-zu-mehreren/verraeter.md) | Stimmen übers Netz sammeln | braucht eine Verbindung zwischen den Geräten |
 
-## Fertig (329)
+## Fertig (334)
 
 | Spec          | AC                                          | Titel                                  | Anmerkung                    |
 | ------------- | ------------------------------------------- | -------------------------------------- | ---------------------------- |
@@ -188,7 +183,9 @@ selbst, hier steht er zusammengefasst.
 | nonogramm     | [AC-5](10-raetsel/nonogramm.md)             | Rein logisch lösbar                    | Erzeugung                    |
 | nonogramm     | [AC-6](10-raetsel/nonogramm.md)             | Tippen und Wischen                     | Eingabe                      |
 | nonogramm     | [AC-7](10-raetsel/nonogramm.md)             | Kreuze auf drei Wegen                  | Eingabe                      |
+| nonogramm     | [AC-8](10-raetsel/nonogramm.md)             | Langes Drücken schaltet Kreuz          | Eingabe                      |
 | nonogramm     | [AC-9](10-raetsel/nonogramm.md)             | Hinweis aus einer Reihe                | Fehler und Hinweise          |
+| nonogramm     | [AC-10](10-raetsel/nonogramm.md)            | Warnung bei falschen Feldern           | Fehler und Hinweise          |
 | nonogramm     | [AC-11](10-raetsel/nonogramm.md)            | Bild fertig                            | Ende, Speicher und Statistik |
 | nonogramm     | [AC-12](10-raetsel/nonogramm.md)            | Rätsel überlebt Schließen              | Ende, Speicher und Statistik |
 | nonogramm     | [AC-13](10-raetsel/nonogramm.md)            | Fertiges Bild in der Statistik         | Ende, Speicher und Statistik |
@@ -281,6 +278,7 @@ selbst, hier steht er zusammengefasst.
 | wordle        | [AC-9](20-wortspiele/wordle.md)             | Tipp zeigt Umschreibung                | Hilfen                       |
 | wordle        | [AC-10](20-wortspiele/wordle.md)            | Buchstabe deckt der Reihe nach         | Hilfen                       |
 | wordle        | [AC-11](20-wortspiele/wordle.md)            | Vorschlag aus den Rückmeldungen        | Hilfen                       |
+| wordle        | [AC-12](20-wortspiele/wordle.md)            | Beste Züge richtig sortiert            | Hilfen                       |
 | wordle        | [AC-13](20-wortspiele/wordle.md)            | Vorschlag ohne Denkpause               | Hilfen                       |
 | wordle        | [AC-14](20-wortspiele/wordle.md)            | Jede Hilfe zählt                       | Hilfen                       |
 | wordle        | [AC-15](20-wortspiele/wordle.md)            | Wortschatz hält seinen Vertrag         | Wortschatz                   |
@@ -357,6 +355,7 @@ selbst, hier steht er zusammengefasst.
 | amehesten     | [AC-7](40-zu-mehreren/amehesten.md)         | Weiter oder Schluss                    | Frage und Abstimmung         |
 | amehesten     | [AC-8](40-zu-mehreren/amehesten.md)         | Ein Abend, eine Partie                 | Statistik                    |
 | amehesten     | [AC-9](40-zu-mehreren/amehesten.md)         | Abend endet beim Verlassen             | Statistik                    |
+| amehesten     | [AC-10](40-zu-mehreren/amehesten.md)        | Abend überlebt das Zuklappen           | Statistik                    |
 | amehesten     | [AC-11](40-zu-mehreren/amehesten.md)        | Auswertung verträgt Lücken             | Statistik                    |
 | bombe         | [AC-1](40-zu-mehreren/bombe.md)             | Zwei bis zwölf Spieler                 | Aufbau und Stufen            |
 | bombe         | [AC-2](40-zu-mehreren/bombe.md)             | Drei Stufen                            | Aufbau und Stufen            |
@@ -383,6 +382,7 @@ selbst, hier steht er zusammengefasst.
 | runde         | [AC-12](40-zu-mehreren/runde.md)            | Verdeckt und gestreut                  | Uhr                          |
 | verraeter     | [AC-1](40-zu-mehreren/verraeter.md)         | Drei bis zwölf Spieler                 | Runde und Fassungen          |
 | verraeter     | [AC-2](40-zu-mehreren/verraeter.md)         | Drei Fassungen, drei Karten            | Runde und Fassungen          |
+| verraeter     | [AC-3](40-zu-mehreren/verraeter.md)         | Zwei Verräter ab fünf                  | Runde und Fassungen          |
 | verraeter     | [AC-4](40-zu-mehreren/verraeter.md)         | Thema und Redezeit wählbar             | Runde und Fassungen          |
 | verraeter     | [AC-5](40-zu-mehreren/verraeter.md)         | Handgeschriebener Wortschatz           | Runde und Fassungen          |
 | verraeter     | [AC-6](40-zu-mehreren/verraeter.md)         | Rolle hinter dem Sperrschirm           | Ein Handy                    |

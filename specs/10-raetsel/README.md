@@ -10,7 +10,7 @@ die Lösung zu schauen.
 | --------------------------- | ---------------------- |
 | [Zahlencode](mastermind.md) | 15/15 fertig           |
 | [Minenfeld](minen.md)       | 12/12 fertig           |
-| [Nonogramm](nonogramm.md)   | 13/15 fertig · 2 offen |
+| [Nonogramm](nonogramm.md)   | 15/15 fertig           |
 | [Damen](queens.md)          | 17/18 fertig · 1 offen |
 | [Mini-Sudoku](sudoku.md)    | 16/18 fertig · 2 offen |
 | [Tango](tango.md)           | 14/14 fertig           |

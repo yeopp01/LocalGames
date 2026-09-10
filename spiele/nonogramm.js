@@ -209,7 +209,7 @@
     markierKnopf.addEventListener('click', () => { markierModus = !markierModus; zeichnen(); });
     const hinweisKnopf = el('button', 'knopf knopf--still', 'Hinweis');
     hinweisKnopf.type = 'button';
-    hinweisKnopf.addEventListener('click', hinweis);
+    hinweisKnopf.addEventListener('click', () => hinweis(false));
     leiste.append(markierKnopf, hinweisKnopf);
 
     s.werkzeuge([
@@ -264,14 +264,18 @@
           if (e.pointerId !== undefined && f.hasPointerCapture(e.pointerId)) {
             f.releasePointerCapture(e.pointerId);
           }
-          const neuerWert = naechsterWert(stand.feld[nr]);
+          const vorher = stand.feld[nr];
+          const neuerWert = naechsterWert(vorher);
           ziehen = neuerWert;
           setzen(nr, neuerWert);
-          // Lange drücken heißt „das hier bleibt leer" – ohne den Modus zu wechseln.
+          // Lange drücken heißt „das hier bleibt leer" – ohne den Modus zu
+          // wechseln. Entscheidend ist das Feld vor dem Tippen: Der Tipp hat es
+          // schon verändert, und aus einem Kreuz wurde sonst erst ein volles
+          // Feld und dann wieder ein Kreuz.
           clearTimeout(druckUhr);
           druckUhr = setTimeout(() => {
             ziehen = null;
-            setzen(nr, stand.feld[nr] === LEER ? UNKLAR : LEER);
+            setzen(nr, vorher === LEER ? UNKLAR : LEER);
           }, 400);
         });
         f.addEventListener('pointerenter', () => {
@@ -296,7 +300,8 @@
       return jetzt === ziel ? UNKLAR : ziel;
     };
 
-    window.addEventListener('pointerup', () => { ziehen = null; });
+    const loslassen = () => { ziehen = null; };
+    window.addEventListener('pointerup', loslassen);
 
     /* ---------------------------------------------------------------- Zug */
 
@@ -310,7 +315,7 @@
 
     /* Der Hinweis sucht ein Feld, das sich aus einer einzigen Zeile oder
        Spalte zwingend ergibt – und sagt, aus welcher. */
-    function hinweis() {
+    function hinweis(trotzFehler) {
       if (stand.fertig) return;
       const k = stand.kanten;
 
@@ -322,12 +327,19 @@
       });
 
       const falsch = stand.feld.some((w, i) => w !== UNKLAR && w !== stand.bild[i]);
-      if (falsch) {
+      /* Erst die Warnung, der Hinweis nur auf Wunsch. Vorher öffnete sich
+         gleich danach das Hinweisblatt und überdeckte die Warnung, bevor
+         jemand sie lesen konnte. */
+      if (falsch && !trotzFehler) {
         s.blatt({
           titel: 'Da stimmt etwas nicht',
-          inhalt: 'Mindestens ein Feld widerspricht den Zahlen am Rand. Ich habe die falschen Angaben für diesen Hinweis ausgeblendet – geh die Zeilen noch einmal durch.',
-          aktionen: [{ text: 'Weiter' }],
+          inhalt: 'Mindestens ein Feld widerspricht den Zahlen am Rand. Ein Hinweis blendet die falschen Angaben aus – besser ist, die Zeilen erst noch einmal durchzugehen.',
+          aktionen: [
+            { text: 'Selbst suchen' },
+            { text: 'Hinweis trotzdem', art: 'still', tun: () => hinweis(true) },
+          ],
         });
+        return undefined;
       }
 
       for (let z = 0; z < k; z += 1) {
@@ -478,6 +490,7 @@
         clearInterval(uhr);
         clearTimeout(druckUhr);
         window.removeEventListener('resize', beiGroesse);
+        window.removeEventListener('pointerup', loslassen);
         if (!stand.fertig) sichern();
       },
     };

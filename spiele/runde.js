@@ -114,7 +114,9 @@ const Runde = (() => {
 
   /* Der Aufbau fürs Weitergeben. Namen sind freiwillig – wer keine Lust aufs
      Tippen hat, bleibt bei „Spieler 3", und es spielt sich genauso. */
-  function aufbau(wurzel, { titel, hinweis, min = 3, max = 12, namen, knopfText = 'Los', weiter }) {
+  /* aendern(namen) meldet jede Änderung an Zahl oder Namen – für ein Spiel,
+     dessen Einstellungen daneben von der Spielerzahl abhängen. */
+  function aufbau(wurzel, { titel, hinweis, min = 3, max = 12, namen, knopfText = 'Los', weiter, aendern }) {
     const standard = (i) => 'Spieler ' + (i + 1);
     const liste = (namen && namen.length >= min) ? [...namen] : [standard(0), standard(1), standard(2)];
 
@@ -129,6 +131,7 @@ const Runde = (() => {
       while (liste.length > n) liste.pop();
       while (liste.length < n) liste.push(standard(liste.length));
       zeichnen();
+      if (aendern) aendern([...liste]);
     }, min, max);
 
     kasten.append(zaehler.wurzel, namensfeld, los);
@@ -146,7 +149,10 @@ const Runde = (() => {
         feld.maxLength = 14;
         feld.autocomplete = 'off';
         feld.setAttribute('aria-label', 'Name von Spieler ' + (i + 1));
-        feld.addEventListener('input', () => { liste[i] = feld.value; });
+        feld.addEventListener('input', () => {
+          liste[i] = feld.value;
+          if (aendern) aendern([...liste]);
+        });
         /* Leer stehen lassen heißt: doch lieber die Nummer. */
         feld.addEventListener('blur', () => {
           if (!feld.value.trim()) { liste[i] = standard(i); feld.value = liste[i]; }

@@ -110,15 +110,19 @@ const Loeser = (() => {
       }
       let summe = 0;
       for (const groesse of eimer.values()) summe += groesse * groesse;
-      const rest = summe / n;
-      // Ein Wort, das selbst noch Lösung sein kann, ist bei gleichem Nutzen
-      // vorzuziehen – es kann den Treffer sofort bringen.
-      const kandidat = istKandidat.has(g);
-      bewertet.push({ wort: g, rest, kandidat, note: rest - (kandidat ? 0.4 : 0) });
+      bewertet.push({ wort: g, rest: summe / n, kandidat: istKandidat.has(g) });
     }
 
-    bewertet.sort((a, b) => a.note - b.note || (b.kandidat ? 1 : 0) - (a.kandidat ? 1 : 0));
-    return bewertet.slice(0, anzahl).map(({ wort, rest, kandidat }) => ({ wort, rest, kandidat }));
+    /* Sortiert wird nach dem Rest. Ein Wort, das selbst noch Lösung sein kann,
+       gewinnt nur bei Gleichstand – es kann den Treffer sofort bringen.
+
+       Früher bekam es zusätzlich 0,4 Punkte Vorsprung. Die Anzeige stand dann
+       nicht mehr aufsteigend (im ersten Zug LINSE mit ø 14,9 vor LASTE mit
+       ø 14,5), und gebracht hat es nichts: Über alle 396 Lösungswörter, stets
+       dem ersten Vorschlag folgend, braucht es ohne Vorsprung im Schnitt 2,98
+       statt 3,03 Züge, höchstens fünf wie vorher. */
+    bewertet.sort((a, b) => a.rest - b.rest || (b.kandidat ? 1 : 0) - (a.kandidat ? 1 : 0));
+    return bewertet.slice(0, anzahl);
   }
 
   return { musterCode, musterStufen, kandidaten, vorschlaege };

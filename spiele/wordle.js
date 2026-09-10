@@ -339,7 +339,7 @@
           zeile.append(el('span', 'vorschlag-wort', v.wort));
           if (v.kandidat) zeile.append(el('span', 'vorschlag-marke', 'kann die Lösung sein'));
           zeile.append(el('span', 'vorschlag-rest',
-            v.rest <= 1.02 ? 'trennt alles' : 'danach ø ' + v.rest.toFixed(1) + ' übrig'));
+            v.rest <= 1.02 ? 'trennt alles' : 'danach ø ' + v.rest.toFixed(1).replace('.', ',') + ' übrig'));
           inhalt.append(zeile);
         }
 

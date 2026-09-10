@@ -85,9 +85,36 @@
       namen: Array.isArray(alt.namen) && alt.namen.length >= 3 ? alt.namen : null,
       sorte: SORTEN[alt.sorte] ? alt.sorte : '',
     };
-    const merken = () => s.merken(einst);
+    /* Der laufende Abend wird mitgemerkt. Vorher lebte er nur im Speicher der
+       Seite: Wer die App schloss oder neu lud, verlor ihn, denn ende() ruft
+       der Rahmen nur beim Wechsel der Ansicht. */
+    let partie = null;   // { namen, frage, gestellt, offen, verbraucht, seit, zuletzt }
+    let notiert = false;
 
-    let partie = null;   // { namen, frage, gestellt, offen, begonnen }
+    /* Spielzeit wie bei den anderen Spielen: nur, solange der Abend offen ist. */
+    function uhrNachziehen() {
+      const jetzt = Date.now();
+      partie.verbraucht += jetzt - partie.seit;
+      partie.seit = jetzt;
+      partie.zuletzt = jetzt;
+    }
+
+    function merken() {
+      let abend = null;
+      if (partie && partie.gestellt && !notiert) {
+        uhrNachziehen();
+        abend = {
+          namen: partie.namen,
+          frage: partie.frage,
+          gestellt: partie.gestellt,
+          offen: partie.offen,
+          sorte: einst.sorte,
+          verbraucht: partie.verbraucht,
+          zuletzt: partie.zuletzt,
+        };
+      }
+      s.merken(Object.assign({}, einst, { abend }));
+    }
 
     function aufraeumen() {
       if (gabe) { gabe.ende(); gabe = null; }
@@ -132,7 +159,9 @@
             frage: '',
             gestellt: 0,
             offen: [...fragenVon(einst.sorte)],
-            begonnen: Date.now(),
+            verbraucht: 0,
+            seit: Date.now(),
+            zuletzt: Date.now(),
           };
           naechsteFrage();
         },
@@ -148,6 +177,7 @@
       const n = Math.floor(Math.random() * partie.offen.length);
       partie.frage = partie.offen.splice(n, 1)[0];
       partie.gestellt += 1;
+      merken();
       zeigeFrage();
     }
 
@@ -225,21 +255,23 @@
 
     /* Eine Partie ist hier der ganze Abend, nicht die einzelne Frage – sonst
        stünden nach einer Viertelstunde vierzig Einträge in der Statistik. */
-    let notiert = false;
     function abschluss() {
       if (notiert || !partie || !partie.gestellt) return;
+      uhrNachziehen();
       notiert = true;
       s.notieren({
-        dauer: Date.now() - partie.begonnen,
+        dauer: partie.verbraucht,
         spieler: partie.namen.length,
         fragen: partie.gestellt,
         sorte: einst.sorte || 'gemischt',
       });
+      merken();   // der Abend ist notiert – gemerkt bleibt nur der Aufbau
     }
 
     function neu() {
       notiert = false;
       partie = null;
+      merken();
       zeigeAufbau();
     }
 
@@ -258,10 +290,41 @@
       { label: 'Neue Runde', symbol: '<path d="M4 12a8 8 0 0 1 13.7-5.6L20 8M20 12a8 8 0 0 1-13.7 5.6L4 16" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 4v4h-4M4 20v-4h4" stroke-linecap="round" stroke-linejoin="round"/>', tun: () => { abschluss(); neu(); } },
     ]);
 
-    zeigeAufbau();
+    /* Ein gemerkter Abend geht weiter, wo er war – die Abstimmung beginnt bei
+       der offenen Frage neu. Lag er länger als sechs Stunden, ist der Abend
+       vorbei: Er zählt dann an dem Tag, an dem zuletzt gespielt wurde, statt
+       am Morgen danach eine Tagesserie zu verlängern. */
+    const LIEGEN_LASSEN = 6 * 60 * 60 * 1000;
+    const a = alt.abend;
+    if (a && Array.isArray(a.namen) && a.namen.length >= 3 && a.gestellt > 0 && Array.isArray(a.offen)) {
+      const zuletzt = Number(a.zuletzt) || Date.now();
+      if (Date.now() - zuletzt > LIEGEN_LASSEN) {
+        s.notieren({
+          dauer: Number(a.verbraucht) || 0,
+          spieler: a.namen.length,
+          fragen: a.gestellt,
+          sorte: a.sorte || 'gemischt',
+          ende: new Date(zuletzt).toISOString(),
+        });
+        merken();
+      } else {
+        partie = {
+          namen: a.namen,
+          frage: String(a.frage || ''),
+          gestellt: a.gestellt,
+          offen: a.offen,
+          verbraucht: Number(a.verbraucht) || 0,
+          seit: Date.now(),
+          zuletzt,
+        };
+      }
+    }
 
-    /* Wer die App zuklappt, hat trotzdem gespielt – der Abend wird beim
-       Verlassen festgehalten. */
+    if (partie && partie.frage) zeigeFrage();
+    else zeigeAufbau();
+
+    /* Wer das Spiel verlässt, hat trotzdem gespielt – der Abend wird beim
+       Verlassen festgehalten. Wer die App nur schließt, findet ihn wieder. */
     return { ende() { abschluss(); aufraeumen(); } };
   }
 
