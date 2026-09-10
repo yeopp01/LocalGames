@@ -296,8 +296,16 @@ const Rahmen = (() => {
     }
   }
 
+  /* Eine neue Ansicht beginnt oben. Das Fenster selbst scrollt, und seine
+     Position blieb beim Wechsel stehen: Wer in der Auswahl nach unten
+     gescrollt hatte, landete in einem Spiel, das höher ist als das Fenster,
+     gleich an dessen unterem Ende – bei Damen mit halb abgeschnittener
+     oberster Zeile. */
+  const nachOben = () => window.scrollTo(0, 0);
+
   function gehe(ziel) {
     blaetterZu();
+    nachOben();
     if (laufend && laufend.ende) laufend.ende();
     laufend = null;
     ansicht = ziel;
@@ -650,6 +658,9 @@ const Rahmen = (() => {
 
   function los() {
     bereit = true;
+    // Beim Neuladen stellt der Browser sonst die alte Scrollposition wieder
+    // her – mitten im Spiel steht man dann wieder unten.
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
     daten = laden();
     ansicht = ausHash();
 
@@ -716,6 +727,7 @@ const Rahmen = (() => {
 
     window.addEventListener('popstate', () => {
       blaetterZu();
+      nachOben();
       if (laufend && laufend.ende) laufend.ende();
       laufend = null;
       ansicht = ausHash();

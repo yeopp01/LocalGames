@@ -50,6 +50,25 @@ test.describe('Auswahl', () => {
     await expect(page.locator('#sheet-spiel')).toBeHidden();
   });
 
+  test('ein Spiel beginnt oben – aus der gescrollten Auswahl und nach Neuladen', async ({ page }) => {
+    // So flach, dass Damen höher ist als das Fenster; sonst gäbe es nichts zu prüfen.
+    await page.setViewportSize({ width: 360, height: 420 });
+    await oeffnen(page);
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await kachel(page, 'Damen').click();
+    await expect(page.locator('#kopf-titel')).toHaveText('Damen');
+    await blattSchliessen(page);
+    const zuHoch = await page.evaluate(() => document.documentElement.scrollHeight - innerHeight);
+    expect(zuHoch, 'Damen passt hier ins Fenster – der Test prüft dann nichts').toBeGreaterThan(40);
+    expect(await page.evaluate(() => Math.round(scrollY))).toBe(0);
+
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await page.reload();
+    await expect(page.locator('#kopf-titel')).toHaveText('Damen');
+    await page.waitForTimeout(300);
+    expect(await page.evaluate(() => Math.round(scrollY))).toBe(0);
+  });
+
   test('unbekannte Adresse landet auf der Auswahl', async ({ page }) => {
     await oeffnen(page, '#/spiel/gibt-es-nicht');
     await expect(page.locator('.kachel')).toHaveCount(SPIELE.length);

@@ -10,7 +10,7 @@ die Schnittstelle, über die sich ein Spiel anmeldet. Code in
 
 | Spezifikation                          | Stand        |
 | -------------------------------------- | ------------ |
-| [Auswahl und Navigation](auswahl.md)   | 15/15 fertig |
+| [Auswahl und Navigation](auswahl.md)   | 16/16 fertig |
 | [Datenschutz](datenschutz.md)          | 11/11 fertig |
 | [Offline und Versionen](offline.md)    | 14/14 fertig |
 | [Spielschnittstelle](schnittstelle.md) | 12/12 fertig |

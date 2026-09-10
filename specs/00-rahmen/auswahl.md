@@ -1,7 +1,7 @@
 # Auswahl und Navigation
 
 **Datei:** [`app.js`](../../app.js), [`index.html`](../../index.html)
-**Stand:** 15/15 fertig
+**Stand:** 16/16 fertig
 
 ## Zweck
 
@@ -77,6 +77,12 @@ Dialog, die alle Spiele benutzen.
   erscheint eine Meldung oben unter der Kopfzeile statt unten, damit sie die
   Knöpfe des Blatts nicht verdeckt. Aufgefallen bei Weg: „Der Weg wird gesucht"
   lag knapp drei Sekunden über „Einzeichnen".
+- **AC-16** `fertig` **Neue Ansicht beginnt oben** — Jeder Wechsel der Ansicht –
+  Kachel, Zurück, Browser-Zurück, Statistik – zeigt die neue Ansicht von oben,
+  auch wenn die vorige gescrollt war. Nach dem Neuladen beginnt die Ansicht
+  ebenfalls oben, statt die alte Scrollposition wiederherzustellen. Aufgefallen
+  bei Damen: Aus der gescrollten Auswahl geöffnet, war die oberste Zeile halb
+  abgeschnitten.
 
 ## Randfälle
 
