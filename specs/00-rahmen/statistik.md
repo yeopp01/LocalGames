@@ -1,7 +1,7 @@
 # Statistik
 
 **Datei:** [`app.js`](../../app.js)
-**Stand:** 12/14 fertig · 2 offen
+**Stand:** 14/14 fertig
 
 ## Zweck
 
@@ -38,11 +38,10 @@ Zahlen entstehen allein aus den gespeicherten Partien auf dem Gerät.
 - **AC-6** `fertig` **Serie reißt erst morgen** — Die Tagesserie zählt die Tage
   am Stück mit mindestens einer Partie. Ist heute noch nichts gespielt, zählt
   sie ab gestern weiter; erst ein ganzer Tag ohne Partie beendet sie.
-- **AC-7** `offen` **Tage nach Ortszeit** — „Heute", die Tagesserie und der
-  Kalender teilen die Partien nach dem Kalendertag der Ortszeit ein. Heute
-  gilt die UTC-Mitternacht: In Deutschland zählt eine Partie zwischen 0 und
-  1 Uhr (Sommerzeit 2 Uhr) zum Vortag, und „heute" zeigt bis dahin die Zahl von
-  gestern.
+- **AC-7** `fertig` **Tage nach Ortszeit** — „Heute", die Tagesserie, der
+  Kalender und das Datum im Dateinamen der Sicherung richten sich nach dem
+  Kalendertag der Ortszeit: Eine Partie um halb eins in Deutschland gehört zum
+  neuen Tag, nicht zum Vortag der UTC-Mitternacht.
 - **AC-8** `fertig` **Kalender der letzten Wochen** — Unter den Zahlen stehen
   35 Punkte für die letzten 35 Tage, heute als letzter. Die Stufe richtet sich
   nach der Zahl der Partien: keine, eine, zwei bis drei, vier und mehr. Jeder
@@ -74,11 +73,9 @@ Zahlen entstehen allein aus den gespeicherten Partien auf dem Gerät.
 - **AC-13** `fertig` **Höchstens 5000 Partien** — Wird eine Partie notiert und
   liegen danach mehr als 5000 vor, fallen die ältesten weg, bis es wieder 5000
   sind.
-- **AC-14** `offen` **Kaputtes Datum bricht nichts** — Eine gespeicherte Partie
-  mit unlesbarem `ende` (etwa aus einer eingelesenen Sicherung) bringt weder
-  Auswahl noch Statistik zum Absturz; sie zählt in der Anzahl, aber in keinem
-  Tag. Heute wirft die Tagesberechnung einen Fehler, und die Ansicht bleibt
-  leer.
+- **AC-14** `fertig` **Kaputtes Datum bricht nichts** — Eine gespeicherte Partie
+  mit unlesbarem `ende` (etwa aus einer älteren Sicherung) bringt weder Auswahl
+  noch Statistik zum Absturz; sie zählt in der Anzahl, aber in keinem Tag.
 
 ## Randfälle
 

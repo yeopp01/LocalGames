@@ -1,7 +1,7 @@
 # Auswahl und Navigation
 
 **Datei:** [`app.js`](../../app.js), [`index.html`](../../index.html)
-**Stand:** 13/14 fertig · 1 offen
+**Stand:** 14/14 fertig
 
 ## Zweck
 
@@ -68,10 +68,10 @@ Dialog, die alle Spiele benutzen.
   oder ein beliebiges Element und eine Knopfleiste; ohne Angabe gibt es einen
   Knopf „Fertig". Jeder Knopf schließt das Blatt, bevor seine Aktion läuft; ein
   Tipp auf den abgedunkelten Hintergrund schließt es ebenfalls.
-- **AC-14** `offen` **Blätter schließen beim Verlassen** — Wechselt die
+- **AC-14** `fertig` **Blätter schließen beim Verlassen** — Wechselt die
   Ansicht, während ein Blatt eines Spiels oder das Einstellungsblatt offen ist
-  (etwa über die Zurück-Geste), schließt sich das Blatt. Heute bleibt es über
-  der neuen Ansicht stehen, und seine Knöpfe gehören zu einem beendeten Spiel.
+  – über einen Knopf oder die Zurück-Geste –, schließt sich das Blatt, bevor
+  das Spiel beendet wird.
 
 ## Randfälle
 

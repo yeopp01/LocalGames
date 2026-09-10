@@ -1,7 +1,7 @@
 # Sicherung
 
 **Datei:** [`app.js`](../../app.js), [`index.html`](../../index.html)
-**Stand:** 9/14 fertig · 5 offen
+**Stand:** 14/14 fertig
 
 ## Zweck
 
@@ -42,16 +42,15 @@ die von zwei Geräten. Dazu gehört der Weg, alles zu löschen.
 - **AC-7** `fertig` **Ungültige Einträge übersprungen** — Einträge ohne `spiel`
   oder ohne `ende` werden stillschweigend ausgelassen, der Rest der Datei wird
   trotzdem eingelesen.
-- **AC-8** `offen` **Unlesbares Datum übersprungen** — Ein Eintrag, dessen
+- **AC-8** `fertig` **Unlesbares Datum übersprungen** — Ein Eintrag, dessen
   `ende` kein lesbarer Zeitpunkt ist, wird wie ein Eintrag ohne `ende`
-  ausgelassen. Heute wird er übernommen und legt danach Auswahl und Statistik
-  lahm (siehe Statistik AC-14).
-- **AC-9** `offen` **Ohne Kennung nicht doppelt** — Wer dieselbe Datei zweimal
-  einliest, bekommt auch Einträge ohne `id` nur einmal. Heute erhält ein solcher
-  Eintrag bei jedem Einlesen eine neue Kennung und landet erneut im Bestand.
-- **AC-10** `offen` **Einlesen hält die Obergrenze** — Auch nach dem Einlesen
-  liegen höchstens 5000 Partien im Bestand; überzählig sind die ältesten. Heute
-  greift die Grenze erst bei der nächsten notierten Partie.
+  ausgelassen.
+- **AC-9** `fertig` **Ohne Kennung nicht doppelt** — Ein Eintrag ohne `id`
+  bekommt eine Kennung, die aus seinem Inhalt folgt. Wer dieselbe Datei zweimal
+  einliest, hat ihn deshalb nur einmal im Bestand; zwei Einträge mit gleichem
+  Inhalt gelten als dieselbe Partie.
+- **AC-10** `fertig` **Einlesen hält die Obergrenze** — Auch nach dem Einlesen
+  liegen höchstens 5000 Partien im Bestand; überzählig sind die ältesten.
 
 ### Löschen und voller Speicher
 
@@ -60,18 +59,18 @@ die von zwei Geräten. Dazu gehört der Weg, alles zu löschen.
   Abbruch bleibt alles, wie es war. Bei Bestätigung sind Partien und laufende
   Spielstände weg, das Blatt schließt, die Auswahl erscheint und ein Toast
   meldet „Alles gelöscht."
-- **AC-12** `offen` **Offenes Spiel schreibt nicht nach** — Wird aus einem
-  laufenden Spiel heraus gelöscht, steht danach auch von diesem Spiel nichts
-  mehr im Speicher. Heute wird erst gelöscht und dann das Spiel beendet; „Wer am
-  ehesten" notiert dabei den Abend neu, und ein Spiel, das beim Beenden
-  `merken` ruft, legt seinen Stand wieder ab.
+- **AC-12** `fertig` **Offenes Spiel schreibt nicht nach** — Wird aus einem
+  laufenden Spiel heraus gelöscht, wird das Spiel zuerst beendet und dann
+  gelöscht. Was sein `ende()` noch merkt oder notiert, ist danach ebenfalls
+  weg.
 - **AC-13** `fertig` **Voller Speicher meldet sich** — Lässt der Browser nicht
-  mehr schreiben, meldet ein Toast „Der Speicher des Browsers ist voll." Die
-  App läuft weiter; was danach geschieht, gilt nur bis zum Neuladen.
-- **AC-14** `offen` **Löschen trotz vollem Speicher** — „Alles löschen" wirkt
-  auch, nachdem der Speicher einmal voll war. Heute ist das Schreiben für den
-  Rest der Sitzung gesperrt: der Toast sagt „Alles gelöscht.", nach dem
-  Neuladen ist aber alles wieder da.
+  mehr schreiben, meldet ein Toast „Der Speicher des Browsers ist voll." –
+  einmal, bis wieder ein Schreiben gelingt. Die App läuft weiter und versucht
+  es beim nächsten Speichern erneut. Scheitert das Schreiben beim Einlesen,
+  bleibt diese Meldung stehen und wird nicht von „ergänzt" überdeckt.
+- **AC-14** `fertig` **Löschen trotz vollem Speicher** — „Alles löschen"
+  entfernt den Eintrag im Speicher, statt ihn leer zu überschreiben, und wirkt
+  deshalb auch bei vollem Speicher: Nach dem Neuladen ist nichts mehr da.
 
 ## Randfälle
 

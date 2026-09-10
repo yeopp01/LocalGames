@@ -1,7 +1,7 @@
 # Spielschnittstelle
 
 **Datei:** [`app.js`](../../app.js)
-**Stand:** 10/12 fertig · 2 offen
+**Stand:** 11/12 fertig · 1 offen
 
 ## Zweck
 
@@ -58,11 +58,11 @@ Rahmen ein Spiel kennen muss.
   Sieg, `false` als Niederlage, ein fehlendes Feld als Partie ohne Urteil: sie
   zählt in Anzahl, Spielzeit, Kalender und Tagesserie, aber in keiner
   Siegquote. Geprüft wird überall mit `typeof p.gewonnen === 'boolean'`.
-- **AC-10** `offen` **`ohneSiege` ist nur Anzeige** — Ein Spiel mit
+- **AC-10** `fertig` **`ohneSiege` ist nur Anzeige** — Ein Spiel mit
   `ohneSiege: true` heißt auf Kachel und im Statistikblock „Runden" statt
-  „Partien", und nirgends erscheint seine Siegquote, auch wenn eine eingelesene
-  Partie ein Urteil trägt. Der Statistikblock hält das ein; die Kachel beachtet
-  `ohneSiege` nicht und zeigt dann „n Partien · x % gewonnen".
+  „Partien". Ein Urteil an seinen Partien – etwa aus einer eingelesenen
+  Sicherung – zählt nirgends: nicht auf der Kachel, nicht im Block und nicht in
+  der Gesamtquote.
 - **AC-11** `fertig` **Auswertung liefert Kennzahlen** — `auswertung(partien,
   hilfe)` gibt eine Liste `{ wert, label }` zurück, die im Statistikblock vor
   den allgemeinen Kennzahlen steht. `hilfe` bietet `dauerText`, `beste(partien,

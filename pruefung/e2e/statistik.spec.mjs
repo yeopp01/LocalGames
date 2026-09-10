@@ -43,6 +43,18 @@ test.describe('Siegquote', () => {
     await expect(kopf.locator('.kalender-tag').last()).not.toHaveAttribute('data-stufe', '0');
   });
 
+  test('ein Spiel ohne Siege zeigt nie eine Quote, auch mit eingelesenem Urteil', async ({ page }) => {
+    await oeffnen(page, '#/', {
+      partien: [
+        partie('amehesten', { gewonnen: true }),
+        partie('amehesten', { gewonnen: true }),
+        partie('minen', { gewonnen: false }),
+      ],
+    });
+    await expect(kachel(page, 'Wer am ehesten').locator('.kachel-fuss')).toHaveText('2 Runden');
+    await expect(kennzahl(page.locator('.ueberblick'), 'gewonnen')).toHaveText('0 %');
+  });
+
   test('ohne Partien sagt die Statistik das', async ({ page }) => {
     await oeffnen(page, '#/statistik');
     await expect(page.getByText('Noch keine Partie gespielt.')).toBeVisible();
@@ -65,6 +77,30 @@ test.describe('Tagesserie', () => {
 
   test('ein ausgelassener Tag beendet sie', async ({ page }) => {
     await expect(await serie(page, [0, 2, 3])).toHaveText('1');
+  });
+});
+
+test.describe('Tage und Daten', () => {
+  test('Tage zählen nach Ortszeit, nicht nach UTC', async ({ page }) => {
+    // 00:30 in Berlin ist 22:30 UTC am Vortag. Eine Partie um 23:30 Berliner
+    // Zeit gehört zu gestern – nach UTC fielen beide auf denselben Tag.
+    await page.clock.setFixedTime(new Date('2026-09-10T00:30:00+02:00'));
+    await oeffnen(page, '#/', { partien: [partie('minen', { gewonnen: true, ende: '2026-09-09T21:30:00.000Z' })] });
+    const streifen = page.locator('.ueberblick');
+    await expect(kennzahl(streifen, 'heute')).toHaveText('0');
+    await expect(kennzahl(streifen, 'Tage Serie')).toHaveText('1');
+  });
+
+  test('ein unlesbares Datum bricht weder Auswahl noch Statistik', async ({ page }) => {
+    await oeffnen(page, '#/', {
+      partien: [partie('minen', { gewonnen: true }), partie('minen', { gewonnen: false, ende: 'kaputt' })],
+    });
+    const streifen = page.locator('.ueberblick');
+    await expect(kennzahl(streifen, 'Partien')).toHaveText('2');
+    await expect(kennzahl(streifen, 'heute')).toHaveText('1');
+    await streifen.click();
+    await expect(kennzahl(page.locator('.block').first(), 'Partien')).toHaveText('2');
+    await expect(page.locator('.kalender-tag').last()).toHaveAttribute('title', /: 1 Partie$/);
   });
 });
 

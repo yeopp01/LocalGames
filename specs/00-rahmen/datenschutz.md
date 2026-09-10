@@ -1,7 +1,7 @@
 # Datenschutz
 
 **Datei:** [`app.js`](../../app.js), [`index.html`](../../index.html), [`styles.css`](../../styles.css)
-**Stand:** 10/11 fertig · 1 offen
+**Stand:** 11/11 fertig
 
 ## Zweck
 
@@ -43,11 +43,9 @@ anonymer Aufrufzähler, und die App funktioniert auch, wenn er fehlt.
 - **AC-9** `fertig` **Offline wird nicht gezählt** — Das Zählskript liegt nicht
   im Offline-Speicher; wer ohne Netz spielt, erzeugt keine Zählung, auch nicht
   nachträglich.
-- **AC-10** `offen` **Hinweis nennt alle Zählungen** — Der Hinweis unten im
+- **AC-10** `fertig` **Hinweis nennt alle Zählungen** — Der Hinweis unten im
   Einstellungsblatt nennt alles, was gezählt wird: das Öffnen der App, den
-  Start eines Spiels und die Installation. Heute steht dort „Gezählt wird beim
-  Öffnen nur, dass die App geöffnet wurde", obwohl auch Spielstarts und die
-  Installation gemeldet werden.
+  Start eines Spiels und die Installation.
 
 ### Schriften
 

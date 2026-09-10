@@ -39,6 +39,17 @@ test.describe('Auswahl', () => {
     await expect(page.locator('.kachel')).toHaveCount(SPIELE.length);
   });
 
+  test('ein offenes Blatt schließt, wenn die Ansicht wechselt', async ({ page }) => {
+    await oeffnen(page);
+    await kachel(page, 'Minenfeld').click();
+    await blattSchliessen(page);
+    await page.getByRole('button', { name: 'Regeln' }).click();
+    await expect(page.locator('#sheet-spiel')).toBeVisible();
+    await page.goBack();
+    await expect(page.locator('.kachel')).toHaveCount(SPIELE.length);
+    await expect(page.locator('#sheet-spiel')).toBeHidden();
+  });
+
   test('unbekannte Adresse landet auf der Auswahl', async ({ page }) => {
     await oeffnen(page, '#/spiel/gibt-es-nicht');
     await expect(page.locator('.kachel')).toHaveCount(SPIELE.length);
@@ -63,6 +74,9 @@ test.describe('Einstellungen', () => {
     await expect(page.locator('#sheet-einstellungen')).toBeVisible();
     await expect(page.locator('#version-notiz')).toHaveText(`Version ${VERSION.nummer}, Stand ${VERSION.stand}`);
     await expect(page.locator('#bestand-notiz')).toHaveText('1 Partie auf diesem Gerät.');
+    // Der Hinweis nennt alles, was gezählt wird.
+    await expect(page.locator('#sheet-einstellungen .notiz--fuss')).toContainText(
+      'geöffnet, ein Spiel gestartet oder die App installiert');
     await page.locator('#sheet-einstellungen').getByRole('button', { name: 'Fertig' }).click();
     await expect(page.locator('#sheet-einstellungen')).toBeHidden();
   });
@@ -90,9 +104,11 @@ test.describe('Einstellungen', () => {
     page.once('dialog', (d) => d.accept());
     await page.locator('#btn-alles-loeschen').click();
     await expect(page.locator('#toast')).toHaveText('Alles gelöscht.');
-    const danach = await gespeichert(page);
-    expect(danach.partien).toEqual([]);
-    expect(danach.stand).toEqual({});
+    // Der Eintrag wird entfernt, nicht leer überschrieben – das gelingt auch
+    // bei vollem Speicher.
+    expect(await gespeichert(page)).toBeNull();
+    await expect(page.locator('.kachel-fuss', { hasText: 'Noch nie gespielt' })).toHaveCount(SPIELE.length);
+    await page.reload();
     await expect(page.locator('.kachel-fuss', { hasText: 'Noch nie gespielt' })).toHaveCount(SPIELE.length);
   });
 });

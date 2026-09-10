@@ -36,14 +36,20 @@ const Rahmen = (() => {
     }
   }
 
-  let schreibgesperrt = false;
+  /* Schlägt das Schreiben fehl, wird es beim nächsten Mal wieder versucht.
+     Früher sperrte der erste Fehler den Speicher bis zum Neuladen – danach
+     meldete sogar „Alles löschen" Erfolg, ohne etwas zu schreiben. Gemeldet
+     wird der volle Speicher nur einmal, bis wieder ein Schreiben gelingt. */
+  let vollGemeldet = false;
   function sichern() {
-    if (schreibgesperrt) return;
     try {
       localStorage.setItem(SPEICHER, JSON.stringify(daten));
+      vollGemeldet = false;
+      return true;
     } catch (e) {
-      schreibgesperrt = true;
-      toast('Der Speicher des Browsers ist voll.');
+      if (!vollGemeldet) toast('Der Speicher des Browsers ist voll.');
+      vollGemeldet = true;
+      return false;
     }
   }
 
@@ -59,8 +65,37 @@ const Rahmen = (() => {
   const kennung = () =>
     Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
 
-  const tagVon = (iso) => new Date(iso).toISOString().slice(0, 10);
-  const heute = () => new Date().toISOString().slice(0, 10);
+  /* Eine eingelesene Partie ohne Kennung bekommt eine, die aus ihrem Inhalt
+     folgt. Mit einer zufälligen landete sie bei jedem Einlesen derselben
+     Datei noch einmal im Bestand. Zwei Einträge mit gleichem Inhalt sind
+     dieselbe Partie – gleiches Spiel, gleicher Zeitpunkt, gleiche Felder. */
+  const stabil = (w) =>
+    Array.isArray(w) ? '[' + w.map(stabil).join(',') + ']'
+      : w && typeof w === 'object'
+        ? '{' + Object.keys(w).sort().map((k) => JSON.stringify(k) + ':' + stabil(w[k])).join(',') + '}'
+        : JSON.stringify(w);
+  function kennungAus(partie) {
+    const text = stabil(partie);
+    let a = 0x811c9dc5;
+    let b = 0x9e3779b9;
+    for (let i = 0; i < text.length; i += 1) {
+      a = Math.imul(a ^ text.charCodeAt(i), 0x01000193);
+      b = Math.imul(b ^ text.charCodeAt(i), 0x5bd1e995);
+    }
+    return 'inhalt-' + (a >>> 0).toString(36) + (b >>> 0).toString(36);
+  }
+
+  /* Tage zählen nach Ortszeit. Mit toISOString galt die UTC-Mitternacht, und
+     in Deutschland landete eine Partie um halb eins auf dem Vortag. Ein
+     unlesbarer Zeitpunkt – etwa aus einer eingelesenen Sicherung – gehört zu
+     keinem Tag, statt beim Zeichnen zu werfen. */
+  const tagText = (d) =>
+    d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  const tagVon = (iso) => {
+    const d = new Date(iso);
+    return Number.isNaN(d.getTime()) ? null : tagText(d);
+  };
+  const heute = () => tagText(new Date());
 
   function dauerText(ms) {
     if (!ms || ms < 0) return '–';
@@ -111,7 +146,14 @@ const Rahmen = (() => {
      gespielt – in der Spielzeit, im Kalender, in der Tagesserie – aber nicht
      in der Quote. Das ist feiner als eine Angabe am Spiel, weil dasselbe Spiel
      beides können darf: gegen den Rechner mit Urteil, zu zweit ohne. */
-  const mitUrteil = (liste) => liste.filter((p) => typeof p.gewonnen === 'boolean');
+  // Ein Spiel mit ohneSiege hat grundsätzlich kein Urteil. Kommt aus einer
+  // alten Sicherung doch eines herein, zählt es nirgends – auch nicht auf der
+  // Kachel oder in der Gesamtquote.
+  const mitUrteil = (liste) => liste.filter((p) => {
+    if (typeof p.gewonnen !== 'boolean') return false;
+    const spiel = nachId(p.spiel);
+    return !(spiel && spiel.ohneSiege);
+  });
   const siegquote = (liste) => {
     const u = mitUrteil(liste);
     return prozent(u.filter((p) => p.gewonnen).length, u.length);
@@ -175,14 +217,14 @@ const Rahmen = (() => {
 
   /* Tagesserie: wie viele Tage am Stück wurde zuletzt gespielt? */
   function serie(partien) {
-    const tage = new Set(partien.map((p) => tagVon(p.ende)));
+    const tage = new Set(partien.map((p) => tagVon(p.ende)).filter(Boolean));
     if (!tage.size) return 0;
     let zaehler = 0;
     const zeiger = new Date();
     // Wer heute noch nicht gespielt hat, verliert die Serie noch nicht.
-    if (!tage.has(zeiger.toISOString().slice(0, 10))) zeiger.setDate(zeiger.getDate() - 1);
+    if (!tage.has(tagText(zeiger))) zeiger.setDate(zeiger.getDate() - 1);
     for (;;) {
-      const t = zeiger.toISOString().slice(0, 10);
+      const t = tagText(zeiger);
       if (!tage.has(t)) break;
       zaehler += 1;
       zeiger.setDate(zeiger.getDate() - 1);
@@ -245,7 +287,17 @@ const Rahmen = (() => {
     }
   }
 
+  /* Ein offenes Blatt gehört zu der Ansicht, aus der es kam – seine Knöpfe
+     sprechen mit einem Spiel, das gleich beendet ist. */
+  function blaetterZu() {
+    for (const id of ['sheet-spiel', 'sheet-einstellungen']) {
+      const blatt = document.getElementById(id);
+      if (blatt) blatt.hidden = true;
+    }
+  }
+
   function gehe(ziel) {
+    blaetterZu();
     if (laufend && laufend.ende) laufend.ende();
     laufend = null;
     ansicht = ziel;
@@ -519,7 +571,7 @@ const Rahmen = (() => {
     const zeiger = new Date();
     zeiger.setDate(zeiger.getDate() - 34);
     for (let i = 0; i < 35; i += 1) {
-      const t = zeiger.toISOString().slice(0, 10);
+      const t = tagText(zeiger);
       const n = proTag.get(t) || 0;
       const punkt = el('span', 'kalender-tag');
       punkt.dataset.stufe = n === 0 ? '0' : n < 2 ? '1' : n < 4 ? '2' : '3';
@@ -568,15 +620,24 @@ const Rahmen = (() => {
       const vorhanden = new Set(daten.partien.map((p) => p.id));
       let neu = 0;
       for (const p of d.partien) {
-        if (!p || !p.spiel || !p.ende) continue;
-        const id = p.id || kennung();
+        // Ein Zeitpunkt, der sich nicht lesen lässt, gehört zu keinem Tag –
+        // so eine Partie ist so unbrauchbar wie eine ohne ende.
+        if (!p || !p.spiel || !p.ende || !tagVon(p.ende)) continue;
+        const id = p.id || kennungAus(p);
         if (vorhanden.has(id)) continue;
         vorhanden.add(id);
         daten.partien.push(Object.assign({}, p, { id }));
         neu += 1;
       }
       daten.partien.sort((a, b) => (a.ende < b.ende ? -1 : 1));
-      sichern();
+      // Die Obergrenze gilt auch hier, nicht erst bei der nächsten Partie.
+      if (daten.partien.length > MAX_PARTIEN) daten.partien = daten.partien.slice(-MAX_PARTIEN);
+      // Lässt sich nichts schreiben, bleibt die Meldung vom vollen Speicher
+      // stehen, statt von „ergänzt" überdeckt zu werden.
+      if (!sichern()) {
+        zeichnen();
+        return;
+      }
       toast(neu ? neu + (neu === 1 ? ' Partie ergänzt.' : ' Partien ergänzt.') : 'Alles war schon da.');
       zeichnen();
     };
@@ -622,8 +683,15 @@ const Rahmen = (() => {
     if (knopfAktualisieren) knopfAktualisieren.addEventListener('click', aktualisierungSuchen);
     document.getElementById('btn-alles-loeschen').addEventListener('click', () => {
       if (!confirm('Wirklich alles löschen? Statistik und laufende Partien sind dann weg.')) return;
+      // Erst das offene Spiel beenden, dann löschen: Sein ende() darf noch
+      // merken oder notieren – danach ist auch das weg.
+      if (laufend && laufend.ende) laufend.ende();
+      laufend = null;
       daten = leer();
-      sichern();
+      // Entfernen statt leer beschreiben: Das gelingt auch bei vollem Speicher.
+      try {
+        localStorage.removeItem(SPEICHER);
+      } catch (e) { /* dann ist nur der Stand dieser Seite leer */ }
       document.getElementById('sheet-einstellungen').hidden = true;
       gehe({ name: 'auswahl' });
       toast('Alles gelöscht.');
@@ -647,6 +715,7 @@ const Rahmen = (() => {
     });
 
     window.addEventListener('popstate', () => {
+      blaetterZu();
       if (laufend && laufend.ende) laufend.ende();
       laufend = null;
       ansicht = ausHash();

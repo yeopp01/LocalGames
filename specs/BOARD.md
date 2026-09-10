@@ -6,18 +6,18 @@
 Eine Zeile je Akzeptanzkriterium. Gepflegt wird der Status in der Spec
 selbst, hier steht er zusammengefasst.
 
-**Gesamt:** 3 in arbeit · 0 geplant · 37 offen · 1 zurückgestellt · 307 fertig
+**Gesamt:** 3 in arbeit · 0 geplant · 27 offen · 1 zurückgestellt · 317 fertig
 
 ## Nach Spezifikation
 
 | Spezifikation                                      | In Arbeit | Geplant | Offen | Zurückgestellt | Fertig |
 | -------------------------------------------------- | --------- | ------- | ----- | -------------- | ------ |
-| [Auswahl und Navigation](00-rahmen/auswahl.md)     | -         | -       | 1     | -              | 13     |
-| [Datenschutz](00-rahmen/datenschutz.md)            | -         | -       | 1     | -              | 10     |
+| [Auswahl und Navigation](00-rahmen/auswahl.md)     | -         | -       | -     | -              | 14     |
+| [Datenschutz](00-rahmen/datenschutz.md)            | -         | -       | -     | -              | 11     |
 | [Offline und Versionen](00-rahmen/offline.md)      | -         | -       | -     | -              | 14     |
-| [Spielschnittstelle](00-rahmen/schnittstelle.md)   | -         | -       | 2     | -              | 10     |
-| [Sicherung](00-rahmen/sicherung.md)                | -         | -       | 5     | -              | 9      |
-| [Statistik](00-rahmen/statistik.md)                | -         | -       | 2     | -              | 12     |
+| [Spielschnittstelle](00-rahmen/schnittstelle.md)   | -         | -       | 1     | -              | 11     |
+| [Sicherung](00-rahmen/sicherung.md)                | -         | -       | -     | -              | 14     |
+| [Statistik](00-rahmen/statistik.md)                | -         | -       | -     | -              | 14     |
 | [Zahlencode](10-raetsel/mastermind.md)             | -         | -       | 2     | -              | 13     |
 | [Minenfeld](10-raetsel/minen.md)                   | -         | -       | -     | -              | 12     |
 | [Nonogramm](10-raetsel/nonogramm.md)               | -         | -       | 2     | -              | 13     |
@@ -44,47 +44,37 @@ selbst, hier steht er zusammengefasst.
 | schafkopf | [AC-19](30-brett-und-karten/schafkopf.md) | Fertige Stiche zählen mit       | Die Gegner |
 | schafkopf | [AC-20](30-brett-und-karten/schafkopf.md) | Sau nicht vor den Zehner        | Die Gegner |
 
-## Offen (37)
+## Offen (27)
 
-| Spec          | AC                                          | Titel                                  | Anmerkung                   |
-| ------------- | ------------------------------------------- | -------------------------------------- | --------------------------- |
-| auswahl       | [AC-14](00-rahmen/auswahl.md)               | Blätter schließen beim Verlassen       | Kopfzeile, Meldung, Blatt   |
-| datenschutz   | [AC-10](00-rahmen/datenschutz.md)           | Hinweis nennt alle Zählungen           | Zählung                     |
-| schnittstelle | [AC-10](00-rahmen/schnittstelle.md)         | `ohneSiege` ist nur Anzeige            | Urteil und Auswertung       |
-| schnittstelle | [AC-12](00-rahmen/schnittstelle.md)         | Auswertung verträgt Lücken             | Urteil und Auswertung       |
-| sicherung     | [AC-8](00-rahmen/sicherung.md)              | Unlesbares Datum übersprungen          | Einlesen                    |
-| sicherung     | [AC-9](00-rahmen/sicherung.md)              | Ohne Kennung nicht doppelt             | Einlesen                    |
-| sicherung     | [AC-10](00-rahmen/sicherung.md)             | Einlesen hält die Obergrenze           | Einlesen                    |
-| sicherung     | [AC-12](00-rahmen/sicherung.md)             | Offenes Spiel schreibt nicht nach      | Löschen und voller Speicher |
-| sicherung     | [AC-14](00-rahmen/sicherung.md)             | Löschen trotz vollem Speicher          | Löschen und voller Speicher |
-| statistik     | [AC-7](00-rahmen/statistik.md)              | Tage nach Ortszeit                     | Gesamtstatistik             |
-| statistik     | [AC-14](00-rahmen/statistik.md)             | Kaputtes Datum bricht nichts           | Bestand                     |
-| mastermind    | [AC-12](10-raetsel/mastermind.md)           | Spielzeit ohne Pausen                  | Speicher und Statistik      |
-| mastermind    | [AC-14](10-raetsel/mastermind.md)           | Lückenhafte Partien vertragen          | Speicher und Statistik      |
-| nonogramm     | [AC-8](10-raetsel/nonogramm.md)             | Langes Drücken schaltet Kreuz          | Eingabe                     |
-| nonogramm     | [AC-10](10-raetsel/nonogramm.md)            | Warnung bei falschen Feldern           | Fehler und Hinweise         |
-| queens        | [AC-14](10-raetsel/queens.md)               | Nie ein Rate-Rätsel                    | Erzeugung                   |
-| sudoku        | [AC-3](10-raetsel/sudoku.md)                | Vorgaben genau nach Stufe              | Feld und Stufen             |
-| sudoku        | [AC-5](10-raetsel/sudoku.md)                | Ohne Raten lösbar                      | Erzeugung                   |
-| zip           | [AC-10](10-raetsel/zip.md)                  | Ohne Raten lösbar                      | Hinweise und Erzeugung      |
-| zip           | [AC-11](10-raetsel/zip.md)                  | Hinweis nennt seinen Grund             | Hinweise und Erzeugung      |
-| galgen        | [AC-11](20-wortspiele/galgen.md)            | Fehler je Sieg mit Komma               | Speicher und Statistik      |
-| galgen        | [AC-12](20-wortspiele/galgen.md)            | Lückenhafte Partien verfälschen nichts | Speicher und Statistik      |
-| wordle        | [AC-12](20-wortspiele/wordle.md)            | Beste Züge richtig sortiert            | Hilfen                      |
-| wordle        | [AC-22](20-wortspiele/wordle.md)            | Lückenhafte Partien verfälschen nichts | Speicher und Statistik      |
-| schafkopf     | [AC-10](30-brett-und-karten/schafkopf.md)   | Gesperrte Karte mit Grund              | Spielregeln beim Legen      |
-| schafkopf     | [AC-14](30-brett-und-karten/schafkopf.md)   | Schneidergrenze wie am Tisch           | Abrechnung                  |
-| schafkopf     | [AC-17](30-brett-und-karten/schafkopf.md)   | Schlüsse aus dem Verlauf               | Die Gegner                  |
-| schafkopf     | [AC-28](30-brett-und-karten/schafkopf.md)   | Begründung nur mit Geprüftem           | Der Lehrer                  |
-| schafkopf     | [AC-33](30-brett-und-karten/schafkopf.md)   | Abendstand überlebt Zusammenwerfen     | Speicher und Statistik      |
-| schafkopf     | [AC-35](30-brett-und-karten/schafkopf.md)   | Auswertung verträgt Lücken             | Speicher und Statistik      |
-| viergewinnt   | [AC-4](30-brett-und-karten/viergewinnt.md)  | Drohung wird immer blockiert           | Brett und Gegner            |
-| viergewinnt   | [AC-6](30-brett-und-karten/viergewinnt.md)  | Überlegen friert nicht ein             | Brett und Gegner            |
-| viergewinnt   | [AC-12](30-brett-und-karten/viergewinnt.md) | Zu zweit übersteht Schließen           | Speicher und Statistik      |
-| viergewinnt   | [AC-15](30-brett-und-karten/viergewinnt.md) | Dauer zählt nur Spielzeit              | Speicher und Statistik      |
-| amehesten     | [AC-10](40-zu-mehreren/amehesten.md)        | Abend überlebt das Zuklappen           | Statistik                   |
-| verraeter     | [AC-3](40-zu-mehreren/verraeter.md)         | Zwei Verräter ab fünf                  | Runde und Fassungen         |
-| verraeter     | [AC-16](40-zu-mehreren/verraeter.md)        | Quote nur aus Urteilen                 | Speicher und Statistik      |
+| Spec          | AC                                          | Titel                                  | Anmerkung              |
+| ------------- | ------------------------------------------- | -------------------------------------- | ---------------------- |
+| schnittstelle | [AC-12](00-rahmen/schnittstelle.md)         | Auswertung verträgt Lücken             | Urteil und Auswertung  |
+| mastermind    | [AC-12](10-raetsel/mastermind.md)           | Spielzeit ohne Pausen                  | Speicher und Statistik |
+| mastermind    | [AC-14](10-raetsel/mastermind.md)           | Lückenhafte Partien vertragen          | Speicher und Statistik |
+| nonogramm     | [AC-8](10-raetsel/nonogramm.md)             | Langes Drücken schaltet Kreuz          | Eingabe                |
+| nonogramm     | [AC-10](10-raetsel/nonogramm.md)            | Warnung bei falschen Feldern           | Fehler und Hinweise    |
+| queens        | [AC-14](10-raetsel/queens.md)               | Nie ein Rate-Rätsel                    | Erzeugung              |
+| sudoku        | [AC-3](10-raetsel/sudoku.md)                | Vorgaben genau nach Stufe              | Feld und Stufen        |
+| sudoku        | [AC-5](10-raetsel/sudoku.md)                | Ohne Raten lösbar                      | Erzeugung              |
+| zip           | [AC-10](10-raetsel/zip.md)                  | Ohne Raten lösbar                      | Hinweise und Erzeugung |
+| zip           | [AC-11](10-raetsel/zip.md)                  | Hinweis nennt seinen Grund             | Hinweise und Erzeugung |
+| galgen        | [AC-11](20-wortspiele/galgen.md)            | Fehler je Sieg mit Komma               | Speicher und Statistik |
+| galgen        | [AC-12](20-wortspiele/galgen.md)            | Lückenhafte Partien verfälschen nichts | Speicher und Statistik |
+| wordle        | [AC-12](20-wortspiele/wordle.md)            | Beste Züge richtig sortiert            | Hilfen                 |
+| wordle        | [AC-22](20-wortspiele/wordle.md)            | Lückenhafte Partien verfälschen nichts | Speicher und Statistik |
+| schafkopf     | [AC-10](30-brett-und-karten/schafkopf.md)   | Gesperrte Karte mit Grund              | Spielregeln beim Legen |
+| schafkopf     | [AC-14](30-brett-und-karten/schafkopf.md)   | Schneidergrenze wie am Tisch           | Abrechnung             |
+| schafkopf     | [AC-17](30-brett-und-karten/schafkopf.md)   | Schlüsse aus dem Verlauf               | Die Gegner             |
+| schafkopf     | [AC-28](30-brett-und-karten/schafkopf.md)   | Begründung nur mit Geprüftem           | Der Lehrer             |
+| schafkopf     | [AC-33](30-brett-und-karten/schafkopf.md)   | Abendstand überlebt Zusammenwerfen     | Speicher und Statistik |
+| schafkopf     | [AC-35](30-brett-und-karten/schafkopf.md)   | Auswertung verträgt Lücken             | Speicher und Statistik |
+| viergewinnt   | [AC-4](30-brett-und-karten/viergewinnt.md)  | Drohung wird immer blockiert           | Brett und Gegner       |
+| viergewinnt   | [AC-6](30-brett-und-karten/viergewinnt.md)  | Überlegen friert nicht ein             | Brett und Gegner       |
+| viergewinnt   | [AC-12](30-brett-und-karten/viergewinnt.md) | Zu zweit übersteht Schließen           | Speicher und Statistik |
+| viergewinnt   | [AC-15](30-brett-und-karten/viergewinnt.md) | Dauer zählt nur Spielzeit              | Speicher und Statistik |
+| amehesten     | [AC-10](40-zu-mehreren/amehesten.md)        | Abend überlebt das Zuklappen           | Statistik              |
+| verraeter     | [AC-3](40-zu-mehreren/verraeter.md)         | Zwei Verräter ab fünf                  | Runde und Fassungen    |
+| verraeter     | [AC-16](40-zu-mehreren/verraeter.md)        | Quote nur aus Urteilen                 | Speicher und Statistik |
 
 ## Zurückgestellt (1)
 
@@ -92,7 +82,7 @@ selbst, hier steht er zusammengefasst.
 | --------- | ------------------------------------ | -------------------------- | -------------------------------------------- |
 | verraeter | [AC-13](40-zu-mehreren/verraeter.md) | Stimmen übers Netz sammeln | braucht eine Verbindung zwischen den Geräten |
 
-## Fertig (307)
+## Fertig (317)
 
 | Spec          | AC                                          | Titel                               | Anmerkung                    |
 | ------------- | ------------------------------------------- | ----------------------------------- | ---------------------------- |
@@ -109,6 +99,7 @@ selbst, hier steht er zusammengefasst.
 | auswahl       | [AC-11](00-rahmen/auswahl.md)               | Kopfzeile je Ansicht                | Kopfzeile, Meldung, Blatt    |
 | auswahl       | [AC-12](00-rahmen/auswahl.md)               | Kurze Meldung unten                 | Kopfzeile, Meldung, Blatt    |
 | auswahl       | [AC-13](00-rahmen/auswahl.md)               | Blatt von unten                     | Kopfzeile, Meldung, Blatt    |
+| auswahl       | [AC-14](00-rahmen/auswahl.md)               | Blätter schließen beim Verlassen    | Kopfzeile, Meldung, Blatt    |
 | datenschutz   | [AC-1](00-rahmen/datenschutz.md)            | Ein Schlüssel im Browser            | Speicher auf dem Gerät       |
 | datenschutz   | [AC-2](00-rahmen/datenschutz.md)            | Kein Konto, keine Anmeldung         | Speicher auf dem Gerät       |
 | datenschutz   | [AC-3](00-rahmen/datenschutz.md)            | Kaputter Speicher startet leer      | Speicher auf dem Gerät       |
@@ -118,6 +109,7 @@ selbst, hier steht er zusammengefasst.
 | datenschutz   | [AC-7](00-rahmen/datenschutz.md)            | Installation als Ereignis           | Zählung                      |
 | datenschutz   | [AC-8](00-rahmen/datenschutz.md)            | Ohne Zählskript läuft alles         | Zählung                      |
 | datenschutz   | [AC-9](00-rahmen/datenschutz.md)            | Offline wird nicht gezählt          | Zählung                      |
+| datenschutz   | [AC-10](00-rahmen/datenschutz.md)           | Hinweis nennt alle Zählungen        | Zählung                      |
 | datenschutz   | [AC-11](00-rahmen/datenschutz.md)           | Schriften vom eigenen Server        | Schriften                    |
 | offline       | [AC-1](00-rahmen/offline.md)                | Worker mit Nummer angemeldet        | Offline-Speicher             |
 | offline       | [AC-2](00-rahmen/offline.md)                | Grundbestand wird abgelegt          | Offline-Speicher             |
@@ -142,6 +134,7 @@ selbst, hier steht er zusammengefasst.
 | schnittstelle | [AC-7](00-rahmen/schnittstelle.md)          | Partie notieren                     | Sitzung                      |
 | schnittstelle | [AC-8](00-rahmen/schnittstelle.md)          | Kleine Helfer                       | Sitzung                      |
 | schnittstelle | [AC-9](00-rahmen/schnittstelle.md)          | `gewonnen` ist dreiwertig           | Urteil und Auswertung        |
+| schnittstelle | [AC-10](00-rahmen/schnittstelle.md)         | `ohneSiege` ist nur Anzeige         | Urteil und Auswertung        |
 | schnittstelle | [AC-11](00-rahmen/schnittstelle.md)         | Auswertung liefert Kennzahlen       | Urteil und Auswertung        |
 | sicherung     | [AC-1](00-rahmen/sicherung.md)              | Sichern an zwei Stellen             | Sichern                      |
 | sicherung     | [AC-2](00-rahmen/sicherung.md)              | Datei mit allen Partien             | Sichern                      |
@@ -150,20 +143,27 @@ selbst, hier steht er zusammengefasst.
 | sicherung     | [AC-5](00-rahmen/sicherung.md)              | Einlesen führt zusammen             | Einlesen                     |
 | sicherung     | [AC-6](00-rahmen/sicherung.md)              | Ungültige Datei ändert nichts       | Einlesen                     |
 | sicherung     | [AC-7](00-rahmen/sicherung.md)              | Ungültige Einträge übersprungen     | Einlesen                     |
+| sicherung     | [AC-8](00-rahmen/sicherung.md)              | Unlesbares Datum übersprungen       | Einlesen                     |
+| sicherung     | [AC-9](00-rahmen/sicherung.md)              | Ohne Kennung nicht doppelt          | Einlesen                     |
+| sicherung     | [AC-10](00-rahmen/sicherung.md)             | Einlesen hält die Obergrenze        | Einlesen                     |
 | sicherung     | [AC-11](00-rahmen/sicherung.md)             | Alles löschen mit Rückfrage         | Löschen und voller Speicher  |
+| sicherung     | [AC-12](00-rahmen/sicherung.md)             | Offenes Spiel schreibt nicht nach   | Löschen und voller Speicher  |
 | sicherung     | [AC-13](00-rahmen/sicherung.md)             | Voller Speicher meldet sich         | Löschen und voller Speicher  |
+| sicherung     | [AC-14](00-rahmen/sicherung.md)             | Löschen trotz vollem Speicher       | Löschen und voller Speicher  |
 | statistik     | [AC-1](00-rahmen/statistik.md)              | Statistik-Knopf je nach Ort         | Aufruf                       |
 | statistik     | [AC-2](00-rahmen/statistik.md)              | Leerer Bestand sagt es              | Aufruf                       |
 | statistik     | [AC-3](00-rahmen/statistik.md)              | Vier Zahlen insgesamt               | Gesamtstatistik              |
 | statistik     | [AC-4](00-rahmen/statistik.md)              | Quote nur mit Urteil                | Gesamtstatistik              |
 | statistik     | [AC-5](00-rahmen/statistik.md)              | Spielzeit aus der Dauer             | Gesamtstatistik              |
 | statistik     | [AC-6](00-rahmen/statistik.md)              | Serie reißt erst morgen             | Gesamtstatistik              |
+| statistik     | [AC-7](00-rahmen/statistik.md)              | Tage nach Ortszeit                  | Gesamtstatistik              |
 | statistik     | [AC-8](00-rahmen/statistik.md)              | Kalender der letzten Wochen         | Gesamtstatistik              |
 | statistik     | [AC-9](00-rahmen/statistik.md)              | Ein Block je Spiel                  | Gesamtstatistik              |
 | statistik     | [AC-10](00-rahmen/statistik.md)             | Kennzahlen im Spielblock            | Je Spiel                     |
 | statistik     | [AC-11](00-rahmen/statistik.md)             | Allgemeine Kennzahlen für alle      | Je Spiel                     |
 | statistik     | [AC-12](00-rahmen/statistik.md)             | Statistik eines Spiels              | Je Spiel                     |
 | statistik     | [AC-13](00-rahmen/statistik.md)             | Höchstens 5000 Partien              | Bestand                      |
+| statistik     | [AC-14](00-rahmen/statistik.md)             | Kaputtes Datum bricht nichts        | Bestand                      |
 | mastermind    | [AC-1](10-raetsel/mastermind.md)            | Zwei Stufen                         | Code und Stufen              |
 | mastermind    | [AC-2](10-raetsel/mastermind.md)            | Neuer Code wählbar                  | Code und Stufen              |
 | mastermind    | [AC-3](10-raetsel/mastermind.md)            | Ziffernfeld und Tastatur            | Eingabe                      |
