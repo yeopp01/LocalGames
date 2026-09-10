@@ -1,7 +1,7 @@
 # Schafkopf
 
 **Datei:** [`spiele/schafkopf.js`](../../spiele/schafkopf.js) · [`spiele/karten.js`](../../spiele/karten.js)
-**Stand:** 32/35 fertig · 3 in arbeit
+**Stand:** 33/35 fertig · 2 in arbeit
 
 ## Zweck
 
@@ -116,7 +116,7 @@ drei Stufen erklärt Züge aus derselben Sicht, die ein Mensch am Tisch hat.
   Augen reicht, rechnet der Rechner samt der Augen, die in fertigen Stichen
   schon bei der jeweiligen Partei liegen – nicht ab null beim laufenden Stich.
   Wem ein fertiger Stich gehört, entscheidet die jeweilige Verteilung.
-- **AC-20** `in-arbeit` **Sau nicht vor den Zehner** — Beim Wenz und Geier
+- **AC-20** `fertig` **Sau nicht vor den Zehner** — Beim Wenz und Geier
   spielt die Gegenpartei ihre Sau nicht an, wenn der Alleinspieler in dieser
   Farbe den Zehner mit Beikarte hält, und holt einen Stich dieser Farbe nicht
   mit der Sau, solange der Spieler schon gelegt hat und den Zehner noch hält.

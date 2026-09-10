@@ -495,6 +495,7 @@ const Karten = (() => {
           }
           if (jemandFrei) continue;
         }
+        if (meins === 0 && zehnerLauert(w, f, false)) continue;
         if (draussen >= 2) return s;
       }
     }
@@ -525,6 +526,20 @@ const Karten = (() => {
       for (const c of w.haende[q]) if (schlaegt(c, k, ang, w.ord)) return false;
     }
     return true;
+  }
+
+  function zehnerLauert(w, f, schonGelegt) {
+    if (w.sp.art !== 'wenz' && w.sp.art !== 'geier') return false;
+    const h = w.haende[w.spieler];
+    if (h.indexOf(karte(f, 1)) < 0) return false;
+    return schonGelegt || h.filter((c) => !w.ord.trumpf[c] && farbe(c) === f).length >= 2;
+  }
+
+  function spielerHatGelegt(w) {
+    for (let i = 0; i < w.trick.length; i += 1) {
+      if ((w.trickStart + i) % 4 === w.spieler) return true;
+    }
+    return false;
   }
 
   function faustregel(w, p) {
@@ -648,7 +663,10 @@ const Karten = (() => {
           Sauspiel   45,3 → 47,2 %
           Herz-Solo  51,5 → 59,1 %
           Wenz       17,0 → 16,7 %   (dort gibt es nur vier Trümpfe) */
-    const gewinner = zuege.filter((k) => schlaegt(k, bester, ang, ord));
+    let gewinner = zuege.filter((k) => schlaegt(k, bester, ang, ord));
+    if (w.seite[p] === 0 && ang !== 4 && spielerHatGelegt(w) && zehnerLauert(w, ang, true)) {
+      gewinner = gewinner.filter((k) => wert(k) !== 0);
+    }
     if (gewinner.length) {
       const haelt = (k) => {
         w.trick.push(k);

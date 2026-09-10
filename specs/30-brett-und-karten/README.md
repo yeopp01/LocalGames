@@ -7,7 +7,7 @@ Karten.
 
 | Spezifikation                  | Stand                      |
 | ------------------------------ | -------------------------- |
-| [Schafkopf](schafkopf.md)      | 32/35 fertig · 3 in arbeit |
+| [Schafkopf](schafkopf.md)      | 33/35 fertig · 2 in arbeit |
 | [Vier gewinnt](viergewinnt.md) | 16/16 fertig               |
 | [2048](zweitausend.md)         | 13/13 fertig               |
 
