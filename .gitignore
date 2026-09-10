@@ -2,3 +2,10 @@
 Thumbs.db
 desktop.ini
 .DS_Store
+
+# Pruefstand: Pakete und alles, was ein Lauf erzeugt
+pruefung/node_modules/
+pruefung/bericht/
+pruefung/ergebnisse/
+pruefung/ansichten/
+pruefung/test-results/

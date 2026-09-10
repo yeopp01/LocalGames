@@ -1,0 +1,16 @@
+{
+  "name": "localgames-pruefung",
+  "private": true,
+  "description": "Pruefstand fuer LocalGames: Waechter, E2E-Tests, Spec-Board und Bericht. Die App selbst braucht nichts davon.",
+  "scripts": {
+    "alles": "node pruefen.mjs",
+    "waechter": "node waechter.mjs",
+    "e2e": "playwright test",
+    "board": "node skripte/spec-board.mjs",
+    "bericht": "node skripte/bericht.mjs",
+    "ansehen": "node ansehen.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1"
+  }
+}

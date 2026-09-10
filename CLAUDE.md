@@ -1,8 +1,13 @@
 # LocalGames
 
-Sammlung kleiner Browserspiele als PWA. Reines Vanilla-JS, **kein Build,
-kein Paketmanager, keine Abhängigkeit** – die Dateien im Repo sind die App.
+Sammlung kleiner Browserspiele als PWA. Reines Vanilla-JS. **Die App hat
+keinen Build, keinen Paketmanager, keine Abhängigkeit** – die Dateien im
+Wurzelverzeichnis samt `spiele/`, `icons/`, `schriften/` sind die App.
 Ausprobieren: `npx serve -l 4173 .`
+
+Daneben liegen zwei Ordner, die nicht zur App gehören: `specs/` (was sie
+können soll) und `pruefung/` (wie das geprüft wird). Nur `pruefung/` hat ein
+`package.json`, und nur für Playwright.
 
 ## Aufbau
 
@@ -10,8 +15,9 @@ Ausprobieren: `npx serve -l 4173 .`
   Statistik, Sicherung. Kennt kein einziges Spiel.
 * `spiele/*.js` – je ein Spiel, meldet sich selbst beim Rahmen an.
   Ausnahmen sind die Werkzeuge: `woerter.js` (Wortliste), `loeser.js`
-  (Wördle-Rechner), `begriffe.js` (Wortpaare), `runde.js` (alles für
-  Spiele zu mehreren: Sperrschirm, geheime Abstimmung, Uhr).
+  (Wördle-Rechner), `begriffe.js` (Wortpaare), `karten.js` (Schafkopf-Blatt
+  und Kartenrechner), `runde.js` (alles für Spiele zu mehreren: Sperrschirm,
+  geheime Abstimmung, Uhr).
 * `index.html` lädt alle Dateien als klassische `<script>`-Tags in fester
   Reihenfolge (Werkzeuge, `app.js`, dann die Spiele) und ruft `Rahmen.los()`.
   Kein `type="module"`, jede Datei ist ein IIFE mit einem globalen Namen.
@@ -22,6 +28,11 @@ Ausprobieren: `npx serve -l 4173 .`
   Seite geladen wurde.
 * `sw.js` – Service Worker. Neue Dateien in `GRUNDBESTAND` eintragen; der
   Lagername kommt aus `version.js`.
+* `specs/<bereich>/<id>.md` – je Spiel und für den Rahmen: Zweck,
+  **Akzeptanzkriterien mit Status**, Randfälle, Hintergrund. Regeln in
+  `specs/README.md`, Überblick im erzeugten `specs/BOARD.md`.
+* `pruefung/` – Wächter, E2E-Tests, Board, Bericht. Siehe
+  `pruefung/README.md`.
 
 ## Ein Spiel hinzufügen
 
@@ -32,7 +43,11 @@ Ausprobieren: `npx serve -l 4173 .`
    Statistik.
 2. `<script>` in `index.html` ergänzen.
 3. Pfad in `sw.js` (`GRUNDBESTAND`) ergänzen, `version.js` hochzählen.
-4. Zeile in der Tabelle im README ergänzen.
+4. Spec `specs/<bereich>/<id>.md` mit Akzeptanzkriterien anlegen.
+5. Zeile in der Spieltabelle im README ergänzen, der Name verlinkt auf die Spec.
+
+Der Wächter meldet jeden vergessenen Schritt. Die Rauchtests nehmen das neue
+Spiel ohne Änderung auf.
 
 Die `sitzung` ist die einzige Verbindung zum Rahmen: `unter`, `werkzeuge`,
 `toast`, `blatt`/`blattZu`, `merken`/`erinnert`/`vergessen` (laufender
@@ -50,6 +65,44 @@ Spielstand), `notieren`/`partien` (Statistik), `zurueck`, `el`, `dauerText`.
 * Alles liegt in `localStorage` unter `localgames.v1`. Nach draußen geht
   einzig der anonyme Aufrufzähler (GoatCounter) in `app.js`/`index.html`.
 
+## Specs und Akzeptanzkriterien
+
+* **Abgearbeitet wird das Kriterium, nicht die Spec.** Jedes trägt Status
+  und Kurztitel: `- **AC-7** \`fertig\` **Erster Klick sicher** — …`.
+  Status: `offen` · `geplant` · `in-arbeit` · `fertig` · `zurueckgestellt`
+  (mit Grund in Klammern).
+* Wer Verhalten ändert, ändert die Spec mit: neues Kriterium mit der nächsten
+  freien Nummer, Status nachziehen. Nummern werden nie neu vergeben.
+* **`fertig` nur, was am Code oder im Browser nachvollzogen ist.** Was die
+  Spec verspricht und der Code nicht hält, ist `offen` – mit einem Satz, was
+  heute stattdessen passiert.
+* Ein behobener Fehler, der eine Lücke in der Anforderung gezeigt hat,
+  hinterlässt ein Kriterium.
+* `**Stand:**`-Zeilen, Bereichstabellen und `specs/BOARD.md` sind erzeugt:
+  `node pruefung/skripte/spec-board.mjs`, dann mitcommitten.
+
+## Selbst prüfen
+
+Nach jeder Änderung, bevor „fertig" gesagt wird:
+
+* `node pruefung/pruefen.mjs` – Wächter, E2E-Tests auf Handy und Laptop,
+  Bericht. Rot heißt nicht fertig. `--ohne-e2e` für die schnelle Runde
+  (Sekunden), `-- -g Minenfeld` für einen Teil der Tests.
+  Einmalig vorher: `npm --prefix pruefung install`.
+* `node pruefung/ansehen.mjs "#/spiel/<id>" --geraet laptop --klick "…"` –
+  eine Ansicht im echten Browser als Bild, samt Konsolenfehlern und allem,
+  was seitlich aus dem Fenster ragt. Für jede sichtbare Änderung: Bild
+  ansehen, auf `handy` und einem flachen Fenster (`1366x700`).
+* Die E2E-Tests sind Rauchtests für den Rahmen und die Verträge, keine
+  Regeltests der Spiele. Ein neuer Test gehört dazu, wenn er einen Vertrag
+  oder einen behobenen Fehler festhält. Kein `.skip`, kein `.only`, keine
+  Wiederholung – ein Test, der erst beim zweiten Mal grün wird, ist rot.
+* Spielregeln, Rechner und Erzeuger werden weiter mit Wegwerf-Skripten gegen
+  die Spieldatei geprüft (die Module hängen an `globalThis`) und im
+  Commit-Rumpf mit Zahlen belegt.
+* Der Bericht `pruefung/bericht/index.html` zeigt Kriterien, letzten Lauf
+  und Fortschritt. Ergebnisse und Bericht werden nicht eingecheckt.
+
 ## Stil
 
 * Oberfläche, Bezeichner und Kommentare sind **deutsch** (`spieler`,
@@ -58,6 +111,3 @@ Spielstand), `notieren`/`partien` (Statistik), `zurueck`, `el`, `dauerText`.
   können; der Hinweisgeber schaut nicht in die Lösung.
 * Commits: deutscher Betreff im Aussagesatz, ohne Umlaute (`ae/oe/ue/ss`),
   Rumpf erklärt Grund, Abwägung und was geprüft wurde.
-* Tests gibt es nicht im Repo. Was geprüft werden muss, wird als
-  Wegwerf-Skript gegen die Spieldatei laufen gelassen (die Module hängen
-  an `globalThis`) und im Commit-Rumpf mit Zahlen belegt.
