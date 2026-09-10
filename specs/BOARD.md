@@ -6,13 +6,13 @@
 Eine Zeile je Akzeptanzkriterium. Gepflegt wird der Status in der Spec
 selbst, hier steht er zusammengefasst.
 
-**Gesamt:** 3 in arbeit · 0 geplant · 7 offen · 1 zurückgestellt · 342 fertig
+**Gesamt:** 3 in arbeit · 0 geplant · 7 offen · 1 zurückgestellt · 343 fertig
 
 ## Nach Spezifikation
 
 | Spezifikation                                      | In Arbeit | Geplant | Offen | Zurückgestellt | Fertig |
 | -------------------------------------------------- | --------- | ------- | ----- | -------------- | ------ |
-| [Auswahl und Navigation](00-rahmen/auswahl.md)     | -         | -       | -     | -              | 14     |
+| [Auswahl und Navigation](00-rahmen/auswahl.md)     | -         | -       | -     | -              | 15     |
 | [Datenschutz](00-rahmen/datenschutz.md)            | -         | -       | -     | -              | 11     |
 | [Offline und Versionen](00-rahmen/offline.md)      | -         | -       | -     | -              | 14     |
 | [Spielschnittstelle](00-rahmen/schnittstelle.md)   | -         | -       | 1     | -              | 11     |
@@ -62,7 +62,7 @@ selbst, hier steht er zusammengefasst.
 | --------- | ------------------------------------ | -------------------------- | -------------------------------------------- |
 | verraeter | [AC-13](40-zu-mehreren/verraeter.md) | Stimmen übers Netz sammeln | braucht eine Verbindung zwischen den Geräten |
 
-## Fertig (342)
+## Fertig (343)
 
 | Spec          | AC                                          | Titel                                  | Anmerkung                    |
 | ------------- | ------------------------------------------- | -------------------------------------- | ---------------------------- |
@@ -80,6 +80,7 @@ selbst, hier steht er zusammengefasst.
 | auswahl       | [AC-12](00-rahmen/auswahl.md)               | Kurze Meldung unten                    | Kopfzeile, Meldung, Blatt    |
 | auswahl       | [AC-13](00-rahmen/auswahl.md)               | Blatt von unten                        | Kopfzeile, Meldung, Blatt    |
 | auswahl       | [AC-14](00-rahmen/auswahl.md)               | Blätter schließen beim Verlassen       | Kopfzeile, Meldung, Blatt    |
+| auswahl       | [AC-15](00-rahmen/auswahl.md)               | Meldung verdeckt kein Blatt            | Kopfzeile, Meldung, Blatt    |
 | datenschutz   | [AC-1](00-rahmen/datenschutz.md)            | Ein Schlüssel im Browser               | Speicher auf dem Gerät       |
 | datenschutz   | [AC-2](00-rahmen/datenschutz.md)            | Kein Konto, keine Anmeldung            | Speicher auf dem Gerät       |
 | datenschutz   | [AC-3](00-rahmen/datenschutz.md)            | Kaputter Speicher startet leer         | Speicher auf dem Gerät       |

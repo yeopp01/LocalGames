@@ -422,6 +422,14 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 
 /* ------------------------------------------------------------------ Toast */
 
+/* Liegt ein Blatt offen, stehen unten seine Knöpfe. Die Meldung weicht dann
+   unter die Kopfzeile aus, statt sie knapp drei Sekunden lang zu verdecken –
+   wer „Einzeichnen" tippen wollte, traf sonst die Meldung. */
+body:has(.sheet-huelle:not([hidden])) .toast {
+  bottom: auto;
+  top: calc(max(10px, env(safe-area-inset-top)) + var(--kopf-hoehe) + 8px);
+}
+
 .toast {
   position: fixed;
   left: 50%;

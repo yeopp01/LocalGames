@@ -81,6 +81,20 @@ test.describe('Einstellungen', () => {
     await expect(page.locator('#sheet-einstellungen')).toBeHidden();
   });
 
+  test('eine Meldung verdeckt die Knöpfe eines offenen Blatts nicht', async ({ page }) => {
+    await oeffnen(page);
+    await page.locator('#btn-einstellungen').click();
+    await page.locator('#btn-aktualisieren').click();
+    const toast = page.locator('#toast');
+    await expect(toast).toBeVisible();
+    const t = await toast.boundingBox();
+    const k = await page.locator('#sheet-einstellungen .sheet-aktionen').boundingBox();
+    const ueberlappt = t.y < k.y + k.height && k.y < t.y + t.height && t.x < k.x + k.width && k.x < t.x + t.width;
+    expect(ueberlappt, `Meldung ${JSON.stringify(t)} über Knöpfen ${JSON.stringify(k)}`).toBe(false);
+    await page.locator('#sheet-einstellungen').getByRole('button', { name: 'Fertig' }).click();
+    await expect(page.locator('#sheet-einstellungen')).toBeHidden();
+  });
+
   test('Versionssuche meldet den neuesten Stand', async ({ page }) => {
     await oeffnen(page);
     await page.locator('#btn-einstellungen').click();

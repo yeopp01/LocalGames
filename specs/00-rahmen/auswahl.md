@@ -1,7 +1,7 @@
 # Auswahl und Navigation
 
 **Datei:** [`app.js`](../../app.js), [`index.html`](../../index.html)
-**Stand:** 14/14 fertig
+**Stand:** 15/15 fertig
 
 ## Zweck
 
@@ -62,7 +62,8 @@ Dialog, die alle Spiele benutzen.
   Statistik- und dem Einstellungsknopf und verschwinden beim Wechsel der
   Ansicht.
 - **AC-12** `fertig` **Kurze Meldung unten** — Eine Meldung (Toast) erscheint
-  unten und verschwindet nach knapp drei Sekunden von selbst. Eine neue Meldung
+  unten (bei offenem Blatt oben, siehe AC-15) und verschwindet nach knapp drei
+  Sekunden von selbst. Eine neue Meldung
   ersetzt die alte und bekommt ihre volle Zeit.
 - **AC-13** `fertig` **Blatt von unten** — Ein Blatt zeigt Titel, einen Text
   oder ein beliebiges Element und eine Knopfleiste; ohne Angabe gibt es einen
@@ -72,6 +73,10 @@ Dialog, die alle Spiele benutzen.
   Ansicht, während ein Blatt eines Spiels oder das Einstellungsblatt offen ist
   – über einen Knopf oder die Zurück-Geste –, schließt sich das Blatt, bevor
   das Spiel beendet wird.
+- **AC-15** `fertig` **Meldung verdeckt kein Blatt** — Ist ein Blatt offen,
+  erscheint eine Meldung oben unter der Kopfzeile statt unten, damit sie die
+  Knöpfe des Blatts nicht verdeckt. Aufgefallen bei Weg: „Der Weg wird gesucht"
+  lag knapp drei Sekunden über „Einzeichnen".
 
 ## Randfälle
 
