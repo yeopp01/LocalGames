@@ -1026,6 +1026,57 @@ const Karten = (() => {
      angesagt hätte – und die Gegenpartei hielt Stiche für sicher, die es
      nicht waren. */
   const ANSAGER_TRUMPF = { sau: 4, solo: 6, wenz: 2, geier: 2 };
+
+  /* Wie wahrscheinlich sagt ein Blatt Wenz oder Geier an? Die Untergrenze von
+     zwei Trümpfen genügt dafür nicht. Mit ihr würfelte die Gegenpartei dem
+     Alleinspieler ein Blatt, wie es jeder hat, der zufällig zwei Unter hält –
+     und ein solches Blatt sagt niemand an. Die Gegenpartei rechnete sich
+     daraufhin in vier von fünf Welten als Sieger, hielt die Zehner des
+     Spielers für die ihres Partners und spielte ihre Sauen ohne Sorge an.
+     Genau davon lebt ein Wenz mit Zehner und Beikarte.
+
+     Gemessen an 40664 Blättern mit mindestens zwei Untern bzw. Obern, davon
+     1448, die der Rechner auch ansagt (Wenz und Geier liegen gleichauf und
+     sind zusammengelegt). Wer ansagt, hält im Schnitt 2,7 Trümpfe, 1,9 Sauen,
+     1,05 Zehner und ist in einer Farbe frei; wer nicht, 2,1 / 0,8 / 0,8 / 0,6.
+     Daraus eine logistische Kurve – vier Zahlen statt einer Tabelle mit
+     45 dünn besetzten Feldern:
+
+        nur Trümpfe und Sauen      Log-Likelihood −3395
+        dazu die Zehner                           −2880
+        dazu die freien Farben                    −2611
+        dazu Sau mit Zehner                       −2611   (nichts mehr)
+
+     Die Kurve trifft: wo sie 33 % sagt, sind es 31 %, wo sie 88 % sagt, 91 %.
+
+     Aus Sicht der Gegenpartei vor dem ersten Stich, über 125 Wenz-Gaben:
+
+                          Trümpfe  Sauen   Sieg Gegenpartei   ihre Augen
+        vorher gewürfelt    2,22    0,89         78 %            79
+        jetzt gewürfelt     2,76    1,79         31 %            50
+        tatsächlich         2,73    2,10         16 %            40
+
+     Ganz schließt sich die Lücke nicht; das Blatt hat mehr Eigenschaften, als
+     vier Zahlen fassen. Die harte Schranke „zweimal Trümpfe plus Sauen
+     mindestens sechs", die zuerst hier stand, kam nur auf 65 %. */
+  const ALLEIN_ANSAGE = { grund: -21.95, trumpf: 4.33, sau: 3.61, zehner: 1.72, frei: 1.45 };
+
+  function ansageGlaube(sp, karten) {
+    const ord = ordnung(sp);
+    let t = 0;
+    let a = 0;
+    let z = 0;
+    const farbig = [0, 0, 0, 0];
+    for (const k of karten) {
+      if (ord.trumpf[k]) { t += 1; continue; }
+      farbig[farbe(k)] += 1;
+      if (wert(k) === 0) a += 1;
+      else if (wert(k) === 1) z += 1;
+    }
+    const frei = farbig.filter((n) => n === 0).length;
+    const m = ALLEIN_ANSAGE;
+    return 1 / (1 + Math.exp(-(m.grund + m.trumpf * t + m.sau * a + m.zehner * z + m.frei * frei)));
+  }
   const GEBOT_GRENZE = { weiterTrumpf: 5, weiterOber: 2, weiterSolo: 6 };
 
   function blattstaerke(karten, ord) {
@@ -1077,7 +1128,22 @@ const Karten = (() => {
       plaetze.filter((p) => passt(s, p, a)).length
       - plaetze.filter((p) => passt(s, p, b)).length));
 
-    for (let versuch = 0; versuch < 40; versuch += 1) {
+    /* Beim Wenz und Geier wird das Blatt des Alleinspielers nicht nur geprüft,
+       sondern gewogen: angenommen mit der Wahrscheinlichkeit, mit der es
+       angesagt worden wäre (siehe ansageGlaube). Das kostet Anläufe – ein
+       angesagtes Blatt ist unter allen gewürfelten eines von hundert –, also
+       gibt es mehr davon, und reichen auch die nicht, wird die glaubwürdigste
+       Welt genommen statt der erstbesten.
+
+       Die Suche bleibt dabei in ihrer Frist, bekommt aber weniger Welten
+       hinein: gemessen an 153 Zügen der Gegenpartei mit 200 Proben und
+       240 ms im Median weiter 200 Welten, im schlechtesten Zehntel 122,
+       einmal 48. Die Zugzeit steigt von 51 auf 147 ms. */
+    const glaube = !!s.gebotGrenze && (s.sp.art === 'wenz' || s.sp.art === 'geier')
+      && s.spieler !== s.ich && s.gebote && s.gebote[s.spieler] === 1;
+    let ersatz = null;
+    let ersatzWert = -1;
+    for (let versuch = 0; versuch < (glaube ? 400 : 40); versuch += 1) {
       const haende = [[], [], [], []];
       haende[s.ich] = s.hand.slice();
       let gut = true;
@@ -1087,14 +1153,21 @@ const Karten = (() => {
         haende[moegl[Math.floor(wuerfel() * moegl.length)]].push(k);
       }
       if (!gut) continue;
+      const passend = [0, 1, 2, 3].every((q) => q === s.ich || gebotPasst(s, q, haende[q]));
+      if (glaube) {
+        if (!passend) continue;
+        const g = ansageGlaube(s.sp, haende[s.spieler].concat(s.gelegt[s.spieler] || []));
+        if (wuerfel() < g) return haende;
+        if (g > ersatzWert) { ersatzWert = g; ersatz = haende; }
+        continue;
+      }
       /* Nur Welten annehmen, die zur Ansage passen. Klappt das nicht, wird
          die Bedingung nach der Hälfte der Anläufe fallengelassen – eine Welt
          ohne sie ist besser als gar keine. */
-      if (versuch < 20 && ![0, 1, 2, 3].every((q) => q === s.ich || gebotPasst(s, q, haende[q]))) {
-        continue;
-      }
+      if (versuch < 20 && !passend) continue;
       return haende;
     }
+    if (ersatz) return ersatz;
 
     const haende = [[], [], [], []];
     haende[s.ich] = s.hand.slice();
@@ -1664,7 +1737,7 @@ const Karten = (() => {
     nochSchlagbar, mischen, unterschied,
     sichtVon, verteilen, weltAus, bewerten, besteKarte, begruenden, seiteVon,
     wissen, gefahr, hoechsterFremd,
-    blattstaerke, gebotPasst,
+    blattstaerke, gebotPasst, ansageGlaube, ALLEIN_ANSAGE,
     quote, ansageRat, siebt, schutz,
   };
 })();

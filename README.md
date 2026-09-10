@@ -202,6 +202,34 @@ ersten Stich (+0,09), sondern in der Mitte — Stich 4 mit +0,74, Stich 5 mit
 +1,49 —, wo die Ansage-Auskunft mit den Farbschlüssen zusammenkommt und das
 exakte Endspiel anspringt.
 
+**Beim Wenz und Geier reichte das nicht.** Dort verlangte der Würfel vom
+Alleinspieler nur zwei Unter bzw. Ober – und ein Blatt, das nichts weiter hat
+als zwei Unter, sagt niemand an. Die Gegenpartei rechnete sich deshalb vor dem
+ersten Stich in 78 von 100 Welten als Sieger, tatsächlich gewinnt sie 16. Sie
+hielt die Zehner des Spielers für die ihres Partners und legte ihre Sau, sobald
+sie konnte. Ein Wenz mit Zehner und Beikarte bekam die Sauen dadurch zuverlässig
+vorgelegt: kleine Karte drunter, der Zehner steht, und der Rest geht billig weg.
+
+Jetzt wird das Blatt des Alleinspielers gewogen statt nur geprüft: angenommen
+mit der Wahrscheinlichkeit, mit der der Rechner es selbst angesagt hätte.
+Gemessen an 40 664 Blättern mit mindestens zwei Trümpfen, 1448 davon angesagt,
+trägt eine logistische Kurve über vier Merkmale – Trümpfe, Sauen, Zehner, freie
+Farben – und trifft: wo sie 33 % sagt, sind es 31 %, wo sie 88 % sagt, 91 %.
+
+| Gegenpartei vor dem ersten Stich | Sauen beim Spieler | Sieg Gegenpartei | ihre Augen |
+| --- | --- | --- | --- |
+| vorher gewürfelt | 0,89 | 78 % | 79 |
+| jetzt gewürfelt | 1,79 | 31 % | 50 |
+| tatsächlich | 2,10 | 16 % | 40 |
+
+Beim Nachsehen fiel ein zweiter Fehler auf, der alle Spielarten betraf: Jede
+gewürfelte Welt beginnt beim laufenden Stich, und was schon in fertigen Stichen
+lag, fehlte in der Rechnung. Die Schwelle von 61 stand damit an der falschen
+Stelle – die Gegenpartei zählte alle bisherigen Augen des Spielers als ihre,
+und beim Wenz hielt sie sich vom vierten Stich an praktisch immer für den
+Sieger. Wo alles gewonnen scheint, sind alle Karten gleich gut, und dann
+entscheidet nur noch die Faustregel.
+
 Liegen nur noch dreizehn Karten, hört das Schätzen auf: dann wird die Welt
 exakt durchgerechnet, beide Parteien bestmöglich, mit Alpha-Beta. Früher
 umzuschalten wäre schön und geht nicht – die Zeit für einen einzigen Zug,

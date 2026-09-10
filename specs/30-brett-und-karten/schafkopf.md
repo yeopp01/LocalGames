@@ -1,7 +1,7 @@
 # Schafkopf
 
 **Datei:** [`spiele/schafkopf.js`](../../spiele/schafkopf.js) · [`spiele/karten.js`](../../spiele/karten.js)
-**Stand:** 34/35 fertig · 1 in arbeit
+**Stand:** 35/35 fertig
 
 ## Zweck
 
@@ -107,7 +107,7 @@ drei Stufen erklärt Züge aus derselben Sicht, die ein Mensch am Tisch hat.
   Anspieler. Weitersagern werden, solange sich eine
   passende Verteilung findet, keine Blätter zugewürfelt, mit denen sie
   angesagt hätten.
-- **AC-18** `in-arbeit` **Wenz- und Geier-Ansager gewogen** — Beim Wenz und
+- **AC-18** `fertig` **Wenz- und Geier-Ansager gewogen** — Beim Wenz und
   Geier würfeln die Gegner dem Alleinspieler Blätter so oft zu, wie man sie
   auch ansagen würde – Sauen, Zehner und freie Farben zählen mit, nicht nur die
   Trümpfe, und schon gelegte Karten gehören zum Blatt. Findet sich in den

@@ -149,6 +149,14 @@
           + 'bei den Obern um 8,4 %. Auf die Zugwahl schlägt das mit +0,37 ± 0,27 Augen je '
           + 'geändertem Zug durch – und der Gewinn sitzt nicht im ersten Stich, sondern in '
           + 'der Mitte, wo die Ansage mit den Farbschlüssen zusammenkommt.' },
+      { titel: 'Wer Wenz oder Geier ansagt, hat Sauen und Zehner',
+        gilt: 'Wenz und Geier – gilt für dich wie für den Rechner',
+        text: 'Zwei Unter allein sagt niemand an. Wer ansagt, hält im Schnitt 2,7 Trümpfe, '
+          + '1,9 Sauen und einen Zehner und ist in einer Farbe frei. Liegt dein Partner '
+          + 'also nicht offensichtlich mit dem Zehner da, liegt er beim Spieler – und '
+          + 'dann legst du deine Sau nicht vor, sondern wartest, bis sein Zehner fallen muss.',
+        zahl: 'Vorher glaubte sich die Gegenpartei vor dem ersten Stich in 78 von 100 '
+          + 'Welten als Sieger, tatsächlich gewinnt sie 16. Jetzt glaubt sie es in 31.' },
     ] },
     { kopf: 'Anspielen', regeln: [
       { titel: 'Den höchsten Trumpf ziehen, der noch draußen ist',
