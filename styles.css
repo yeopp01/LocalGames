@@ -2375,3 +2375,113 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   .sk-dran-punkt { animation: none; }
   .sk-karte--hand { transition: none; }
 }
+
+/* ============================================ Geschick: Schlange, Invasoren,
+                                               Flattervogel, Hochhinaus
+
+   Die vier Echtzeitspiele teilen sich Leinwand, Schild und Steuerleiste
+   (spiele/echtzeit.js). Das Feld muss ganz ins Fenster passen, auch in ein
+   flaches: Wer beim Spielen scrollen muss, hat schon verloren. Die Breite
+   richtet sich deshalb auch nach der Fensterhoehe, und jedes Spiel sagt mit
+   --ez-breite, wie viel Hoehe es neben dem Feld noch braucht. */
+
+.ez-flaeche {
+  --ez-breite: min(440px, 92vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+.ez-flaeche > * { width: var(--ez-breite); max-width: 100%; }
+
+.ez-kasten {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  background: var(--karte);
+  /* Rand als Schatten: Ein echter Rand naehme der Leinwand Platz, und sie
+     stuende nicht mehr genau im Seitenverhaeltnis ihrer Rechnung. */
+  box-shadow: 0 0 0 1px var(--karte-rand);
+  touch-action: none;
+}
+.ez-leinwand { display: block; width: 100%; height: 100%; }
+
+.ez-schild {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 16px;
+  text-align: center;
+  background: color-mix(in srgb, var(--karte) 70%, transparent);
+  pointer-events: none;
+}
+.ez-schild p { margin: 0; }
+/* Wo die Figur zu Beginn mitten im Feld steht, rückt die Schrift nach unten
+   – sonst steht „Wisch los" genau auf der Schlange, die gemeint ist. */
+.sn-kasten .ez-schild { justify-content: flex-end; padding-bottom: 18%; }
+.fl-kasten .ez-schild { justify-content: flex-end; padding-bottom: 22%; }
+.iv-kasten .ez-schild { justify-content: flex-end; padding-bottom: 26%; }
+.ez-schild-titel { font-size: 22px; font-weight: 800; letter-spacing: -.01em; }
+.ez-schild-unter { font-size: 14px; color: var(--tinte-leise); max-width: 30ch; line-height: 1.4; }
+
+.ez-steuer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+  padding: 0 12px;
+  border: 1.5px dashed var(--karte-rand);
+  border-radius: 12px;
+  font-size: 13px;
+  color: var(--tinte-still);
+  text-align: center;
+}
+.ez-steuer--zwei { justify-content: space-between; padding: 0 20px; }
+
+.ez-unten { width: min(380px, 100%); }
+
+/* Schlange: quadratisches Feld, darunter das Steuerkreuz. */
+.sn-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc(100vh - 250px))); }
+@supports (height: 100dvh) {
+  .sn-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc(100dvh - 250px))); }
+}
+.sn-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 64px);
+  grid-template-rows: repeat(2, 46px);
+  grid-template-areas: ". hoch ." "links runter rechts";
+  gap: 6px;
+  justify-content: center;
+}
+.sn-taste { padding: 0; font-size: 20px; border-radius: 12px; touch-action: none; }
+.sn-taste[data-ort='hoch'] { grid-area: hoch; }
+.sn-taste[data-ort='links'] { grid-area: links; }
+.sn-taste[data-ort='runter'] { grid-area: runter; }
+.sn-taste[data-ort='rechts'] { grid-area: rechts; }
+
+/* Invasoren: 180 x 214, darunter die Leiste zum Ziehen. */
+.iv-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100vh - 250px) * 180 / 214))); }
+@supports (height: 100dvh) {
+  .iv-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100dvh - 250px) * 180 / 214))); }
+}
+
+/* Flattervogel: 180 x 250, keine Leiste – getippt wird aufs Feld. */
+.fl-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100vh - 180px) * 180 / 250))); }
+@supports (height: 100dvh) {
+  .fl-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100dvh - 180px) * 180 / 250))); }
+}
+
+/* Hochhinaus: 180 x 270, darunter die zwei Haltehaelften. */
+.dj-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100vh - 270px) * 180 / 270))); }
+@supports (height: 100dvh) {
+  .dj-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100dvh - 270px) * 180 / 270))); }
+}

@@ -25,6 +25,7 @@ node pruefung/skripte/bericht.mjs        # Seite: pruefung/bericht/index.html
 | [20-wortspiele](20-wortspiele/)                 | Wördle, Galgenmännchen                                   |
 | [30-brett-und-karten](30-brett-und-karten/)     | 2048, Vier gewinnt, Schafkopf                            |
 | [40-zu-mehreren](40-zu-mehreren/)               | Bausteine für Runden, Verräter, Bombe, Zwei Wahrheiten, Wer am ehesten |
+| [50-geschick](50-geschick/)                     | Echtzeit-Werkzeug, Schlange, Invasoren, Flattervogel, Hochhinaus |
 
 ## Regeln für die Ablage
 

@@ -25,6 +25,10 @@ Enthalten sind bisher:
 | [**Zwei Wahrheiten**](specs/40-zu-mehreren/wahrheiten.md) | Drei Sätze über sich, einer erfunden. Die anderen raten reihum und geheim. |
 | [**Wer am ehesten**](specs/40-zu-mehreren/amehesten.md) | Eine Frage, geheime Stimmen, aufgedecktes Ergebnis. 45 Fragen, harmlos und frech. |
 | [**Schafkopf**](specs/30-brett-und-karten/schafkopf.md) | Bayrisch, zu viert, gegen drei rechnende Gegner. Sauspiel, Wenz, Geier, Solo – mit Lehrer, der sagt, was du hättest spielen sollen. |
+| [**Schlange**](specs/50-geschick/snake.md) | Snake wie auf dem alten Handy: wischen, fressen, wachsen. Schnelle Kehren merkt sie sich. |
+| [**Invasoren**](specs/50-geschick/invaders.md) | Space Invaders für den Daumen: ziehen lenkt, berühren feuert. Deckungen, die zerbröseln. |
+| [**Flattervogel**](specs/50-geschick/flappy.md) | Flappy Bird: ein Tipp, ein Flügelschlag, durch die Lücke. Etwas gnädiger als das Vorbild. |
+| [**Hochhinaus**](specs/50-geschick/doodle.md) | Doodle Jump auf Karopapier: halten oder Handy neigen, Federn, wandernde und brüchige Plattformen. |
 
 Über allem liegt ein Dashboard mit der Spielauswahl und eine gemeinsame
 Statistik über alle Partien, samt Sicherung zum Mitnehmen. Was jedes Spiel
@@ -93,6 +97,7 @@ in `index.html` – die App läuft unverändert weiter.
 | `spiele/begriffe.js` | Wortpaare für Verräter |
 | `spiele/karten.js` | Das bayrische Blatt: Regeln, Abrechnung und der Kartenrechner |
 | `spiele/runde.js` | Bausteine für die Spiele zu mehreren |
+| `spiele/echtzeit.js` | Leinwand, Spielschleife und Pause für die Geschicklichkeitsspiele |
 | `version.js` | Die Versionsnummer, für Seite und Offline-Speicher |
 | `sw.js` | Der Offline-Speicher |
 | `icons/` | App-Icons |

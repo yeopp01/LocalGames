@@ -17,7 +17,8 @@ können soll) und `pruefung/` (wie das geprüft wird). Nur `pruefung/` hat ein
   Ausnahmen sind die Werkzeuge: `woerter.js` (Wortliste), `loeser.js`
   (Wördle-Rechner), `begriffe.js` (Wortpaare), `karten.js` (Schafkopf-Blatt
   und Kartenrechner), `runde.js` (alles für Spiele zu mehreren: Sperrschirm,
-  geheime Abstimmung, Uhr).
+  geheime Abstimmung, Uhr), `echtzeit.js` (für die Geschicklichkeitsspiele:
+  Leinwand, Spielschleife mit festem Takt, Pause bei Blatt oder Hintergrund).
 * `index.html` lädt alle Dateien als klassische `<script>`-Tags in fester
   Reihenfolge (Werkzeuge, `app.js`, dann die Spiele) und ruft `Rahmen.los()`.
   Kein `type="module"`, jede Datei ist ein IIFE mit einem globalen Namen.
