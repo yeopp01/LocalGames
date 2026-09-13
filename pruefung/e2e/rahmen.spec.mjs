@@ -198,3 +198,50 @@ test.describe('Einstellungen', () => {
     await expect(page.locator('.kachel-fuss', { hasText: 'Noch nie gespielt' })).toHaveCount(SPIELE.length);
   });
 });
+
+test.describe('Spiel, das beim Start wirft', () => {
+  /* Der Sternjäger warf an einer Partie aus Level 3 bis 6, bevor seine
+     Steuerung hing – bei jedem Öffnen wieder, und kein Knopf half heraus
+     (schnittstelle.md AC-14). Nachgebaut mit einer Schlange, die wirft. */
+  const schlangeWirft = (page, bedingung) =>
+    page.route('**/spiele/snake.js', async (route) => {
+      const antwort = await route.fetch();
+      const text = (await antwort.text()).replace('function starten(wurzel, s) {',
+        `function starten(wurzel, s) { if (${bedingung}) throw new Error('Schlange kaputt');`);
+      await route.fulfill({ response: antwort, body: text });
+    });
+
+  test('bietet an, den Spielstand zu verwerfen, und startet dann neu', async ({ page }) => {
+    test.info().annotations.push({ type: 'fehler-erwartet' });
+    const konsole = [];
+    page.on('console', (m) => { if (m.type() === 'error') konsole.push(m.text()); });
+    await schlangeWirft(page, '(s.erinnert() || {}).kaputt');
+    await oeffnen(page, '#/spiel/snake', {
+      partien: [partie('snake', { aepfel: 3 })],
+      stand: { snake: { kaputt: true }, minen: { angefangen: true } },
+    });
+
+    const meldung = page.locator('.spielboden .ende-kasten');
+    await expect(meldung).toContainText('Das Spiel ließ sich nicht starten.');
+    expect(konsole.join('\n')).toContain('Schlange kaputt');
+
+    await page.getByRole('button', { name: 'Spielstand verwerfen' }).click();
+    await expect(meldung).toHaveCount(0);
+    await expect(page.locator('.ez-schild')).toBeVisible();
+    const d = await gespeichert(page);
+    expect(d.stand.snake?.kaputt).toBeUndefined();
+    expect(d.stand.minen).toEqual({ angefangen: true });
+    expect(d.partien).toHaveLength(1);
+  });
+
+  test('ohne Stand bleibt nur neu laden', async ({ page }) => {
+    test.info().annotations.push({ type: 'fehler-erwartet' });
+    await schlangeWirft(page, 'true');
+    await oeffnen(page, '#/spiel/snake');
+    const meldung = page.locator('.spielboden .ende-kasten');
+    await expect(meldung).toContainText('Das Spiel ließ sich nicht starten.');
+    await expect(page.getByRole('button', { name: 'Spielstand verwerfen' })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Neu laden' }).click();
+    await expect(meldung).toContainText('Das Spiel ließ sich nicht starten.');
+  });
+});

@@ -547,8 +547,41 @@ const Rahmen = (() => {
 
     const boden = el('div', 'spielboden');
     wurzel.append(boden);
-    laufend = s.starten(boden, sitzung) || null;
+    try {
+      laufend = s.starten(boden, sitzung) || null;
+    } catch (fehler) {
+      startGescheitert(boden, s, sitzung, fehler);
+    }
     zaehlen('spiel/' + s.id, s.name);
+  }
+
+  /* Wirft ein Spiel beim Start, bliebe eine halbe Oberfläche ohne Steuerung
+     stehen – und weil meist der gespeicherte Stand der Auslöser ist, bei jedem
+     Öffnen wieder. Der Rahmen kennt das Spiel nicht, aber er kann genau diesen
+     Stand verwerfen; Statistik und die Stände anderer Spiele bleiben. */
+  function startGescheitert(boden, s, sitzung, fehler) {
+    console.error(fehler);
+    kopfSetzen(s.name, '', []);
+    const kasten = el('div', 'ende-kasten');
+    kasten.append(el('p', 'ende-titel', 'Das Spiel ließ sich nicht starten.'));
+    const knopf = el('button', 'knopf knopf--voll');
+    knopf.type = 'button';
+    if (sitzung.erinnert()) {
+      kasten.append(el('p', 'notiz', 'Vermutlich passt die gespeicherte Partie nicht. Verwerfen kostet nur sie, die Statistik bleibt.'));
+      knopf.textContent = 'Spielstand verwerfen';
+      knopf.addEventListener('click', () => {
+        sitzung.vergessen();
+        zeichnen();
+      });
+    } else {
+      kasten.append(el('p', 'notiz', 'Vielleicht hilft neu laden. Sonst steckt der Fehler im Spiel selbst.'));
+      knopf.textContent = 'Neu laden';
+      knopf.addEventListener('click', () => location.reload());
+    }
+    const leiste = el('div', 'leiste');
+    leiste.append(knopf);
+    kasten.append(leiste);
+    boden.replaceChildren(kasten);
   }
 
   /* ---------------------------------------------------- Ansicht: Statistik */

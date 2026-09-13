@@ -11,7 +11,7 @@ müssen mithalten. Dazu das Werkzeug, das sie sich teilen.
 | [Hochhinaus](doodle.md)   | 27/29 fertig · 2 in arbeit |
 | [Echtzeit](echtzeit.md)   | 12/12 fertig               |
 | [Flattervogel](flappy.md) | 8/8 fertig                 |
-| [Sternjäger](impact.md)   | 17/17 fertig               |
+| [Sternjäger](impact.md)   | 18/18 fertig               |
 | [Flipper](pinball.md)     | 22/22 fertig               |
 | [Schlange](snake.md)      | 12/12 fertig               |
 

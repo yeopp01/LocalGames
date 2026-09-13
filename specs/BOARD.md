@@ -6,7 +6,7 @@
 Eine Zeile je Akzeptanzkriterium. Gepflegt wird der Status in der Spec
 selbst, hier steht er zusammengefasst.
 
-**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 1 zurückgestellt · 544 fertig
+**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 1 zurückgestellt · 546 fertig
 
 ## Nach Spezifikation
 
@@ -15,7 +15,7 @@ selbst, hier steht er zusammengefasst.
 | [Auswahl und Navigation](00-rahmen/auswahl.md)     | -         | -       | -     | -              | 18     |
 | [Datenschutz](00-rahmen/datenschutz.md)            | -         | -       | -     | -              | 11     |
 | [Offline und Versionen](00-rahmen/offline.md)      | -         | -       | -     | -              | 14     |
-| [Spielschnittstelle](00-rahmen/schnittstelle.md)   | -         | -       | -     | -              | 13     |
+| [Spielschnittstelle](00-rahmen/schnittstelle.md)   | -         | -       | -     | -              | 14     |
 | [Sicherung](00-rahmen/sicherung.md)                | -         | -       | -     | -              | 14     |
 | [Statistik](00-rahmen/statistik.md)                | -         | -       | -     | -              | 14     |
 | [Zahlencode](10-raetsel/mastermind.md)             | -         | -       | -     | -              | 15     |
@@ -40,7 +40,7 @@ selbst, hier steht er zusammengefasst.
 | [Hochhinaus](50-geschick/doodle.md)                | 2         | -       | -     | -              | 27     |
 | [Echtzeit](50-geschick/echtzeit.md)                | -         | -       | -     | -              | 12     |
 | [Flattervogel](50-geschick/flappy.md)              | -         | -       | -     | -              | 8      |
-| [Sternjäger](50-geschick/impact.md)                | -         | -       | -     | -              | 17     |
+| [Sternjäger](50-geschick/impact.md)                | -         | -       | -     | -              | 18     |
 | [Flipper](50-geschick/pinball.md)                  | -         | -       | -     | -              | 22     |
 | [Schlange](50-geschick/snake.md)                   | -         | -       | -     | -              | 12     |
 | [Futterzeit](60-kinder/futter.md)                  | -         | -       | -     | -              | 9      |
@@ -61,7 +61,7 @@ selbst, hier steht er zusammengefasst.
 | --------- | ------------------------------------ | -------------------------- | -------------------------------------------- |
 | verraeter | [AC-13](40-zu-mehreren/verraeter.md) | Stimmen übers Netz sammeln | braucht eine Verbindung zwischen den Geräten |
 
-## Fertig (544)
+## Fertig (546)
 
 | Spec          | AC                                          | Titel                                  | Anmerkung                                       |
 | ------------- | ------------------------------------------- | -------------------------------------- | ----------------------------------------------- |
@@ -121,6 +121,7 @@ selbst, hier steht er zusammengefasst.
 | schnittstelle | [AC-11](00-rahmen/schnittstelle.md)         | Auswertung liefert Kennzahlen          | Urteil und Auswertung                           |
 | schnittstelle | [AC-12](00-rahmen/schnittstelle.md)         | Auswertung verträgt Lücken             | Urteil und Auswertung                           |
 | schnittstelle | [AC-13](00-rahmen/schnittstelle.md)         | Gruppe ist der Spec-Bereich            | Anmeldung                                       |
+| schnittstelle | [AC-14](00-rahmen/schnittstelle.md)         | Spiel, das beim Start wirft            | Anmeldung                                       |
 | sicherung     | [AC-1](00-rahmen/sicherung.md)              | Sichern an zwei Stellen                | Sichern                                         |
 | sicherung     | [AC-2](00-rahmen/sicherung.md)              | Datei mit allen Partien                | Sichern                                         |
 | sicherung     | [AC-3](00-rahmen/sicherung.md)              | Laufende Partien bleiben daheim        | Sichern                                         |
@@ -529,6 +530,7 @@ selbst, hier steht er zusammengefasst.
 | impact        | [AC-15](50-geschick/impact.md)              | Partie in der Statistik                | Speicher und Statistik                          |
 | impact        | [AC-16](50-geschick/impact.md)              | Auswertung verträgt Lücken             | Speicher und Statistik                          |
 | impact        | [AC-17](50-geschick/impact.md)              | Invasoren-Partien bleiben              | Speicher und Statistik                          |
+| impact        | [AC-18](50-geschick/impact.md)              | Verlassene Partie in jedem Level       | Speicher und Statistik                          |
 | pinball       | [AC-1](50-geschick/pinball.md)              | Zwei Hälften, zwei Flipper             | Steuerung                                       |
 | pinball       | [AC-2](50-geschick/pinball.md)              | Feder spannen, loslassen               | Steuerung                                       |
 | pinball       | [AC-3](50-geschick/pinball.md)              | Rütteln und TILT                       | Steuerung                                       |

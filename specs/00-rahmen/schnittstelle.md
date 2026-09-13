@@ -1,7 +1,7 @@
 # Spielschnittstelle
 
 **Datei:** [`app.js`](../../app.js)
-**Stand:** 13/13 fertig
+**Stand:** 14/14 fertig
 
 ## Zweck
 
@@ -28,6 +28,12 @@ Rahmen ein Spiel kennen muss.
   `starten(boden, sitzung)` mit einem leeren Element, in das das Spiel seine
   Oberfläche baut. Gibt `starten` ein Objekt mit `ende()` zurück, wird das beim
   Verlassen genau einmal gerufen; ohne Rückgabe geht es auch.
+- **AC-14** `fertig` **Spiel, das beim Start wirft** — Wirft `starten`, bleibt
+  keine halbe Oberfläche stehen: Der Boden zeigt „Das Spiel ließ sich nicht
+  starten.", die Werkzeuge des Spiels verschwinden, und der Fehler steht in
+  der Konsole. Liegt ein gespeicherter Stand vor, verwirft „Spielstand
+  verwerfen" nur diesen – Statistik und die Stände anderer Spiele bleiben – und
+  startet das Spiel neu. Ohne Stand lädt „Neu laden" die Seite.
 - **AC-13** `fertig` **Gruppe ist der Spec-Bereich** — `gruppe` ist der Ordner
   der Spec ohne Nummer: `raetsel`, `wortspiele`, `brett-und-karten`,
   `zu-mehreren`, `geschick` oder `kinder`. Der Rahmen kennt diese Gruppen, aber kein
@@ -88,6 +94,7 @@ Rahmen ein Spiel kennen muss.
 | RF-3 | Vier gewinnt: gegen den Rechner und zu zweit gemischt  | Die Quote rechnet nur über die Partien gegen den Rechner.            |
 | RF-4 | `erinnert()` bei einem Spiel, das nie etwas gemerkt hat | `null`.                                                             |
 | RF-5 | Spiel ruft `werkzeuge([])`                             | Die Werkzeugknöpfe verschwinden, Statistik- und Menüknopf bleiben.   |
+| RF-6 | Spiel wirft auch nach „Spielstand verwerfen"           | Die Meldung steht wieder da, jetzt mit „Neu laden" (AC-14).          |
 
 ## Hintergrund
 

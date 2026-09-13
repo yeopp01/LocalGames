@@ -36,6 +36,37 @@ test('mindestens vier Echtzeitspiele gefunden', () => {
   expect(ECHTZEIT.map((s) => s.id).sort()).toEqual(expect.arrayContaining(['doodle', 'flappy', 'impact', 'snake']));
 });
 
+/* Die Bühne malt beim Anlegen schon das erste Bild aus dem gespeicherten
+   Stand. In den Welten mit Gelände griff das auf eine Hilfe zu, die erst
+   weiter unten in starten entstand: Eine Partie, die in Level 3 bis 6
+   verlassen wurde, ließ sich nie wieder öffnen, jeder Tipp verpuffte
+   (impact.md AC-18). */
+test('Sternjäger nimmt eine Partie aus jedem Level wieder auf', async ({ page }) => {
+  await oeffnen(page, '#/spiel/impact');
+  await page.evaluate(TIPPEN + `
+    document.querySelector('#kopf-werkzeuge [aria-label="Anleitung"]').click();
+  `);
+  await page.locator('#sheet-spiel-aktionen button').first().click();
+  const pause = (await gespeichert(page)).stand.impact;
+  expect(pause.zustand).toBe('pause');
+
+  for (let level = 1; level <= 6; level += 1) {
+    await oeffnen(page, '#/spiel/impact', { stand: { impact: { ...pause, level } } });
+    await expect(page.locator('.m-kopf'), 'Level ' + level).toContainText('Level ' + level);
+    await expect(page.locator('.ez-schild')).toContainText('Pause');
+    await page.getByRole('button', { name: 'Weiter' }).click();
+    await expect(page.locator('.ez-schild')).toBeHidden();
+    // Drei Bilder abwarten: Danach hat die Schleife gerechnet und gemalt.
+    await page.evaluate(() => new Promise((f) => {
+      let n = 3;
+      const bild = () => (--n ? requestAnimationFrame(bild) : f());
+      requestAnimationFrame(bild);
+    }));
+    await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+    expect((await gespeichert(page)).stand.impact.zeit, 'Level ' + level).toBeGreaterThan(pause.zeit);
+  }
+});
+
 for (const spiel of ECHTZEIT) {
   test(`${spiel.name} hält bei Blatt und verdeckter App an`, async ({ page }) => {
     await oeffnen(page, '#/spiel/' + spiel.id);

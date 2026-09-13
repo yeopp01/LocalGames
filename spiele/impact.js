@@ -502,8 +502,13 @@
     }
 
     /* Zu Beginn eines Levels wächst das Gelände in zwei Sekunden hoch. Sonst
-       stünde das Schiff beim Wechsel in die Höhle plötzlich in der Decke. */
-    const gelaendeFaktor = (st) => (st.phase === 'flug' ? Math.min(1, st.levelZeit / 2) : 1);
+       stünde das Schiff beim Wechsel in die Höhle plötzlich in der Decke.
+       Eine Funktion, kein const: Die Bühne malt schon beim Anlegen, weit über
+       dieser Zeile, und eine gespeicherte Partie in Level 3 bis 6 braucht
+       dafür das Gelände. Als const warf das, und das Spiel ging nie wieder auf. */
+    function gelaendeFaktor(st) {
+      return st.phase === 'flug' ? Math.min(1, st.levelZeit / 2) : 1;
+    }
 
     function imGelaende(st, x, y) {
       const [o, u] = korridor(st, x);

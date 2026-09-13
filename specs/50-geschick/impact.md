@@ -1,7 +1,7 @@
 # Sternjäger
 
 **Datei:** [`spiele/impact.js`](../../spiele/impact.js)
-**Stand:** 17/17 fertig
+**Stand:** 18/18 fertig
 
 ## Zweck
 
@@ -103,6 +103,9 @@ Fingers, und solange er aufliegt, schießt es. Ersetzt die früheren Invasoren.
   Sicherung und zählen weiter in Partien, Spielzeit, Kalender und Tagesserie
   der Gesamtstatistik. Einen eigenen Block haben sie nicht mehr, und in den
   Bestwert von Sternjäger gehen sie nicht ein.
+- **AC-18** `fertig` **Verlassene Partie in jedem Level** — Wer die App mitten
+  in einer Partie verlässt, findet sie beim nächsten Öffnen als Pause wieder,
+  in jedem Level und jeder Welt; ein Tipp oder „Weiter" fliegt dort weiter.
 
 ## Randfälle
 
@@ -164,3 +167,11 @@ Hand taktet:
   geteilt durch den Maßstab; ein zweiter Finger auf dem Knopf zündet die
   Rakete (3 → 2), und der erste lenkt danach unverändert weiter. Die Seite
   scrollt nicht.
+* Bis Version 80 ließ sich eine Partie, die in Level 3 bis 6 verlassen wurde,
+  nie wieder öffnen (AC-18): Die Bühne malt schon beim Anlegen das erste Bild,
+  und das Gelände darin brauchte eine Hilfe, die erst weiter unten in
+  `starten` als `const` entstand. `starten` warf, bevor die Steuerung hing, und
+  jeder Tipp verpuffte. Nachgestellt mit 14 gesetzten Ständen – Endgegner
+  kommend, im Kampf, besiegt, Siegphase, Level 2, 4 und 7, Strahl, Wand, leere
+  Spezialwaffe, Extras, Schutz, Tod im Kampf und in der Todessekunde: Nur
+  Level 4 warf.
