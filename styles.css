@@ -2707,3 +2707,363 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   text-decoration: underline dotted;
   text-underline-offset: 4px;
 }
+
+/* ================================================= Kinder: Tierstimmen,
+                                                     Futterzeit, Horch mal
+
+   Die drei teilen sich Vorhang und Kinderzimmer (spiele/tiere.js). Das
+   Zimmer liegt fest über dem ganzen Fenster, auch über der Kopfzeile: Was
+   ein Kind nicht sieht, kann es nicht treffen. Alles darin ist groß und
+   rund, und keine Schrift muss gelesen werden – die Blase oben ist zum
+   Vorlesen. Die Maße rechnen in Einheiten der Bühne (cqw, cqh), damit Handy
+   hoch, Handy quer und Laptop mit denselben Regeln auskommen. */
+
+:root {
+  --kz-himmel: #DDEFF9;
+  --kz-wiese: #CDE6B0;
+  --kz-emoji: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --kz-himmel: #18232D;
+    --kz-wiese: #1F2C1A;
+  }
+}
+
+.kz-vorhang {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding-top: 18px;
+  text-align: center;
+}
+.kz-vorhang-bilder { display: flex; gap: 8px; font-family: var(--kz-emoji); font-size: 44px; line-height: 1.1; }
+.kz-vorhang-bilder span { display: inline-block; animation: kz-wippen 3s ease-in-out infinite; }
+.kz-vorhang-satz { margin: 0; font-size: 19px; font-weight: 700; line-height: 1.35; max-width: 26ch; }
+.kz-wahl { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.kz-wahl-knopf {
+  padding: 9px 15px;
+  border: 1.5px solid var(--karte-rand);
+  border-radius: 999px;
+  background: var(--karte);
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.kz-wahl-knopf[aria-checked='true'] { background: var(--tinte); border-color: var(--tinte); color: var(--papier); }
+.kz-los { min-width: 210px; padding: 16px 28px; border-radius: 999px; font-size: 19px; }
+.kz-vorhang-notiz { max-width: 40ch; margin: 0; }
+
+.kz-zimmer {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  background:
+    radial-gradient(150% 90% at 50% 108%, var(--kz-wiese) 60%, transparent 60.4%),
+    var(--kz-himmel);
+  color: var(--tinte);
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.kz-buehne {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  container-type: size;
+}
+
+/* Der Weg hinaus: klein und blass, damit ein Kind ihn nicht sucht. Der Ring
+   füllt sich beim Halten. */
+.kz-raus {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 10px);
+  right: calc(env(safe-area-inset-right) + 10px);
+  z-index: 5;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--karte) 55%, transparent);
+  color: var(--tinte-leise);
+  cursor: pointer;
+  touch-action: none;
+}
+.kz-raus svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; }
+.kz-raus::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  background: conic-gradient(var(--tinte) calc(var(--halten, 0) * 360deg), transparent 0);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3.5px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3.5px));
+}
+.kz-raus--haelt { background: var(--karte); color: var(--tinte); }
+.kz-raus-tipp {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 64px);
+  right: calc(env(safe-area-inset-right) + 10px);
+  z-index: 5;
+  margin: 0;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: var(--tinte);
+  color: var(--papier);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.kz-blase {
+  position: absolute;
+  top: calc(env(safe-area-inset-top) + 12px);
+  left: 50%;
+  z-index: 4;
+  width: max-content;
+  max-width: calc(100% - 130px);
+  margin: 0;
+  padding: 8px 18px;
+  transform: translateX(-50%);
+  border-radius: 22px;
+  background: var(--karte);
+  box-shadow: var(--schatten);
+  font-size: clamp(17px, 4.8vw, 28px);
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  pointer-events: none;
+}
+.kz-blase--neu { animation: kz-blase .35s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes kz-blase { from { opacity: 0; transform: translateX(-50%) scale(.6); } }
+
+/* Eine Tierkachel: bewegt wird die Kachel, gewackelt wird meist ihr Bild. */
+.kz-tier {
+  position: relative;
+  width: var(--kachel, 120px);
+  height: var(--kachel, 120px);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 30%;
+  background: color-mix(in srgb, var(--ton, #C9C2B8) 55%, var(--karte));
+  box-shadow: 0 5px 0 color-mix(in srgb, var(--ton, #C9C2B8) 75%, #000 25%), 0 10px 22px rgba(30, 24, 16, .14);
+  cursor: pointer;
+  touch-action: none;
+}
+.kz-bild {
+  display: block;
+  font-family: var(--kz-emoji);
+  font-size: calc(var(--kachel, 120px) * .62);
+  line-height: 1;
+  pointer-events: none;
+}
+.kz-futter {
+  border-radius: 50%;
+  background: var(--karte);
+  box-shadow: inset 0 0 0 calc(var(--kachel, 120px) * .06) var(--karte-rand), 0 8px 18px rgba(30, 24, 16, .14);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.kz-futter .kz-bild { font-size: calc(var(--kachel, 120px) * .5); }
+.kz-futter--nah {
+  transform: scale(1.12);
+  box-shadow: inset 0 0 0 calc(var(--kachel, 120px) * .06) var(--gelb), 0 0 0 6px color-mix(in srgb, var(--gelb) 45%, transparent);
+}
+.kz-futter--leer .kz-bild { animation: kz-weg .7s ease forwards; }
+
+.kz-hops { animation: kz-hops .6s ease; }
+.kz-wackel { animation: kz-wackel .55s ease; }
+.kz-winken { animation: kz-winken .9s ease; }
+.kz-mampf { animation: kz-mampf .75s ease; }
+.kz-auftritt { animation: kz-auftritt .45s cubic-bezier(.3, 1.4, .5, 1); }
+
+@keyframes kz-hops {
+  30% { transform: translateY(-14%) scale(1.12) rotate(-6deg); }
+  60% { transform: translateY(2%) scale(.96) rotate(4deg); }
+}
+@keyframes kz-wackel {
+  20% { transform: rotate(-12deg); }
+  40% { transform: rotate(10deg); }
+  60% { transform: rotate(-7deg); }
+  80% { transform: rotate(4deg); }
+}
+@keyframes kz-winken {
+  25% { transform: translateY(-12%) rotate(-8deg); }
+  50% { transform: rotate(6deg); }
+  75% { transform: translateY(-5%); }
+}
+@keyframes kz-wippen {
+  0%, 70%, 100% { transform: none; }
+  80% { transform: translateY(-14%) rotate(-8deg); }
+  90% { transform: rotate(6deg); }
+}
+@keyframes kz-mampf {
+  20%, 60% { transform: scale(1.12, .88); }
+  40%, 80% { transform: scale(.94, 1.06); }
+}
+@keyframes kz-auftritt { from { opacity: 0; transform: scale(.3); } 70% { transform: scale(1.06); } }
+@keyframes kz-weg { 30% { transform: scale(1.15); } to { opacity: 0; transform: scale(0); } }
+@keyframes kz-einblenden { from { opacity: 0; } }
+
+.kz-konfetto {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 6;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 3px;
+  background: var(--farbe);
+  pointer-events: none;
+  animation: kz-konfetto .95s cubic-bezier(.15, .7, .35, 1) forwards;
+}
+@keyframes kz-konfetto {
+  from { opacity: 1; transform: translate(var(--x), var(--y)) rotate(0deg) scale(1); }
+  to { opacity: 0; transform: translate(calc(var(--x) + var(--dx)), calc(var(--y) + var(--dy))) rotate(var(--dreh)) scale(.5); }
+}
+
+.kz-fest {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px;
+  background: color-mix(in srgb, var(--kz-himmel) 75%, transparent);
+  animation: kz-einblenden .4s ease;
+}
+.kz-fest-titel { margin: 0; font-size: clamp(32px, 10cqw, 60px); font-weight: 800; letter-spacing: -.02em; text-align: center; }
+.kz-fest-bilder {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  max-width: 92%;
+  font-family: var(--kz-emoji);
+  font-size: clamp(40px, 13cqw, 76px);
+  line-height: 1.1;
+}
+.kz-fest-bilder span { display: inline-block; animation: kz-hops .8s ease infinite; }
+
+/* Tierstimmen: sechs Tiere je Seite – hoch 2 × 3, quer 3 × 2. */
+.ts-gitter {
+  --kachel: min(40cqw, calc((100cqh - 190px) / 3), 230px);
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(2, var(--kachel));
+  align-content: center;
+  justify-content: center;
+  gap: min(5cqw, 24px);
+  padding: 62px 12px 4px;
+}
+@container (orientation: landscape) {
+  .ts-gitter {
+    --kachel: min(26cqw, calc((100cqh - 180px) / 2), 230px);
+    grid-template-columns: repeat(3, var(--kachel));
+  }
+}
+.ts-leiste { display: flex; align-items: center; justify-content: center; gap: 22px; padding: 6px 12px 16px; }
+.ts-pfeil {
+  width: 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--karte);
+  box-shadow: var(--schatten);
+  color: var(--tinte);
+  cursor: pointer;
+  touch-action: none;
+}
+.ts-pfeil svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 2.6; }
+.ts-punkte { display: flex; gap: 8px; }
+.ts-punkt { width: 10px; height: 10px; border-radius: 50%; background: color-mix(in srgb, var(--tinte) 22%, transparent); }
+.ts-punkt--an { background: var(--tinte); }
+
+/* Futterzeit: oben die Teller, unten das Tier, dazwischen der Weg. */
+.fu-ziele {
+  --kachel: min(27cqw, 25cqh, 160px);
+  display: flex;
+  justify-content: center;
+  gap: min(5cqw, 28px);
+  padding: 66px 12px 0;
+}
+.fu-mitte { flex: 1 1 auto; min-height: 0; display: grid; place-items: center; color: var(--tinte-leise); }
+.fu-mitte svg { width: 44px; height: 44px; fill: none; stroke: currentColor; stroke-width: 2.4; opacity: 0; }
+.fu-mitte--zeigt svg { animation: fu-hoch 1.4s ease; }
+@keyframes fu-hoch {
+  0% { opacity: 0; transform: translateY(30px); }
+  40% { opacity: .9; }
+  100% { opacity: 0; transform: translateY(-30px); }
+}
+.fu-start { --kachel: min(36cqw, 30cqh, 190px); display: flex; justify-content: center; padding: 0 12px 28px; }
+.fu-tier { z-index: 2; }
+.fu-tier--gezogen {
+  z-index: 4;
+  box-shadow: 0 5px 0 color-mix(in srgb, var(--ton) 75%, #000 25%), 0 22px 36px rgba(30, 24, 16, .28);
+}
+
+/* Horch mal: oben der Lautsprecher, darunter die Tiere zur Wahl. */
+.ho-ohr {
+  flex: none;
+  align-self: center;
+  width: min(24cqw, 17cqh, 116px);
+  height: min(24cqw, 17cqh, 116px);
+  margin-top: 60px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--karte);
+  box-shadow: var(--schatten);
+  color: var(--tinte);
+  cursor: pointer;
+  touch-action: none;
+}
+.ho-ohr svg { width: 56%; height: 56%; fill: none; stroke: currentColor; stroke-width: 2; }
+.ho-ohr--spielt { animation: ho-pochen .45s ease-in-out infinite alternate; }
+@keyframes ho-pochen { to { transform: scale(1.1); box-shadow: 0 0 0 12px color-mix(in srgb, var(--gelb) 40%, transparent); } }
+.ho-feld {
+  --kachel: min(40cqw, 32cqh, 210px);
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: min(4cqw, 26px);
+  padding: 12px;
+}
+.ho-feld[data-anzahl='3'] { --kachel: min(28cqw, 30cqh, 190px); }
+.ho-feld[data-anzahl='4'] { --kachel: min(40cqw, 26cqh, 180px); }
+@container (orientation: landscape) {
+  .ho-feld[data-anzahl='4'] { --kachel: min(21cqw, 50cqh, 180px); }
+}
+.ho-weg { opacity: .3; transform: scale(.88); transition: opacity .3s ease, transform .3s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+  .kz-vorhang-bilder span,
+  .kz-fest-bilder span,
+  .ho-ohr--spielt { animation: none; }
+}

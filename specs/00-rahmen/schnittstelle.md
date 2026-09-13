@@ -30,7 +30,7 @@ Rahmen ein Spiel kennen muss.
   Verlassen genau einmal gerufen; ohne Rückgabe geht es auch.
 - **AC-13** `fertig` **Gruppe ist der Spec-Bereich** — `gruppe` ist der Ordner
   der Spec ohne Nummer: `raetsel`, `wortspiele`, `brett-und-karten`,
-  `zu-mehreren` oder `geschick`. Der Rahmen kennt diese Gruppen, aber kein
+  `zu-mehreren`, `geschick` oder `kinder`. Der Rahmen kennt diese Gruppen, aber kein
   Spiel. Der Wächter meldet ein Spiel, dessen `gruppe` fehlt, nicht zum Ordner
   seiner Spec passt oder in `app.js` unbekannt ist.
 

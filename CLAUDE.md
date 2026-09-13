@@ -2,7 +2,7 @@
 
 Sammlung kleiner Browserspiele als PWA. Reines Vanilla-JS. **Die App hat
 keinen Build, keinen Paketmanager, keine Abhängigkeit** – die Dateien im
-Wurzelverzeichnis samt `spiele/`, `icons/`, `schriften/` sind die App.
+Wurzelverzeichnis samt `spiele/`, `icons/`, `schriften/`, `toene/` sind die App.
 Ausprobieren: `npx serve -l 4173 .`
 
 Daneben liegen zwei Ordner, die nicht zur App gehören: `specs/` (was sie
@@ -18,7 +18,10 @@ können soll) und `pruefung/` (wie das geprüft wird). Nur `pruefung/` hat ein
   (Wördle-Rechner), `begriffe.js` (Wortpaare), `karten.js` (Schafkopf-Blatt
   und Kartenrechner), `runde.js` (alles für Spiele zu mehreren: Sperrschirm,
   geheime Abstimmung, Uhr), `echtzeit.js` (für die Geschicklichkeitsspiele:
-  Leinwand, Spielschleife mit festem Takt, Pause bei Blatt oder Hintergrund).
+  Leinwand, Spielschleife mit festem Takt, Pause bei Blatt oder Hintergrund),
+  `tiere.js` (für die Kinderspiele: Tiere, Aufnahmen aus `toene/`, Klang und
+  das Kinderzimmer, aus dem nur Halten hinausführt). Jede Aufnahme in
+  `toene/` steht in `GRUNDBESTAND` und mit Urheber und Lizenz in `NOTICE`.
 * `index.html` lädt alle Dateien als klassische `<script>`-Tags in fester
   Reihenfolge (Werkzeuge, `app.js`, dann die Spiele) und ruft `Rahmen.los()`.
   Kein `type="module"`, jede Datei ist ein IIFE mit einem globalen Namen.

@@ -33,7 +33,7 @@ const gibt = (p) => existsSync(join(ROOT, p));
 const git = (...args) => execFileSync('git', args, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
 
 /** Was GitHub Pages ausliefert und was deshalb die Versionsnummer betrifft. */
-const AUSGELIEFERT = /^(index\.html|app\.js|styles\.css|sw\.js|version\.js|manifest\.webmanifest|spiele\/|icons\/|schriften\/)/;
+const AUSGELIEFERT = /^(index\.html|app\.js|styles\.css|sw\.js|version\.js|manifest\.webmanifest|spiele\/|icons\/|schriften\/|toene\/)/;
 
 const spielDateien = readdirSync(join(ROOT, 'spiele')).filter((d) => d.endsWith('.js')).map((d) => 'spiele/' + d);
 const skripteInIndex = [...lies('index.html').matchAll(/<script\s+src="([^"]+)"/g)].map((m) => m[1]);
@@ -68,6 +68,16 @@ pruefung('bestand', 'Spiele in index.html, ausgelieferte Dateien im Lager des Se
   }
   for (const d of grundbestand) {
     if (d && !gibt(d)) melde(`sw.js GRUNDBESTAND nennt ./${d}, die Datei gibt es nicht.`);
+  }
+  // Aufnahmen holt ein Spiel erst zur Laufzeit – kein <script> und kein <link>
+  // nennt sie. Deshalb hier ausdrücklich: jede liegt im Lager, und ihre
+  // Herkunft steht in NOTICE, denn fremde Aufnahmen tragen fremde Lizenzen.
+  if (gibt('toene')) {
+    const notice = gibt('NOTICE') ? lies('NOTICE') : '';
+    for (const d of readdirSync(join(ROOT, 'toene'))) {
+      if (!grundbestand.includes('toene/' + d)) melde(`toene/${d} steht nicht in GRUNDBESTAND (sw.js) – offline bliebe das Tier stumm.`);
+      if (!notice.includes('toene/' + d)) melde(`toene/${d} fehlt in NOTICE – jede Aufnahme braucht Quelle, Urheber und Lizenz.`);
+    }
   }
 });
 

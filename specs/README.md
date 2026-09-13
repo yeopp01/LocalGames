@@ -26,6 +26,7 @@ node pruefung/skripte/bericht.mjs        # Seite: pruefung/bericht/index.html
 | [30-brett-und-karten](30-brett-und-karten/)     | 2048, Vier gewinnt, Schafkopf                            |
 | [40-zu-mehreren](40-zu-mehreren/)               | Bausteine für Runden, Verräter, Bombe, Zwei Wahrheiten, Wer am ehesten |
 | [50-geschick](50-geschick/)                     | Echtzeit-Werkzeug, Schlange, Sternjäger, Flattervogel, Hochhinaus, Blasen, Flipper |
+| [60-kinder](60-kinder/)                         | Tiere-Werkzeug, Tierstimmen, Futterzeit, Horch mal       |
 
 ## Regeln für die Ablage
 

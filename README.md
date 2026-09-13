@@ -32,6 +32,9 @@ Enthalten sind bisher:
 | [**Hochhinaus**](specs/50-geschick/doodle.md) | Doodle Jump auf Karopapier: halten oder Handy neigen, schießen, Monster, schwarze Löcher, Propeller und Rakete – mit Geräuschen und Zielen in zehn Rängen. |
 | [**Blasen**](specs/50-geschick/bubbles.md) | Bubble Shooter: zielen, über die Bande spielen, drei gleiche platzen. Fehlschüsse schieben neue Reihen herein. |
 | [**Flipper**](specs/50-geschick/pinball.md) | Wie der Weltraumtisch unter Windows: Feder, Startrampe, Wurmlöcher, Schwarzes Loch, Treibstoff und Missionen vom Kadetten zum Flottenadmiral – mit Geräuschen. |
+| [**Tierstimmen**](specs/60-kinder/tierstimmen.md) | Für die Kleinsten: Tier antippen, es hüpft und ruft – mit echten Tieraufnahmen. Nichts kann schiefgehen, heraus kommen nur Erwachsene. |
+| [**Futterzeit**](specs/60-kinder/futter.md) | Hund zum Knochen, Hase zur Möhre: das Tier zum Futter ziehen oder den Teller antippen, ein bis drei Teller zur Wahl. |
+| [**Horch mal**](specs/60-kinder/horch.md) | Ein Tier ruft, das Kind tippt, welches es war. Zwei bis vier Tiere, kein Fehlerton. |
 
 Über allem liegt ein Dashboard mit der Spielauswahl, nach Art der Spiele in
 Abschnitte geteilt, und eine gemeinsame
@@ -102,14 +105,16 @@ in `index.html` – die App läuft unverändert weiter.
 | `spiele/karten.js` | Das bayrische Blatt: Regeln, Abrechnung und der Kartenrechner |
 | `spiele/runde.js` | Bausteine für die Spiele zu mehreren |
 | `spiele/echtzeit.js` | Leinwand, Spielschleife und Pause für die Geschicklichkeitsspiele |
+| `spiele/tiere.js` | Tiere, Klang und das Kinderzimmer für die Kinderspiele |
 | `version.js` | Die Versionsnummer, für Seite und Offline-Speicher |
 | `sw.js` | Der Offline-Speicher |
 | `icons/` | App-Icons |
 | `schriften/` | Die beiden Schriften samt Lizenztexten |
+| `toene/` | Die Tieraufnahmen, Herkunft je Datei in [NOTICE](NOTICE) |
 | [`specs/`](specs/README.md) | Was die App können soll: je Spiel und für den Rahmen Zweck, Akzeptanzkriterien mit Status, Randfälle und der Hintergrund, warum es so gebaut ist |
 | [`pruefung/`](pruefung/README.md) | Der Prüfstand: Wächter, E2E-Tests, Board und Bericht |
 
-Die App sind die Dateien bis einschließlich `schriften/` – ohne Build und ohne
+Die App sind die Dateien bis einschließlich `toene/` – ohne Build und ohne
 Paket. `specs/` und `pruefung/` gehören zur Entwicklung; nur der Prüfstand hat
 ein `package.json`, und das nur für Playwright.
 
@@ -182,6 +187,13 @@ die verlangt, dass ihr Lizenztext mitgeliefert wird; er liegt als
 `OFL-Bricolage-Grotesque.txt` und `OFL-DM-Mono.txt` daneben. Die OFL steckt
 das Projekt nicht an: Sie gilt für die Schriftdateien, nicht für den Code
 drumherum. Der bleibt MIT.
+
+Die Tieraufnahmen in [`toene/`](toene/) stammen von Wikimedia Commons. Sie sind
+gemeinfrei oder stehen unter CC0, CC BY oder CC BY-SA; wer welche aufgenommen
+hat, steht je Datei in [NOTICE](NOTICE). Gekürzt und in der Lautheit
+angeglichen wurden sie hier – bei CC BY-SA steht diese Fassung unter derselben
+Lizenz wie das Original. Auch das gilt nur für die Aufnahme, nicht für den
+Code.
 
 Warum die Schriften lokal liegen und nicht von Google kommen, steht unter
 [Datenschutz](specs/00-rahmen/datenschutz.md).

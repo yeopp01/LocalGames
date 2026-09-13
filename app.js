@@ -427,6 +427,7 @@ const Rahmen = (() => {
     { id: 'brett-und-karten', name: 'Brett und Karten' },
     { id: 'zu-mehreren', name: 'Zu mehreren' },
     { id: 'geschick', name: 'Geschicklichkeit' },
+    { id: 'kinder', name: 'Für Kinder' },
   ];
 
   function zeichneAuswahl(wurzel) {

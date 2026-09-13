@@ -36,8 +36,8 @@ Dialog, die alle Spiele benutzen.
   der Ortszeit: vor 5 Uhr „Noch wach?", vor 11 Uhr „Guten Morgen.", vor 18 Uhr
   „Kleine Pause?", danach „Guten Abend.".
 - **AC-18** `fertig` **Kacheln nach Gruppen geordnet** — Die Kacheln stehen in
-  Abschnitten „Rätsel", „Wortspiele", „Brett und Karten", „Zu mehreren" und
-  „Geschicklichkeit", in dieser Reihenfolge. Jeder Abschnitt hat eine
+  Abschnitten „Rätsel", „Wortspiele", „Brett und Karten", „Zu mehreren",
+  „Geschicklichkeit" und „Für Kinder", in dieser Reihenfolge. Jeder Abschnitt hat eine
   Überschrift mit der Zahl seiner Spiele; ein Abschnitt ohne Spiel erscheint
   nicht. Ein Spiel steht in der Gruppe, die es mit `gruppe` angibt. Ohne oder
   mit unbekannter `gruppe` fällt es nicht heraus, sondern steht in einem

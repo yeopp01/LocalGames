@@ -6,7 +6,7 @@
 Eine Zeile je Akzeptanzkriterium. Gepflegt wird der Status in der Spec
 selbst, hier steht er zusammengefasst.
 
-**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 1 zurückgestellt · 498 fertig
+**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 1 zurückgestellt · 538 fertig
 
 ## Nach Spezifikation
 
@@ -43,6 +43,10 @@ selbst, hier steht er zusammengefasst.
 | [Sternjäger](50-geschick/impact.md)                | -         | -       | -     | -              | 17     |
 | [Flipper](50-geschick/pinball.md)                  | -         | -       | -     | -              | 22     |
 | [Schlange](50-geschick/snake.md)                   | -         | -       | -     | -              | 12     |
+| [Futterzeit](60-kinder/futter.md)                  | -         | -       | -     | -              | 9      |
+| [Horch mal](60-kinder/horch.md)                    | -         | -       | -     | -              | 9      |
+| [Tiere](60-kinder/tiere.md)                        | -         | -       | -     | -              | 16     |
+| [Tierstimmen](60-kinder/tierstimmen.md)            | -         | -       | -     | -              | 6      |
 
 ## In Arbeit (2)
 
@@ -57,7 +61,7 @@ selbst, hier steht er zusammengefasst.
 | --------- | ------------------------------------ | -------------------------- | -------------------------------------------- |
 | verraeter | [AC-13](40-zu-mehreren/verraeter.md) | Stimmen übers Netz sammeln | braucht eine Verbindung zwischen den Geräten |
 
-## Fertig (498)
+## Fertig (538)
 
 | Spec          | AC                                          | Titel                                  | Anmerkung                                       |
 | ------------- | ------------------------------------------- | -------------------------------------- | ----------------------------------------------- |
@@ -559,3 +563,43 @@ selbst, hier steht er zusammengefasst.
 | snake         | [AC-10](50-geschick/snake.md)               | Partie in der Statistik                | Speicher und Statistik                          |
 | snake         | [AC-11](50-geschick/snake.md)               | Kopfzeile                              | Speicher und Statistik                          |
 | snake         | [AC-12](50-geschick/snake.md)               | Auswertung verträgt Lücken             | Speicher und Statistik                          |
+| futter        | [AC-1](60-kinder/futter.md)                 | Ein bis drei Teller                    | Aufgabe                                         |
+| futter        | [AC-2](60-kinder/futter.md)                 | Immer genau ein richtiger Teller       | Aufgabe                                         |
+| futter        | [AC-3](60-kinder/futter.md)                 | Ziehen oder Teller tippen              | Ziehen und Tippen                               |
+| futter        | [AC-4](60-kinder/futter.md)                 | Richtiges Futter                       | Ziehen und Tippen                               |
+| futter        | [AC-5](60-kinder/futter.md)                 | Falsches Futter ohne Fehler            | Ziehen und Tippen                               |
+| futter        | [AC-6](60-kinder/futter.md)                 | Wink nach fünf Sekunden                | Ziehen und Tippen                               |
+| futter        | [AC-7](60-kinder/futter.md)                 | Alle satt, dann weiter                 | Ziehen und Tippen                               |
+| futter        | [AC-8](60-kinder/futter.md)                 | Passt ins Fenster                      | Ziehen und Tippen                               |
+| futter        | [AC-9](60-kinder/futter.md)                 | Runde mit Tieren und Fehlgriffen       | Statistik                                       |
+| horch         | [AC-1](60-kinder/horch.md)                  | Zwei bis vier Tiere                    | Frage                                           |
+| horch         | [AC-2](60-kinder/horch.md)                  | Nichts Verwechselbares                 | Frage                                           |
+| horch         | [AC-3](60-kinder/horch.md)                  | Ruf kommt von selbst                   | Frage                                           |
+| horch         | [AC-4](60-kinder/horch.md)                  | Richtig                                | Antwort                                         |
+| horch         | [AC-5](60-kinder/horch.md)                  | Anderes Tier ruft selbst               | Antwort                                         |
+| horch         | [AC-6](60-kinder/horch.md)                  | Sechs Fragen, dann Fest                | Antwort                                         |
+| horch         | [AC-7](60-kinder/horch.md)                  | Passt ins Fenster                      | Antwort                                         |
+| horch         | [AC-8](60-kinder/horch.md)                  | Ohne Ton gesperrt                      | Antwort                                         |
+| horch         | [AC-9](60-kinder/horch.md)                  | Erkannt und auf Anhieb                 | Statistik                                       |
+| tiere         | [AC-1](60-kinder/tiere.md)                  | Jedes Tier vollständig                 | Tiere und Aufnahmen                             |
+| tiere         | [AC-2](60-kinder/tiere.md)                  | Aufnahmen frei und im Lager            | Tiere und Aufnahmen                             |
+| tiere         | [AC-3](60-kinder/tiere.md)                  | Aufnahmen gleich laut                  | Tiere und Aufnahmen                             |
+| tiere         | [AC-4](60-kinder/tiere.md)                  | Ein Ruf zur Zeit                       | Klang                                           |
+| tiere         | [AC-5](60-kinder/tiere.md)                  | Ton ab dem ersten Tipp                 | Klang                                           |
+| tiere         | [AC-6](60-kinder/tiere.md)                  | Kaputter Ton bleibt still              | Klang                                           |
+| tiere         | [AC-7](60-kinder/tiere.md)                  | Vorhang vor dem Zimmer                 | Vorhang                                         |
+| tiere         | [AC-8](60-kinder/tiere.md)                  | Zimmer deckt alles ab                  | Kinderzimmer                                    |
+| tiere         | [AC-9](60-kinder/tiere.md)                  | Heraus nur durch Halten                | Kinderzimmer                                    |
+| tiere         | [AC-10](60-kinder/tiere.md)                 | Zweite Hand bricht ab                  | Kinderzimmer                                    |
+| tiere         | [AC-11](60-kinder/tiere.md)                 | Kein Menü, nichts markiert             | Kinderzimmer                                    |
+| tiere         | [AC-12](60-kinder/tiere.md)                 | Vollbild und wacher Bildschirm         | Kinderzimmer                                    |
+| tiere         | [AC-13](60-kinder/tiere.md)                 | Uhr ohne Hintergrund                   | Kinderzimmer                                    |
+| tiere         | [AC-14](60-kinder/tiere.md)                 | Schließen räumt auf                    | Kinderzimmer                                    |
+| tiere         | [AC-15](60-kinder/tiere.md)                 | Partien ohne Urteil                    | Gemeinsamer Vertrag der Kinderspiele            |
+| tiere         | [AC-16](60-kinder/tiere.md)                 | Kein Fehlerton, kein Rot               | Gemeinsamer Vertrag der Kinderspiele            |
+| tierstimmen   | [AC-1](60-kinder/tierstimmen.md)            | Sechs Tiere je Seite                   | Tiere                                           |
+| tierstimmen   | [AC-2](60-kinder/tierstimmen.md)            | Tipp lässt rufen                       | Tiere                                           |
+| tierstimmen   | [AC-3](60-kinder/tierstimmen.md)            | Blättern im Kreis                      | Tiere                                           |
+| tierstimmen   | [AC-4](60-kinder/tierstimmen.md)            | Jede Taste ruft ein Tier               | Tiere                                           |
+| tierstimmen   | [AC-5](60-kinder/tierstimmen.md)            | Ein Besuch ist eine Runde              | Statistik                                       |
+| tierstimmen   | [AC-6](60-kinder/tierstimmen.md)            | Tipps und Lieblingstier                | Statistik                                       |
