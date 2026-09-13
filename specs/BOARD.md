@@ -6,22 +6,22 @@
 Eine Zeile je Akzeptanzkriterium. Gepflegt wird der Status in der Spec
 selbst, hier steht er zusammengefasst.
 
-**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 1 zurückgestellt · 465 fertig
+**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 1 zurückgestellt · 498 fertig
 
 ## Nach Spezifikation
 
 | Spezifikation                                      | In Arbeit | Geplant | Offen | Zurückgestellt | Fertig |
 | -------------------------------------------------- | --------- | ------- | ----- | -------------- | ------ |
-| [Auswahl und Navigation](00-rahmen/auswahl.md)     | -         | -       | -     | -              | 17     |
+| [Auswahl und Navigation](00-rahmen/auswahl.md)     | -         | -       | -     | -              | 18     |
 | [Datenschutz](00-rahmen/datenschutz.md)            | -         | -       | -     | -              | 11     |
 | [Offline und Versionen](00-rahmen/offline.md)      | -         | -       | -     | -              | 14     |
-| [Spielschnittstelle](00-rahmen/schnittstelle.md)   | -         | -       | -     | -              | 12     |
+| [Spielschnittstelle](00-rahmen/schnittstelle.md)   | -         | -       | -     | -              | 13     |
 | [Sicherung](00-rahmen/sicherung.md)                | -         | -       | -     | -              | 14     |
 | [Statistik](00-rahmen/statistik.md)                | -         | -       | -     | -              | 14     |
 | [Zahlencode](10-raetsel/mastermind.md)             | -         | -       | -     | -              | 15     |
 | [Minenfeld](10-raetsel/minen.md)                   | -         | -       | -     | -              | 12     |
 | [Nonogramm](10-raetsel/nonogramm.md)               | -         | -       | -     | -              | 15     |
-| [Riegel](10-raetsel/pins.md)                       | -         | -       | -     | -              | 18     |
+| [Riegel](10-raetsel/pins.md)                       | -         | -       | -     | -              | 27     |
 | [Damen](10-raetsel/queens.md)                      | -         | -       | -     | -              | 18     |
 | [Mini-Sudoku](10-raetsel/sudoku.md)                | -         | -       | -     | -              | 18     |
 | [Tango](10-raetsel/tango.md)                       | -         | -       | -     | -              | 14     |
@@ -41,6 +41,7 @@ selbst, hier steht er zusammengefasst.
 | [Echtzeit](50-geschick/echtzeit.md)                | -         | -       | -     | -              | 12     |
 | [Flattervogel](50-geschick/flappy.md)              | -         | -       | -     | -              | 8      |
 | [Sternjäger](50-geschick/impact.md)                | -         | -       | -     | -              | 17     |
+| [Flipper](50-geschick/pinball.md)                  | -         | -       | -     | -              | 22     |
 | [Schlange](50-geschick/snake.md)                   | -         | -       | -     | -              | 12     |
 
 ## In Arbeit (2)
@@ -56,7 +57,7 @@ selbst, hier steht er zusammengefasst.
 | --------- | ------------------------------------ | -------------------------- | -------------------------------------------- |
 | verraeter | [AC-13](40-zu-mehreren/verraeter.md) | Stimmen übers Netz sammeln | braucht eine Verbindung zwischen den Geräten |
 
-## Fertig (465)
+## Fertig (498)
 
 | Spec          | AC                                          | Titel                                  | Anmerkung                                       |
 | ------------- | ------------------------------------------- | -------------------------------------- | ----------------------------------------------- |
@@ -77,6 +78,7 @@ selbst, hier steht er zusammengefasst.
 | auswahl       | [AC-15](00-rahmen/auswahl.md)               | Meldung verdeckt kein Blatt            | Kopfzeile, Meldung, Blatt                       |
 | auswahl       | [AC-16](00-rahmen/auswahl.md)               | Neue Ansicht beginnt oben              | Kopfzeile, Meldung, Blatt                       |
 | auswahl       | [AC-17](00-rahmen/auswahl.md)               | Kopfzeile passt aufs Handy             | Kopfzeile, Meldung, Blatt                       |
+| auswahl       | [AC-18](00-rahmen/auswahl.md)               | Kacheln nach Gruppen geordnet          | Dashboard                                       |
 | datenschutz   | [AC-1](00-rahmen/datenschutz.md)            | Ein Schlüssel im Browser               | Speicher auf dem Gerät                          |
 | datenschutz   | [AC-2](00-rahmen/datenschutz.md)            | Kein Konto, keine Anmeldung            | Speicher auf dem Gerät                          |
 | datenschutz   | [AC-3](00-rahmen/datenschutz.md)            | Kaputter Speicher startet leer         | Speicher auf dem Gerät                          |
@@ -114,6 +116,7 @@ selbst, hier steht er zusammengefasst.
 | schnittstelle | [AC-10](00-rahmen/schnittstelle.md)         | `ohneSiege` ist nur Anzeige            | Urteil und Auswertung                           |
 | schnittstelle | [AC-11](00-rahmen/schnittstelle.md)         | Auswertung liefert Kennzahlen          | Urteil und Auswertung                           |
 | schnittstelle | [AC-12](00-rahmen/schnittstelle.md)         | Auswertung verträgt Lücken             | Urteil und Auswertung                           |
+| schnittstelle | [AC-13](00-rahmen/schnittstelle.md)         | Gruppe ist der Spec-Bereich            | Anmeldung                                       |
 | sicherung     | [AC-1](00-rahmen/sicherung.md)              | Sichern an zwei Stellen                | Sichern                                         |
 | sicherung     | [AC-2](00-rahmen/sicherung.md)              | Datei mit allen Partien                | Sichern                                         |
 | sicherung     | [AC-3](00-rahmen/sicherung.md)              | Laufende Partien bleiben daheim        | Sichern                                         |
@@ -184,7 +187,7 @@ selbst, hier steht er zusammengefasst.
 | nonogramm     | [AC-13](10-raetsel/nonogramm.md)            | Fertiges Bild in der Statistik         | Ende, Speicher und Statistik                    |
 | nonogramm     | [AC-14](10-raetsel/nonogramm.md)            | Bestzeit je Größe                      | Ende, Speicher und Statistik                    |
 | nonogramm     | [AC-15](10-raetsel/nonogramm.md)            | Anleitung auf Abruf                    | Ende, Speicher und Statistik                    |
-| pins          | [AC-1](10-raetsel/pins.md)                  | Elf feste Level                        | Level                                           |
+| pins          | [AC-1](10-raetsel/pins.md)                  | Siebzehn feste Level                   | Level                                           |
 | pins          | [AC-2](10-raetsel/pins.md)                  | Level wählen                           | Level                                           |
 | pins          | [AC-3](10-raetsel/pins.md)                  | Jedes Level lösbar                     | Level                                           |
 | pins          | [AC-4](10-raetsel/pins.md)                  | Tippen zieht                           | Riegel                                          |
@@ -192,8 +195,8 @@ selbst, hier steht er zusammengefasst.
 | pins          | [AC-6](10-raetsel/pins.md)                  | Ohne Zufall                            | Riegel                                          |
 | pins          | [AC-7](10-raetsel/pins.md)                  | Wasser, Lava, Gold, Stein              | Welt                                            |
 | pins          | [AC-8](10-raetsel/pins.md)                  | Held und Ungeheuer                     | Welt                                            |
-| pins          | [AC-9](10-raetsel/pins.md)                  | Gold beim Helden                       | Welt                                            |
-| pins          | [AC-10](10-raetsel/pins.md)                 | Sieg                                   | Ende                                            |
+| pins          | [AC-9](10-raetsel/pins.md)                  | Gold unterwegs                         | Welt                                            |
+| pins          | [AC-10](10-raetsel/pins.md)                 | Sieg an der Truhe                      | Ende                                            |
 | pins          | [AC-11](10-raetsel/pins.md)                 | Niederlage                             | Ende                                            |
 | pins          | [AC-12](10-raetsel/pins.md)                 | Hinweis rechnet nach                   | Hinweis                                         |
 | pins          | [AC-13](10-raetsel/pins.md)                 | Sackgasse wird erkannt                 | Hinweis                                         |
@@ -202,6 +205,15 @@ selbst, hier steht er zusammengefasst.
 | pins          | [AC-16](10-raetsel/pins.md)                 | Angehalten                             | Speicher und Statistik                          |
 | pins          | [AC-17](10-raetsel/pins.md)                 | Partie in der Statistik                | Speicher und Statistik                          |
 | pins          | [AC-18](10-raetsel/pins.md)                 | Anleitung erklärt alles                | Speicher und Statistik                          |
+| pins          | [AC-19](10-raetsel/pins.md)                 | Steine treffen jeden                   | Welt                                            |
+| pins          | [AC-20](10-raetsel/pins.md)                 | Held läuft zur Truhe                   | Welt                                            |
+| pins          | [AC-21](10-raetsel/pins.md)                 | Stufen und Schutt                      | Welt                                            |
+| pins          | [AC-22](10-raetsel/pins.md)                 | Sterne fürs Gold                       | Ende                                            |
+| pins          | [AC-23](10-raetsel/pins.md)                 | Auftrag über dem Feld                  | Level                                           |
+| pins          | [AC-24](10-raetsel/pins.md)                 | Man sieht, was passiert                | Ende                                            |
+| pins          | [AC-25](10-raetsel/pins.md)                 | Neuer Levelsatz zählt neu              | Level                                           |
+| pins          | [AC-26](10-raetsel/pins.md)                 | Rechnen mit Rückmeldung                | Hinweis                                         |
+| pins          | [AC-27](10-raetsel/pins.md)                 | Keine ewige Bewegung                   | Welt                                            |
 | queens        | [AC-1](10-raetsel/queens.md)                | Drei Größen                            | Feld und Stufen                                 |
 | queens        | [AC-2](10-raetsel/queens.md)                | Neues Rätsel wählbar                   | Feld und Stufen                                 |
 | queens        | [AC-3](10-raetsel/queens.md)                | Gebiete klar getrennt                  | Feld und Stufen                                 |
@@ -513,6 +525,28 @@ selbst, hier steht er zusammengefasst.
 | impact        | [AC-15](50-geschick/impact.md)              | Partie in der Statistik                | Speicher und Statistik                          |
 | impact        | [AC-16](50-geschick/impact.md)              | Auswertung verträgt Lücken             | Speicher und Statistik                          |
 | impact        | [AC-17](50-geschick/impact.md)              | Invasoren-Partien bleiben              | Speicher und Statistik                          |
+| pinball       | [AC-1](50-geschick/pinball.md)              | Zwei Hälften, zwei Flipper             | Steuerung                                       |
+| pinball       | [AC-2](50-geschick/pinball.md)              | Feder spannen, loslassen               | Steuerung                                       |
+| pinball       | [AC-3](50-geschick/pinball.md)              | Rütteln und TILT                       | Steuerung                                       |
+| pinball       | [AC-4](50-geschick/pinball.md)              | Nichts geht durch Wände                | Tisch                                           |
+| pinball       | [AC-5](50-geschick/pinball.md)              | Keine Kugel bleibt liegen              | Tisch                                           |
+| pinball       | [AC-6](50-geschick/pinball.md)              | Klappen nur in eine Richtung           | Tisch                                           |
+| pinball       | [AC-7](50-geschick/pinball.md)              | Bumper und Schleudern                  | Tisch                                           |
+| pinball       | [AC-8](50-geschick/pinball.md)              | Bahnen und Geschicktreffer             | Regeln                                          |
+| pinball       | [AC-9](50-geschick/pinball.md)              | Mission annehmen                       | Regeln                                          |
+| pinball       | [AC-10](50-geschick/pinball.md)             | Acht Missionen                         | Regeln                                          |
+| pinball       | [AC-11](50-geschick/pinball.md)             | Treibstoff                             | Regeln                                          |
+| pinball       | [AC-12](50-geschick/pinball.md)             | Neun Ränge                             | Regeln                                          |
+| pinball       | [AC-13](50-geschick/pinball.md)             | Schwarzes Loch und Wurmlöcher          | Regeln                                          |
+| pinball       | [AC-14](50-geschick/pinball.md)             | Umlauf und Hyperraum                   | Regeln                                          |
+| pinball       | [AC-15](50-geschick/pinball.md)             | Warnziele und Rückstoß                 | Regeln                                          |
+| pinball       | [AC-16](50-geschick/pinball.md)             | Rettung                                | Regeln                                          |
+| pinball       | [AC-17](50-geschick/pinball.md)             | Ende mit Bilanz                        | Regeln                                          |
+| pinball       | [AC-18](50-geschick/pinball.md)             | Anzeige unter dem Tisch                | Anzeige und Klang                               |
+| pinball       | [AC-19](50-geschick/pinball.md)             | Geräusche                              | Anzeige und Klang                               |
+| pinball       | [AC-20](50-geschick/pinball.md)             | Ton abschaltbar                        | Anzeige und Klang                               |
+| pinball       | [AC-21](50-geschick/pinball.md)             | Partie in der Statistik                | Speicher und Statistik                          |
+| pinball       | [AC-22](50-geschick/pinball.md)             | Auswertung verträgt Lücken             | Speicher und Statistik                          |
 | snake         | [AC-1](50-geschick/snake.md)                | Siebzehn mal siebzehn                  | Feld und Steuerung                              |
 | snake         | [AC-2](50-geschick/snake.md)                | Wischen, ohne abzusetzen               | Feld und Steuerung                              |
 | snake         | [AC-3](50-geschick/snake.md)                | Steuerkreuz unter dem Feld             | Feld und Steuerung                              |

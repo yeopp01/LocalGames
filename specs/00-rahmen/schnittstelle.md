@@ -1,7 +1,7 @@
 # Spielschnittstelle
 
 **Datei:** [`app.js`](../../app.js)
-**Stand:** 12/12 fertig
+**Stand:** 13/13 fertig
 
 ## Zweck
 
@@ -15,10 +15,11 @@ Rahmen ein Spiel kennen muss.
 ### Anmeldung
 
 - **AC-1** `fertig` **Anmelden mit festen Feldern** — Ein Spiel ruft
-  `Rahmen.anmelden({ id, name, unter, farbe, symbol, starten })`. `id` ist der
-  Kurzname in Adressen und Partien, `name` und `unter` stehen auf der Kachel,
-  `farbe` färbt Kachel und Statistikblock, `symbol` ist der Inhalt eines
-  24×24-SVG. Optional sind `auswertung`, `zusatz` und `ohneSiege`.
+  `Rahmen.anmelden({ id, name, gruppe, unter, farbe, symbol, starten })`. `id`
+  ist der Kurzname in Adressen und Partien, `name` und `unter` stehen auf der
+  Kachel, `gruppe` wählt ihren Abschnitt auf der Auswahl (AC-13), `farbe` färbt
+  Kachel und Statistikblock, `symbol` ist der Inhalt eines 24×24-SVG. Optional
+  sind `auswertung`, `zusatz` und `ohneSiege`.
 - **AC-2** `fertig` **Kein Eingriff in den Rahmen** — Ein neues Spiel braucht
   seine Datei in `spiele/`, ein `<script>` in `index.html` und den Pfad in
   `GRUNDBESTAND`. Kachel, Adresse, Statistikblock und Sicherung kommen ohne
@@ -27,6 +28,11 @@ Rahmen ein Spiel kennen muss.
   `starten(boden, sitzung)` mit einem leeren Element, in das das Spiel seine
   Oberfläche baut. Gibt `starten` ein Objekt mit `ende()` zurück, wird das beim
   Verlassen genau einmal gerufen; ohne Rückgabe geht es auch.
+- **AC-13** `fertig` **Gruppe ist der Spec-Bereich** — `gruppe` ist der Ordner
+  der Spec ohne Nummer: `raetsel`, `wortspiele`, `brett-und-karten`,
+  `zu-mehreren` oder `geschick`. Der Rahmen kennt diese Gruppen, aber kein
+  Spiel. Der Wächter meldet ein Spiel, dessen `gruppe` fehlt, nicht zum Ordner
+  seiner Spec passt oder in `app.js` unbekannt ist.
 
 ### Sitzung
 
@@ -91,6 +97,7 @@ Ein Spiel ist genau eine Datei in `spiele/`, die sich beim Rahmen anmeldet:
 Rahmen.anmelden({
   id: 'kurzname',
   name: 'Anzeigename',
+  gruppe: 'raetsel',                           // Spec-Bereich ohne Nummer
   unter: 'Ein Satz für die Kachel.',
   farbe: '#4E8A54',
   symbol: '<circle cx="12" cy="12" r="8"/>',   // Inhalt eines 24×24-SVG

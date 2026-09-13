@@ -23,7 +23,7 @@ const lies = (...teile) => readFileSync(join(WURZEL, ...teile), 'utf8');
 
 /* ------------------------------------------------------- Was die App hat */
 
-/** Jedes Spiel, das sich beim Rahmen anmeldet: { id, name, ohneSiege, datei }. */
+/** Jedes Spiel, das sich beim Rahmen anmeldet: { id, name, gruppe, ohneSiege, datei }. */
 export const SPIELE = readdirSync(join(WURZEL, 'spiele'))
   .filter((d) => d.endsWith('.js'))
   .flatMap((datei) => {
@@ -33,7 +33,8 @@ export const SPIELE = readdirSync(join(WURZEL, 'spiele'))
     const block = text.slice(stelle, stelle + 1500);
     const id = /id:\s*'([^']+)'/.exec(block)?.[1];
     const name = /name:\s*'([^']+)'/.exec(block)?.[1];
-    return id ? [{ id, name, ohneSiege: /ohneSiege:\s*true/.test(block), datei }] : [];
+    const gruppe = /gruppe:\s*'([^']+)'/.exec(block)?.[1];
+    return id ? [{ id, name, gruppe, ohneSiege: /ohneSiege:\s*true/.test(block), datei }] : [];
   });
 
 export const VERSION = (() => {

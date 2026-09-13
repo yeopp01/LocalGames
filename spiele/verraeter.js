@@ -497,6 +497,7 @@
   Rahmen.anmelden({
     id: 'verraeter',
     name: 'Verräter',
+    gruppe: 'zu-mehreren',
     unter: 'Alle kennen das Wort. Einer nicht.',
     farbe: '#B45B3E',
     symbol: '<path d="M4 8c2.5-2 5.5-3 8-3s5.5 1 8 3" stroke-linecap="round"/><circle cx="8" cy="13" r="2.6"/><circle cx="16" cy="13" r="2.6"/><path d="M10.6 13h2.8" stroke-linecap="round"/>',

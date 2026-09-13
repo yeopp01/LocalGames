@@ -1073,6 +1073,7 @@
   Rahmen.anmelden({
     id: 'queens',
     name: 'Damen',
+    gruppe: 'raetsel',
     unter: 'Eine je Zeile, Spalte und Farbe.',
     farbe: '#B8577F',
     symbol: '<path d="M5 18h14M6 18l-1.5-9 4 3L12 6l3.5 6 4-3L18 18" stroke-linejoin="round"/>',

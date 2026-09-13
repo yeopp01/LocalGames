@@ -513,6 +513,7 @@
   Rahmen.anmelden({
     id: 'nonogramm',
     name: 'Nonogramm',
+    gruppe: 'raetsel',
     unter: 'Aus Zahlen wird ein Bild.',
     farbe: '#2E8B8B',
     symbol: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/><rect x="9" y="9" width="6" height="6" fill="currentColor" stroke="none"/>',

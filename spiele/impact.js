@@ -1320,6 +1320,7 @@
   Rahmen.anmelden({
     id: 'impact',
     name: 'Sternjäger',
+    gruppe: 'geschick',
     unter: 'Durch die Welten, bis zum Endgegner.',
     farbe: '#3D4F7C',
     symbol: '<path d="M3 7l4 2 9 3-9 3-4 2 2-5z" stroke-linejoin="round"/><path d="M18 12h3M16 6.5h2M16 17.5h2" stroke-linecap="round"/>',

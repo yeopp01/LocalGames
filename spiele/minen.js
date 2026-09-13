@@ -355,6 +355,7 @@
   Rahmen.anmelden({
     id: 'minen',
     name: 'Minenfeld',
+    gruppe: 'raetsel',
     unter: 'Aufdecken, ohne zu treten.',
     farbe: '#B45B3E',
     symbol: '<circle cx="12" cy="13" r="6"/><path d="M12 4v3M18.4 6.6l-2 2M5.6 6.6l2 2" stroke-linecap="round"/>',

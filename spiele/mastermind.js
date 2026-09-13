@@ -366,6 +366,7 @@
   Rahmen.anmelden({
     id: 'mastermind',
     name: 'Zahlencode',
+    gruppe: 'raetsel',
     unter: 'Vier Ziffern, zehn Versuche.',
     farbe: '#B8577F',
     symbol: '<circle cx="7" cy="8" r="2.4"/><circle cx="14" cy="8" r="2.4"/><circle cx="7" cy="16" r="2.4"/><circle cx="14" cy="16" r="2.4"/><path d="M19 6v12" stroke-linecap="round"/>',

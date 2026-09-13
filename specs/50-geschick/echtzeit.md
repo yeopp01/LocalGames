@@ -19,7 +19,7 @@ einzelnes Spiel.
   Seitenverhältnis seines Spiels, ist höchstens 440 px (ein Feld im Querformat
   600 px) und höchstens 92 % der Fensterbreite breit, und in einem flachen
   Fenster richtet sich seine Breite
-  nach der Höhe. Auf einem Pixel 7 und in 1366 × 700 ragt keines der vier
+  nach der Höhe. Auf einem Pixel 7 und in 1366 × 700 ragt keines der
   Spiele seitlich heraus, und die Seite ist nicht höher als das Fenster.
 - **AC-2** `fertig` **Scharf auf jeder Pixeldichte** — Die Leinwand hat so viele
   Bildpunkte wie ihr Platz auf dem Gerät (CSS-Größe mal `devicePixelRatio`)
@@ -58,14 +58,14 @@ einzelnes Spiel.
 ### Gemeinsamer Vertrag der Geschicklichkeitsspiele
 
 - **AC-9** `fertig` **Pause überlebt Neuladen** — Schlange, Sternjäger,
-  Flattervogel, Hochhinaus und Blasen sichern beim Anhalten ihren ganzen Stand. Nach
+  Flattervogel, Hochhinaus, Blasen und Flipper sichern beim Anhalten ihren ganzen Stand. Nach
   Neuladen, Zurück oder Neustart der App steht eine laufende Partie als Pause
   da, mit „Weiter" und „Neu anfangen". Eine beendete Partie und ein
   unlesbarer Stand ergeben ein frisches Feld.
 - **AC-10** `fertig` **Spielzeit ohne Pausen** — `dauer` zählt nur die Takte, in
   denen das Spiel lief. Pausen, Blätter und die Zeit, in der die App zu war,
   zählen nicht.
-- **AC-11** `fertig` **Partien ohne Urteil** — Alle fünf melden sich mit
+- **AC-11** `fertig` **Partien ohne Urteil** — Alle sechs melden sich mit
   `ohneSiege: true` an und notieren kein `gewonnen`. Die Kachel zählt Runden,
   und keine Siegquote rechnet mit ihnen.
 - **AC-12** `fertig` **Neu anfangen verwirft** — „Neu anfangen" im Pausenkasten

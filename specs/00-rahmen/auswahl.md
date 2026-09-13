@@ -1,11 +1,12 @@
 # Auswahl und Navigation
 
 **Datei:** [`app.js`](../../app.js), [`index.html`](../../index.html)
-**Stand:** 17/17 fertig
+**Stand:** 18/18 fertig
 
 ## Zweck
 
-Der Einstieg in die App: ein Dashboard mit einer Kachel je Spiel, darunter ein
+Der Einstieg in die App: ein Dashboard mit einer Kachel je Spiel, nach Art des
+Spiels in Abschnitte geteilt, darunter ein
 kurzer Blick auf den eigenen Bestand. Dazu die Wege zwischen Auswahl, Spiel und
 Statistik – über Adressen, die man neu laden und mit dem Zurück des Browsers
 oder des Handys durchlaufen kann – und die gemeinsame Kopfzeile, Meldung und
@@ -16,8 +17,9 @@ Dialog, die alle Spiele benutzen.
 ### Dashboard
 
 - **AC-1** `fertig` **Eine Kachel je Spiel** — Jedes angemeldete Spiel
-  erscheint als Kachel in der Reihenfolge der Anmeldung, mit Symbol, Name,
-  Unterzeile und seiner Farbe. Ein Tipp öffnet das Spiel unter `#/spiel/<id>`.
+  erscheint als Kachel – innerhalb seines Abschnitts (AC-18) in der Reihenfolge
+  der Anmeldung –, mit Symbol, Name, Unterzeile und seiner Farbe. Ein Tipp
+  öffnet das Spiel unter `#/spiel/<id>`.
 - **AC-2** `fertig` **Fußzeile nennt den Bestand** — Unten auf der Kachel steht
   „Noch nie gespielt", solange es keine Partie gibt; „1 Runde" bzw. „n Runden",
   wenn keine Partie ein Urteil (`gewonnen` als `true`/`false`) trägt; sonst
@@ -33,6 +35,14 @@ Dialog, die alle Spiele benutzen.
 - **AC-5** `fertig` **Tagesgruß nach Uhrzeit** — Unter „LocalGames" steht nach
   der Ortszeit: vor 5 Uhr „Noch wach?", vor 11 Uhr „Guten Morgen.", vor 18 Uhr
   „Kleine Pause?", danach „Guten Abend.".
+- **AC-18** `fertig` **Kacheln nach Gruppen geordnet** — Die Kacheln stehen in
+  Abschnitten „Rätsel", „Wortspiele", „Brett und Karten", „Zu mehreren" und
+  „Geschicklichkeit", in dieser Reihenfolge. Jeder Abschnitt hat eine
+  Überschrift mit der Zahl seiner Spiele; ein Abschnitt ohne Spiel erscheint
+  nicht. Ein Spiel steht in der Gruppe, die es mit `gruppe` angibt. Ohne oder
+  mit unbekannter `gruppe` fällt es nicht heraus, sondern steht in einem
+  letzten Abschnitt „Weitere". Anlass: Bei 23 Spielen war auf dem Handy eine
+  lange Wand aus Kacheln zu scrollen, ohne zu sehen, welche Art Spiel wo steht.
 
 ### Adressen und Verlauf
 
@@ -103,3 +113,4 @@ Dialog, die alle Spiele benutzen.
 | RF-4 | Nur Partien ohne Urteil vorhanden                     | Kachel „n Runden", im Streifen steht bei „gewonnen" ein „–".          |
 | RF-5 | Zweite Meldung, während die erste noch steht          | Der Text wird ersetzt, die Anzeigezeit beginnt von vorn.              |
 | RF-6 | Aus einem Spiel auf den Statistik-Knopf               | `ende()` läuft, dann erscheint `#/statistik/<id>` dieses Spiels.      |
+| RF-7 | Ein Spiel meldet sich ohne `gruppe` an                | Seine Kachel steht unter „Weitere" am Ende; der Wächter meldet es.    |

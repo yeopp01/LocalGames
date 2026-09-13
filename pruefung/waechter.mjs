@@ -9,7 +9,8 @@
      reihenfolge – version.js zuerst, app.js vor jedem Spiel, das sich anmeldet
      version   – ausgelieferte Datei geändert, Versionsnummer nicht hochgezählt
      syntax    – jede ausgelieferte Skriptdatei lässt sich parsen
-     spiele    – jedes angemeldete Spiel hat eine Spec und eine Zeile im README
+     spiele    – jedes angemeldete Spiel hat eine Spec, eine Zeile im README und
+                 die Gruppe seines Spec-Bereichs
      specs     – Format und Status der Akzeptanzkriterien, Board aktuell
      verweise  – relative Links in den Markdown-Dateien zeigen auf etwas
 
@@ -123,8 +124,10 @@ pruefung('syntax', 'Jede ausgelieferte Skriptdatei lässt sich parsen', (melde) 
 
 /* ----------------------------------------------------------------- spiele */
 
-pruefung('spiele', 'Jedes angemeldete Spiel hat Spec und README-Zeile, Kennungen eindeutig', (melde) => {
+pruefung('spiele', 'Jedes angemeldete Spiel hat Spec, README-Zeile und Gruppe, Kennungen eindeutig', (melde) => {
   const readme = lies('README.md');
+  const gruppenImRahmen = [...(/const GRUPPEN = \[([\s\S]*?)\];/.exec(lies('app.js'))?.[1] ?? '').matchAll(/id:\s*'([^']+)'/g)]
+    .map((m) => m[1]);
   const specs = new Map();
   const suche = (dir) => {
     for (const e of readdirSync(join(ROOT, dir), { withFileTypes: true })) {
@@ -155,6 +158,15 @@ pruefung('spiele', 'Jedes angemeldete Spiel hat Spec und README-Zeile, Kennungen
     // Weg vom Überblick zu dem, was das Spiel können soll.
     const zeile = `| [**${name}**](${specs.get(id)}) |`;
     if (name && !readme.includes(zeile)) melde(`${d}: README-Spieltabelle braucht die Zeile "${zeile} …".`);
+    // Der Abschnitt auf der Auswahl ist der Spec-Bereich ohne Nummer. Sonst
+    // stünde ein Spiel dort woanders als in specs/ – oder still unter „Weitere".
+    const gruppe = /gruppe:\s*'([^']+)'/.exec(block)?.[1];
+    const bereich = specs.get(id).split('/').at(-2).replace(/^\d+-/, '');
+    if (gruppe !== bereich) {
+      melde(`${d}: ${gruppe ? `gruppe '${gruppe}'` : 'gruppe fehlt'} – die Spec liegt in ${bereich}, also gruppe: '${bereich}'.`);
+    } else if (!gruppenImRahmen.includes(gruppe)) {
+      melde(`${d}: gruppe '${gruppe}' kennt app.js nicht (GRUPPEN) – die Kachel stünde unter „Weitere".`);
+    }
   }
 });
 

@@ -618,6 +618,7 @@
   Rahmen.anmelden({
     id: 'bubbles',
     name: 'Blasen',
+    gruppe: 'geschick',
     unter: 'Drei gleiche platzen. Was dran hing, fällt mit.',
     farbe: '#3F7FD0',
     symbol: '<circle cx="7" cy="7" r="3"/><circle cx="13" cy="7" r="3"/><circle cx="10" cy="12.2" r="3"/><circle cx="12" cy="20" r="2.4"/><path d="M12 17.6V15"/>',

@@ -1949,6 +1949,7 @@
   Rahmen.anmelden({
     id: 'schafkopf',
     name: 'Schafkopf',
+    gruppe: 'brett-und-karten',
     unter: 'Bayrisch, zu viert, mit Lehrer.',
     farbe: '#8C5A2E',
     symbol: '<path d="M6.5 8.5c0-2 2.5-3.5 5.5-3.5s5.5 1.5 5.5 3.5z"/>'

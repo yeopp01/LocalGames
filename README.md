@@ -20,7 +20,7 @@ Enthalten sind bisher:
 | [**Tango**](specs/10-raetsel/tango.md) | Sonne und Mond im Gleichgewicht, 6 × 6, immer ohne Raten lösbar. |
 | [**Damen**](specs/10-raetsel/queens.md) | Eine Dame je Zeile, Spalte und Farbgebiet, immer ohne Raten lösbar. |
 | [**Weg**](specs/10-raetsel/zip.md) | Ein Zug durch jedes Feld, die Zahlen der Reihe nach, auf „schwer" mit Mauern. |
-| [**Riegel**](specs/10-raetsel/pins.md) | Das Rätsel aus der Werbung: Riegel ziehen, Wasser löscht Lava, Gold fällt zum Helden, das Ungeheuer verbrennt. Elf Level, Hinweis rechnet nach. |
+| [**Riegel**](specs/10-raetsel/pins.md) | Das Rätsel aus der Werbung: Riegel ziehen, bis der Held zur Truhe laufen kann. Wasser löscht Lava, Steine erschlagen jeden, Gold gibt Sterne. Siebzehn Level, Hinweis rechnet nach. |
 | [**Verräter**](specs/40-zu-mehreren/verraeter.md) | Alle kennen dasselbe Wort, einer nicht. Zu dritt bis zu zwölft, auf einem Handy oder mit Code auf allen. |
 | [**Bombe**](specs/40-zu-mehreren/bombe.md) | Eine Silbe, ein Wort, schnell weitergeben – bis es knallt. Die Uhr läuft verdeckt. |
 | [**Zwei Wahrheiten**](specs/40-zu-mehreren/wahrheiten.md) | Drei Sätze über sich, einer erfunden. Die anderen raten reihum und geheim. |
@@ -31,8 +31,10 @@ Enthalten sind bisher:
 | [**Flattervogel**](specs/50-geschick/flappy.md) | Flappy Bird: ein Tipp, ein Flügelschlag, durch die Lücke. Etwas gnädiger als das Vorbild. |
 | [**Hochhinaus**](specs/50-geschick/doodle.md) | Doodle Jump auf Karopapier: halten oder Handy neigen, schießen, Monster, schwarze Löcher, Propeller und Rakete – mit Geräuschen und Zielen in zehn Rängen. |
 | [**Blasen**](specs/50-geschick/bubbles.md) | Bubble Shooter: zielen, über die Bande spielen, drei gleiche platzen. Fehlschüsse schieben neue Reihen herein. |
+| [**Flipper**](specs/50-geschick/pinball.md) | Wie der Weltraumtisch unter Windows: Feder, Startrampe, Wurmlöcher, Schwarzes Loch, Treibstoff und Missionen vom Kadetten zum Flottenadmiral – mit Geräuschen. |
 
-Über allem liegt ein Dashboard mit der Spielauswahl und eine gemeinsame
+Über allem liegt ein Dashboard mit der Spielauswahl, nach Art der Spiele in
+Abschnitte geteilt, und eine gemeinsame
 Statistik über alle Partien, samt Sicherung zum Mitnehmen. Was jedes Spiel
 genau können soll – und was davon noch offen ist –, steht in seiner Spec; der
 Name in der Tabelle führt hin.
@@ -143,6 +145,7 @@ Ein Spiel ist genau eine Datei in `spiele/`, die sich beim Rahmen anmeldet:
 Rahmen.anmelden({
   id: 'kurzname',
   name: 'Anzeigename',
+  gruppe: 'raetsel',                           // Spec-Bereich ohne Nummer, Abschnitt der Auswahl
   unter: 'Ein Satz für die Kachel.',
   farbe: '#4E8A54',
   symbol: '<circle cx="12" cy="12" r="8"/>',   // Inhalt eines 24×24-SVG

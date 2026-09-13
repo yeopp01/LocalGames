@@ -492,6 +492,7 @@
   Rahmen.anmelden({
     id: 'wordle',
     name: 'Wördle',
+    gruppe: 'wortspiele',
     unter: 'Fünf Buchstaben, sechs Versuche.',
     farbe: '#4E8A54',
     symbol: '<rect x="3" y="4" width="18" height="7" rx="1.6"/><rect x="3" y="13" width="18" height="7" rx="1.6"/><path d="M7.5 4v7M12 13v7"/>',

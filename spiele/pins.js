@@ -1,11 +1,23 @@
 /* Riegel – den richtigen Riegel zuerst ziehen.
 
-   Das Rätsel aus der Werbung, die nie das Spiel zeigt, für das sie wirbt:
-   Kammern voller Wasser, Lava und Gold, getrennt durch Riegel. Wer zieht,
-   lässt los, was dahinter liegt. Wasser löscht Lava zu Stein, Lava
-   verbrennt Gold, Held und Ungeheuer, fallende Steine erschlagen das
-   Ungeheuer. Der Held will das Gold und darf dem Ungeheuer nicht begegnen,
-   solange es lebt.
+   Das Rätsel aus der Werbung, die nie das Spiel zeigt, für das sie wirbt: Ein
+   Held will zur Truhe, und dazwischen liegen Kammern mit Wasser, Lava, Gold
+   und Steinen, getrennt durch Riegel. Wer zieht, lässt los, was dahinter
+   liegt. Der Held läuft von selbst los, sobald der Weg frei ist – und schaut
+   nicht, wohin er tritt.
+
+   Die Regeln gelten für alle gleich, damit man sie sich merken kann:
+
+   * Lava verbrennt jeden, der sie berührt, und schmilzt Gold.
+   * Wasser löscht Lava zu Stein. Wasser selbst tut niemandem etwas.
+   * Fallende Steine erschlagen jeden, auf den sie fallen – Held wie
+     Ungeheuer. Liegende Steine sind nur Boden. Gold fällt harmlos.
+   * Das Ungeheuer läuft auf den Helden zu und frisst ihn, wenn es ihn
+     erreicht. Töten muss man es nur, wenn es sonst an ihn herankommt.
+   * Beide steigen über Schutt bis zwei Zellen hoch, Wände erklimmen sie nicht.
+
+   Gewonnen ist, sobald der Held die Truhe berührt. Gold, das er unterwegs
+   einsammelt, gibt Sterne.
 
    Die Welt ist ein Raster aus Zellen, und jede Regel darin ist ohne Zufall:
    Wer dieselben Riegel in derselben Reihenfolge zieht, sieht immer dasselbe.
@@ -22,8 +34,9 @@
 
    Die Level stehen unten als Karten aus Kacheln; jede Kachel wird zu 3 × 3
    Zellen. Zeichen: # Fels  . Luft  ~ Wasser  ^ Lava  $ Gold  o Stein
-   = Riegel waagerecht  | Riegel senkrecht  H Held  M Ungeheuer. Eine Reihe
-   von = oder | am Stück ist ein Riegel, ein Block H oder M eine Figur. */
+   = Riegel waagerecht  | Riegel senkrecht  H Held  M Ungeheuer  T Truhe. Eine
+   Reihe von = oder | am Stück ist ein Riegel, ein Block H, M oder T eine
+   Figur. */
 
 (() => {
   const SPALTEN = 15;
@@ -43,9 +56,12 @@
   const GOLD = 5;
   const STEIN = 6;
   const FIGUR = 7;
+  const TRUHE = 8;
 
+  const SATZ = 2;                 // Levelsatz: Siege aus einem früheren zählen nicht als gelöst
   const TREFFER_TOT = 6;          // so viele fallende Steinzellen hält ein Kopf aus
   const SAMMELN = 6;              // Gold in diesem Abstand zum Helden gehört ihm – zwei Kacheln
+  const STUFE = K;                // eine Kachel steigen Figuren hinauf, eine Wand von zwei nicht
   const RUHE = 6;                 // Takte ohne Änderung: Lava zieht jeden 2., Figuren jeden 3.
   const HOECHSTENS = 6000;        // Takte, nach denen eine Welt als ruhig gilt, was auch passiert
 
@@ -53,264 +69,446 @@
 
   const LEVEL = [
     {
-      name: 'Der erste Riegel',
+      name: 'Die Tür',
+      text: 'Tipp auf den Riegel. Dann läuft der Held los – zur Truhe.',
       karte: [
         '###############',
-        '#.............#',
-        '#.............#',
-        '#....#$$$#....#',
-        '#....#$$$#....#',
-        '#....#$$$#....#',
-        '#....#===#....#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#....#...#....#',
-        '#....#...#....#',
-        '#....#HH.#....#',
-        '#....#HH.#....#',
-        '#....#HH.#....#',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '#......|......#',
+        '#.HH...|......#',
+        '#.HH...|....TT#',
+        '#.HH...|..$$TT#',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
         '###############',
       ],
     },
     {
       name: 'Nicht der da',
+      text: 'Nur ein Riegel hilft. Der andere lässt Lava los.',
       karte: [
         '###############',
-        '#.............#',
-        '#.#^^^^#$$$$#.#',
-        '#.#^^^^#$$$$#.#',
-        '#.#====#====#.#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#........HH...#',
-        '#........HH...#',
-        '#........HH...#',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '########^^^####',
+        '########^^^####',
+        '########===####',
+        '#......|......#',
+        '#.HH...|......#',
+        '#.HH...|....TT#',
+        '#.HH...|..$$TT#',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
         '###############',
       ],
     },
     {
       name: 'Das Ungeheuer',
+      text: 'Das Ungeheuer frisst den Helden, wenn es ihn erreicht.',
       karte: [
         '###############',
-        '#......#......#',
-        '##^^^^^#......#',
-        '##^^^^^#......#',
-        '##=====#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......|......#',
-        '#..MM..|..HH..#',
-        '#..MM..|..HH..#',
-        '#..MM..|..HH..#',
         '###############',
-      ],
-    },
-    {
-      name: 'Falltür',
-      karte: [
         '###############',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#......#......#',
-        '#.MM...|......#',
-        '#.MM...|......#',
-        '#.MM...|......#',
-        '#======#......#',
-        '#^^^^^^#......#',
-        '#^^^^^^#...HH.#',
-        '#^^^^^^#...HH.#',
-        '#^^^^^^#...HH.#',
+        '###############',
+        '###############',
+        '###############',
+        '######oo#######',
+        '######oo#######',
+        '######==#######',
+        '#....|........#',
+        '#HH..|MM......#',
+        '#HH..|MM....TT#',
+        '#HH..|MM....TT#',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
         '###############',
       ],
     },
     {
       name: 'Erst löschen',
-      ziel: 60,
+      text: 'Über Lava kommt der Held nicht. Über Stein schon.',
       karte: [
         '###############',
-        '#.......#~~~#.#',
-        '#...#$$$#~~~#.#',
-        '#...#$$$#~~~#.#',
-        '#...#===#===#.#',
-        '#...#.......#.#',
-        '#...#.......#.#',
-        '#...#^^^^^^^#.#',
-        '#...#=======#.#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.......HH....#',
-        '#.......HH....#',
-        '#.......HH....#',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '#####~~########',
+        '#####~~#^^#####',
+        '#####~~#^^#####',
+        '#####==#==#####',
+        '#..|..........#',
+        '#HH|..........#',
+        '#HH|........TT#',
+        '#HH|......$.TT#',
+        '#####^^^^######',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
         '###############',
       ],
     },
     {
       name: 'Steinschlag',
+      text: 'Fallende Steine erschlagen jeden – auch den Helden.',
       karte: [
         '###############',
-        '######ooo#$$$##',
-        '######ooo#$$$##',
-        '######===#===##',
-        '######...#....#',
-        '######...#....#',
-        '######...#....#',
-        '######...#....#',
-        '######...#....#',
-        '######...#....#',
-        '######...#....#',
-        '######...#....#',
-        '######...#....#',
-        '######...#....#',
-        '######...#....#',
-        '######...#....#',
-        '#^^^^#...#....#',
-        '#^^^^#...#....#',
-        '#^^^^#...#....#',
-        '#^^^^|...#....#',
-        '#^^^^|MM.#.HH.#',
-        '#^^^^|MM.#.HH.#',
-        '#^^^^|MM...HH.#',
         '###############',
-      ],
-    },
-    {
-      name: 'Stein statt Lava',
-      karte: [
         '###############',
-        '#~~~~~###$$$$##',
-        '#~~~~~###$$$$##',
-        '#~~~~~###====##',
-        '#=====###.....#',
-        '#^^^^^###.....#',
-        '#^^^^^###.....#',
-        '#=====###.....#',
-        '#.....###.....#',
-        '#.....###.....#',
-        '#.....###.....#',
-        '#.....###.....#',
-        '#.....###.....#',
-        '#.....###.....#',
-        '#.....###.....#',
-        '#.....###.....#',
-        '#.....###.....#',
-        '#.....###.....#',
-        '#.....###.....#',
-        '#.....###.....#',
-        '#.MM..###..HH.#',
-        '#.MM..###..HH.#',
-        '#.MM.......HH.#',
+        '###############',
+        '###############',
+        '###############',
+        '#oo#oo#########',
+        '#oo#oo#########',
+        '#==#==#########',
+        '#..|..........#',
+        '#HH|MM........#',
+        '#HH|MM......TT#',
+        '#HH|MM....$$TT#',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
         '###############',
       ],
     },
     {
       name: 'Die Grube',
+      text: 'Das Ungeheuer schaut nicht, wohin es tritt.',
       karte: [
         '###############',
-        '#....#~~~#$$$$#',
-        '#....#~~~#$$$$#',
-        '#....#~~~#$$$$#',
-        '#....#===#====#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '######........#',
-        '#..MM|....HH..#',
-        '#..MM|....HH..#',
-        '#..MM|....HH..#',
-        '######^^^######',
-        '######^^^######',
-        '######^^^######',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '#####~~########',
+        '#####~~########',
+        '#####==########',
+        '#..|....|.....#',
+        '#HH|....|MM...#',
+        '#HH|....|MM$TT#',
+        '#HH|....|MM$TT#',
+        '#####^^########',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
         '###############',
       ],
     },
     {
-      name: 'Ablauf',
+      name: 'Tief gefallen',
+      text: 'Der Held fällt tief, aber weich – nur nicht in Lava.',
       karte: [
         '###############',
-        '#.......#$$$#.#',
-        '#.......#$$$#.#',
-        '#.......#$$$#.#',
-        '#...#####===#.#',
-        '#...#^^^^^^^#.#',
-        '#...#^^^^^^^#.#',
-        '#...#===#===#.#',
-        '#...#...#.....#',
-        '#...#...#.....#',
-        '#...#...#.....#',
-        '#...#...#.....#',
-        '#...#...#.....#',
-        '#...#####.....#',
+        '###############',
+        '###############',
+        '###############',
+        '#....#..#######',
+        '#.HH.#~~#######',
+        '#.HH.#~~#######',
+        '#.HH.#~~#######',
+        '#====#==#######',
         '#.............#',
         '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#.............#',
-        '#........HH...#',
-        '#........HH...#',
-        '#........HH...#',
+        '#..........TT.#',
+        '#.....$....TT.#',
+        '#^^^^##########',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+      ],
+    },
+    {
+      name: 'Schatzregen',
+      text: 'Die Truhe allein gibt einen Stern. Das Gold unterwegs die anderen.',
+      karte: [
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '#####$$#~~#####',
+        '#####$$#~~#####',
+        '#####==#==#####',
+        '#..|..........#',
+        '#HH|..........#',
+        '#HH|........TT#',
+        '#HH|........TT#',
+        '#####^^########',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+      ],
+    },
+    {
+      name: 'Falltür',
+      text: 'Manchmal muss zuerst der Boden weg.',
+      karte: [
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '####~~#########',
+        '####~~#########',
+        '####==#########',
+        '#..|..........#',
+        '#HH|MM........#',
+        '#HH|MM......TT#',
+        '#HH|MM..$...TT#',
+        '####==#########',
+        '####^^#########',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+      ],
+    },
+    {
+      name: 'Steinbrücke',
+      karte: [
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '#####oo#^^#####',
+        '#####oo#^^#####',
+        '#####==#==#####',
+        '#..|..........#',
+        '#HH|..........#',
+        '#HH|........TT#',
+        '#HH|......$.TT#',
+        '#####..########',
+        '#####..########',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+      ],
+    },
+    {
+      name: 'Dammbruch',
+      karte: [
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '#########~~~###',
+        '#########~~~###',
+        '#########===###',
+        '#..|....|.....#',
+        '#HH|....|.....#',
+        '#HH|....|...TT#',
+        '#HH|.$$.|^^^TT#',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+      ],
+    },
+    {
+      name: 'Doppeldecker',
+      karte: [
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '#HH############',
+        '#HH####oo######',
+        '#HH####oo######',
+        '#==####==######',
+        '#.....#.......#',
+        '#.....|.......#',
+        '#.....|MM.....#',
+        '#.....|MM...TT#',
+        '#.....|MM.$$TT#',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+      ],
+    },
+    {
+      name: 'Zwei Gruben',
+      karte: [
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '####~~#~~######',
+        '####~~#~~######',
+        '####==#==######',
+        '#..|.....|....#',
+        '#HH|.....|MM..#',
+        '#HH|.....|MMTT#',
+        '#HH|.....|MMTT#',
+        '####^^#^^######',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+      ],
+    },
+    {
+      name: 'Goldader',
+      karte: [
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '#####$$#~~|..##',
+        '#####$$#~~|..##',
+        '#####==#==#..##',
+        '#####..#..#..##',
+        '#####..#..#..##',
+        '#..|.......####',
+        '#HH|..........#',
+        '#HH|........TT#',
+        '#HH|........TT#',
+        '#####^^########',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+      ],
+    },
+    {
+      name: 'Treppab',
+      karte: [
+        '###############',
+        '###############',
+        '########~~#####',
+        '#..|...#~~#####',
+        '#HH|...#~~#####',
+        '#HH|...#==#####',
+        '#HH|...#..#####',
+        '#####==#..#####',
+        '#........#....#',
+        '#........|....#',
+        '#........|MM..#',
+        '#........|MMTT#',
+        '#.......$|MMTT#',
+        '#####^^########',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
         '###############',
       ],
     },
@@ -318,57 +516,57 @@
       name: 'Pfropfen',
       karte: [
         '###############',
-        '#^^^^^#ooo#$$$#',
-        '#^^^^^#ooo#$$$#',
-        '#^^^^^#ooo#$$$#',
-        '#=====#===#===#',
-        '#.........#...#',
-        '#.........#...#',
-        '#.........#...#',
-        '#.........#...#',
-        '#.........#...#',
-        '#.........#...#',
-        '#.........#...#',
-        '#.........#...#',
-        '#.........#...#',
-        '#.........#...#',
-        '#.........#...#',
-        '#.........#...#',
-        '#.........#...#',
-        '#.........#...#',
-        '#.........#...#',
-        '#.MM......#.HH#',
-        '#.MM......#.HH#',
-        '#.MM#.........#',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '######oo#..#~~#',
+        '######oo#^^#~~#',
+        '######==#==#==#',
+        '#..|....|.....#',
+        '#HH|....|MM...#',
+        '#HH|....|MM.TT#',
+        '#HH|.....MM.TT#',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
         '###############',
       ],
     },
     {
-      name: 'Weiche',
+      name: 'Drei Etagen',
       karte: [
         '###############',
-        '#$$$$#~~~######',
-        '#$$$$#~~~######',
-        '#....#~~~######',
-        '#====#=#=######',
-        '#......#......#',
-        '#^^^^#####^^^^#',
-        '#^^^^#####^^^^#',
-        '#====#####====#',
-        '#....#####....#',
-        '#....#####....#',
-        '#....#####....#',
-        '#....#####....#',
-        '#....#####....#',
-        '#....#####....#',
-        '#....#####....#',
-        '#....#####....#',
-        '#....#####....#',
-        '#....#####....#',
-        '#....#####....#',
-        '#.HH.#####.MM.#',
-        '#.HH.#####.MM.#',
-        '#.HH.#####.MM.#',
+        '###############',
+        '#..|..#~~######',
+        '#HH|..#~~#oo###',
+        '#HH|..#~~#oo###',
+        '#HH|..#==#==###',
+        '####==#..#..###',
+        '#...........###',
+        '#...........###',
+        '#...........###',
+        '#......$....###',
+        '####^^####==###',
+        '##########....#',
+        '##########MM..#',
+        '##########MMTT#',
+        '##########MMTT#',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
+        '###############',
         '###############',
       ],
     },
@@ -376,12 +574,36 @@
 
   /* --------------------------------------------------------- Aufbauen */
 
-  const ZEICHEN = { '#': FELS, '.': LUFT, '~': WASSER, '^': LAVA, '$': GOLD, o: STEIN, '=': LUFT, '|': LUFT, H: LUFT, M: LUFT };
+  const ZEICHEN = { '#': FELS, '.': LUFT, '~': WASSER, '^': LAVA, '$': GOLD, o: STEIN, '=': LUFT, '|': LUFT, H: LUFT, M: LUFT, T: LUFT };
+
+  /** Zusammenhängende Blöcke eines Zeichens als Kästen in Zellen. */
+  function bloecke(karte, ch) {
+    const aus = [];
+    const gesehen = new Set();
+    for (let ty = 0; ty < ZEILEN; ty += 1) {
+      for (let tx = 0; tx < SPALTEN; tx += 1) {
+        if (karte[ty][tx] !== ch || gesehen.has(ty * SPALTEN + tx)) continue;
+        let x0 = tx; let x1 = tx; let y0 = ty; let y1 = ty;
+        const stapel = [[tx, ty]];
+        gesehen.add(ty * SPALTEN + tx);
+        while (stapel.length) {
+          const [x, y] = stapel.pop();
+          x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+          for (const [nx, ny] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]]) {
+            if (nx < 0 || ny < 0 || nx >= SPALTEN || ny >= ZEILEN || karte[ny][nx] !== ch || gesehen.has(ny * SPALTEN + nx)) continue;
+            gesehen.add(ny * SPALTEN + nx);
+            stapel.push([nx, ny]);
+          }
+        }
+        aus.push({ x: x0 * K, y: y0 * K, w: (x1 - x0 + 1) * K, h: (y1 - y0 + 1) * K });
+      }
+    }
+    return aus;
+  }
 
   function bauen(level) {
     const karte = level.karte;
     const zellen = new Uint8Array(W * HH);
-    const riegelVon = new Int8Array(W * HH).fill(-1);
     for (let ty = 0; ty < ZEILEN; ty += 1) {
       for (let tx = 0; tx < SPALTEN; tx += 1) {
         const m = ZEICHEN[karte[ty][tx]];
@@ -411,7 +633,7 @@
     }
     laeufe.sort((a, b) => a.ty0 - b.ty0 || a.tx0 - b.tx0);
     const riegel = laeufe.map((l, i) => {
-      const r = Object.assign({ nr: i + 1, zellen: [] }, l);
+      const r = Object.assign({ nr: i + 1, zellen: [], gezogen: false }, l);
       if (l.waagerecht) {
         const y = l.ty0 * K;
         for (let x = l.tx0 * K; x < (l.tx1 + 1) * K; x += 1) r.zellen.push(y * W + x);
@@ -422,72 +644,62 @@
         for (let y = l.ty0 * K; y < (l.ty1 + 1) * K; y += 1) r.zellen.push(y * W + x);
         r.griff = -1;
       }
-      for (const p of r.zellen) { zellen[p] = RIEGEL; riegelVon[p] = i; }
+      for (const p of r.zellen) zellen[p] = RIEGEL;
       return r;
     });
+    // Zwei Griffe übereinander sind nicht zu treffen – wo einer auf einem
+    // früheren läge, wandert er ans andere Ende; bei Türen nach unten.
+    const griffBei = (r) => (r.waagerecht
+      ? [r.griff < 0 ? r.tx0 * K * Z - 4.5 : (r.tx1 + 1) * K * Z + 4.5, r.ty0 * K * Z + Z / 2]
+      : [(r.tx0 * K + 1.5) * Z, r.griff < 0 ? r.ty0 * K * Z - 4.5 : (r.ty1 + 1) * K * Z + 4.5]);
+    riegel.forEach((r, i) => {
+      const [x, y] = griffBei(r);
+      if (riegel.slice(0, i).some((o) => { const [ox, oy] = griffBei(o); return Math.hypot(ox - x, oy - y) < 12; })) r.griff = -r.griff;
+    });
 
-    // Figuren: zusammenhängende Blöcke aus H oder M.
-    const figuren = [];
-    const gesehen = new Set();
-    for (let ty = 0; ty < ZEILEN; ty += 1) {
-      for (let tx = 0; tx < SPALTEN; tx += 1) {
-        const ch = karte[ty][tx];
-        if ((ch !== 'H' && ch !== 'M') || gesehen.has(ty * SPALTEN + tx)) continue;
-        let x0 = tx; let x1 = tx; let y0 = ty; let y1 = ty;
-        const stapel = [[tx, ty]];
-        gesehen.add(ty * SPALTEN + tx);
-        while (stapel.length) {
-          const [x, y] = stapel.pop();
-          x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
-          for (const [nx, ny] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]]) {
-            if (nx < 0 || ny < 0 || nx >= SPALTEN || ny >= ZEILEN || karte[ny][nx] !== ch || gesehen.has(ny * SPALTEN + nx)) continue;
-            gesehen.add(ny * SPALTEN + nx);
-            stapel.push([nx, ny]);
-          }
-        }
-        figuren.push({
-          art: ch === 'H' ? 'held' : 'ungeheuer',
-          x: x0 * K, y: y0 * K, w: (x1 - x0 + 1) * K, h: (y1 - y0 + 1) * K,
-          lebt: true, treffer: 0, wie: null, blick: 1,
-        });
-      }
-    }
     // Der Held zuerst – auf ihn beziehen sich alle anderen.
-    figuren.sort((a, b) => (a.art === 'held' ? -1 : 0) - (b.art === 'held' ? -1 : 0));
+    const neu = (art) => (k) => Object.assign(k, { art, lebt: true, treffer: 0, wie: null, blick: 1, gang: 0, kante: null });
+    const figuren = [...bloecke(karte, 'H').map(neu('held')), ...bloecke(karte, 'M').map(neu('ungeheuer'))];
+    const truhe = bloecke(karte, 'T')[0] || null;
 
     let gold = 0;
     for (const m of zellen) if (m === GOLD) gold += 1;
 
     const w = {
       zellen,
-      riegelVon,
-      riegel: riegel.map((r) => ({ nr: r.nr, zellen: r.zellen, waagerecht: r.waagerecht, tx0: r.tx0, ty0: r.ty0, tx1: r.tx1, ty1: r.ty1, griff: r.griff, gezogen: false })),
+      riegel,
       figuren,
+      truhe,
+      gewonnen: false,
       stempel: new Uint32Array(W * HH),
       takt: 0,
       ruhig: 0,
-      gold: { gesamt: gold, gesammelt: 0, verbrannt: 0, ziel: Math.ceil((gold * (level.ziel || 70)) / 100) },
+      gold: { gesamt: gold, gesammelt: 0, verbrannt: 0 },
       ereignisse: neueEreignisse(),
+      effekte: null,
     };
     for (const f of figuren) stempeln(w, f, FIGUR);
+    if (truhe) stempeln(w, truhe, TRUHE);
     laufen(w);
     w.ereignisse = neueEreignisse();
     return w;
   }
 
-  const neueEreignisse = () => ({ stein: 0, gesammelt: 0, verbrannt: 0, tote: [] });
+  const neueEreignisse = () => ({ stein: 0, gesammelt: 0, verbrannt: 0, tote: [], gelaufen: 0, truhe: false });
 
   function kopie(w) {
     return {
       zellen: w.zellen.slice(),
-      riegelVon: w.riegelVon,
       riegel: w.riegel.map((r) => Object.assign({}, r)),
       figuren: w.figuren.map((f) => Object.assign({}, f)),
+      truhe: w.truhe,
+      gewonnen: w.gewonnen,
       stempel: new Uint32Array(W * HH),
       takt: w.takt,
       ruhig: w.ruhig,
       gold: Object.assign({}, w.gold),
       ereignisse: neueEreignisse(),
+      effekte: null,
     };
   }
 
@@ -495,9 +707,12 @@
     for (let y = f.y; y < f.y + f.h; y += 1) for (let x = f.x; x < f.x + f.w; x += 1) w.zellen[y * W + x] = m;
   }
 
+  /* Was geschieht, fürs Bild: Dampf, Funken, Münzen, Tod, Truhe. Nur die
+     sichtbare Welt sammelt das – der Löser rechnet ohne. */
+  const effekt = (w, e) => { if (w.effekte) w.effekte.push(e); };
+
   /* ------------------------------------------------------------ Regeln */
 
-  const fliesst = (m) => m === WASSER || m === LAVA;
   const weich = (m) => m === LUFT || m === WASSER || m === LAVA;
 
   function tauschen(w, a, b, marke) {
@@ -522,10 +737,16 @@
     if (y + 1 >= HH) return false;
     if (weich(z[p + W])) {
       tauschen(w, p, p + W, marke);
-      // Der Held trägt einen Helm, das Ungeheuer nicht.
-      if (z[p + W] === STEIN && y + 2 < HH && z[p + 2 * W] === FIGUR) {
-        const f = figurBei(w, x, y + 2);
-        if (f && f.art === 'ungeheuer') f.treffer += 1;
+      // Ein Stein trifft, wenn er auf einer Figur landet – direkt oder auf dem
+      // Haufen, der schon auf ihr liegt. Nur die erste Lage zu zählen hieß,
+      // dass ein Kopf, schmaler als der Steinregen, jeden Steinschlag überlebte.
+      if (z[p + W] === STEIN) {
+        let yy = y + 2;
+        while (yy < HH && yy - y < 12 && z[yy * W + x] === STEIN) yy += 1;
+        if (yy < HH && z[yy * W + x] === FIGUR) {
+          const f = figurBei(w, x, yy);
+          if (f) f.treffer += 1;
+        }
       }
       return true;
     }
@@ -586,19 +807,19 @@
       const x = p % W;
       const nachbarn = [p - W, p + W, x > 0 ? p - 1 : -1, x < W - 1 ? p + 1 : -1];
       for (const q of nachbarn) {
-        if (q < 0 || q >= z.length) continue;
-        if (z[q] === GOLD) {
-          z[q] = LUFT;
-          w.gold.verbrannt += 1;
-          w.ereignisse.verbrannt += 1;
-          etwas = true;
-        }
+        if (q < 0 || q >= z.length || z[q] !== GOLD) continue;
+        z[q] = LUFT;
+        w.gold.verbrannt += 1;
+        w.ereignisse.verbrannt += 1;
+        effekt(w, { art: 'funke', x: q % W, y: Math.floor(q / W) });
+        etwas = true;
       }
       for (const q of nachbarn) {
         if (q < 0 || q >= z.length || z[q] !== WASSER) continue;
         z[p] = STEIN;
         z[q] = LUFT;
         w.ereignisse.stein += 1;
+        effekt(w, { art: 'dampf', x: q % W, y: Math.floor(q / W) });
         etwas = true;
         break;
       }
@@ -613,55 +834,108 @@
     f.wie = wie;
     stempeln(w, f, LUFT);
     w.ereignisse.tote.push({ art: f.art, wie });
+    effekt(w, { art: 'tod', figur: w.figuren.indexOf(f), wie });
   }
 
-  function figurenSchritt(w) {
+  const durchlaessig = (m) => m === LUFT || m === WASSER || m === LAVA;
+
+  /* Eine Figur um (dx, dy) versetzen. Wasser und Lava, die im Weg stehen,
+     tauschen den Platz mit ihr und landen in den Zellen, die sie frei macht –
+     so watet sie durch Wasser und sinkt in Lava ein, ohne dass ein Tropfen
+     verloren geht. Liefert false, wenn Festes im Weg ist. */
+  function versetzen(w, f, dx, dy, schieben) {
     const z = w.zellen;
+    const nx = f.x + dx;
+    const ny = f.y + dy;
+    if (nx < 0 || ny < 0 || nx + f.w > W || ny + f.h > HH) return false;
+    const drin = (x, y, kx, ky) => x >= kx && x < kx + f.w && y >= ky && y < ky + f.h;
+    const verdraengt = [];
+    for (let y = ny; y < ny + f.h; y += 1) {
+      for (let x = nx; x < nx + f.w; x += 1) {
+        if (drin(x, y, f.x, f.y)) continue;
+        const m = z[y * W + x];
+        if (!durchlaessig(m) && !(schieben && (m === STEIN || m === GOLD))) return false;
+        if (m !== LUFT) verdraengt.push(m);
+      }
+    }
+    const frei = [];
+    for (let y = f.y; y < f.y + f.h; y += 1) {
+      for (let x = f.x; x < f.x + f.w; x += 1) if (!drin(x, y, nx, ny)) frei.push(y * W + x);
+    }
+    stempeln(w, f, LUFT);
+    f.x = nx;
+    f.y = ny;
+    stempeln(w, f, FIGUR);
+    verdraengt.forEach((m, i) => { z[frei[i]] = m; });
+    return true;
+  }
+
+  /** Wie viele Zellen unter der Figur tragen, und wo sie im Schnitt liegen. */
+  function traeger(w, f) {
+    const boden = f.y + f.h;
+    if (boden >= HH) return { n: f.w, mitte: f.x + f.w / 2 };
+    let n = 0;
+    let summe = 0;
+    for (let x = f.x; x < f.x + f.w; x += 1) if (!durchlaessig(w.zellen[boden * W + x])) { n += 1; summe += x; }
+    return { n, mitte: n ? summe / n : 0 };
+  }
+
+  /* Ein Schritt zur Seite: eine Kachel hoch steigt jeder, höheren Fels nicht.
+     Losen Schutt schiebt er beiseite – die Steine landen in den Zellen, die er
+     hinter sich frei macht, und fallen dort herunter. Klettern allein reichte
+     nicht: Zwei Kammern Steine türmen sich höher, als ein Gang Luft über dem
+     Kopf hat, und der Held stand oben auf dem Haufen und kam nicht weiter. */
+  function schreiten(w, f, r) {
+    for (let k = 0; k <= STUFE; k += 1) {
+      if (versetzen(w, f, r, -k, true)) return true;
+    }
+    return false;
+  }
+
+  /* Held und Ungeheuer, jeden dritten Takt: fallen, laufen, abrutschen.
+
+     Der Held läuft zur Truhe, das Ungeheuer zum Helden – bis es unter oder
+     über ihm steht. Wer nur noch mit einem Drittel seiner Breite aufsteht und
+     nicht weiterlaufen kann, rutscht zur freien Seite ab; sonst hielte eine
+     einzige Felszelle ein Ungeheuer über der Falltür. Auf eine Kante, die eine
+     Figur selbst betreten hat, rutscht sie aber nicht zurück: Sie wäre
+     hinaufgestiegen, zurückgerutscht und wieder hinaufgestiegen, und die
+     Welt wäre nie zur Ruhe gekommen. */
+  function figurenSchritt(w) {
     let etwas = false;
     const h = held(w);
     for (const f of w.figuren) {
-      if (!f.lebt) continue;
-      let dx = 0;
-      let dy = 0;
-      const boden = f.y + f.h;
-      if (boden < HH) {
-        let traeger = 0;
-        let summe = 0;
-        for (let x = f.x; x < f.x + f.w; x += 1) if (z[boden * W + x] !== LUFT) { traeger += 1; summe += x; }
-        if (!traeger) dy = 1;
-        else if (traeger * 3 <= f.w) {
-          // Steht nur noch mit der Kante auf – rutscht zur freien Seite ab.
-          // Sonst hielte eine einzige Felszelle ein Ungeheuer über der Falltür.
-          const r = summe / traeger < f.x + f.w / 2 ? 1 : -1;
-          const sx = r > 0 ? f.x + f.w : f.x - 1;
-          let frei = sx >= 0 && sx < W;
-          for (let y = f.y; frei && y < f.y + f.h; y += 1) if (z[y * W + sx] !== LUFT) frei = false;
-          if (frei) dx = r;
+      if (!f.lebt || (f === h && w.gewonnen)) continue;
+      const t = traeger(w, f);
+      if (!t.n) {
+        if (versetzen(w, f, 0, 1)) { etwas = true; f.kante = null; }
+        continue;
+      }
+      let ziel = null;
+      if (f === h) {
+        if (w.truhe) ziel = w.truhe.x + w.truhe.w / 2;
+      } else if (h && h.lebt && !w.gewonnen && !(f.x < h.x + h.w && h.x < f.x + f.w)) {
+        ziel = h.x + h.w / 2;
+      }
+      const r = ziel === null ? 0 : Math.sign(ziel - (f.x + f.w / 2));
+      if (r) {
+        f.blick = r;
+        if (schreiten(w, f, r)) {
+          f.gang += 1;
+          f.kante = traeger(w, f).n * 3 <= f.w ? f.x + ',' + f.y : null;
+          if (f === h) w.ereignisse.gelaufen += 1;
+          etwas = true;
+          continue;
         }
       }
-      // Das Ungeheuer läuft auf den Helden zu, solange es Boden unter den
-      // Füßen hat und nichts im Weg steht. Klettern kann es nicht.
-      if (!dy && !dx && f.art === 'ungeheuer' && h && h.lebt) {
-        const r = Math.sign((h.x + h.w / 2) - (f.x + f.w / 2));
-        const nah = f.x <= h.x + h.w && h.x <= f.x + f.w;
-        if (r && !nah) {
-          f.blick = r;
-          const sx = r > 0 ? f.x + f.w : f.x - 1;
-          let frei = sx >= 0 && sx < W;
-          for (let y = f.y; frei && y < f.y + f.h; y += 1) if (z[y * W + sx] !== LUFT) frei = false;
-          if (frei) dx = r;
-        }
-      }
-      if (dx || dy) {
-        stempeln(w, f, LUFT);
-        f.x += dx;
-        f.y += dy;
-        stempeln(w, f, FIGUR);
-        etwas = true;
+      if (t.n * 3 <= f.w && f.kante !== f.x + ',' + f.y) {
+        if (versetzen(w, f, t.mitte < f.x + f.w / 2 ? 1 : -1, 0)) { etwas = true; f.kante = null; }
       }
     }
     return etwas;
   }
+
+  const beruehrt = (a, b) => a.x <= b.x + b.w && b.x <= a.x + a.w && a.y <= b.y + b.h && b.y <= a.y + a.h;
 
   function beruehrungen(w) {
     const z = w.zellen;
@@ -681,23 +955,27 @@
       if (heiss) { sterben(w, f, 'verbrannt'); etwas = true; continue; }
       if (f.treffer >= TREFFER_TOT) { sterben(w, f, 'erschlagen'); etwas = true; }
     }
-    if (h && h.lebt) {
-      for (const f of w.figuren) {
-        if (f === h || !f.lebt) continue;
-        if (f.x <= h.x + h.w && h.x <= f.x + f.w && f.y <= h.y + h.h && h.y <= f.y + f.h) {
-          sterben(w, h, 'gefressen');
-          return true;
-        }
+    if (!h || !h.lebt || w.gewonnen) return etwas;
+    for (const f of w.figuren) {
+      if (f === h || !f.lebt || !beruehrt(f, h)) continue;
+      sterben(w, h, 'gefressen');
+      return true;
+    }
+    for (let y = Math.max(0, h.y - SAMMELN); y < Math.min(HH, h.y + h.h + SAMMELN); y += 1) {
+      for (let x = Math.max(0, h.x - SAMMELN); x < Math.min(W, h.x + h.w + SAMMELN); x += 1) {
+        if (z[y * W + x] !== GOLD) continue;
+        z[y * W + x] = LUFT;
+        w.gold.gesammelt += 1;
+        w.ereignisse.gesammelt += 1;
+        effekt(w, { art: 'muenze', x, y });
+        etwas = true;
       }
-      for (let y = Math.max(0, h.y - SAMMELN); y < Math.min(HH, h.y + h.h + SAMMELN); y += 1) {
-        for (let x = Math.max(0, h.x - SAMMELN); x < Math.min(W, h.x + h.w + SAMMELN); x += 1) {
-          if (z[y * W + x] !== GOLD) continue;
-          z[y * W + x] = LUFT;
-          w.gold.gesammelt += 1;
-          w.ereignisse.gesammelt += 1;
-          etwas = true;
-        }
-      }
+    }
+    if (w.truhe && beruehrt(h, w.truhe)) {
+      w.gewonnen = true;
+      w.ereignisse.truhe = true;
+      effekt(w, { art: 'truhe' });
+      etwas = true;
     }
     return etwas;
   }
@@ -715,7 +993,7 @@
         const x = vonLinks ? i : W - 1 - i;
         const p = y * W + x;
         const m = z[p];
-        if (m < WASSER || m === FIGUR || w.stempel[p] === marke) continue;
+        if (m < WASSER || m >= FIGUR || w.stempel[p] === marke) continue;
         if (m === LAVA && t % 2) continue;
         const d = (x * 7 + y * 3 + t) % 2 ? 1 : -1;
         if (m === GOLD || m === STEIN ? koerner(w, x, y, d, marke) : fliessen(w, x, y, d, marke)) etwas = true;
@@ -728,14 +1006,15 @@
   }
 
   const ruhig = (w) => w.ruhig >= RUHE;
-
   const heldLebt = (w) => !held(w) || held(w).lebt;
+  const entschieden = (w) => !heldLebt(w) || w.gewonnen;
 
-  /* Bis zur Ruhe rechnen – oder bis der Held tot ist: Danach ändert nichts
-     mehr das Urteil, und die letzten Lavatropfen brauchen oft noch Sekunden. */
+  /* Bis zur Ruhe rechnen – oder bis entschieden ist: Nach Tod oder Truhe
+     ändert nichts mehr das Urteil, und die letzten Tropfen brauchen oft noch
+     Sekunden. */
   function laufen(w) {
-    for (let i = 0; i < HOECHSTENS && !ruhig(w) && heldLebt(w); i += 1) ticken(w);
-    if (heldLebt(w)) w.ruhig = Math.max(w.ruhig, RUHE);
+    for (let i = 0; i < HOECHSTENS && !ruhig(w) && !entschieden(w); i += 1) ticken(w);
+    if (!entschieden(w)) w.ruhig = Math.max(w.ruhig, RUHE);
   }
 
   function ziehen(w, nr) {
@@ -749,21 +1028,22 @@
 
   const offen = (w) => w.riegel.filter((r) => !r.gezogen).map((r) => r.nr);
 
-  /* Wie steht es, wenn die Welt ruht? sieg, tot, aus (kein Weg mehr zum
-     Ziel) oder offen. Mit `wie` als Grund. */
+  /** Ein Stern für die Truhe, einer ab der Hälfte des Goldes, einer ab 90 %. */
+  function sterne(w) {
+    const g = w.gold;
+    if (!g.gesamt) return 3;
+    const q = g.gesammelt / g.gesamt;
+    return 1 + (q >= 0.5 ? 1 : 0) + (q >= 0.9 ? 1 : 0);
+  }
+
+  /* Wie steht es? sieg (mit Sternen), tot, aus (alle Riegel gezogen, keine
+     Truhe) oder offen. Mit `wie` als Grund. */
   function urteil(w) {
     const h = held(w);
     if (!h || !h.lebt) return { art: 'tot', wie: h ? h.wie : 'fehlt' };
-    const goldOk = w.gold.gesamt === 0 || w.gold.gesammelt >= w.gold.ziel;
-    const ungeheuerOk = w.figuren.every((f) => f.art !== 'ungeheuer' || !f.lebt);
-    if (goldOk && ungeheuerOk) return { art: 'sieg' };
-    if (!goldOk) {
-      let imFeld = 0;
-      for (const m of w.zellen) if (m === GOLD) imFeld += 1;
-      if (w.gold.gesammelt + imFeld < w.gold.ziel) return { art: 'aus', wie: 'geschmolzen' };
-    }
+    if (w.gewonnen) return { art: 'sieg', sterne: sterne(w) };
     if (offen(w).length) return { art: 'offen' };
-    return { art: 'aus', wie: goldOk ? 'ungeheuer' : 'fern' };
+    return { art: 'aus', wie: 'truhe' };
   }
 
   /* Fingerabdruck einer ruhenden Welt. Wer zwei Kammern unabhängig
@@ -775,66 +1055,86 @@
     const z = w.zellen;
     for (let i = 0; i < z.length; i += 1) a = Math.imul(a ^ z[i], 16777619);
     let s = (a >>> 0).toString(36) + ':' + (w.takt % 6) + ':' + w.gold.gesammelt;
-    for (const f of w.figuren) s += ':' + (f.lebt ? f.x + ',' + f.y + ',' + f.treffer : '-');
+    for (const f of w.figuren) s += ':' + (f.lebt ? f.x + ',' + f.y + ',' + f.treffer + ',' + f.kante : '-');
     for (const r of w.riegel) s += r.gezogen ? '1' : '0';
     return s;
   }
 
-  /* Von der ruhenden Welt aus eine Reihenfolge suchen, die gewinnt. Liefert
-     { weg } oder { gruende } – die Arten, auf die jeder Versuch endete. */
+  /* Von der ruhenden Welt aus die Reihenfolge mit den meisten Sternen suchen.
+     Liefert { weg, sterne } oder { gruende } – die Arten, auf die jeder
+     Versuch endete. Drei Sterne beenden die Suche. */
   function loesen(w, gemerkt = new Map()) {
     const k = schluessel(w);
     if (gemerkt.has(k)) return gemerkt.get(k);
     const gruende = new Set();
-    let ergebnis = null;
+    let best = null;
     for (const nr of offen(w)) {
       const v = kopie(w);
       ziehen(v, nr);
       laufen(v);
       const u = urteil(v);
-      if (u.art === 'sieg') { ergebnis = { weg: [nr] }; break; }
-      if (u.art === 'offen') {
+      let kandidat = null;
+      if (u.art === 'sieg') kandidat = { weg: [nr], sterne: u.sterne };
+      else if (u.art === 'offen') {
         const weiter = loesen(v, gemerkt);
-        if (weiter.weg) { ergebnis = { weg: [nr, ...weiter.weg] }; break; }
-        for (const g of weiter.gruende) gruende.add(g);
+        if (weiter.weg) kandidat = { weg: [nr, ...weiter.weg], sterne: weiter.sterne };
+        else for (const g of weiter.gruende) gruende.add(g);
       } else {
         gruende.add(u.wie);
       }
+      if (kandidat && (!best || kandidat.sterne > best.sterne)) best = kandidat;
+      if (best && best.sterne === 3) break;
     }
-    ergebnis = ergebnis || { gruende };
+    const ergebnis = best || { gruende };
     gemerkt.set(k, ergebnis);
     return ergebnis;
   }
 
   /* ------------------------------------------------------------------ Spiel */
 
+  const WASSER_TIEF = ['#8FCDF4', '#5DAEEA', '#4C9EE0', '#408FD4', '#3882C8', '#3176BB', '#2C6BB0', '#2861A5'];
+  const LAVA_TIEF = ['#FFC957', '#F9A23B', '#EF7C2E', '#E3602A', '#D44C27', '#C44125'];
   const FARBE = {
-    wasser: '#3C8ED6', wasserHell: '#7DBCEF',
-    lava: '#E0542B', lavaHell: '#F6A637',
-    gold: '#E2B01E', goldHell: '#F7DB6A',
-    stein: '#7B736A', steinHell: '#978E84',
-    held: '#3F6DB3', ruestung: '#B9C2CC', ungeheuer: '#5C9B3A', ungeheuerDunkel: '#3F7426',
+    gold: '#E2B01E', goldDunkel: '#C9960F', glanz: '#FFF4B8',
+    stein: ['#7B736A', '#8F877D', '#6A635B'],
+    held: '#3F6DB3', ruestung: '#B9C2CC', haut: '#F1D2B0', ungeheuer: '#5C9B3A', ungeheuerDunkel: '#3F7426',
+    holz: '#8A5A2B', holzHell: '#A36E3A', beschlag: '#E2B01E',
+    dunkel: '#2F2721',              // Stiefel, Augen, Griff – in hell und dunkel gleich
   };
 
   const GRUND = {
     verbrannt: 'die Lava erreicht den Helden',
-    gefressen: 'das Ungeheuer kommt an den Helden heran',
-    geschmolzen: 'zu viel Gold schmilzt in der Lava',
-    fern: 'das Gold kommt nicht beim Helden an',
-    ungeheuer: 'das Ungeheuer bleibt am Leben',
+    gefressen: 'das Ungeheuer erwischt den Helden',
+    erschlagen: 'die Steine fallen dem Helden auf den Kopf',
+    truhe: 'der Weg zur Truhe bleibt zu',
+  };
+
+  /** Derselbe Grund mit dem Verb vorn – für „Danach erreicht die Lava den Helden." */
+  const GRUND_DANACH = {
+    verbrannt: 'erreicht die Lava den Helden',
+    gefressen: 'erwischt das Ungeheuer den Helden',
+    erschlagen: 'fallen dem Helden die Steine auf den Kopf',
+    truhe: 'bleibt der Weg zur Truhe zu',
   };
 
   const TITEL = {
     verbrannt: 'Verbrannt.',
     gefressen: 'Gefressen.',
-    geschmolzen: 'Das Gold ist geschmolzen.',
-    fern: 'Das Gold kam nicht an.',
-    ungeheuer: 'Das Ungeheuer lebt noch.',
+    erschlagen: 'Erschlagen.',
+    truhe: 'Kein Weg zur Truhe.',
   };
+
+  const sternText = (n) => '★★★'.slice(0, n) + '☆☆☆'.slice(0, 3 - n);
 
   function starten(wurzel, s) {
     const el = s.el;
-    const geloest = () => new Set(s.partien().filter((p) => p.gewonnen === true && Number.isInteger(p.stufe)).map((p) => p.stufe));
+    const siege = () => s.partien().filter((p) => p.gewonnen === true && p.satz === SATZ && Number.isInteger(p.stufe));
+    const geloest = () => new Set(siege().map((p) => p.stufe));
+    const besteSterne = () => {
+      const m = new Map();
+      for (const p of siege()) m.set(p.stufe, Math.max(m.get(p.stufe) || 0, Echtzeit.zahl(p.sterne)));
+      return m;
+    };
     const frei = (i) => {
       const g = geloest();
       // Ein Level darf man überspringen: frei ist alles bis zwei hinter dem
@@ -846,17 +1146,21 @@
 
     let stand = laden();
     let welt = null;
-    let ende = null;              // { art, wie } nach Sieg oder Niederlage
+    let ende = null;              // { art, wie, sterne } nach Sieg oder Niederlage
     let vorgemerkt = null;
     let zug = null;               // gleitender Riegel fürs Bild
     let angehalten = false;       // Bewegung wurde unterbrochen, nicht beendet
     let seit = Date.now();
     let puls = 0;
-    let nachTod = 0;
+    let nachEnde = 0;             // Sekunden seit Tod oder Truhe
+    let teilchen = [];
+    let todZeit = new Map();      // Figur → Zeitpunkt ihres Todes, fürs Bild
+    let gangZeit = new Map();     // Figur → { gang, t } für die Laufbeine
+    let muenzTakt = 0;
 
     function laden() {
       const alt = s.erinnert();
-      const ok = alt && Number.isInteger(alt.level) && alt.level >= 0 && alt.level < LEVEL.length &&
+      const ok = alt && alt.satz === SATZ && Number.isInteger(alt.level) && alt.level >= 0 && alt.level < LEVEL.length &&
         Array.isArray(alt.gezogen) && alt.gezogen.every((n) => Number.isInteger(n));
       if (!ok) return frischerStand(ersterOffener());
       return { level: alt.level, gezogen: alt.gezogen.slice(), hilfen: Echtzeit.zahl(alt.hilfen), verbraucht: Echtzeit.zahl(alt.verbraucht), zeige: null };
@@ -876,7 +1180,7 @@
       const jetzt = Date.now();
       if (!document.hidden && !ende) stand.verbraucht += jetzt - seit;
       seit = jetzt;
-      s.merken({ level: stand.level, gezogen: stand.gezogen, hilfen: stand.hilfen, verbraucht: stand.verbraucht });
+      s.merken({ satz: SATZ, level: stand.level, gezogen: stand.gezogen, hilfen: stand.hilfen, verbraucht: stand.verbraucht });
     }
 
     /* Züge nachrechnen. Ein Stand, der schon entschieden war, beginnt neu:
@@ -892,22 +1196,27 @@
           break;
         }
       }
+      welt.effekte = [];
       ende = null;
       vorgemerkt = null;
       zug = null;
       angehalten = false;
-      nachTod = 0;
+      nachEnde = 0;
+      teilchen = [];
+      todZeit = new Map();
+      gangZeit = new Map();
     }
 
     /* ------------------------------------------------------------- Aufbau */
 
     const kopf = el('div', 'm-kopf');
+    const auftrag = el('p', 'notiz ri-auftrag');
     const flaeche = el('div', 'ez-flaeche ri-flaeche');
     const feld = el('div', 'ri-kasten');
     const leiste = el('div', 'leiste');
     const unten = el('div', 'ez-unten');
     flaeche.append(feld);
-    wurzel.append(kopf, flaeche, leiste, unten);
+    wurzel.append(kopf, auftrag, flaeche, leiste, unten);
 
     const vonVorn = el('button', 'knopf knopf--still', 'Von vorn');
     vonVorn.type = 'button';
@@ -960,13 +1269,16 @@
         if (zug.t > 0.3) zug = null;
       }
       if (!ruhig(welt)) ticken(welt);
+      teilchenTakt(dt);
       if (ende) {
-        // Nach dem Urteil darf die Lava zu Ende fließen; dann steht die Schleife.
-        if (ruhig(welt) && !zug) b.halt();
-      } else if (!heldLebt(welt)) {
-        nachTod += dt;
-        if (nachTod > 0.9) beenden(urteil(welt));
-      } else if (ruhig(welt) && !zug) {
+        nachEnde += dt;
+        // Nach dem Urteil darf die Lava zu Ende fließen und die Truhe glänzen;
+        // dann steht die Schleife.
+        if (ruhig(welt) && !zug && !teilchen.length && nachEnde > 2) b.halt();
+      } else if (entschieden(welt)) {
+        nachEnde += dt;
+        if (nachEnde > (welt.gewonnen ? 0.7 : 1)) beenden(urteil(welt));
+      } else if (ruhig(welt) && !zug && !teilchen.length) {
         zurRuhe();
       }
     }
@@ -975,13 +1287,12 @@
       const u = urteil(welt);
       if (u.art !== 'offen') { beenden(u); return; }
       if (vorgemerkt) { jetztZiehen(vorgemerkt); return; }
-      // Der Hinweis pulsiert weiter; sonst gibt es nichts zu bewegen.
-      if (!stand.zeige) b.halt();
-      else if (puls > 60) b.halt();
+      // Der Hinweis pulsiert eine Weile; sonst gibt es nichts zu bewegen.
+      if (!stand.zeige || puls > 60) b.halt();
     }
 
     function beiHalt() {
-      if (!ruhig(welt) || zug) angehalten = true;
+      if (!ende && (!ruhig(welt) || zug)) angehalten = true;
       puls = 0;
       anzeigen();
       // Nach dem Urteil liegt schon der nächste Stand im Speicher; die
@@ -992,15 +1303,16 @@
     function beenden(u) {
       sichern();
       ende = u;
-      const partie = { gewonnen: u.art === 'sieg', stufe: stand.level + 1, dauer: stand.verbraucht, hilfen: stand.hilfen };
+      nachEnde = 0;
+      const partie = { gewonnen: u.art === 'sieg', satz: SATZ, stufe: stand.level + 1, dauer: stand.verbraucht, hilfen: stand.hilfen };
+      if (u.art === 'sieg') partie.sterne = u.sterne;
       if (welt.gold.gesamt) partie.gold = Math.round((welt.gold.gesammelt / welt.gold.gesamt) * 100);
       s.notieren(partie);
       // Der nächste Besuch beginnt beim nächsten Level – oder bei diesem, wenn es nicht geklappt hat.
       const naechstes = u.art === 'sieg' && stand.level + 1 < LEVEL.length ? stand.level + 1 : stand.level;
-      s.merken({ level: naechstes, gezogen: [], hilfen: 0, verbraucht: 0 });
+      s.merken({ satz: SATZ, level: naechstes, gezogen: [], hilfen: 0, verbraucht: 0 });
       stand.zeige = null;
       vorgemerkt = null;
-      if (ruhig(welt) && !zug) b.halt();
       anzeigen();
     }
 
@@ -1022,8 +1334,9 @@
       for (const t of e.tote) {
         if (t.art === 'ungeheuer') teile.push(t.wie === 'verbrannt' ? 'die Lava verbrennt das Ungeheuer' : 'die Steine erschlagen das Ungeheuer');
       }
-      if (e.gesammelt) teile.push('Gold fällt zum Helden');
-      if (e.verbrannt && !teile.length) teile.push('ein wenig Gold schmilzt, aber es bleibt genug');
+      if (e.truhe) teile.push('der Held läuft zur Truhe');
+      else if (e.gelaufen) teile.push('der Held läuft ein Stück weiter');
+      if (e.gesammelt) teile.push('er sammelt Gold ein');
       if (!teile.length) teile.push('noch passiert nichts Entscheidendes, aber der nächste Riegel findet alles bereit');
       return teile;
     }
@@ -1034,32 +1347,45 @@
       return t[0].toUpperCase() + t.slice(1) + '.';
     };
 
+    /* Der Hinweis rechnet in den schweren Leveln eine Sekunde und länger. Erst
+       die Meldung, dann die Rechnung – sonst friert das Antippen scheinbar ein. */
+    let rechnet = false;
     function hinweis() {
-      if (ende) return;
-      if (!ruhig(welt) || zug) {
+      if (ende || rechnet) return;
+      if (!ruhig(welt) || zug || teilchen.length) {
         s.toast('Erst wenn alles ruht.');
         return;
       }
+      rechnet = true;
+      s.toast('Der Hinweis rechnet …');
+      const fuer = welt;
+      setTimeout(() => {
+        rechnet = false;
+        if (welt === fuer && !ende && ruhig(welt)) hinweisZeigen();
+      }, 40);
+    }
+
+    function hinweisZeigen() {
       stand.hilfen += 1;
       sichern();
       const zeilen = [];
       let gut = null;
-      let gutFolgen = [];
       const gemerkt = new Map();
       for (const nr of offen(welt)) {
         const v = kopie(welt);
         ziehen(v, nr);
         laufen(v);
         const u = urteil(v);
-        if (u.art === 'sieg' || (u.art === 'offen' && loesen(v, gemerkt).weg)) {
-          if (!gut) { gut = nr; gutFolgen = folgen(v.ereignisse); }
+        const erreichbar = u.art === 'sieg' ? u.sterne : u.art === 'offen' ? loesen(v, gemerkt).sterne : undefined;
+        if (erreichbar) {
+          if (!gut || erreichbar > gut.sterne) gut = { nr, sterne: erreichbar, folgen: folgen(v.ereignisse) };
           continue;
         }
         if (u.art === 'tot' || u.art === 'aus') {
           zeilen.push('Riegel ' + nr + ' jetzt: ' + GRUND[u.wie] + '.');
         } else {
-          const g = [...loesen(v, gemerkt).gruende].map((x) => GRUND[x]).filter(Boolean);
-          zeilen.push('Riegel ' + nr + ' käme zu früh: danach ' + (g.length === 1 ? g[0] : 'geht es nicht mehr auf') + '.');
+          const g = [...loesen(v, gemerkt).gruende].map((x) => GRUND_DANACH[x]).filter(Boolean);
+          zeilen.push('Riegel ' + nr + ' käme zu früh: Danach ' + (g.length === 1 ? g[0] : 'geht es nicht mehr auf') + '.');
         }
       }
 
@@ -1070,25 +1396,19 @@
         s.blatt({ titel: 'Hinweis', inhalt: d, aktionen: [{ text: 'Von vorn', tun: () => neu(stand.level) }, { text: 'Schließen', art: 'still' }] });
         return;
       }
-      d.append(el('p', 'notiz', 'Zieh als Nächstes Riegel ' + gut + '. ' + satz(gutFolgen)));
+      d.append(el('p', 'notiz', 'Zieh als Nächstes Riegel ' + gut.nr + '. ' + satz(gut.folgen)));
+      d.append(el('p', 'notiz', 'Von dort sind noch ' + sternText(gut.sterne) + ' zu holen.'));
       for (const z of zeilen) d.append(el('p', 'notiz', z));
-      stand.zeige = gut;
+      stand.zeige = gut.nr;
       puls = 0;
       s.blatt({
         titel: 'Hinweis',
         inhalt: d,
-        aktionen: [{ text: 'Riegel ' + gut + ' ziehen', tun: () => tippen(gut) }, { text: 'Selbst ziehen', art: 'still', tun: () => { b.los(); } }],
+        aktionen: [{ text: 'Riegel ' + gut.nr + ' ziehen', tun: () => tippen(gut.nr) }, { text: 'Selbst ziehen', art: 'still', tun: () => { b.los(); } }],
       });
     }
 
     /* ----------------------------------------------------------- Anzeige */
-
-    function ziel() {
-      const teile = [];
-      if (welt.gold.gesamt) teile.push('Gold zum Helden');
-      if (welt.figuren.some((f) => f.art === 'ungeheuer')) teile.push('Ungeheuer besiegen');
-      return teile.join(' · ');
-    }
 
     function kopfZeichnen() {
       kopf.replaceChildren();
@@ -1097,11 +1417,12 @@
       kopf.append(l);
       if (welt.gold.gesamt) {
         const g = el('span');
-        const jetzt = Math.round((welt.gold.gesammelt / welt.gold.gesamt) * 100);
-        g.append(document.createTextNode('Gold '), el('b', null, jetzt + ' %'), document.createTextNode(' / ' + (LEVEL[stand.level].ziel || 70) + ' %'));
+        g.append(document.createTextNode('Gold '), el('b', null, Math.round((welt.gold.gesammelt / welt.gold.gesamt) * 100) + ' %'));
         kopf.append(g);
       }
       s.unter(LEVEL[stand.level].name);
+      auftrag.textContent = LEVEL[stand.level].text ||
+        (welt.gold.gesamt ? 'Bring den Helden zur Truhe. Gold unterwegs gibt Sterne.' : 'Bring den Helden zur Truhe.');
     }
 
     function anzeigen() {
@@ -1110,16 +1431,23 @@
       leiste.hidden = !!ende;
       hinweisKnopf.disabled = !!ende;
       if (ende) {
-        const titel = ende.art === 'sieg' ? 'Geschafft.' : TITEL[ende.wie] || 'Verloren.';
-        b.schild(titel);
+        const sieg = ende.art === 'sieg';
+        const titel = sieg ? 'Geschafft. ' + sternText(ende.sterne) : TITEL[ende.wie] || 'Verloren.';
+        // Kein Schild übers Feld: Es verschleierte genau das, was man sehen
+        // will – die aufgehende Truhe oder die Lava. Das Urteil steht darunter.
+        b.schildWeg();
         const nr = stand.level + 1;
-        const text = ende.art === 'sieg'
-          ? 'Level ' + nr + ' in ' + s.dauerText(stand.verbraucht) + (stand.hilfen ? ', ' + stand.hilfen + (stand.hilfen === 1 ? ' Hinweis.' : ' Hinweise.') : ', ohne Hinweis.')
-          : satz([GRUND[ende.wie] || 'es ging schief']);
+        let text;
+        if (sieg) {
+          text = 'Level ' + nr + ' in ' + s.dauerText(stand.verbraucht) + (stand.hilfen ? ', ' + stand.hilfen + (stand.hilfen === 1 ? ' Hinweis.' : ' Hinweise.') : ', ohne Hinweis.');
+          if (ende.sterne < 3) text += ' Mehr Gold unterwegs bringt mehr Sterne.';
+        } else {
+          text = satz([GRUND[ende.wie] || 'es ging schief']);
+        }
         const knoepfe = [];
-        if (ende.art === 'sieg' && stand.level + 1 < LEVEL.length) knoepfe.push({ text: 'Weiter zu Level ' + (nr + 1), tun: () => neu(stand.level + 1) });
-        knoepfe.push({ text: ende.art === 'sieg' ? 'Nochmal' : 'Nochmal versuchen', art: ende.art === 'sieg' && knoepfe.length ? 'still' : undefined, tun: () => neu(stand.level) });
-        if (ende.art === 'sieg' && stand.level + 1 >= LEVEL.length) knoepfe.push({ text: 'Level wählen', art: 'still', tun: wahl });
+        if (sieg && stand.level + 1 < LEVEL.length) knoepfe.push({ text: 'Weiter zu Level ' + (nr + 1), tun: () => neu(stand.level + 1) });
+        knoepfe.push({ text: sieg ? 'Nochmal' : 'Nochmal versuchen', art: sieg && knoepfe.length ? 'still' : undefined, tun: () => neu(stand.level) });
+        if (sieg && stand.level + 1 >= LEVEL.length) knoepfe.push({ text: 'Level wählen', art: 'still', tun: wahl });
         unten.append(Echtzeit.kasten(titel, text, knoepfe));
       } else if (angehalten) {
         b.schild('Angehalten', 'Tippen, dann geht es weiter.');
@@ -1129,31 +1457,169 @@
       unten.hidden = !unten.childElementCount;
     }
 
+    /* ---------------------------------------------------------- Teilchen */
+
+    function teilchenTakt(dt) {
+      if (welt.effekte && welt.effekte.length) {
+        const h = held(welt);
+        for (const e of welt.effekte.splice(0)) {
+          const zx = e.x * Z + Z / 2;
+          const zy = e.y * Z + Z / 2;
+          if (e.art === 'dampf' && teilchen.length < 220 && (e.x + e.y) % 2 === 0) {
+            teilchen.push({ art: 'dampf', x: zx, y: zy, vx: (Math.random() - 0.5) * 8, vy: -14 - Math.random() * 10, r: 1.4 + Math.random() * 1.6, t: 0, dauer: 0.9 + Math.random() * 0.4 });
+          } else if (e.art === 'funke' && teilchen.length < 220) {
+            teilchen.push({ art: 'funke', x: zx, y: zy, vx: (Math.random() - 0.5) * 30, vy: -20 - Math.random() * 25, t: 0, dauer: 0.5 });
+          } else if (e.art === 'muenze' && h) {
+            // Jede dritte Goldzelle wird eine Münze, sonst flöge ein Schwarm.
+            muenzTakt += 1;
+            if (muenzTakt % 3 === 0 && teilchen.length < 220) {
+              teilchen.push({ art: 'muenze', x: zx, y: zy, x0: zx, y0: zy, t: 0, dauer: 0.42 + Math.random() * 0.1 });
+            }
+          } else if (e.art === 'tod') {
+            todZeit.set(e.figur, puls);
+            const f = welt.figuren[e.figur];
+            if (f && e.wie === 'verbrannt') {
+              for (let i = 0; i < 10; i += 1) {
+                teilchen.push({ art: 'rauch', x: (f.x + Math.random() * f.w) * Z, y: (f.y + Math.random() * f.h) * Z, vx: (Math.random() - 0.5) * 6, vy: -10 - Math.random() * 12, r: 2 + Math.random() * 2, t: 0, dauer: 1.2 });
+              }
+            } else if (f) {
+              for (let i = 0; i < 8; i += 1) {
+                teilchen.push({ art: 'staub', x: (f.x + Math.random() * f.w) * Z, y: (f.y + f.h) * Z - 1, vx: (Math.random() - 0.5) * 30, vy: -6 - Math.random() * 8, r: 1.5 + Math.random(), t: 0, dauer: 0.7 });
+              }
+            }
+          } else if (e.art === 'truhe' && welt.truhe) {
+            const tr = welt.truhe;
+            for (let i = 0; i < 16; i += 1) {
+              const a = (i / 16) * Math.PI * 2;
+              teilchen.push({ art: 'glanz', x: (tr.x + tr.w / 2) * Z, y: (tr.y + tr.h * 0.3) * Z, vx: Math.cos(a) * 26, vy: Math.sin(a) * 26 - 12, t: 0, dauer: 0.9 });
+            }
+          }
+        }
+      }
+      const h = held(welt);
+      for (const p of teilchen) {
+        p.t += dt;
+        if (p.art === 'muenze') {
+          const q = Math.min(1, p.t / p.dauer);
+          const zx = h ? (h.x + h.w / 2) * Z : p.x0;
+          const zy = h ? (h.y + 2) * Z : p.y0;
+          // Im Bogen zum Helden: erst hoch, dann hinein.
+          p.x = p.x0 + (zx - p.x0) * q;
+          p.y = p.y0 + (zy - p.y0) * q - Math.sin(q * Math.PI) * 10;
+        } else {
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          if (p.art === 'funke' || p.art === 'staub' || p.art === 'glanz') p.vy += 60 * dt;
+        }
+      }
+      teilchen = teilchen.filter((p) => p.t < p.dauer);
+    }
+
+    function teilchenMalen(ctx, f) {
+      for (const p of teilchen) {
+        const q = p.t / p.dauer;
+        if (p.art === 'dampf' || p.art === 'rauch') {
+          ctx.globalAlpha = (1 - q) * (p.art === 'rauch' ? 0.55 : 0.45);
+          ctx.fillStyle = p.art === 'rauch' ? f.tinteLeise : f.tinteStill;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r * (1 + q * 1.5), 0, Math.PI * 2);
+          ctx.fill();
+        } else if (p.art === 'funke') {
+          ctx.globalAlpha = 1 - q;
+          ctx.fillStyle = q < 0.4 ? '#FFD66E' : '#F0772E';
+          ctx.fillRect(p.x - 0.6, p.y - 0.6, 1.2, 1.2);
+        } else if (p.art === 'staub') {
+          ctx.globalAlpha = (1 - q) * 0.6;
+          ctx.fillStyle = FARBE.stein[1];
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (p.art === 'muenze') {
+          ctx.globalAlpha = 1;
+          const breite = 1.9 * Math.abs(Math.cos(p.t * 14)) + 0.4;
+          ctx.fillStyle = FARBE.goldDunkel;
+          ctx.beginPath();
+          ctx.ellipse(p.x, p.y, breite + 0.4, 2.3, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = FARBE.gold;
+          ctx.beginPath();
+          ctx.ellipse(p.x, p.y, breite, 1.9, 0, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (p.art === 'glanz') {
+          ctx.globalAlpha = 1 - q;
+          ctx.fillStyle = FARBE.glanz;
+          stern(ctx, p.x, p.y, 2.2 * (1 - q * 0.5));
+        }
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    function stern(ctx, x, y, r) {
+      ctx.beginPath();
+      for (let i = 0; i < 8; i += 1) {
+        const a = (i / 8) * Math.PI * 2;
+        const rr = i % 2 ? r * 0.4 : r;
+        ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
+      }
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    /* ------------------------------------------------------------ Malen */
+
     function zeichnen(ctx, f) {
       const w = welt;
       const z = w.zellen;
-      ctx.fillStyle = f.karte;
+      // Der Fels ist Mauerwerk, darüber werden die Kammern ausgespart.
+      ctx.fillStyle = f.karteRand;
       ctx.fillRect(0, 0, B, H);
+      ctx.strokeStyle = f.tinteStill;
+      ctx.globalAlpha = 0.16;
+      ctx.lineWidth = 0.6;
+      ctx.beginPath();
+      for (let r = 0, y = 0; y < H; r += 1, y += 6) {
+        ctx.moveTo(0, y);
+        ctx.lineTo(B, y);
+        for (let x = (r % 2) * 6; x < B; x += 12) { ctx.moveTo(x, y); ctx.lineTo(x, y + 6); }
+      }
+      ctx.stroke();
+      ctx.globalAlpha = 1;
 
-      // Zellen als waagerechte Läufe gleicher Art – ein Rechteck statt vieler.
-      const farbe = (m, x, y) => {
-        const oben = y > 0 ? z[(y - 1) * W + x] : FELS;
-        if (m === FELS) return f.karteRand;
-        if (m === WASSER) return oben === LUFT ? FARBE.wasserHell : FARBE.wasser;
-        if (m === LAVA) return oben === LUFT || (x * 5 + y * 3 + Math.floor(w.takt / 20)) % 11 === 0 ? FARBE.lavaHell : FARBE.lava;
-        if (m === GOLD) return (x * 3 + y * 5) % 7 === 0 ? FARBE.goldHell : FARBE.gold;
-        if (m === STEIN) return (x + y) % 3 === 0 ? FARBE.steinHell : FARBE.stein;
-        return null;
-      };
+      // Tiefe je Spalte: Flüssiges wird nach unten dunkler, die Oberfläche
+      // bewegt sich. Gleiche Farben einer Zeile werden ein Rechteck.
+      const tiefe = new Int16Array(W);
+      const reihe = new Array(W);
+      const welle = Math.floor(puls * 5);
       for (let y = 0; y < HH; y += 1) {
+        for (let x = 0; x < W; x += 1) {
+          const m = z[y * W + x];
+          const oben = y > 0 ? z[(y - 1) * W + x] : FELS;
+          tiefe[x] = m === oben ? tiefe[x] + 1 : 0;
+          let c = null;
+          if (m === LUFT || m === RIEGEL || m >= FIGUR) c = f.karte;
+          else if (m === WASSER) {
+            c = tiefe[x] === 0 && oben === LUFT
+              ? (Math.sin(x * 0.9 + puls * 4) > 0.2 ? '#AEDBF8' : WASSER_TIEF[0])
+              : WASSER_TIEF[Math.min(WASSER_TIEF.length - 1, tiefe[x])];
+          } else if (m === LAVA) {
+            c = (x * 13 + y * 7 + welle) % 23 === 0 ? '#FFE08A' : LAVA_TIEF[Math.min(LAVA_TIEF.length - 1, tiefe[x])];
+          } else if (m === GOLD) {
+            c = (x * 7 + y * 11 + Math.floor(puls * 3)) % 41 === 0 ? FARBE.glanz : (x + y * 2) % 5 === 0 ? FARBE.goldDunkel : FARBE.gold;
+          } else if (m === STEIN) {
+            c = FARBE.stein[(x * 5 + y * 3) % 3];
+          }
+          reihe[x] = c;
+        }
         let x = 0;
         while (x < W) {
-          const c = farbe(z[y * W + x], x, y);
+          const c = reihe[x];
           if (!c) { x += 1; continue; }
           let e = x + 1;
-          while (e < W && farbe(z[y * W + e], e, y) === c) e += 1;
+          while (e < W && reihe[e] === c) e += 1;
           ctx.fillStyle = c;
-          ctx.fillRect(x * Z, y * Z, (e - x) * Z + 0.05, Z + 0.05);
+          // Etwas höher als die Zeile: Die nächste deckt den Rand wieder zu, und
+          // durch die Naht schimmert kein Mauerwerk.
+          ctx.fillRect(x * Z, y * Z, (e - x) * Z + 0.05, Z + 0.4);
           x = e;
         }
       }
@@ -1173,8 +1639,52 @@
       }
       ctx.stroke();
 
-      for (const fig of w.figuren) figurMalen(ctx, f, fig);
+      if (w.truhe) truheMalen(ctx, f, w.truhe);
+      w.figuren.forEach((fig, i) => figurMalen(ctx, f, fig, i));
       for (const r of w.riegel) riegelMalen(ctx, f, r);
+      teilchenMalen(ctx, f);
+    }
+
+    function truheMalen(ctx, f, tr) {
+      const x = tr.x * Z;
+      const y = tr.y * Z;
+      const bw = tr.w * Z;
+      const bh = tr.h * Z;
+      const offenZeit = welt.gewonnen ? Math.min(1, nachEnde / 0.4) : 0;
+      if (offenZeit) {
+        const glut = ctx.createRadialGradient(x + bw / 2, y + bh * 0.4, 1, x + bw / 2, y + bh * 0.4, bw * 0.9);
+        glut.addColorStop(0, 'rgba(255, 224, 120, ' + (0.7 * offenZeit) + ')');
+        glut.addColorStop(1, 'rgba(255, 224, 120, 0)');
+        ctx.fillStyle = glut;
+        ctx.fillRect(x - bw * 0.5, y - bh * 0.6, bw * 2, bh * 1.8);
+      }
+      const koerperY = y + bh * 0.42;
+      ctx.fillStyle = FARBE.holz;
+      Echtzeit.rund(ctx, x + 1, koerperY, bw - 2, bh - (koerperY - y), 1.5);
+      ctx.fill();
+      if (offenZeit) {
+        ctx.fillStyle = FARBE.gold;
+        ctx.fillRect(x + 3, koerperY - 1.5, bw - 6, 3);
+      }
+      ctx.save();
+      // Der Deckel klappt nach hinten auf.
+      ctx.translate(x + 1, koerperY);
+      ctx.scale(1, 1 - offenZeit * 1.6);
+      ctx.fillStyle = FARBE.holzHell;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(0, -bh * 0.22);
+      ctx.quadraticCurveTo((bw - 2) / 2, -bh * 0.48, bw - 2, -bh * 0.22);
+      ctx.lineTo(bw - 2, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+      ctx.fillStyle = FARBE.beschlag;
+      ctx.fillRect(x + bw * 0.22, koerperY, 1.6, bh - (koerperY - y));
+      ctx.fillRect(x + bw * 0.78 - 1.6, koerperY, 1.6, bh - (koerperY - y));
+      ctx.fillRect(x + bw / 2 - 1.8, koerperY + 1.5, 3.6, 4);
+      ctx.fillStyle = FARBE.dunkel;
+      ctx.fillRect(x + bw / 2 - 0.5, koerperY + 3, 1, 1.6);
     }
 
     function riegelMalen(ctx, f, r) {
@@ -1184,9 +1694,10 @@
         versatz = Math.min(1, zug.t / 0.3);
       }
       const laenge = (r.waagerecht ? r.tx1 - r.tx0 + 1 : r.ty1 - r.ty0 + 1) * K * Z;
-      const weg = versatz * (laenge + 10) * r.griff;
+      // Erst ein kleiner Ruck, dann gleitet er hinaus.
+      const weg = (versatz < 0.2 ? versatz * 0.5 : 0.1 + (versatz - 0.2) * 1.125) * (laenge + 10) * r.griff;
       ctx.save();
-      ctx.globalAlpha = 1 - versatz * 0.7;
+      ctx.globalAlpha = 1 - versatz * 0.8;
       let gx; let gy;
       if (r.waagerecht) {
         const y = r.ty0 * K * Z;
@@ -1205,7 +1716,7 @@
         ctx.fillStyle = 'rgba(255, 255, 255, .35)';
         ctx.fillRect(x + 0.9, y0, 0.9, laenge);
         gx = x + Z / 2;
-        gy = y0 - 4.5;
+        gy = r.griff < 0 ? y0 - 4.5 : y0 + laenge + 4.5;
       }
       const hervor = stand.zeige === r.nr || vorgemerkt === r.nr;
       if (hervor) {
@@ -1215,7 +1726,7 @@
         ctx.beginPath();
         ctx.arc(gx, gy, 8.5, 0, Math.PI * 2);
         ctx.stroke();
-        ctx.globalAlpha = 1 - versatz * 0.7;
+        ctx.globalAlpha = 1 - versatz * 0.8;
       }
       ctx.fillStyle = f.karte;
       ctx.strokeStyle = f.tinteLeise;
@@ -1232,92 +1743,136 @@
       ctx.restore();
     }
 
-    function figurMalen(ctx, f, fig) {
+    /** Läuft die Figur gerade? Dann schwingen die Beine. */
+    function schwung(fig, i) {
+      const g = gangZeit.get(i);
+      if (!g || g.gang !== fig.gang) { gangZeit.set(i, { gang: fig.gang, t: puls }); return fig.gang ? 1 : 0; }
+      return puls - g.t < 0.12 ? 1 : 0;
+    }
+
+    function figurMalen(ctx, f, fig, i) {
       const x = fig.x * Z;
       const y = fig.y * Z;
       const bw = fig.w * Z;
       const bh = fig.h * Z;
       const mx = x + bw / 2;
+      let hoch = 1;                 // 1 = aufrecht, kleiner = platt gedrückt
+      let alpha = 1;
+      let dunkel = false;
       if (!fig.lebt) {
-        // Ein kleiner Haufen Asche oder ein Kreuz – der Platz bleibt erkennbar.
-        ctx.fillStyle = f.tinteStill;
-        ctx.globalAlpha = 0.7;
-        if (fig.art === 'held') {
-          ctx.fillRect(mx - 1, y + bh - 14, 2, 14);
-          ctx.fillRect(mx - 5, y + bh - 10, 10, 2);
+        const seitTod = puls - (todZeit.has(i) ? todZeit.get(i) : -10);
+        if (fig.wie === 'erschlagen') {
+          hoch = Math.max(0.22, 1 - seitTod * 5);
+        } else if (fig.wie === 'verbrannt') {
+          dunkel = true;
+          alpha = Math.max(0, 1 - seitTod / 0.9);
         } else {
-          ctx.beginPath();
-          ctx.ellipse(mx, y + bh - 1.5, bw / 3, 2.5, 0, 0, Math.PI * 2);
-          ctx.fill();
+          alpha = Math.max(0, 1 - seitTod / 0.5);
         }
-        ctx.globalAlpha = 1;
-        return;
+        if (alpha <= 0) {
+          // Was bleibt: ein Häufchen Asche.
+          ctx.fillStyle = f.tinteStill;
+          ctx.globalAlpha = 0.6;
+          ctx.beginPath();
+          ctx.ellipse(mx, y + bh - 1.5, bw / 3, 2.2, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.globalAlpha = 1;
+          return;
+        }
       }
-      if (fig.art === 'held') {
-        // Beine, Körper, Kopf mit Helm, Schwert.
-        ctx.fillStyle = f.tinte;
-        ctx.fillRect(mx - 4, y + bh - 8, 3, 8);
-        ctx.fillRect(mx + 1, y + bh - 8, 3, 8);
-        ctx.fillStyle = FARBE.held;
-        Echtzeit.rund(ctx, mx - 6.5, y + bh - 21, 13, 14, 3);
-        ctx.fill();
-        ctx.fillStyle = '#F1D2B0';
-        ctx.beginPath();
-        ctx.arc(mx, y + bh - 25.5, 4.6, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = FARBE.ruestung;
-        ctx.beginPath();
-        ctx.arc(mx, y + bh - 26.5, 5, Math.PI, 0);
-        ctx.fill();
-        ctx.fillRect(mx - 0.6, y + bh - 34, 1.2, 4);
-        ctx.fillStyle = f.tinte;
-        ctx.fillRect(mx - 2.4, y + bh - 25.5, 1.1, 1.3);
-        ctx.fillRect(mx + 1.3, y + bh - 25.5, 1.1, 1.3);
-        ctx.fillStyle = FARBE.ruestung;
-        ctx.fillRect(mx + 7, y + bh - 25, 1.6, 13);
-        ctx.fillStyle = f.tinte;
-        ctx.fillRect(mx + 5.3, y + bh - 13, 5, 1.4);
-        return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.translate(mx, y + bh);
+      ctx.scale(1, hoch);
+      const sieg = fig.art === 'held' && welt.gewonnen;
+      if (sieg) ctx.translate(0, -Math.abs(Math.sin(nachEnde * 9)) * 5);
+      if (fig.art === 'held') heldMalen(ctx, f, fig, schwung(fig, i), dunkel, sieg);
+      else ungeheuerMalen(ctx, f, fig, bw, bh, schwung(fig, i), dunkel);
+      ctx.restore();
+    }
+
+    /* Beide Figuren sind um den Fußpunkt gezeichnet: (0, 0) ist unten Mitte. */
+    function heldMalen(ctx, f, fig, laeuft, dunkel, sieg) {
+      const s_ = laeuft ? Math.sin(fig.gang * 1.3) * 2.2 : 0;
+      const farbe = (c) => (dunkel ? '#2B2520' : c);
+      ctx.fillStyle = farbe(FARBE.dunkel);
+      ctx.fillRect(-4 + s_, -8, 3, 8);
+      ctx.fillRect(1 - s_, -8, 3, 8);
+      ctx.fillStyle = farbe(FARBE.held);
+      Echtzeit.rund(ctx, -6.5, -21, 13, 14, 3);
+      ctx.fill();
+      ctx.fillStyle = farbe(FARBE.haut);
+      ctx.beginPath();
+      ctx.arc(0, -25.5, 4.6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = farbe(FARBE.ruestung);
+      ctx.beginPath();
+      ctx.arc(0, -26.5, 5, Math.PI, 0);
+      ctx.fill();
+      ctx.fillRect(-0.6, -34, 1.2, 4);
+      ctx.fillStyle = farbe(FARBE.dunkel);
+      const b_ = fig.blick > 0 ? 0.8 : -0.8;
+      ctx.fillRect(-2.4 + b_, -25.5, 1.1, 1.3);
+      ctx.fillRect(1.3 + b_, -25.5, 1.1, 1.3);
+      // Das Schwert: beim Sieg in die Höhe gereckt.
+      ctx.fillStyle = farbe(FARBE.ruestung);
+      if (sieg) {
+        ctx.fillRect(7, -38, 1.6, 14);
+        ctx.fillStyle = farbe(FARBE.dunkel);
+        ctx.fillRect(5.3, -24, 5, 1.4);
+      } else {
+        ctx.fillRect(fig.blick > 0 ? 7 : -8.6, -25, 1.6, 13);
+        ctx.fillStyle = farbe(FARBE.dunkel);
+        ctx.fillRect(fig.blick > 0 ? 5.3 : -10.3, -13, 5, 1.4);
       }
-      // Ungeheuer: runder Leib, Hörner, ein großes Auge, Zähne.
+    }
+
+    function ungeheuerMalen(ctx, f, fig, bw, bh, laeuft, dunkel) {
       const r = Math.min(bw, bh) / 2 - 1;
-      const cy = y + bh - r - 1;
-      ctx.fillStyle = FARBE.ungeheuerDunkel;
+      const wippen = laeuft ? Math.abs(Math.sin(fig.gang * 1.3)) * 1.5 : Math.sin(puls * 3) * 0.5;
+      const cy = -r - 1 - wippen;
+      const farbe = (c) => (dunkel ? '#2B2520' : c);
+      ctx.fillStyle = farbe(FARBE.ungeheuerDunkel);
       ctx.beginPath();
-      ctx.moveTo(mx - r * 0.7, cy - r * 0.6);
-      ctx.lineTo(mx - r * 0.95, cy - r * 1.35);
-      ctx.lineTo(mx - r * 0.25, cy - r * 0.9);
-      ctx.moveTo(mx + r * 0.7, cy - r * 0.6);
-      ctx.lineTo(mx + r * 0.95, cy - r * 1.35);
-      ctx.lineTo(mx + r * 0.25, cy - r * 0.9);
+      ctx.moveTo(-r * 0.7, cy - r * 0.6);
+      ctx.lineTo(-r * 0.95, cy - r * 1.35);
+      ctx.lineTo(-r * 0.25, cy - r * 0.9);
+      ctx.moveTo(r * 0.7, cy - r * 0.6);
+      ctx.lineTo(r * 0.95, cy - r * 1.35);
+      ctx.lineTo(r * 0.25, cy - r * 0.9);
       ctx.fill();
-      ctx.fillStyle = FARBE.ungeheuer;
+      ctx.fillRect(-r * 0.6, -3, 3, 3);
+      ctx.fillRect(r * 0.6 - 3, -3, 3, 3);
+      ctx.fillStyle = farbe(FARBE.ungeheuer);
       ctx.beginPath();
-      ctx.ellipse(mx, cy, bw / 2 - 0.5, r, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, cy, bw / 2 - 0.5, r, 0, 0, Math.PI * 2);
       ctx.fill();
+      if (dunkel) return;
       ctx.fillStyle = '#FFFFFF';
       ctx.beginPath();
-      ctx.arc(mx + fig.blick * 2, cy - r * 0.25, r * 0.36, 0, Math.PI * 2);
+      ctx.arc(fig.blick * 2, cy - r * 0.25, r * 0.36, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = '#1B1815';
       ctx.beginPath();
-      ctx.arc(mx + fig.blick * 3, cy - r * 0.25, r * 0.16, 0, Math.PI * 2);
+      ctx.arc(fig.blick * 3, cy - r * 0.25, r * 0.16, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = '#FFFFFF';
-      for (let i = -2; i <= 1; i += 1) {
+      for (let k = -2; k <= 1; k += 1) {
         ctx.beginPath();
-        ctx.moveTo(mx + i * 3, cy + r * 0.35);
-        ctx.lineTo(mx + i * 3 + 3, cy + r * 0.35);
-        ctx.lineTo(mx + i * 3 + 1.5, cy + r * 0.62);
+        ctx.moveTo(k * 3, cy + r * 0.35);
+        ctx.lineTo(k * 3 + 3, cy + r * 0.35);
+        ctx.lineTo(k * 3 + 1.5, cy + r * 0.62);
         ctx.fill();
       }
     }
 
     function anleitung() {
       const d = el('div');
-      d.append(el('p', 'notiz', 'Tipp auf einen Riegel, und er ist draußen. Was dahinter lag, fällt, fließt oder rollt los. Ist er einmal gezogen, gibt es kein Zurück – nur „Von vorn".'));
-      d.append(el('p', 'notiz', 'Der Held will das Gold. Fällt es neben ihn, gehört es ihm; die Zahl oben sagt, wie viel er braucht. Ein Ungeheuer muss weg, bevor er gewonnen hat – und er darf ihm nicht begegnen, solange es lebt.'));
-      d.append(el('p', 'notiz', 'Lava verbrennt Helden, Ungeheuer und Gold. Wasser löscht Lava zu Stein. Fallende Steine erschlagen das Ungeheuer – der Held trägt einen Helm. Das Ungeheuer läuft auf den Helden zu, sobald nichts mehr dazwischen ist; klettern kann es nicht.'));
+      d.append(el('p', 'notiz', 'Bring den Helden zur Truhe. Er läuft von selbst los, sobald der Weg frei ist – und schaut nicht, wohin er tritt. Berührt er die Truhe, ist das Level geschafft.'));
+      d.append(el('p', 'notiz', 'Tipp auf einen Riegel, und er ist draußen. Was dahinter lag, fällt, fließt oder läuft los. Gezogen ist gezogen – zurück geht es nur mit „Von vorn".'));
+      d.append(el('p', 'notiz', 'Lava verbrennt jeden, der sie berührt, und schmilzt Gold. Wasser löscht Lava zu Stein. Fallende Steine erschlagen jeden, auf den sie fallen, Held wie Ungeheuer; liegende Steine sind nur Boden. Gold fällt harmlos.'));
+      d.append(el('p', 'notiz', 'Das Ungeheuer läuft auf den Helden zu und frisst ihn, wenn es ihn erreicht. Töten muss man es nur, wenn es sonst an ihn herankommt. Eine Kachel hoch steigen beide, höhere Wände nicht, und losen Schutt schieben sie beiseite.'));
+      d.append(el('p', 'notiz', 'Sterne: einer für die Truhe, einer, wenn der Held unterwegs die Hälfte des Goldes einsammelt, und einer ab neun Zehnteln.'));
       d.append(el('p', 'notiz', 'Solange sich etwas bewegt, wartet der nächste Riegel: Wer vorher tippt, merkt ihn vor. Der Hinweis rechnet von der aktuellen Lage aus durch, was jeder Riegel anrichten würde. Am Rechner ziehen die Zifferntasten.'));
       s.blatt({ titel: 'Riegel', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
@@ -1325,16 +1880,20 @@
     function wahl() {
       const d = el('div', 'ri-wahl');
       const g = geloest();
+      const st = besteSterne();
       LEVEL.forEach((lv, i) => {
-        const k = el('button', 'knopf ' + (i === stand.level ? 'knopf--voll' : 'knopf--still'), String(i + 1));
+        const k = el('button', 'knopf ' + (i === stand.level ? 'knopf--voll' : 'knopf--still'));
         k.type = 'button';
         k.title = lv.name;
+        k.append(el('span', 'ri-wahl-nr', String(i + 1)), el('span', 'ri-wahl-sterne', g.has(i + 1) ? sternText(st.get(i + 1) || 1) : ''));
         if (g.has(i + 1)) k.dataset.geloest = 'ja';
         k.disabled = !frei(i);
         k.addEventListener('click', () => { s.blattZu(); neu(i); });
         d.append(k);
       });
-      const n = el('p', 'notiz notiz--klein', g.size + ' von ' + LEVEL.length + ' gelöst. Ein Level darf man überspringen.');
+      let summe = 0;
+      for (const n of st.values()) summe += n;
+      const n = el('p', 'notiz notiz--klein', g.size + ' von ' + LEVEL.length + ' gelöst, ' + summe + ' von ' + LEVEL.length * 3 + ' Sternen. Ein Level darf man überspringen.');
       const huelle = el('div');
       huelle.append(d, n);
       s.blatt({ titel: 'Level wählen', inhalt: huelle, aktionen: [{ text: 'Schließen', art: 'still' }] });
@@ -1354,8 +1913,8 @@
           d = Math.hypot(Math.max(x0 - px, 0, px - x1), py - y);
         } else {
           const x = (r.tx0 * K + 1.5) * Z;
-          const y0 = r.ty0 * K * Z - 10;
-          const y1 = (r.ty1 + 1) * K * Z;
+          const y0 = r.ty0 * K * Z - (r.griff < 0 ? 10 : 0);
+          const y1 = (r.ty1 + 1) * K * Z + (r.griff > 0 ? 10 : 0);
           d = Math.hypot(px - x, Math.max(y0 - py, 0, py - y1));
         }
         if (d < 9 && (!best || d < best.d)) best = { nr: r.nr, d };
@@ -1394,11 +1953,15 @@
   /* ----------------------------------------------------------- Statistik */
 
   function auswertung(partien) {
-    const gewonnen = partien.filter((p) => p.gewonnen === true && Number.isInteger(p.stufe));
-    const geloest = new Set(gewonnen.map((p) => p.stufe));
+    const gewonnen = partien.filter((p) => p.gewonnen === true && p.satz === SATZ && Number.isInteger(p.stufe));
+    const beste = new Map();
+    for (const p of gewonnen) beste.set(p.stufe, Math.max(beste.get(p.stufe) || 0, Echtzeit.zahl(p.sterne)));
+    let summe = 0;
+    for (const n of beste.values()) summe += n;
     const ohne = new Set(gewonnen.filter((p) => !p.hilfen).map((p) => p.stufe));
     return [
-      { wert: geloest.size + '/' + LEVEL.length, label: 'Level gelöst' },
+      { wert: beste.size + '/' + LEVEL.length, label: 'Level gelöst' },
+      { wert: summe + '/' + LEVEL.length * 3, label: 'Sterne' },
       { wert: String(ohne.size), label: 'ohne Hinweis gelöst' },
     ];
   }
@@ -1406,7 +1969,8 @@
   Rahmen.anmelden({
     id: 'pins',
     name: 'Riegel',
-    unter: 'Wasser, Lava, Gold. Welcher Riegel zuerst?',
+    gruppe: 'raetsel',
+    unter: 'Zieh die richtigen Riegel. Der Held will zur Truhe.',
     farbe: '#C9632F',
     symbol: '<path d="M4 4v16h16V4"/><path d="M4 11h11"/><circle cx="17.5" cy="11" r="2.5"/><path d="M8 7.5h.01M11 7.5h.01M9.5 6h.01"/>',
     starten,

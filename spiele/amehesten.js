@@ -331,6 +331,7 @@
   Rahmen.anmelden({
     id: 'amehesten',
     name: 'Wer am ehesten',
+    gruppe: 'zu-mehreren',
     unter: 'Die Gruppe stimmt über die Gruppe ab.',
     farbe: '#4E8A54',
     ohneSiege: true,

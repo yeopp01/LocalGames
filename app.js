@@ -417,37 +417,38 @@ const Rahmen = (() => {
 
   /* ------------------------------------------------------ Ansicht: Auswahl */
 
+  /* Die Abschnitte der Auswahl, in dieser Reihenfolge. Sie sind die Bereiche
+     aus specs/ ohne Nummer, damit Auswahl und Specs gleich sortiert sind; der
+     Wächter prüft, dass jedes Spiel in der Gruppe seines Spec-Ordners steht.
+     Der Rahmen kennt so nur Arten von Spielen, kein einzelnes. */
+  const GRUPPEN = [
+    { id: 'raetsel', name: 'Rätsel' },
+    { id: 'wortspiele', name: 'Wortspiele' },
+    { id: 'brett-und-karten', name: 'Brett und Karten' },
+    { id: 'zu-mehreren', name: 'Zu mehreren' },
+    { id: 'geschick', name: 'Geschicklichkeit' },
+  ];
+
   function zeichneAuswahl(wurzel) {
     kopfSetzen('LocalGames', tagesGruss(), []);
     document.body.dataset.ansicht = 'auswahl';
 
-    const gitter = el('div', 'kacheln');
-    for (const s of spiele) {
-      const p = partienVon(s.id);
+    // Ein Spiel ohne bekannte Gruppe darf nicht verschwinden – es steht dann
+    // im letzten Abschnitt, wo es auffällt.
+    const bekannt = new Set(GRUPPEN.map((g) => g.id));
+    for (const g of [...GRUPPEN, { id: '', name: 'Weitere' }]) {
+      const dabei = spiele.filter((s) => (bekannt.has(s.gruppe) ? s.gruppe : '') === g.id);
+      if (!dabei.length) continue;
 
-      const karte = el('button', 'kachel');
-      karte.type = 'button';
-      karte.style.setProperty('--ton', s.farbe);
-      karte.addEventListener('click', () => gehe({ name: 'spiel', spiel: s.id }));
-
-      const marke = el('div', 'kachel-marke');
-      marke.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + s.symbol + '</svg>';
-
-      const text = el('div', 'kachel-text');
-      text.append(el('span', 'kachel-name', s.name));
-      text.append(el('span', 'kachel-unter', s.unter));
-
-      const urteil = mitUrteil(p);
-      const fuss = el('span', 'kachel-fuss',
-        !p.length ? 'Noch nie gespielt'
-          : !urteil.length ? p.length + (p.length === 1 ? ' Runde' : ' Runden')
-          : p.length + (p.length === 1 ? ' Partie · ' : ' Partien · ')
-            + prozent(urteil.filter((x) => x.gewonnen).length, urteil.length) + ' gewonnen');
-
-      karte.append(marke, text, fuss);
-      gitter.append(karte);
+      const abschnitt = el('section', 'auswahl-gruppe');
+      abschnitt.dataset.gruppe = g.id;
+      const titel = el('h2', 'auswahl-gruppe-titel');
+      titel.append(el('span', 'auswahl-gruppe-name', g.name), el('span', 'auswahl-gruppe-zahl', String(dabei.length)));
+      const gitter = el('div', 'kacheln');
+      for (const s of dabei) gitter.append(kachel(s));
+      abschnitt.append(titel, gitter);
+      wurzel.append(abschnitt);
     }
-    wurzel.append(gitter);
 
     if (!daten.partien.length) {
       const hinweis = el('p', 'notiz notiz--mitte',
@@ -466,6 +467,32 @@ const Rahmen = (() => {
     streifen.append(zahlBlock(String(serie(daten.partien)), 'Tage Serie'));
     streifen.append(zahlBlock(String(heutePartien.length), 'heute'));
     wurzel.append(streifen);
+  }
+
+  function kachel(s) {
+    const p = partienVon(s.id);
+
+    const karte = el('button', 'kachel');
+    karte.type = 'button';
+    karte.style.setProperty('--ton', s.farbe);
+    karte.addEventListener('click', () => gehe({ name: 'spiel', spiel: s.id }));
+
+    const marke = el('div', 'kachel-marke');
+    marke.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + s.symbol + '</svg>';
+
+    const text = el('div', 'kachel-text');
+    text.append(el('span', 'kachel-name', s.name));
+    text.append(el('span', 'kachel-unter', s.unter));
+
+    const urteil = mitUrteil(p);
+    const fuss = el('span', 'kachel-fuss',
+      !p.length ? 'Noch nie gespielt'
+        : !urteil.length ? p.length + (p.length === 1 ? ' Runde' : ' Runden')
+        : p.length + (p.length === 1 ? ' Partie · ' : ' Partien · ')
+          + prozent(urteil.filter((x) => x.gewonnen).length, urteil.length) + ' gewonnen');
+
+    karte.append(marke, text, fuss);
+    return karte;
   }
 
   function zahlBlock(wert, label) {

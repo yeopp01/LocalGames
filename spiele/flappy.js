@@ -361,6 +361,7 @@
   Rahmen.anmelden({
     id: 'flappy',
     name: 'Flattervogel',
+    gruppe: 'geschick',
     unter: 'Ein Tipp, ein Flügelschlag. Durch die Lücke.',
     farbe: '#3E9AC1',
     symbol: '<circle cx="10" cy="12" r="5"/><path d="M15 12.5l4 1-4 1.5M8 12.5c-1.5 0-3 1-3.5 2.5M11.5 10.5h.01M2 4v5M2 16v4M22 4v4M22 17v3"/>',

@@ -249,6 +249,7 @@
   Rahmen.anmelden({
     id: 'bombe',
     name: 'Bombe',
+    gruppe: 'zu-mehreren',
     unter: 'Ein Wort mit der Silbe – und schnell weitergeben.',
     farbe: '#C9A227',
     ohneSiege: true,

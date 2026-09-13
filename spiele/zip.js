@@ -969,6 +969,7 @@
   Rahmen.anmelden({
     id: 'zip',
     name: 'Weg',
+    gruppe: 'raetsel',
     unter: 'Ein Zug durch jedes Feld.',
     farbe: '#4573B8',
     symbol: '<path d="M5 5h6a3 3 0 0 1 0 6H8a3 3 0 0 0 0 6h6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="5" r="1.6"/><circle cx="14" cy="17" r="1.6"/>',

@@ -52,6 +52,18 @@ test.describe('Auswahl', () => {
     expect(namen.sort()).toEqual(SPIELE.map((s) => s.name).sort());
   });
 
+  test('jede Kachel steht im Abschnitt ihrer Gruppe, keine unter „Weitere"', async ({ page }) => {
+    await oeffnen(page);
+    for (const s of SPIELE) {
+      const abschnitt = page.locator(`.auswahl-gruppe[data-gruppe="${s.gruppe}"]`);
+      await expect(abschnitt.locator('.kachel-name', { hasText: new RegExp('^' + s.name + '$') }), s.name).toHaveCount(1);
+    }
+    await expect(page.locator('.auswahl-gruppe[data-gruppe=""]')).toHaveCount(0);
+    for (const abschnitt of await page.locator('.auswahl-gruppe').all()) {
+      await expect(abschnitt.locator('.auswahl-gruppe-zahl')).toHaveText(String(await abschnitt.locator('.kachel').count()));
+    }
+  });
+
   test('ohne Bestand: jede Kachel „Noch nie gespielt" und kein Überblick', async ({ page }) => {
     await oeffnen(page);
     await expect(page.locator('.kachel-fuss', { hasText: 'Noch nie gespielt' })).toHaveCount(SPIELE.length);

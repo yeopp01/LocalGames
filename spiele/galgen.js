@@ -240,6 +240,7 @@
   Rahmen.anmelden({
     id: 'galgen',
     name: 'Galgenmännchen',
+    gruppe: 'wortspiele',
     unter: 'Buchstabe für Buchstabe.',
     farbe: '#8C6A4F',
     symbol: '<path d="M4 20h9M6 20V4h10M16 4v3" stroke-linecap="round"/><circle cx="16" cy="10" r="2.6"/>',

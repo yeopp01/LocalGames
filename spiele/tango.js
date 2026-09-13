@@ -630,6 +630,7 @@
   Rahmen.anmelden({
     id: 'tango',
     name: 'Tango',
+    gruppe: 'raetsel',
     unter: 'Sonne und Mond im Gleichgewicht.',
     farbe: '#E39B5E',
     symbol: '<circle cx="8.5" cy="8.5" r="3.5"/><path d="M19 14.5a4 4 0 1 1-4.4-4 3.2 3.2 0 0 0 4.4 4z"/>',

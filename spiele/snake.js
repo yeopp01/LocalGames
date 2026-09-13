@@ -360,6 +360,7 @@
   Rahmen.anmelden({
     id: 'snake',
     name: 'Schlange',
+    gruppe: 'geschick',
     unter: 'Fressen, wachsen, nirgends anstoßen.',
     farbe: '#5E8C3A',
     symbol: '<path d="M4 17h7a3 3 0 0 0 3-3v-4a3 3 0 0 1 3-3h3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="7" cy="7.5" r="2"/>',

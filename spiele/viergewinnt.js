@@ -586,6 +586,7 @@
   Rahmen.anmelden({
     id: 'viergewinnt',
     name: 'Vier gewinnt',
+    gruppe: 'brett-und-karten',
     unter: 'Gegen den Rechner oder zu zweit.',
     farbe: '#6A4FA3',
     symbol: '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="10" r="1.8"/><circle cx="15.5" cy="10" r="1.8"/><circle cx="12" cy="15" r="1.8"/>',

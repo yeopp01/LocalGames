@@ -661,6 +661,7 @@
   Rahmen.anmelden({
     id: 'sudoku',
     name: 'Mini-Sudoku',
+    gruppe: 'raetsel',
     unter: 'Sechs mal sechs, Ziffern 1 bis 6.',
     farbe: '#4573B8',
     symbol: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16M3 12h18"/>',

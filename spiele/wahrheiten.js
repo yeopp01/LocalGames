@@ -261,6 +261,7 @@
   Rahmen.anmelden({
     id: 'wahrheiten',
     name: 'Zwei Wahrheiten',
+    gruppe: 'zu-mehreren',
     unter: 'Drei Sätze, einer erfunden.',
     farbe: '#4573B8',
     symbol: '<path d="M4 7h16M4 12h16M4 17h10" stroke-linecap="round"/><path d="M15.5 17.5l2 2 3.5-4" stroke-linecap="round" stroke-linejoin="round"/>',

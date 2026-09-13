@@ -14,7 +14,7 @@ node pruefung/pruefen.mjs              # Wächter → E2E → Bericht
 | Datei | Wofür | Braucht |
 | --- | --- | --- |
 | [`pruefen.mjs`](pruefen.mjs) | Alles in einem Lauf. `--ohne-e2e` für Sekunden statt einer Minute, Argumente nach `--` gehen an Playwright (`-- -g Minenfeld`, `-- e2e/sicherung.spec.mjs`). Der Bericht wird auch nach Rot geschrieben. | Node |
-| [`waechter.mjs`](waechter.mjs) | Regeln aus `CLAUDE.md` als Prüfung: Spiele in `index.html` und im Lager des Service Workers, Versionsnummer nach Änderung, Syntax, Spec und README-Zeile je Spiel, Format der Specs, tote Links. | Node |
+| [`waechter.mjs`](waechter.mjs) | Regeln aus `CLAUDE.md` als Prüfung: Spiele in `index.html` und im Lager des Service Workers, Versionsnummer nach Änderung, Syntax, Spec, README-Zeile und Gruppe je Spiel, Format der Specs, tote Links. | Node |
 | [`e2e/`](e2e/) | Rauchtests im Browser, je auf einem Handy (Pixel 7) und einem flachen Laptop (1366 × 700). | Playwright |
 | [`ansehen.mjs`](ansehen.mjs) | Eine Ansicht als Bild, mit Konsolenfehlern und allem, was seitlich herausragt – für „sieht das jetzt richtig aus?". Bilder landen in `ansichten/`. | Playwright |
 | [`skripte/spec-board.mjs`](skripte/spec-board.mjs) | Schreibt `specs/BOARD.md`, die `**Stand:**`-Zeilen und die Bereichstabellen. `--check` meldet nur. | Node |

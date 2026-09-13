@@ -37,8 +37,10 @@ können soll) und `pruefung/` (wie das geprüft wird). Nur `pruefung/` hat ein
 
 ## Ein Spiel hinzufügen
 
-1. `spiele/name.js` anlegen, am Ende `Rahmen.anmelden({ id, name, unter,
-   farbe, symbol, starten, auswertung })`.
+1. `spiele/name.js` anlegen, am Ende `Rahmen.anmelden({ id, name, gruppe,
+   unter, farbe, symbol, starten, auswertung })`. `gruppe` ist der
+   Spec-Bereich ohne Nummer (`raetsel`, `geschick`, …) und bestimmt den
+   Abschnitt auf dem Dashboard.
    `starten(boden, sitzung)` baut die Oberfläche und gibt optional
    `{ ende() }` zurück; `auswertung(partien)` liefert Kennzahlen für die
    Statistik.

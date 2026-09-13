@@ -54,6 +54,7 @@ const GRUNDBESTAND = [
   './spiele/flappy.js',
   './spiele/doodle.js',
   './spiele/bubbles.js',
+  './spiele/pinball.js',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',

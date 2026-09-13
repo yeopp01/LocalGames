@@ -25,13 +25,15 @@ node pruefung/skripte/bericht.mjs        # Seite: pruefung/bericht/index.html
 | [20-wortspiele](20-wortspiele/)                 | Wördle, Galgenmännchen                                   |
 | [30-brett-und-karten](30-brett-und-karten/)     | 2048, Vier gewinnt, Schafkopf                            |
 | [40-zu-mehreren](40-zu-mehreren/)               | Bausteine für Runden, Verräter, Bombe, Zwei Wahrheiten, Wer am ehesten |
-| [50-geschick](50-geschick/)                     | Echtzeit-Werkzeug, Schlange, Sternjäger, Flattervogel, Hochhinaus, Blasen |
+| [50-geschick](50-geschick/)                     | Echtzeit-Werkzeug, Schlange, Sternjäger, Flattervogel, Hochhinaus, Blasen, Flipper |
 
 ## Regeln für die Ablage
 
 1. **Der Pfad ist die Identität.** Ein Spiel liegt unter seiner `id` aus
-   `Rahmen.anmelden` – `10-raetsel/minen.md` für `id: 'minen'`. Der Wächter
-   prüft, dass jedes angemeldete Spiel seine Spec hat.
+   `Rahmen.anmelden` – `10-raetsel/minen.md` für `id: 'minen'`. Der Bereich
+   ohne Nummer ist zugleich die `gruppe` des Spiels und damit sein Abschnitt
+   auf der Auswahl (`gruppe: 'raetsel'`). Der Wächter prüft, dass jedes
+   angemeldete Spiel seine Spec hat und in der passenden Gruppe steht.
 2. **Ein Thema, eine Datei.** Nachträge werden eingearbeitet, nicht
    danebengelegt.
 3. **Aufbau einer Spec:**

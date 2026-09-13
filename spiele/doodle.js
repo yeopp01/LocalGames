@@ -1551,6 +1551,7 @@
   Rahmen.anmelden({
     id: 'doodle',
     name: 'Hochhinaus',
+    gruppe: 'geschick',
     unter: 'Von Plattform zu Plattform, immer höher.',
     farbe: '#C9772E',
     symbol: '<path d="M4 20h7M13 13h7M6 7h6"/><path d="M9 17c0-4 3-7 7-8" stroke-dasharray="1.5 2.5"/>',
