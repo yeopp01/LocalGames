@@ -21,11 +21,11 @@ node pruefung/skripte/bericht.mjs        # Seite: pruefung/bericht/index.html
 | Bereich                                         | Inhalt                                                   |
 | ----------------------------------------------- | -------------------------------------------------------- |
 | [00-rahmen](00-rahmen/)                         | Auswahl, Statistik, Sicherung, Offline, Spielschnittstelle |
-| [10-raetsel](10-raetsel/)                       | Mini-Sudoku, Minenfeld, Nonogramm, Zahlencode, Tango, Damen, Weg |
+| [10-raetsel](10-raetsel/)                       | Mini-Sudoku, Minenfeld, Nonogramm, Zahlencode, Tango, Damen, Weg, Riegel |
 | [20-wortspiele](20-wortspiele/)                 | Wördle, Galgenmännchen                                   |
 | [30-brett-und-karten](30-brett-und-karten/)     | 2048, Vier gewinnt, Schafkopf                            |
 | [40-zu-mehreren](40-zu-mehreren/)               | Bausteine für Runden, Verräter, Bombe, Zwei Wahrheiten, Wer am ehesten |
-| [50-geschick](50-geschick/)                     | Echtzeit-Werkzeug, Schlange, Invasoren, Flattervogel, Hochhinaus |
+| [50-geschick](50-geschick/)                     | Echtzeit-Werkzeug, Schlange, Sternjäger, Flattervogel, Hochhinaus, Blasen |
 
 ## Regeln für die Ablage
 

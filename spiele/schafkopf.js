@@ -186,6 +186,24 @@
           + 'ist gemessen schlechter. Die Farbe zu meiden trifft es, das Warten nicht.',
         zahl: 'Farbe meiden: Spieler +0,20 ± 0,13, Gegenpartei +0,98 ± 0,44. Erst Trumpf '
           + 'ziehen und warten kostet dagegen: Spieler −0,51, Mitspieler −1,88.' },
+      { titel: 'Als Gegenspieler im ersten Stich die Rufsau suchen',
+        gilt: 'Sauspiel, Gegenpartei – Tischsitte',
+        text: 'Hast du die gerufene Farbe, spielst du sie im ersten Stich klein an: Wer die '
+          + 'Sau hat, muss sie legen, und danach weiß der ganze Tisch, wer zu wem gehört. '
+          + 'Die Rechnung kann das nicht sehen – in jeder gewürfelten Verteilung liegen alle '
+          + 'Blätter offen, und dort weiß es ohnehin jeder. Deshalb wurde am ganzen Spiel '
+          + 'gemessen, mit vier Rechnern, von denen jeder nur seine eigene Sicht hat.',
+        zahl: 'Gegenpartei −0,20 ± 0,45 über 6517 gepaarte Sauspiele, bei jedem Anspiel '
+          + '−0,37 ± 0,63: kein messbarer Unterschied. Eine frühere Messung, nach der es '
+          + '1,2 Punkte kostete, ließ sich nicht wiederholen.' },
+      { titel: 'Als Partner Trumpf ziehen, solange die Gegner welchen haben',
+        gilt: 'Sauspiel, Mitspieler – Tischsitte',
+        text: 'Mit mindestens zwei Trümpfen spielst du als Partner den höchsten an, auch '
+          + 'wenn draußen noch ein höherer ist. Jeder Trumpf, den die Gegenpartei zugeben '
+          + 'muss, sticht später keine Sau des Spielers mehr.',
+        zahl: 'Siegquote −0,25 ± 0,69, also gleich – aber +0,67 ± 0,28 Augen und 2,2 ± 0,8 '
+          + 'Punkte öfter Schneider für die Spielerpartei. Mit dem kleinsten Trumpf +0,42 '
+          + 'Augen, 1,5 Punkte Schneider.' },
       { titel: 'Die Rufsau nie mit dem Zehner suchen',
         gilt: 'Sauspiel, Gegenpartei',
         text: 'Spielst du die gerufene Farbe an, muss der Partner die Sau legen – aber wer '
@@ -291,7 +309,8 @@
           + 'Anspielen, bei denen der Rechner zwischen Trumpf und Farbe wählen konnte, '
           + 'sagt dieses eine Merkmal fast alles voraus.',
         zahl: 'Mit Chef-Trumpf: Spieler 96 %, Mitspieler 94 %, Gegenspieler 92 % Trumpf. '
-          + 'Ohne: 29 %, 16 %, 3 %.' },
+          + 'Ohne: 29 %, 16 %, 3 %. Gezählt vor der Tischsitte – seither zieht der Partner '
+          + 'mit zwei Trümpfen auch ohne den höchsten.' },
       { titel: 'Die Ausnahme: wenn die Gegner keinen Trumpf mehr haben',
         gilt: 'alle Rollen',
         text: 'Dann zieht man niemandem mehr etwas heraus, und der höchste Trumpf ist als '
@@ -335,11 +354,6 @@
           + 'möglich; hier steht sie, damit sie nicht vergessen wird.' },
     ] },
     { kopf: 'Was nicht gilt', aus: true, regeln: [
-      { titel: 'Als Gegenspieler immer die Rufsau suchen',
-        gilt: 'Sauspiel',
-        text: 'Klingt zwingend – man will ja wissen, wer zu wem gehört. Stur angewandt '
-          + 'kostet es die Gegenpartei aber Punkte.',
-        zahl: 'Kostet die Gegenpartei 1,2 Punkte, über 4000 gepaarte Sauspiele.' },
       { titel: 'Immer Trumpf ziehen – ohne hinzusehen',
         gilt: 'alle',
         text: 'Achtung, das ist kein Argument gegen das Trumpfziehen. Der Rechner zieht als '
@@ -973,9 +987,22 @@
        Sonst liest man aus 39 gegen 36 Prozent eine Rangfolge heraus, die es
        gar nicht gibt. */
     function zahlSatz(rat, e) {
-      const zweite = rat.werte[1];
       const kopf = 'In ' + rat.welten + ' durchgerechneten Verteilungen reicht es damit in '
         + prozentText(e.quote) + ' der Fälle';
+      /* Steht die Karte als Tischsitte oben, ist die nächste in der Liste
+         nicht die, mit der man sie vergleichen muss, sondern die, die die
+         Rechnung vorn hätte. Liegt die klar darüber, soll das dastehen. */
+      if (rat.sitte && e === rat.werte[0] && rat.werte.length > 1) {
+        const vorn = rat.werte.slice(1).reduce((a, b) => (b.nutzen > a.nutzen ? b : a));
+        const u = K.unterschied(vorn, e);
+        if (u.klar) {
+          return kopf + ', mit ' + K.kartenName(vorn.karte) + ' in ' + prozentText(vorn.quote)
+            + '. Die Rechnung spielt aber jede Verteilung aufgedeckt – was dein Anspiel dem '
+            + 'Tisch verrät, kommt darin nicht vor. Am ganzen Spiel gemessen kostet die '
+            + 'Sitte nichts.';
+        }
+      }
+      const zweite = rat.werte[1];
       if (!zweite) return kopf + '.';
       const u = K.unterschied(e, zweite);
       if (!u.klar) {
@@ -994,6 +1021,14 @@
        gegen die Faustregel geht, soll das dastehen, damit niemand einen
        Merksatz ableitet, den es nicht gibt. */
     function herkunftSatz(rat) {
+      if (rat && rat.sitte === 'suchen') {
+        return 'Das ist Tischsitte: Die Gegenspieler suchen im ersten Stich die Rufsau. '
+          + 'Die drei Mitspieler spielen genauso.';
+      }
+      if (rat && rat.sitte === 'trumpf') {
+        return 'Das ist Tischsitte: Der Partner zieht Trumpf, solange die Gegner welchen '
+          + 'haben können. Die drei Mitspieler spielen genauso.';
+      }
       if (!rat || rat.regelWahl == null || rat.regelWahl < 0) return '';
       const beste = rat.werte[0].karte;
       if (rat.regelWahl === beste) {
@@ -1742,8 +1777,8 @@
             + 'Wer das tut, ist in ' + beste.quote + ' von 100 Fällen der Partner – '
             + 'gegenüber 33, wenn man gar nichts weiß.', 'schluss');
         }
-        satz('Das sind Indizien, keine Beweise: Bei 60 von 100 liegt man immer noch '
-          + 'jedes zweite bis dritte Mal daneben. Wer darauf setzt und sich irrt, '
+        satz('Das sind Indizien, keine Beweise: Auch bei 72 von 100 liegt man noch '
+          + 'mehr als jedes vierte Mal daneben. Wer darauf setzt und sich irrt, '
           + 'schmiert dem Gegner.', 'warnung');
       }
 

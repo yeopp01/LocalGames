@@ -16,8 +16,9 @@ einzelnes Spiel.
 ### Leinwand
 
 - **AC-1** `fertig` **Feld passt ins Fenster** — Das Spielfeld behält das
-  Seitenverhältnis seines Spiels, ist höchstens 440 px und höchstens 92 % der
-  Fensterbreite breit, und in einem flachen Fenster richtet sich seine Breite
+  Seitenverhältnis seines Spiels, ist höchstens 440 px (ein Feld im Querformat
+  600 px) und höchstens 92 % der Fensterbreite breit, und in einem flachen
+  Fenster richtet sich seine Breite
   nach der Höhe. Auf einem Pixel 7 und in 1366 × 700 ragt keines der vier
   Spiele seitlich heraus, und die Seite ist nicht höher als das Fenster.
 - **AC-2** `fertig` **Scharf auf jeder Pixeldichte** — Die Leinwand hat so viele
@@ -54,17 +55,17 @@ einzelnes Spiel.
   durch. Unter dem Feld steht bei Pause und Ende ein Kasten mit Titel, Satz und
   Knöpfen.
 
-### Gemeinsamer Vertrag der vier Spiele
+### Gemeinsamer Vertrag der Geschicklichkeitsspiele
 
-- **AC-9** `fertig` **Pause überlebt Neuladen** — Schlange, Invasoren,
-  Flattervogel und Hochhinaus sichern beim Anhalten ihren ganzen Stand. Nach
+- **AC-9** `fertig` **Pause überlebt Neuladen** — Schlange, Sternjäger,
+  Flattervogel, Hochhinaus und Blasen sichern beim Anhalten ihren ganzen Stand. Nach
   Neuladen, Zurück oder Neustart der App steht eine laufende Partie als Pause
   da, mit „Weiter" und „Neu anfangen". Eine beendete Partie und ein
   unlesbarer Stand ergeben ein frisches Feld.
 - **AC-10** `fertig` **Spielzeit ohne Pausen** — `dauer` zählt nur die Takte, in
   denen das Spiel lief. Pausen, Blätter und die Zeit, in der die App zu war,
   zählen nicht.
-- **AC-11** `fertig` **Partien ohne Urteil** — Alle vier melden sich mit
+- **AC-11** `fertig` **Partien ohne Urteil** — Alle fünf melden sich mit
   `ohneSiege: true` an und notieren kein `gewonnen`. Die Kachel zählt Runden,
   und keine Siegquote rechnet mit ihnen.
 - **AC-12** `fertig` **Neu anfangen verwirft** — „Neu anfangen" im Pausenkasten
@@ -94,7 +95,12 @@ Der Rand des Feldes ist ein Schatten, kein `border`: Ein echter Rand nähme der
 Leinwand zwei Pixel, und sie stünde nicht mehr genau im Seitenverhältnis ihrer
 Rechnung.
 
-Nachgeprüft wurden die Spielregeln aller vier Spiele mit einem Wegwerf-Gerüst,
+Auch das Rätsel [Riegel](../10-raetsel/pins.md) borgt sich Leinwand und
+Schleife – für fließendes Wasser und fallendes Gold. Der Vertrag oben gilt für
+es nicht: Es hat keine Pause, sondern hält an, sobald alles ruht. Der Test
+nimmt deshalb nur Spiele mit einer Spec in diesem Bereich.
+
+Nachgeprüft wurden die Spielregeln der Spiele mit einem Wegwerf-Gerüst,
 das `echtzeit.js` und die Spieldatei in einen Node-Kontext lädt und die Bühne
 von Hand taktet; Anhalten und Wiederkehr prüft `pruefung/e2e/geschick.spec.mjs`
 im Browser.

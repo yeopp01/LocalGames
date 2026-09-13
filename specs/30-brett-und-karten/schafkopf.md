@@ -1,7 +1,7 @@
 # Schafkopf
 
 **Datei:** [`spiele/schafkopf.js`](../../spiele/schafkopf.js) · [`spiele/karten.js`](../../spiele/karten.js)
-**Stand:** 35/35 fertig
+**Stand:** 39/39 fertig
 
 ## Zweck
 
@@ -130,6 +130,14 @@ drei Stufen erklärt Züge aus derselben Sicht, die ein Mensch am Tisch hat.
   gefundene Karte; Tipp und Urteil rechnen höchstens knapp eine Sekunde.
   Wirft die Rechnung eine Ausnahme, legt der Rechner trotzdem eine erlaubte
   Karte – „… überlegt …" bleibt nie stehen.
+- **AC-37** `fertig` **Tischsitte im Anspiel** — Im Sauspiel sucht ein
+  Gegenspieler im ersten Stich die Rufsau, wenn er die Rufffarbe hat: mit
+  seiner kleinsten Karte dieser Farbe, nie mit dem Zehner. Der Partner – er hält
+  die Rufsau oder sie ist von ihm gefallen – spielt mit mindestens zwei Trümpfen
+  seinen höchsten an, solange die Gegner noch Trumpf haben können. Beides gilt
+  auch dann, wenn die Rechnung eine andere Karte vorn sieht. Vorher legte der
+  Gegenspieler oft eine eigene Sau vor, und der Partner hörte mit dem Trumpf
+  auf, sobald er nicht mehr den höchsten hielt.
 
 ### Der Lehrer
 
@@ -171,6 +179,16 @@ drei Stufen erklärt Züge aus derselben Sicht, die ein Mensch am Tisch hat.
   den höchsten hält, hohe Karten unterwegs, was den laufenden Stich noch
   schlagen kann, wer wo frei ist, erzwungenes Zugeben, Indizien für den Partner
   und wo die Rufsau nicht sein kann.
+- **AC-38** `fertig` **Lehrer kennt die Tischsitte** — In den Lagen aus AC-37
+  empfehlen Tipp und Urteil dieselbe Karte wie die Rechner. Der Satz zur
+  Herkunft nennt sie Tischsitte statt Faustregel. Sieht die Rechnung eine
+  andere Karte klar vorn, nennt der Tipp deren Quote und sagt, dass die
+  Rechnung aufgedeckt spielt und das Anspiel deshalb unterschätzt.
+- **AC-39** `fertig` **Partner-Indizien nachgezählt** — Die Quoten unter „Wer
+  könnte dein Partner sein?" sind am heutigen Rechner gezählt: geschmiert 65,
+  Trumpf angespielt 72 von 100. Ein Indiz, das nach einem fertigen Stich nicht
+  vorkommen kann, steht nicht in der Liste. Vorher standen dort 57 und 55 und
+  „Rufffarbe angespielt" mit 60 – gezählt 67, 42 und nie.
 
 ### Darstellung
 
@@ -204,6 +222,11 @@ drei Stufen erklärt Züge aus derselben Sicht, die ein Mensch am Tisch hat.
   zurückgenommene Züge und den Anteil bester Karten. Eine leere Partienliste
   zeigt nur „Punkte gesamt" mit 0; fehlende Felder erzeugen nie `NaN`, und
   Partien ohne boolesches `gewonnen` zählen in keiner Siegquote.
+- **AC-36** `fertig` **Tisch steht still** — Während des Spiels ist der Tisch
+  gleich hoch, ob in der Mitte keine, eine oder vier Karten liegen; Dran-Zeile,
+  Hand und Knöpfe bleiben an ihrem Platz. Nur in Ansage und nach dem
+  Zusammenwerfen darf er flacher sein. Vorher wuchs er mit der ersten Karte
+  um 55 bis 95 Pixel und schrumpfte nach jedem Stich wieder.
 
 ## Randfälle
 
@@ -481,6 +504,53 @@ Das ist die Grenze, und sie ist keine Schwäche des Verfahrens, sondern eine
 Aussage über das Spiel: Genau in diesen 41 Prozent verdient sich das Rechnen
 seinen Platz.
 
+### Was die Rechnung nicht sehen kann
+
+Am Tisch sucht der Gegenspieler im ersten Stich die Rufsau, und der Partner
+zieht Trumpf. Die Rechner taten beides selten, und eine frühere Messung
+schien ihnen recht zu geben: Stur gesucht kostete es 1,2 Punkte.
+
+Beide Anspiele leben aber davon, dass sie etwas verraten – wer zu wem gehört.
+Der Rechner würfelt Verteilungen und spielt jede *aufgedeckt* zu Ende; dort
+weiß jeder ohnehin, wer Partner ist. Die Rechnung zählt also die Kosten
+eines solchen Anspiels, aber nie seinen Nutzen.
+
+Deshalb wurde am ganzen Spiel gemessen statt an der Rechnung: vier Rechner,
+jeder nur mit seiner Sicht, 8000 Gaben, davon 6517 Sauspiele, jede einmal ohne
+und einmal mit der Sitte. Der Zufall ist dabei an Gabe und Zugnummer gebunden
+und die Zeitgrenze abgeschaltet, sodass beide Läufe gleich spielen, bis die
+Sitte zum ersten Mal eine andere Karte legt. Ein Unterschied im Ergebnis kommt
+also von der Sitte und nicht vom Würfeln. Aus Sicht der Partei, die sie
+anwendet:
+
+| Sitte | anders gespielt | Siegquote | Augen | Schneider |
+| --- | --- | --- | --- | --- |
+| Gegenspieler sucht im ersten Stich | 26 % | −0,20 ± 0,45 | +0,03 ± 0,20 | ±0 |
+| … bei jedem Anspiel | 41 % | −0,37 ± 0,63 | +0,05 ± 0,25 | ±0 |
+| Partner zieht den höchsten Trumpf | 52 % | −0,25 ± 0,69 | **+0,67 ± 0,28** | **+2,2 ± 0,8** |
+| Partner zieht den kleinsten Trumpf | 60 % | +0,12 ± 0,70 | +0,42 ± 0,29 | +1,5 ± 0,9 |
+
+Keine Sitte kostet messbar etwas. Die −1,2 ließen sich mit dem heutigen
+Rechner nicht wiederholen. Seither liest er die Ansage und zählt fertige
+Stiche mit; ob das der Grund ist, ist nicht nachgeprüft. Weil die Sitte nichts kostet und das Spiel für den Menschen am
+Tisch lesbar macht, spielen die Rechner sie jetzt, auch gegen die Rechnung
+(AC-37). Gesucht wird nur im ersten Stich: Bei jedem Anspiel ist die Wirkung
+dieselbe, der Fehler aber größer.
+
+Im Spiel eingebaut liefert der Rechner in 323 von 323 nachgespielten
+Sauspielen genau das Ergebnis der gemessenen Fassung.
+
+Die Sitte ändert auch, was ein Anspiel verrät. Gezählt aus Sicht des Spielers
+nach jedem fertigen Stich, solange die Rufsau noch lag, über 1966 Sauspiele:
+
+| Indiz | vor der Sitte | mit ihr |
+| --- | --- | --- |
+| hat dem Spieler geschmiert | 67 % Partner | 65 % |
+| hat Trumpf angespielt | 42 % | **72 %** |
+| keins von beiden | 25 % | 17 % |
+
+Trumpf anspielen war vorher kein Zeichen, jetzt ist es das stärkste (AC-39).
+
 ### Was von den Merksätzen übrig blieb
 
 Alle bisher geprüften, jeder in der Fassung, die tatsächlich gemessen wurde.
@@ -500,7 +570,10 @@ genau daran ist diese Tabelle schon einmal missverstanden worden.
 | Blanke Sau anspielen | *nicht* als Alleinspieler bei Wenz/Geier | +3,4 Wenz, +2,8 Geier | eingebaut |
 | Den höchsten Trumpf anspielen, der noch draußen ist | auch mit nur einem Trumpf | +0,56 ± 0,36 Sau, +0,63 ± 0,32 Solo | eingebaut |
 | Trumpf ziehen **ohne Bedingung** | pauschal, immer – nicht etwa: Trumpf ziehen überhaupt | −1,9 Sauspiel, −4,2 Solo | verworfen |
-| Als Gegenspieler die Rufsau suchen | pauschal, immer | −1,2 | verworfen |
+| Als Gegenspieler die Rufsau suchen | nur im ersten Stich, klein – Rechner gegen Rechner | −0,20 ± 0,45 | eingebaut, Tischsitte |
+| dasselbe bei jedem Anspiel | solange die Sau draußen ist | −0,37 ± 0,63; früher −1,2, nicht wiederholbar | kostet nichts, nicht eingebaut |
+| Als Partner Trumpf ziehen | den höchsten, ab zwei Trümpfen, solange die Gegner welchen haben können | Sieg −0,25 ± 0,69 · Augen +0,67 ± 0,28 · Schneider +2,2 ± 0,8 | eingebaut, Tischsitte |
+| dasselbe mit dem kleinsten Trumpf | sonst gleich | Sieg +0,12 ± 0,70 · Augen +0,42 ± 0,29 · Schneider +1,5 ± 0,9 | verworfen |
 | Nachspielen | Farbe der eigenen Partei fortsetzen | ±0,4, kein Unterschied | verworfen |
 | Nachspielen gegen ein Solo | **hohe** Karte in eine Farbe, in der der Mitspieler frei ist | **−3,2 / −3,8** für die Spielerpartei | eingebaut |
 | dasselbe mit kleiner Karte | sonst gleich | +5,0 bis +5,5, also schädlich | verworfen |

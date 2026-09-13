@@ -1925,13 +1925,17 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 
 /* Die vier Plaetze des Stichs liegen dort, wo der Spieler sitzt - so sieht
    man ohne Nachdenken, wer was gelegt hat. */
+/* Jede Zeile ist so hoch wie eine Karte, ob eine liegt oder nicht. Vorher
+   waren es drei 1fr-Zeilen ueber einer Mindesthoehe: Leer blieb der Tisch
+   bei der Mindesthoehe, mit der ersten Karte wurde jede Zeile kartenhoch -
+   und Tisch, Dran-Zeile und Hand sprangen bei jedem Stich um 55 bis 95
+   Pixel auf und ab. */
 .sk-stich {
   grid-area: 2 / 2;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
+  grid-template-rows: repeat(3, calc(var(--sk-t) * 1.436));
   place-items: center;
-  min-height: calc(var(--sk-t) * 3.35);
   position: relative;
 }
 .sk-karte--tisch[data-platz="unten"] { grid-area: 3 / 2; }
@@ -1948,7 +1952,7 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 /* Waehrend der Ansage liegt noch nichts auf dem Tisch - dann muss dort auch
    kein Loch von der Groesse eines Stichs klaffen. */
 .sk-tisch[data-phase="ansage"] .sk-stich,
-.sk-tisch[data-phase="weiter"] .sk-stich { min-height: 84px; }
+.sk-tisch[data-phase="weiter"] .sk-stich { grid-template-rows: repeat(3, auto); min-height: 84px; }
 
 /* Eine Karte: Wert oben links, Farbzeichen gross darunter, unten dasselbe
    auf dem Kopf - so wie es auf einem gedruckten Blatt auch steht. Nachgemalt
@@ -2376,7 +2380,7 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   .sk-karte--hand { transition: none; }
 }
 
-/* ============================================ Geschick: Schlange, Invasoren,
+/* ============================================ Geschick: Schlange, Sternjäger,
                                                Flattervogel, Hochhinaus
 
    Die vier Echtzeitspiele teilen sich Leinwand, Schild und Steuerleiste
@@ -2429,7 +2433,6 @@ body:has(.sheet-huelle:not([hidden])) .toast {
    – sonst steht „Wisch los" genau auf der Schlange, die gemeint ist. */
 .sn-kasten .ez-schild { justify-content: flex-end; padding-bottom: 18%; }
 .fl-kasten .ez-schild { justify-content: flex-end; padding-bottom: 22%; }
-.iv-kasten .ez-schild { justify-content: flex-end; padding-bottom: 26%; }
 .ez-schild-titel { font-size: 22px; font-weight: 800; letter-spacing: -.01em; }
 .ez-schild-unter { font-size: 14px; color: var(--tinte-leise); max-width: 30ch; line-height: 1.4; }
 
@@ -2468,11 +2471,32 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 .sn-taste[data-ort='runter'] { grid-area: runter; }
 .sn-taste[data-ort='rechts'] { grid-area: rechts; }
 
-/* Invasoren: 180 x 214, darunter die Leiste zum Ziehen. */
-.iv-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100vh - 250px) * 180 / 214))); }
+/* Sternjäger: 168 x 96 im Querformat, darunter die Leiste zum Ziehen und der
+   Knopf für die Spezialwaffe. Das flache Feld darf breiter werden als 440 px,
+   sonst bliebe es am Laptop ein schmaler Streifen. */
+.im-flaeche { --ez-breite: min(600px, 92vw, max(220px, calc((100vh - 250px) * 168 / 96))); }
 @supports (height: 100dvh) {
-  .iv-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100dvh - 250px) * 180 / 214))); }
+  .im-flaeche { --ez-breite: min(600px, 92vw, max(220px, calc((100dvh - 250px) * 168 / 96))); }
 }
+.im-steuer { display: flex; gap: 8px; }
+.im-steuer .ez-steuer { flex: 1; min-width: 0; }
+.im-spezial {
+  flex: none;
+  width: 96px;
+  min-height: 60px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 12px;
+  line-height: 1.1;
+  touch-action: none;
+}
+.im-spezial-name { font-size: 13px; }
+.im-spezial b { font-size: 20px; font-variant-numeric: tabular-nums; }
+.im-spezial--leer { opacity: .45; }
 
 /* Flattervogel: 180 x 250, keine Leiste – getippt wird aufs Feld. */
 .fl-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100vh - 180px) * 180 / 250))); }
@@ -2484,4 +2508,70 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 .dj-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100vh - 270px) * 180 / 270))); }
 @supports (height: 100dvh) {
   .dj-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100dvh - 270px) * 180 / 270))); }
+}
+
+/* Blasen: 180 x 270, gezielt wird auf dem Feld selbst. Das Schild rueckt
+   nach unten, damit es die Blasen oben nicht verdeckt. */
+.bl-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100vh - 180px) * 180 / 270))); }
+@supports (height: 100dvh) {
+  .bl-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100dvh - 180px) * 180 / 270))); }
+}
+.bl-kasten .ez-schild { justify-content: flex-end; padding-bottom: 30%; }
+
+/* ================================================================ Riegel
+
+   Ein Raetsel, das sich Leinwand und Schleife der Geschicklichkeitsspiele
+   borgt: 180 x 288, darunter „Von vorn" und „Hinweis". */
+
+.ri-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100vh - 240px) * 180 / 288))); }
+@supports (height: 100dvh) {
+  .ri-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100dvh - 240px) * 180 / 288))); }
+}
+.ri-wahl {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(54px, 1fr));
+  gap: 8px;
+  margin: 6px 0 4px;
+}
+.ri-wahl .knopf { padding: 12px 0; font-family: 'DM Mono', monospace; }
+.ri-wahl .knopf[data-geloest='ja']::after { content: ' ✓'; font-size: 12px; }
+
+/* Ziele eines Rangs im Blatt: Haken, Text, Zahl, darunter der Balken. */
+.dj-ziele { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 14px; }
+.dj-ziel {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 15px;
+}
+.dj-ziel-haken {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px var(--karte-rand);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+.dj-ziel--fertig .dj-ziel-haken { background: var(--gruen); box-shadow: none; }
+.dj-ziel--fertig .dj-ziel-text { color: var(--tinte-leise); }
+.dj-ziel-zahl { font-size: 12.5px; color: var(--tinte-still); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dj-ziel-balken { grid-column: 2 / 4; height: 4px; border-radius: 2px; background: var(--karte-rand); overflow: hidden; }
+.dj-ziel-balken > span { display: block; height: 100%; background: var(--gruen); }
+
+/* Der Rang über dem Feld ist zugleich der Weg zu den Zielen – er sieht aus
+   wie die Zahlen daneben, nur unterstrichen. */
+.dj-rang {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 6px 2px;
+  margin: -6px -2px;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 4px;
 }

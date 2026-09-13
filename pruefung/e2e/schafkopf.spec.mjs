@@ -45,6 +45,29 @@ test('die Rufsau lässt sich nicht abwerfen – und das Blatt sagt genau das', a
   expect((await gespeichert(page)).stand.schafkopf.haende[0]).toContain(8);
 });
 
+test('der Tisch bleibt gleich hoch, ob in der Mitte eine Karte liegt oder keine', async ({ page }) => {
+  /* Die Stichmitte wuchs mit der ersten Karte, und Hand und Knöpfe
+     sprangen bei jedem Stich auf und ab (AC-36). */
+  const start = [0, 1, 2, 3].map((p) => Array.from({ length: 8 }, (_, i) => p * 8 + i));
+  const hoehe = async (karten) => {
+    const haende = start.map((h) => h.slice());
+    // Resi (3) hat ausgespielt, du bist dran.
+    const aktuell = { start: 3, karten: karten ? [haende[3].pop()] : [] };
+    await oeffnen(page, '#/spiel/schafkopf', {
+      stand: {
+        schafkopf: leererStand({
+          haende, start, aktuell,
+          spielart: { art: 'solo', farbe: 2 }, spieler: 1,
+          gebote: [{ p: 3, spiel: null }, { p: 0, spiel: null }, { p: 1, spiel: { art: 'solo', farbe: 2 } }, { p: 2, spiel: null }],
+        }),
+      },
+    });
+    await expect(page.locator('.sk-stich .sk-karte')).toHaveCount(karten);
+    return page.locator('.sk-tisch').evaluate((e) => e.getBoundingClientRect().height);
+  };
+  expect(await hoehe(1)).toBe(await hoehe(0));
+});
+
 test('der Abendstand übersteht Neuladen im Moment „zusammengeworfen"', async ({ page }) => {
   const haende = [0, 1, 2, 3].map((p) => Array.from({ length: 8 }, (_, i) => p * 8 + i));
   const stand = leererStand({

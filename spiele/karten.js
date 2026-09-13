@@ -914,22 +914,27 @@ const Karten = (() => {
     }
 
     /* Wer koennte der Partner sein? Solange die Rufsau nicht gefallen ist,
-       ist das offen - aber nicht ganz. Drei Verhaltensweisen verschieben die
-       Wahrscheinlichkeit messbar, gemessen an 1185 Mitspielern, solange die
-       Sau noch lag. Grundwahrscheinlichkeit 33 Prozent:
+       ist das offen - aber nicht ganz. Zwei Verhaltensweisen verschieben die
+       Wahrscheinlichkeit messbar. Gezaehlt aus Sicht des Spielers nach jedem
+       fertigen Stich, solange die Sau noch lag, vier Rechner gegeneinander,
+       1966 Sauspiele. Grundwahrscheinlichkeit 33 Prozent:
 
-         die Rufffarbe angespielt   60 %   (er darf sie nur mit der Sau
-                                            anspielen oder davonlaufen)
-         dem Spieler geschmiert     57 %
-         Trumpf angespielt          55 %
+                                  vor der Tischsitte   mit ihr
+         dem Spieler geschmiert        67 %             65 %   (n 2099)
+         Trumpf angespielt             42 %             72 %   (n 2619)
+         keins von beiden              25 %             17 %
 
-       Das sind Indizien und keine Beweise - jedes zweite Mal liegt man
-       daneben. Die Folklore, wonach Gegenspieler die Sau suchen, gilt an
-       diesem Tisch gerade nicht. */
+       Trumpf wurde erst durch die Sitte zum Zeichen: Seit der Partner Trumpf
+       zieht, ist es fast immer er. Die fruehere Tabelle nannte 57 und 55
+       Prozent; nachgezaehlt stimmte keine der beiden.
+
+       Hier stand auch "hat die Rufffarbe angespielt". Das kommt nach einem
+       fertigen Stich nie vor: Entweder faellt die Sau, oder der Anspieler ist
+       davongelaufen - beides verraet den Partner sicher, und dann gibt es
+       nichts mehr zu vermuten. In beiden Zaehlungen null Mal. */
     const INDIZ = [
-      { id: 'ruf', text: 'hat die Rufffarbe angespielt', quote: 60 },
-      { id: 'schmier', text: 'hat dem Spieler geschmiert', quote: 57 },
-      { id: 'trumpf', text: 'hat Trumpf angespielt', quote: 55 },
+      { id: 'schmier', text: 'hat dem Spieler geschmiert', quote: 65 },
+      { id: 'trumpf', text: 'hat Trumpf angespielt', quote: 72 },
     ];
     const teamIndizien = [];
     if (s.sp.art === 'sau' && !s.sauWeg && s.sauBei < 0) {
@@ -943,7 +948,6 @@ const Karten = (() => {
             if ((st.start + i2) % 4 !== q) continue;
             const k = st.karten[i2];
             if (i2 === 0 && ord.trumpf[k]) gefunden.add('trumpf');
-            if (i2 === 0 && !ord.trumpf[k] && farbe(k) === s.sp.farbe) gefunden.add('ruf');
             if (i2 > 0 && fuehrerT === s.spieler && augen(k) >= 10) gefunden.add('schmier');
           }
         }
@@ -1213,6 +1217,57 @@ const Karten = (() => {
 
   const EXAKT_AB = 13;          // offene Karten, ab denen exakt gerechnet wird
 
+  /* ----------------------------------------------------------- Tischsitte
+
+     Zwei Anspiele, die am Tisch jeder erwartet und die die Rechnung nicht
+     sehen kann: Der Gegenspieler sucht im ersten Stich die Rufsau, und der
+     Partner zieht Trumpf für den Spieler. Beide leben davon, dass sie etwas
+     verraten – wer zu wem gehört. In jeder gewürfelten Welt liegen aber alle
+     Blätter offen, und dort weiß das ohnehin jeder. Gezählt werden nur die
+     Kosten, der Nutzen steht nicht in der Rechnung.
+
+     Deshalb wurde nicht die Rechnung gefragt, sondern der Tisch: vier Rechner,
+     jeder nur mit seiner Sicht, dieselben 6517 Sauspiele einmal ohne und einmal
+     mit der Sitte, gepaart. Aus Sicht der Partei, die sie anwendet:
+
+        Gegenspieler sucht im ersten Stich    Sieg −0,20 ± 0,45   Augen +0,03 ± 0,20
+        dasselbe bei jedem Anspiel            Sieg −0,37 ± 0,63   Augen +0,05 ± 0,25
+        Partner zieht den höchsten Trumpf     Sieg −0,25 ± 0,69   Augen +0,67 ± 0,28
+        Partner zieht den kleinsten           Sieg +0,12 ± 0,70   Augen +0,42 ± 0,29
+
+     Keine kostet messbar etwas, und der Partner holt mit dem höchsten Trumpf
+     mehr Augen: Die Spielerpartei macht dann 2,2 ± 0,8 Punkte öfter Schneider.
+     Die frühere Messung, nach der das Suchen 1,2 Punkte kostete, ließ sich
+     mit dem heutigen Rechner nicht wiederholen.
+
+     Weil die Sitte nichts kostet und das Spiel lesbar macht, gilt sie –
+     auch gegen eine Rechnung, die sie aus eben diesem Grund unterschätzt.
+     Gesucht wird nur im ersten Stich; bei jedem Anspiel ist die Wirkung
+     dieselbe, der Fehler aber größer. */
+  function tischsitte(s, zuege) {
+    if (s.sp.art !== 'sau' || s.trick.length || s.ich === s.spieler) return null;
+    const ord = s.ord;
+
+    if (!s.stiche.length && !s.sauWeg && !s.davon && s.sauBei < 0) {
+      // Mit dem Zehner sucht man nicht: fällt die Sau unter einen Trumpf, gehen 21 Augen.
+      const klein = zuege.filter((k) => !ord.trumpf[k] && farbe(k) === s.sp.farbe && augen(k) < 10);
+      if (klein.length) {
+        const karteK = klein.reduce((a, b) => (
+          augen(b) < augen(a) || (augen(b) === augen(a) && ord.rang[b] < ord.rang[a]) ? b : a));
+        return { karte: karteK, art: 'suchen' };
+      }
+    }
+
+    const binPartner = s.hand.indexOf(s.sauK) >= 0 || s.sauBei === s.ich;
+    if (!binPartner) return null;
+    const truempfe = zuege.filter((k) => ord.trumpf[k]);
+    if (truempfe.length < 2) return null;
+    const gegner = [0, 1, 2, 3].filter((q) => q !== s.ich && q !== s.spieler);
+    const fremdTrumpf = s.unbekannt.some((c) => ord.trumpf[c]);
+    if (!fremdTrumpf || gegner.every((q) => s.frei[q][4] || s.anzahl[q] === 0)) return null;
+    return { karte: truempfe.reduce((a, b) => (ord.rang[b] > ord.rang[a] ? b : a)), art: 'trumpf' };
+  }
+
   function bewerten(s, opt) {
     const einst = opt || {};
     const proben = einst.proben || 80;
@@ -1302,10 +1357,11 @@ const Karten = (() => {
 
        Das ist nicht dasselbe wie "nach Merksatz spielen": Ist ein Zug
        nachweisbar besser, gewinnt er, auch gegen jeden Merksatz. Nachgemessen
-       schadet es naemlich, die Regeln stur anzuwenden - liessen die
-       Gegenspieler in der Ausspielung immer die Rufsau suchen, verloeren sie
-       ueber 4000 Sauspiele 1,2 Punkte. Die Merksaetze taugen als Ausgleich
-       bei Gleichstand, nicht als Gesetz. */
+       schadet es naemlich, die Regeln stur anzuwenden - Trumpf ziehen ohne
+       Bedingung kostet 1,9 Punkte im Sauspiel. Die Merksaetze taugen als
+       Ausgleich bei Gleichstand, nicht als Gesetz. Die einzige Ausnahme ist
+       die Tischsitte, und die ist am ganzen Spiel gemessen statt an der
+       Rechnung - siehe tischsitte. */
     const gleichauf = werte.filter((e) => e === werte[0] || !unterschied(werte[0], e).klar);
     if (gleichauf.length > 1) {
       gleichauf.sort((a, b) => b.regel - a.regel || b.nutzen - a.nutzen);
@@ -1315,7 +1371,17 @@ const Karten = (() => {
         werte.unshift(wahl);
       }
     }
-    return { werte, welten, einzig: false, gleichauf, regelWahl, regelAnteil: welten ? regelBeste / welten : 0 };
+    const sitte = tischsitte(s, zuege);
+    const sitteWert = sitte && werte.find((e) => e.karte === sitte.karte);
+    if (sitteWert && sitteWert !== werte[0]) {
+      werte.splice(werte.indexOf(sitteWert), 1);
+      werte.unshift(sitteWert);
+    }
+    return {
+      werte, welten, einzig: false, gleichauf, regelWahl,
+      regelAnteil: welten ? regelBeste / welten : 0,
+      sitte: sitteWert ? sitte.art : null,
+    };
   }
 
   const besteKarte = (s, opt) => bewerten(s, opt).werte[0].karte;
@@ -1379,6 +1445,11 @@ const Karten = (() => {
         if (hoechster && draussen.length) {
           return 'Trumpf ziehen: höher ist nichts mehr draußen. Jeder Trumpf, '
             + 'den du jetzt herausholst, kann später keinen deiner Stiche mehr wegnehmen.';
+        }
+        if (s.sp.art === 'sau' && s.ich !== s.spieler
+            && (s.hand.indexOf(s.sauK) >= 0 || s.sauBei === s.ich)) {
+          return 'Als Partner Trumpf ziehen: Jeder Trumpf, den die Gegenpartei jetzt '
+            + 'zugeben muss, sticht später keine eurer Karten mehr.';
         }
         if (augen(k) === 0) return 'Klein antrumpfen – das kostet nichts und zieht trotzdem.';
         return 'Mit Trumpf anspielen und die Führung behalten.';
@@ -1735,7 +1806,7 @@ const Karten = (() => {
     GRUNDWERT, LAUF_AB, MINDEST, ABSCHLAG, EXAKT_AB, GEBOT_GRENZE, ANSAGER_TRUMPF,
     welt, erlaubt, zugMachen, zugZurueck, faustregel, ausspielen, endspiel,
     nochSchlagbar, mischen, unterschied,
-    sichtVon, verteilen, weltAus, bewerten, besteKarte, begruenden, seiteVon,
+    sichtVon, verteilen, weltAus, bewerten, besteKarte, begruenden, seiteVon, tischsitte,
     wissen, gefahr, hoechsterFremd,
     blattstaerke, gebotPasst, ansageGlaube, ALLEIN_ANSAGE,
     quote, ansageRat, siebt, schutz,

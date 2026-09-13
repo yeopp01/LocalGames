@@ -7,10 +7,11 @@ müssen mithalten. Dazu das Werkzeug, das sie sich teilen.
 
 | Spezifikation             | Stand                      |
 | ------------------------- | -------------------------- |
-| [Hochhinaus](doodle.md)   | 11/12 fertig · 1 in arbeit |
+| [Blasen](bubbles.md)      | 12/12 fertig               |
+| [Hochhinaus](doodle.md)   | 27/29 fertig · 2 in arbeit |
 | [Echtzeit](echtzeit.md)   | 12/12 fertig               |
 | [Flattervogel](flappy.md) | 8/8 fertig                 |
-| [Invasoren](invaders.md)  | 15/15 fertig               |
+| [Sternjäger](impact.md)   | 17/17 fertig               |
 | [Schlange](snake.md)      | 12/12 fertig               |
 
 <!-- board:end -->

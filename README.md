@@ -20,15 +20,17 @@ Enthalten sind bisher:
 | [**Tango**](specs/10-raetsel/tango.md) | Sonne und Mond im Gleichgewicht, 6 × 6, immer ohne Raten lösbar. |
 | [**Damen**](specs/10-raetsel/queens.md) | Eine Dame je Zeile, Spalte und Farbgebiet, immer ohne Raten lösbar. |
 | [**Weg**](specs/10-raetsel/zip.md) | Ein Zug durch jedes Feld, die Zahlen der Reihe nach, auf „schwer" mit Mauern. |
+| [**Riegel**](specs/10-raetsel/pins.md) | Das Rätsel aus der Werbung: Riegel ziehen, Wasser löscht Lava, Gold fällt zum Helden, das Ungeheuer verbrennt. Elf Level, Hinweis rechnet nach. |
 | [**Verräter**](specs/40-zu-mehreren/verraeter.md) | Alle kennen dasselbe Wort, einer nicht. Zu dritt bis zu zwölft, auf einem Handy oder mit Code auf allen. |
 | [**Bombe**](specs/40-zu-mehreren/bombe.md) | Eine Silbe, ein Wort, schnell weitergeben – bis es knallt. Die Uhr läuft verdeckt. |
 | [**Zwei Wahrheiten**](specs/40-zu-mehreren/wahrheiten.md) | Drei Sätze über sich, einer erfunden. Die anderen raten reihum und geheim. |
 | [**Wer am ehesten**](specs/40-zu-mehreren/amehesten.md) | Eine Frage, geheime Stimmen, aufgedecktes Ergebnis. 45 Fragen, harmlos und frech. |
 | [**Schafkopf**](specs/30-brett-und-karten/schafkopf.md) | Bayrisch, zu viert, gegen drei rechnende Gegner. Sauspiel, Wenz, Geier, Solo – mit Lehrer, der sagt, was du hättest spielen sollen. |
 | [**Schlange**](specs/50-geschick/snake.md) | Snake wie auf dem alten Handy: wischen, fressen, wachsen. Schnelle Kehren merkt sie sich. |
-| [**Invasoren**](specs/50-geschick/invaders.md) | Space Invaders für den Daumen: ziehen lenkt, berühren feuert. Deckungen, die zerbröseln. |
+| [**Sternjäger**](specs/50-geschick/impact.md) | Space Impact wie auf dem alten Nokia: sechs Welten, Spezialwaffen, am Ende jedes Levels ein Endgegner. |
 | [**Flattervogel**](specs/50-geschick/flappy.md) | Flappy Bird: ein Tipp, ein Flügelschlag, durch die Lücke. Etwas gnädiger als das Vorbild. |
-| [**Hochhinaus**](specs/50-geschick/doodle.md) | Doodle Jump auf Karopapier: halten oder Handy neigen, Federn, wandernde und brüchige Plattformen. |
+| [**Hochhinaus**](specs/50-geschick/doodle.md) | Doodle Jump auf Karopapier: halten oder Handy neigen, schießen, Monster, schwarze Löcher, Propeller und Rakete – mit Geräuschen und Zielen in zehn Rängen. |
+| [**Blasen**](specs/50-geschick/bubbles.md) | Bubble Shooter: zielen, über die Bande spielen, drei gleiche platzen. Fehlschüsse schieben neue Reihen herein. |
 
 Über allem liegt ein Dashboard mit der Spielauswahl und eine gemeinsame
 Statistik über alle Partien, samt Sicherung zum Mitnehmen. Was jedes Spiel

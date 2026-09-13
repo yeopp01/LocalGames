@@ -4,7 +4,7 @@
    steht, was herauskommen muss, wenn Felder fehlen – eine Sicherung von
    einem älteren Stand darf die Zahlen nicht verfälschen.
    Specs: 10-raetsel/mastermind.md, 20-wortspiele/wordle.md,
-   20-wortspiele/galgen.md, 40-zu-mehreren/verraeter.md */
+   20-wortspiele/galgen.md, 40-zu-mehreren/verraeter.md, 50-geschick/doodle.md */
 
 import { test, expect, oeffnen, kennzahl, partie } from './helfer.mjs';
 
@@ -58,6 +58,23 @@ test('Schafkopf: Siegquoten nur mit Urteil, kein „NaN" bei fehlenden Feldern',
   await expect(kennzahl(block(page), 'Siege im Alleinspiel')).toHaveText('1/1');
   await expect(kennzahl(block(page), 'beste Karte')).toHaveText('50 %');
   await expect(kennzahl(block(page), 'Zug zurück')).toHaveText('1');
+});
+
+/* Der Rang hat keinen eigenen Speicher, er wird aus den Partien nachgerechnet.
+   Eine Sicherung von vor den Zielen darf ihn nicht verfälschen, und die Partie,
+   die einen Rang abschließt, zählt nicht schon für den nächsten.
+   Spec: 50-geschick/doodle.md AC-23, AC-28 */
+test('Hochhinaus: Rang und Monster aus lückenhaften Partien', async ({ page }) => {
+  await oeffnen(page, '#/statistik/doodle', {
+    partien: [
+      partie('doodle', { meter: 60, dauer: 30000, spruenge: 50, monster: 1 }),
+      partie('doodle', { meter: 200, spruenge: 50, monster: 'zwei', federn: 3, propeller: 1 }),
+      partie('doodle', { dauer: 'lang' }),
+    ],
+  });
+  await expect(kennzahl(block(page), 'Ränge geschafft')).toHaveText('1/10');
+  await expect(kennzahl(block(page), 'Monster abgeschossen')).toHaveText('1');
+  await expect(kennzahl(block(page), 'Bestwert')).toHaveText('200 m');
 });
 
 test('Verräter: die Quote rechnet nur über Runden mit Urteil', async ({ page }) => {

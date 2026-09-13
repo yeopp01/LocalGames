@@ -12,11 +12,16 @@
    Spec: specs/50-geschick/echtzeit.md */
 
 import { test, expect, SPIELE, oeffnen, gespeichert } from './helfer.mjs';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { WURZEL } from './helfer.mjs';
 
-const ECHTZEIT = SPIELE.filter((s) => readFileSync(join(WURZEL, 'spiele', s.datei), 'utf8').includes('Echtzeit.buehne('));
+/* Den Pausenvertrag schulden die Geschicklichkeitsspiele – die mit einer Spec
+   unter specs/50-geschick. Riegel borgt sich nur Leinwand und Schleife: Als
+   Rätsel hält es an, wenn alles ruht, und hat keine Pause zu zeigen. */
+const ECHTZEIT = SPIELE.filter((s) =>
+  readFileSync(join(WURZEL, 'spiele', s.datei), 'utf8').includes('Echtzeit.buehne(') &&
+  existsSync(join(WURZEL, 'specs', '50-geschick', s.id + '.md')));
 
 /** Startet das Spiel mit einem Tipp aufs Feld – so, wie ein Finger es tut. */
 const TIPPEN = `
@@ -28,7 +33,7 @@ const TIPPEN = `
 `;
 
 test('mindestens vier Echtzeitspiele gefunden', () => {
-  expect(ECHTZEIT.map((s) => s.id).sort()).toEqual(expect.arrayContaining(['doodle', 'flappy', 'invaders', 'snake']));
+  expect(ECHTZEIT.map((s) => s.id).sort()).toEqual(expect.arrayContaining(['doodle', 'flappy', 'impact', 'snake']));
 });
 
 for (const spiel of ECHTZEIT) {
