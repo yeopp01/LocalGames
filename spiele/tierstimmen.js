@@ -3,7 +3,8 @@
    Nichts zu gewinnen, nichts falsch zu machen. Jede Berührung lässt ein Tier
    hüpfen und rufen, und oben steht groß, wer da ruft – zum Vorlesen für die,
    die danebensitzen. Sechs Tiere je Seite, damit sie auch auf einem kleinen
-   Handy groß genug für eine Kinderhand bleiben. Wer die Pfeile trifft,
+   Handy groß genug für eine Kinderhand bleiben, und die Seiten nach Orten –
+   erst der Bauernhof, dann Wald, Zoo und Wasser. Wer die Pfeile trifft,
    blättert eben; auch das ist kein Fehler.
 
    Auf der Tastatur ruft jede Taste ein Tier der Seite: Ein Kleinkind am
@@ -16,14 +17,20 @@
 
   function starten(wurzel, s) {
     const tiere = Tiere.TIERE.filter((t) => t.ton);
-    const seiten = [];
-    for (let i = 0; i < tiere.length; i += JE_SEITE) seiten.push(tiere.slice(i, i + JE_SEITE));
+    const seiten = [];   // [{ ort, tiere }]
+    for (const ort of Tiere.ORTE) {
+      const hier = tiere.filter((t) => t.ort === ort.id);
+      for (let i = 0; i < hier.length; i += JE_SEITE) seiten.push({ ort, tiere: hier.slice(i, i + JE_SEITE) });
+    }
     let runde = null;   // { tipps, tiere: { id: Anzahl } } – solange das Zimmer offen ist
 
     return Tiere.kinderzimmer(wurzel, s, {
       bilder: ['🐮', '🐷', '🐶', '🐸', '🦁'],
       satz: 'Tier antippen – es hüpft und ruft. Hier kann nichts schiefgehen.',
-      toene: tiere.map((t) => t.id),
+      // Erst der Name, dann der Ruf: So lernt das Kind zum Bild und zum
+      // Klang auch, wie das Tier heißt – samt Artikel.
+      schalter: [{ id: 'stimme', text: 'Tiername ansagen', an: true }],
+      toene: [...tiere.map((t) => t.id), ...tiere.map((t) => 'name-' + t.id)],
 
       spielen(buehne, h) {
         runde = { tipps: 0, tiere: {} };
@@ -43,12 +50,16 @@
         const punkte = h.el('div', 'ts-punkte');
         punkte.setAttribute('aria-hidden', 'true');
         for (let i = 0; i < seiten.length; i += 1) punkte.append(h.el('span', 'ts-punkt'));
-        leiste.append(zurueck, punkte, vor);
+        const ortName = h.el('span', 'ts-ort');
+        const mitte = h.el('div', 'ts-mitte');
+        mitte.append(ortName, punkte);
+        leiste.append(zurueck, mitte, vor);
         leiste.hidden = seiten.length < 2;
         buehne.append(gitter, leiste);
 
         function zeigen() {
-          gitter.replaceChildren(...seiten[seite].map((t) => Tiere.kachel(h.el, t)));
+          gitter.replaceChildren(...seiten[seite].tiere.map((t) => Tiere.kachel(h.el, t)));
+          ortName.textContent = seiten[seite].ort.name;
           [...punkte.children].forEach((p, i) => p.classList.toggle('ts-punkt--an', i === seite));
           Tiere.anstossen(gitter, 'kz-auftritt');
         }
@@ -60,7 +71,7 @@
           runde.tiere[t.id] = (runde.tiere[t.id] || 0) + 1;
           Tiere.anstossen(k, 'kz-hops');
           h.blase(Tiere.satz(t));
-          h.klang.tier(t.id, t.laut);
+          h.klang.tier(t.id, t.laut, h.schalter.stimme);
         }
 
         function blaettern(schritt) {

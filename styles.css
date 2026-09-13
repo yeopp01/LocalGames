@@ -2753,6 +2753,40 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   cursor: pointer;
 }
 .kz-wahl-knopf[aria-checked='true'] { background: var(--tinte); border-color: var(--tinte); color: var(--papier); }
+.kz-schalter {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 10px 8px 16px;
+  border: 1.5px solid var(--karte-rand);
+  border-radius: 999px;
+  background: var(--karte);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.kz-schalter-knopf {
+  position: relative;
+  width: 40px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--karte-rand);
+  transition: background .15s ease;
+}
+.kz-schalter-knopf::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .25);
+  transition: transform .15s ease;
+}
+.kz-schalter[aria-checked='true'] .kz-schalter-knopf { background: var(--gruen); }
+.kz-schalter[aria-checked='true'] .kz-schalter-knopf::after { transform: translateX(16px); }
 .kz-los { min-width: 210px; padding: 16px 28px; border-radius: 999px; font-size: 19px; }
 .kz-vorhang-notiz { max-width: 40ch; margin: 0; }
 
@@ -2999,6 +3033,8 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 .ts-punkte { display: flex; gap: 8px; }
 .ts-punkt { width: 10px; height: 10px; border-radius: 50%; background: color-mix(in srgb, var(--tinte) 22%, transparent); }
 .ts-punkt--an { background: var(--tinte); }
+.ts-mitte { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 110px; }
+.ts-ort { font-size: 14px; font-weight: 700; color: var(--tinte-leise); white-space: nowrap; }
 
 /* Futterzeit: oben die Teller, unten das Tier, dazwischen der Weg. */
 .fu-ziele {

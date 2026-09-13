@@ -26,42 +26,99 @@
      das es nicht mehr gibt. */
 
 var Tiere = (() => {
-  /* futter: [Name, Bild] – jedes Futter gehört genau einem Tier, sonst hätte
-     Futterzeit zwei richtige Antworten. laut unter 1 für Rufe, die ein Baby
-     erschrecken können, auch wenn die Aufnahmen gleich laut gemacht sind. */
-  const TIERE = [
-    { id: 'kuh', name: 'Kuh', der: 'die', ruf: 'Muh', bild: '🐮', farbe: '#9BC27A', futter: ['Gras', '🌿'] },
-    { id: 'pferd', name: 'Pferd', der: 'das', ruf: 'Wieher', bild: '🐴', farbe: '#C79A6B', futter: ['Apfel', '🍎'] },
-    { id: 'schwein', name: 'Schwein', der: 'das', ruf: 'Oink', bild: '🐷', farbe: '#F0A7B8', futter: ['Mais', '🌽'] },
-    { id: 'schaf', name: 'Schaf', der: 'das', ruf: 'Mäh', bild: '🐑', farbe: '#C9D3DC', futter: null },
-    { id: 'ziege', name: 'Ziege', der: 'die', ruf: 'Meck-meck', bild: '🐐', farbe: '#D9C7A0', futter: null },
-    { id: 'huhn', name: 'Huhn', der: 'das', ruf: 'Gack-gack', bild: '🐔', farbe: '#F2C96B', futter: ['Körner', '🌾'] },
-    { id: 'hahn', name: 'Hahn', der: 'der', ruf: 'Kikeriki', bild: '🐓', farbe: '#E68A5C', futter: null },
-    { id: 'ente', name: 'Ente', der: 'die', ruf: 'Quak-quak', bild: '🦆', farbe: '#8FC3A8', futter: null },
-    { id: 'hund', name: 'Hund', der: 'der', ruf: 'Wau-wau', bild: '🐶', farbe: '#D8B384', futter: ['Knochen', '🦴'] },
-    { id: 'katze', name: 'Katze', der: 'die', ruf: 'Miau', bild: '🐱', farbe: '#F2B880', futter: ['Fisch', '🐟'] },
-    { id: 'maus', name: 'Maus', der: 'die', ruf: 'Piep', bild: '🐭', farbe: '#BFC4CC', futter: ['Käse', '🧀'] },
-    { id: 'hase', name: 'Hase', der: 'der', ruf: null, bild: '🐰', farbe: '#E6D3C3', futter: ['Möhre', '🥕'] },
-    { id: 'frosch', name: 'Frosch', der: 'der', ruf: 'Quak', bild: '🐸', farbe: '#9CCB6E', futter: ['Fliege', '🪰'] },
-    { id: 'vogel', name: 'Vogel', der: 'der', ruf: 'Tirili', bild: '🐦', farbe: '#8EC5E8', futter: ['Wurm', '🪱'] },
-    { id: 'eule', name: 'Eule', der: 'die', ruf: 'Schuhu', bild: '🦉', farbe: '#B59A7A', futter: null },
-    { id: 'biene', name: 'Biene', der: 'die', ruf: 'Summ', bild: '🐝', farbe: '#F5D55C', futter: ['Blume', '🌻'] },
-    { id: 'eichhoernchen', name: 'Eichhörnchen', der: 'das', ruf: null, bild: '🐿️', farbe: '#D9955B', futter: ['Nuss', '🌰'] },
-    { id: 'wolf', name: 'Wolf', der: 'der', ruf: 'Auuu', bild: '🐺', farbe: '#A7B0BC', futter: null, laut: 0.8 },
-    { id: 'loewe', name: 'Löwe', der: 'der', ruf: 'Roar', bild: '🦁', farbe: '#E9B654', futter: ['Fleisch', '🍖'], laut: 0.7 },
-    { id: 'elefant', name: 'Elefant', der: 'der', ruf: 'Törö', bild: '🐘', farbe: '#AEB8C6', futter: ['Erdnuss', '🥜'], laut: 0.85 },
-    { id: 'affe', name: 'Affe', der: 'der', ruf: 'Uh-uh-ah', bild: '🐵', farbe: '#C9A27E', futter: ['Banane', '🍌'] },
+  /* Die Orte, nach denen Tierstimmen blättert, in dieser Reihenfolge. */
+  const ORTE = [
+    { id: 'hof', name: 'Bauernhof' },
+    { id: 'wald', name: 'Wald und Wiese' },
+    { id: 'zoo', name: 'Zoo' },
+    { id: 'wasser', name: 'Am Wasser' },
   ];
 
-  /* Für diese Tiere liegt eine Aufnahme in toene/<id>.mp3. Die übrigen haben
-     keinen Ruf, den ein Kind erkennt, oder keine freie Aufnahme, die taugt. */
-  const MIT_TON = new Set(['kuh', 'pferd', 'schwein', 'schaf', 'ziege', 'huhn', 'hahn', 'ente', 'hund',
-    'katze', 'frosch', 'vogel', 'eule', 'biene', 'wolf', 'loewe', 'elefant', 'affe']);
+  /* futter: [Name, Bild] – jedes Futter gehört genau einem Tier, sonst hätte
+     Futterzeit zwei richtige Antworten. laut unter 1 für Rufe, die ein Baby
+     erschrecken können, auch wenn die Aufnahmen gleich laut gemacht sind.
+     neuesEmoji: Das Bild kam erst mit Unicode 15 (2022), siehe emojiDa. */
+  const ALLE = [
+    { id: 'kuh', name: 'Kuh', der: 'die', ruf: 'Muh', bild: '🐮', farbe: '#9BC27A', ort: 'hof', futter: ['Gras', '🌿'] },
+    { id: 'pferd', name: 'Pferd', der: 'das', ruf: 'Wieher', bild: '🐴', farbe: '#C79A6B', ort: 'hof', futter: ['Apfel', '🍎'] },
+    { id: 'schwein', name: 'Schwein', der: 'das', ruf: 'Oink', bild: '🐷', farbe: '#F0A7B8', ort: 'hof', futter: ['Mais', '🌽'] },
+    { id: 'schaf', name: 'Schaf', der: 'das', ruf: 'Mäh', bild: '🐑', farbe: '#C9D3DC', ort: 'hof', futter: null },
+    { id: 'ziege', name: 'Ziege', der: 'die', ruf: 'Meck-meck', bild: '🐐', farbe: '#D9C7A0', ort: 'hof', futter: null },
+    { id: 'huhn', name: 'Huhn', der: 'das', ruf: 'Gack-gack', bild: '🐔', farbe: '#F2C96B', ort: 'hof', futter: ['Körner', '🌾'] },
+    { id: 'hahn', name: 'Hahn', der: 'der', ruf: 'Kikeriki', bild: '🐓', farbe: '#E68A5C', ort: 'hof', futter: null },
+    { id: 'ente', name: 'Ente', der: 'die', ruf: 'Quak-quak', bild: '🦆', farbe: '#8FC3A8', ort: 'wasser', futter: null },
+    { id: 'hund', name: 'Hund', der: 'der', ruf: 'Wau-wau', bild: '🐶', farbe: '#D8B384', ort: 'hof', futter: ['Knochen', '🦴'] },
+    { id: 'katze', name: 'Katze', der: 'die', ruf: 'Miau', bild: '🐱', farbe: '#F2B880', ort: 'hof', futter: ['Milch', '🥛'] },
+    { id: 'esel', name: 'Esel', der: 'der', ruf: 'I-aah', bild: '🫏', farbe: '#B3AA9E', ort: 'hof', futter: null, laut: 0.85, neuesEmoji: true },
+    { id: 'gans', name: 'Gans', der: 'die', ruf: 'Schnatter', bild: '🪿', farbe: '#CFD8E0', ort: 'hof', futter: null, neuesEmoji: true },
+    { id: 'truthahn', name: 'Truthahn', der: 'der', ruf: 'Kolle-kolle', bild: '🦃', farbe: '#C98A6B', ort: 'hof', futter: null },
+    { id: 'maus', name: 'Maus', der: 'die', ruf: 'Piep', bild: '🐭', farbe: '#BFC4CC', ort: 'wald', futter: ['Käse', '🧀'] },
+    { id: 'hase', name: 'Hase', der: 'der', ruf: null, bild: '🐰', farbe: '#E6D3C3', ort: 'wald', futter: ['Möhre', '🥕'] },
+    { id: 'frosch', name: 'Frosch', der: 'der', ruf: 'Quak', bild: '🐸', farbe: '#9CCB6E', ort: 'wald', futter: ['Fliege', '🪰'] },
+    { id: 'vogel', name: 'Vogel', der: 'der', ruf: 'Tirili', bild: '🐦', farbe: '#8EC5E8', ort: 'wald', futter: ['Wurm', '🪱'] },
+    { id: 'eule', name: 'Eule', der: 'die', ruf: 'Schuhu', bild: '🦉', farbe: '#B59A7A', ort: 'wald', futter: null },
+    { id: 'biene', name: 'Biene', der: 'die', ruf: 'Summ', bild: '🐝', farbe: '#F5D55C', ort: 'wald', futter: ['Blume', '🌻'] },
+    { id: 'eichhoernchen', name: 'Eichhörnchen', der: 'das', ruf: null, bild: '🐿️', farbe: '#D9955B', ort: 'wald', futter: ['Nuss', '🌰'] },
+    { id: 'wolf', name: 'Wolf', der: 'der', ruf: 'Auuu', bild: '🐺', farbe: '#A7B0BC', ort: 'wald', futter: null, laut: 0.8 },
+    { id: 'taube', name: 'Taube', der: 'die', ruf: 'Gurr-gurr', bild: '🕊️', farbe: '#B8C0CC', ort: 'wald', futter: null },
+    { id: 'hirsch', name: 'Hirsch', der: 'der', ruf: 'Öööh', bild: '🦌', farbe: '#C9A078', ort: 'wald', futter: null, laut: 0.85 },
+    { id: 'grille', name: 'Grille', der: 'die', ruf: 'Zirp-zirp', bild: '🦗', farbe: '#A7C46E', ort: 'wald', futter: null },
+    { id: 'loewe', name: 'Löwe', der: 'der', ruf: 'Roar', bild: '🦁', farbe: '#E9B654', ort: 'zoo', futter: ['Fleisch', '🍖'], laut: 0.7 },
+    { id: 'elefant', name: 'Elefant', der: 'der', ruf: 'Törö', bild: '🐘', farbe: '#AEB8C6', ort: 'zoo', futter: ['Erdnuss', '🥜'], laut: 0.85 },
+    { id: 'affe', name: 'Affe', der: 'der', ruf: 'Uh-uh-ah', bild: '🐵', farbe: '#C9A27E', ort: 'zoo', futter: ['Banane', '🍌'] },
+    { id: 'tiger', name: 'Tiger', der: 'der', ruf: 'Grrr', bild: '🐯', farbe: '#F0A45A', ort: 'zoo', futter: null, laut: 0.8 },
+    { id: 'papagei', name: 'Papagei', der: 'der', ruf: 'Kräh', bild: '🦜', farbe: '#7CCB8F', ort: 'zoo', futter: ['Trauben', '🍇'], laut: 0.85 },
+    { id: 'pfau', name: 'Pfau', der: 'der', ruf: 'Kiauu', bild: '🦚', farbe: '#5FB7B0', ort: 'zoo', futter: null, laut: 0.85 },
+    { id: 'pinguin', name: 'Pinguin', der: 'der', ruf: 'Trööt', bild: '🐧', farbe: '#9FB4C9', ort: 'wasser', futter: ['Fisch', '🐟'] },
+    { id: 'wal', name: 'Wal', der: 'der', ruf: 'Uuuuh', bild: '🐳', farbe: '#7FA7D9', ort: 'wasser', futter: ['Krill', '🦐'] },
+    { id: 'krokodil', name: 'Krokodil', der: 'das', ruf: 'Rrrooah', bild: '🐊', farbe: '#8DB36E', ort: 'wasser', futter: null, laut: 0.8 },
+  ];
 
-  for (const t of TIERE) {
-    t.ton = MIT_TON.has(t.id) && !!t.ruf;
+  /* Wie viele Aufnahmen je Tier in toene/ liegen: <id>.mp3, <id>-2.mp3, …
+     Tiere ohne Eintrag haben keinen Ruf, den ein Kind erkennt, oder keine
+     freie Aufnahme, die taugt. Herkunft jeder Datei steht in NOTICE. */
+  const AUFNAHMEN = {
+    kuh: 1, pferd: 2, schwein: 1, schaf: 1, ziege: 1, huhn: 1, hahn: 1, ente: 1, hund: 3, katze: 3,
+    esel: 1, gans: 1, truthahn: 1,
+    frosch: 1, vogel: 1, eule: 1, biene: 1, wolf: 1, taube: 1, hirsch: 1, grille: 1,
+    loewe: 1, elefant: 1, affe: 1, tiger: 1, papagei: 1, pfau: 1,
+    pinguin: 1, wal: 1, krokodil: 1,
+  };
+
+  const EMOJI_SCHRIFT = "'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif";
+
+  /* Kann das Gerät dieses Emoji zeichnen? Fehlt es in der Schrift, malt der
+     Browser ein einfarbiges Ersatzkästchen – ein Kind sähe ein leeres Feld,
+     das ruft. Also: auf eine kleine Leinwand malen und nach Farbe suchen.
+     Schlägt die Probe selbst fehl, gilt das Emoji als da. */
+  function emojiDa(zeichen) {
+    try {
+      const leinwand = document.createElement('canvas');
+      leinwand.width = 32;
+      leinwand.height = 32;
+      const ctx = leinwand.getContext('2d', { willReadFrequently: true });
+      if (!ctx) return true;
+      ctx.textBaseline = 'top';
+      ctx.font = '26px ' + EMOJI_SCHRIFT;
+      ctx.fillStyle = '#000';
+      ctx.fillText(zeichen, 2, 2);
+      const d = ctx.getImageData(0, 0, 32, 32).data;
+      for (let i = 0; i < d.length; i += 4) {
+        if (d[i + 3] > 128 && (Math.abs(d[i] - d[i + 1]) > 24 || Math.abs(d[i + 1] - d[i + 2]) > 24)) return true;
+      }
+      return false;
+    } catch {
+      return true;
+    }
+  }
+
+  for (const t of ALLE) {
+    const n = t.ruf ? AUFNAHMEN[t.id] || 0 : 0;
+    t.aufnahmen = Array.from({ length: n }, (_, i) => (i ? t.id + '-' + (i + 1) : t.id));
+    t.ton = n > 0;
     if (!t.laut) t.laut = 1;
   }
+  const TIERE = ALLE.filter((t) => !t.neuesEmoji || emojiDa(t.bild));
 
   const nachId = (id) => TIERE.find((t) => t.id === id) || null;
   const gross = (w) => w.charAt(0).toUpperCase() + w.slice(1);
@@ -155,34 +212,61 @@ var Tiere = (() => {
     function still() {
       nummer += 1;
       if (!aktuell || !ac) return;
-      const { quelle, huelle } = aktuell;
-      aktuell = null;
       const t = ac.currentTime;
-      huelle.gain.cancelScheduledValues(t);
-      huelle.gain.setValueAtTime(huelle.gain.value, t);
-      huelle.gain.linearRampToValueAtTime(0, t + 0.05);
-      try {
-        quelle.stop(t + 0.06);
-      } catch { /* schon zu Ende */ }
+      for (const { quelle, huelle } of aktuell) {
+        huelle.gain.cancelScheduledValues(t);
+        huelle.gain.setValueAtTime(huelle.gain.value, t);
+        huelle.gain.linearRampToValueAtTime(0, t + 0.05);
+        try {
+          quelle.stop(t + 0.06);
+        } catch { /* schon zu Ende */ }
+      }
+      aktuell = null;
     }
 
-    /** Spielt den Ruf eines Tiers. Liefert die Länge in Sekunden, 0 ohne Ton. */
-    async function tier(id, laut = 1) {
+    /* Welche Aufnahme eines Tiers als Nächstes tönt: zufällig, aber nie
+       zweimal hintereinander dieselbe – beim zwanzigsten Tipp auf den Hund
+       soll er nicht zwanzigmal gleich bellen. */
+    const zuletzt = new Map();
+    function aufnahme(id) {
+      const t = nachId(id);
+      if (!t || !t.aufnahmen.length) return id;
+      if (t.aufnahmen.length === 1) return t.aufnahmen[0];
+      const andere = t.aufnahmen.filter((a) => a !== zuletzt.get(id));
+      const a = andere[Math.floor(Math.random() * andere.length)];
+      zuletzt.set(id, a);
+      return a;
+    }
+
+    /** Spielt einen Ruf des Tiers, auf Wunsch mit dem gesprochenen Namen
+        davor. Liefert, wie lange beides zusammen dauert, in Sekunden; 0 ohne
+        Ton. Fehlt die Ansage eines Tiers, kommt nur der Ruf. */
+    async function tier(id, laut = 1, mitName = false) {
       still();
       const meine = nummer;
-      const p = await puffer(id);
-      if (!p || meine !== nummer || !ac) return 0;
-      const quelle = ac.createBufferSource();
-      quelle.buffer = p;
-      const huelle = ac.createGain();
-      huelle.gain.value = laut;
-      quelle.connect(huelle);
-      huelle.connect(haupt);
-      const eintrag = { quelle, huelle };
-      quelle.onended = () => { if (aktuell === eintrag) aktuell = null; };
+      const [name, ruf] = await Promise.all([mitName ? puffer('name-' + id) : null, puffer(aufnahme(id))]);
+      if (meine !== nummer || !ac || (!name && !ruf)) return 0;
+      // Beide Stücke hängen an der Uhr des AudioContext, nicht an einem Timer:
+      // Der Ruf setzt genau nach dem Namen ein, und still() erwischt beide –
+      // auch den Ruf, der noch gar nicht begonnen hat.
+      const beginn = ac.currentTime + 0.02;
+      let zeit = beginn;
+      const eintrag = [];
+      for (const [puf, pegel, pause] of [[name, 1, 0.2], [ruf, laut, 0]]) {
+        if (!puf) continue;
+        const quelle = ac.createBufferSource();
+        quelle.buffer = puf;
+        const huelle = ac.createGain();
+        huelle.gain.value = pegel;
+        quelle.connect(huelle);
+        huelle.connect(haupt);
+        quelle.start(zeit);
+        eintrag.push({ quelle, huelle });
+        zeit += puf.duration + pause;
+      }
+      eintrag[eintrag.length - 1].quelle.onended = () => { if (aktuell === eintrag) aktuell = null; };
       aktuell = eintrag;
-      quelle.start();
-      return p.duration;
+      return zeit - beginn;
     }
 
     function ton(von, bis, zeit, typ, laut, spaeter = 0) {
@@ -231,7 +315,12 @@ var Tiere = (() => {
 
     return {
       /** Holt die Aufnahmen schon einmal, ohne Ton – dekodiert wird beim ersten Ruf. */
-      vorladen: (ids) => { for (const id of ids) holen(id); },
+      vorladen: (ids) => {
+        for (const id of ids) {
+          const t = nachId(id);
+          for (const a of t && t.aufnahmen.length ? t.aufnahmen : [id]) holen(a);
+        }
+      },
       wecken: kontext,
       tier,
       still,
@@ -292,6 +381,8 @@ var Tiere = (() => {
    * opt.satz               ein Satz, was im Spiel passiert
    * opt.stufen             optional [{ wert, text }] – die Eltern wählen vorher
    * opt.stufe              Vorgabe, wenn nichts gemerkt ist
+   * opt.schalter           optional [{ id, text, an }] – Ein/Aus auf dem Vorhang,
+   *                        gemerkt; das Spiel liest h.schalter[id]
    * opt.toene              ids, deren Aufnahmen schon vorab geholt werden
    * opt.brauchtTon         ohne Web Audio bleibt „Los" aus
    * opt.spielen(buehne, h) baut das Spiel ins Zimmer, gibt optional { ende() }
@@ -304,11 +395,19 @@ var Tiere = (() => {
   function kinderzimmer(boden, s, opt) {
     const el = s.el;
     const klang = klangwerk();
-    const gemerkt = s.erinnert();
+    const gemerkt = s.erinnert() || {};
     let stufe = null;
     if (opt.stufen) {
-      stufe = gemerkt && opt.stufen.some((x) => x.wert === gemerkt.stufe) ? gemerkt.stufe : opt.stufe;
+      stufe = opt.stufen.some((x) => x.wert === gemerkt.stufe) ? gemerkt.stufe : opt.stufe;
     }
+    /* Schalter der Eltern, etwa die Ansage des Namens. Aus dem Speicher gilt
+       nur ein echter Wahrheitswert, alles andere ergibt die Vorgabe. */
+    const schalter = {};
+    for (const sch of opt.schalter || []) {
+      const alt = gemerkt.schalter && gemerkt.schalter[sch.id];
+      schalter[sch.id] = typeof alt === 'boolean' ? alt : sch.an;
+    }
+    const merken = () => s.merken({ stufe, schalter });
     let offen = null;
 
     /* ------------------------------------------------------------ Vorhang */
@@ -333,7 +432,7 @@ var Tiere = (() => {
         b.setAttribute('role', 'radio');
         b.addEventListener('click', () => {
           stufe = o.wert;
-          s.merken({ stufe });
+          merken();
           markieren();
         });
         wahl.append(b);
@@ -342,6 +441,22 @@ var Tiere = (() => {
       const markieren = () => knoepfe.forEach((b, i) => b.setAttribute('aria-checked', String(opt.stufen[i].wert === stufe)));
       markieren();
       vorhang.append(wahl);
+    }
+
+    for (const sch of opt.schalter || []) {
+      const b = el('button', 'kz-schalter');
+      b.type = 'button';
+      b.setAttribute('role', 'switch');
+      b.dataset.schalter = sch.id;
+      b.append(el('span', 'kz-schalter-text', sch.text), el('span', 'kz-schalter-knopf'));
+      const zeigen = () => b.setAttribute('aria-checked', String(schalter[sch.id]));
+      b.addEventListener('click', () => {
+        schalter[sch.id] = !schalter[sch.id];
+        merken();
+        zeigen();
+      });
+      zeigen();
+      vorhang.append(b);
     }
 
     const los = el('button', 'knopf knopf--voll kz-los', 'Los geht’s');
@@ -483,6 +598,7 @@ var Tiere = (() => {
       const h = {
         klang,
         stufe,
+        schalter: { ...schalter },
         uhr,
         spaeter,
         abbestellen,
@@ -649,7 +765,7 @@ var Tiere = (() => {
   }
 
   return {
-    TIERE, nachId, mischen, zahl, gross, mitArtikel, satz, anstossen,
+    TIERE, ORTE, nachId, emojiDa, mischen, zahl, gross, mitArtikel, satz, anstossen,
     kachel, futterKachel, kinderzimmer, klangDa: !!AUDIO,
   };
 })();

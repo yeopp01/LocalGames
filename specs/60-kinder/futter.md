@@ -76,5 +76,6 @@ zwischen zwei Tellern den falschen erwischt.
 Tippen auf den Teller ist kein Notbehelf, sondern der Weg für Kinder, die noch
 nicht ziehen: Bei einem Teller ist jedes Tippen richtig.
 
-Das Futter ist eine Bildgeschichte, keine Ernährungslehre: Die Katze bekommt
-Fisch, der Löwe Fleisch, der Elefant Erdnüsse.
+Das Futter ist eine Bildgeschichte, keine Ernährungslehre: Der Löwe bekommt
+Fleisch, der Elefant Erdnüsse, der Wal Krill. Die Katze bekommt Milch, seit
+der Pinguin den Fisch braucht – jedes Futter darf nur einem Tier gehören.

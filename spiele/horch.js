@@ -7,7 +7,10 @@
    Ruf wieder. Rot und Fehlerton gibt es nicht.
 
    Was leicht zu verwechseln ist, steht nie zusammen zur Wahl: Schaf und Ziege
-   meckern fast gleich, Huhn und Hahn sehen als Emoji fast gleich aus. */
+   meckern fast gleich, Huhn und Hahn sehen als Emoji fast gleich aus. Beim
+   Klang zählt, was ein Kind hört, nicht was das Tier ist – der Pinguin iaht
+   wie ein Esel, der Pfau schreit wie eine Katze, der Wal heult wie ein Wolf.
+   Paare mit einem Tier, das auf diesem Gerät fehlt, stören nicht. */
 
 (() => {
   const JE_RUNDE = 6;
@@ -16,7 +19,12 @@
     { wert: 3, text: 'Drei Tiere' },
     { wert: 4, text: 'Vier Tiere' },
   ];
-  const VERWECHSELBAR = [['schaf', 'ziege'], ['huhn', 'hahn']];
+  const VERWECHSELBAR = [
+    ['schaf', 'ziege'], ['huhn', 'hahn'], ['huhn', 'truthahn'],
+    ['loewe', 'tiger'], ['loewe', 'krokodil'], ['katze', 'tiger'], ['katze', 'pfau'],
+    ['pferd', 'esel'], ['pinguin', 'esel'], ['ente', 'gans'],
+    ['kuh', 'hirsch'], ['eule', 'taube'], ['wolf', 'wal'],
+  ];
   const verwechselbar = (a, b) =>
     VERWECHSELBAR.some(([x, y]) => (a.id === x && b.id === y) || (a.id === y && b.id === x));
   const LAUTSPRECHER = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" stroke-linejoin="round"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" stroke-linecap="round"/></svg>';

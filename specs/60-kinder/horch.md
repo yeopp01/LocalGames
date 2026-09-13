@@ -18,8 +18,11 @@ so oft man will. Zimmer, Klang und Aufnahmen kommen aus dem Werkzeug
   Eltern „Zwei Tiere", „Drei Tiere" oder „Vier Tiere"; die Wahl bleibt gemerkt.
   Vorgabe sind zwei.
 - **AC-2** `fertig` **Nichts Verwechselbares** — Zur Wahl stehen nur Tiere
-  mit Aufnahme. Schaf und Ziege stehen nie zusammen, Huhn und Hahn auch nicht.
-  Eine Runde fragt sechs verschiedene Tiere.
+  mit Aufnahme. Nie zusammen stehen Tiere, die sich im Bild oder im Klang zu
+  sehr ähneln: Schaf und Ziege, Huhn mit Hahn oder Truthahn, Löwe mit Tiger
+  oder Krokodil, Katze mit Tiger oder Pfau, Pferd und Esel, Pinguin und Esel,
+  Ente und Gans, Kuh und Hirsch, Eule und Taube, Wolf und Wal. Eine Runde
+  fragt sechs verschiedene Tiere.
 - **AC-3** `fertig` **Ruf kommt von selbst** — 0,7 s nachdem die
   Tiere erschienen sind, ruft das gesuchte Tier. Der Lautsprecher spielt den Ruf
   auf jeden Tipp wieder und pocht, solange er tönt.
@@ -64,4 +67,6 @@ aus dem Fehlgriff, wie die Ente klingt, und das Spiel bleibt ein Spiel.
 
 Schaf und Ziege meckern so ähnlich, dass auch Erwachsene raten. Huhn und Hahn
 klingen verschieden, sehen als Emoji aber fast gleich aus – das Kind hätte
-recht und würde doch falsch tippen.
+recht und würde doch falsch tippen. Beim Klang zählt, was ein Kind hört, nicht
+was das Tier ist: Der afrikanische Pinguin iaht wie ein Esel, der Pfau schreit
+wie eine Katze, und der Tiger unserer Aufnahme jault eher, als dass er brüllt.

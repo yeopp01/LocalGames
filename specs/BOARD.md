@@ -6,7 +6,7 @@
 Eine Zeile je Akzeptanzkriterium. Gepflegt wird der Status in der Spec
 selbst, hier steht er zusammengefasst.
 
-**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 1 zurückgestellt · 538 fertig
+**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 1 zurückgestellt · 544 fertig
 
 ## Nach Spezifikation
 
@@ -45,8 +45,8 @@ selbst, hier steht er zusammengefasst.
 | [Schlange](50-geschick/snake.md)                   | -         | -       | -     | -              | 12     |
 | [Futterzeit](60-kinder/futter.md)                  | -         | -       | -     | -              | 9      |
 | [Horch mal](60-kinder/horch.md)                    | -         | -       | -     | -              | 9      |
-| [Tiere](60-kinder/tiere.md)                        | -         | -       | -     | -              | 16     |
-| [Tierstimmen](60-kinder/tierstimmen.md)            | -         | -       | -     | -              | 6      |
+| [Tiere](60-kinder/tiere.md)                        | -         | -       | -     | -              | 20     |
+| [Tierstimmen](60-kinder/tierstimmen.md)            | -         | -       | -     | -              | 8      |
 
 ## In Arbeit (2)
 
@@ -61,7 +61,7 @@ selbst, hier steht er zusammengefasst.
 | --------- | ------------------------------------ | -------------------------- | -------------------------------------------- |
 | verraeter | [AC-13](40-zu-mehreren/verraeter.md) | Stimmen übers Netz sammeln | braucht eine Verbindung zwischen den Geräten |
 
-## Fertig (538)
+## Fertig (544)
 
 | Spec          | AC                                          | Titel                                  | Anmerkung                                       |
 | ------------- | ------------------------------------------- | -------------------------------------- | ----------------------------------------------- |
@@ -597,9 +597,15 @@ selbst, hier steht er zusammengefasst.
 | tiere         | [AC-14](60-kinder/tiere.md)                 | Schließen räumt auf                    | Kinderzimmer                                    |
 | tiere         | [AC-15](60-kinder/tiere.md)                 | Partien ohne Urteil                    | Gemeinsamer Vertrag der Kinderspiele            |
 | tiere         | [AC-16](60-kinder/tiere.md)                 | Kein Fehlerton, kein Rot               | Gemeinsamer Vertrag der Kinderspiele            |
+| tiere         | [AC-17](60-kinder/tiere.md)                 | Mehrere Aufnahmen je Tier              | Tiere und Aufnahmen                             |
+| tiere         | [AC-18](60-kinder/tiere.md)                 | Junge Emoji nur, wo sichtbar           | Tiere und Aufnahmen                             |
+| tiere         | [AC-19](60-kinder/tiere.md)                 | Name und Ruf nahtlos                   | Klang                                           |
+| tiere         | [AC-20](60-kinder/tiere.md)                 | Schalter der Eltern                    | Vorhang                                         |
 | tierstimmen   | [AC-1](60-kinder/tierstimmen.md)            | Sechs Tiere je Seite                   | Tiere                                           |
 | tierstimmen   | [AC-2](60-kinder/tierstimmen.md)            | Tipp lässt rufen                       | Tiere                                           |
 | tierstimmen   | [AC-3](60-kinder/tierstimmen.md)            | Blättern im Kreis                      | Tiere                                           |
 | tierstimmen   | [AC-4](60-kinder/tierstimmen.md)            | Jede Taste ruft ein Tier               | Tiere                                           |
 | tierstimmen   | [AC-5](60-kinder/tierstimmen.md)            | Ein Besuch ist eine Runde              | Statistik                                       |
 | tierstimmen   | [AC-6](60-kinder/tierstimmen.md)            | Tipps und Lieblingstier                | Statistik                                       |
+| tierstimmen   | [AC-7](60-kinder/tierstimmen.md)            | Seiten nach Orten                      | Tiere                                           |
+| tierstimmen   | [AC-8](60-kinder/tierstimmen.md)            | Name vor dem Ruf                       | Tiere                                           |

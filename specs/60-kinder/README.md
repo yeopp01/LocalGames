@@ -11,7 +11,7 @@ nur Erwachsene wieder herausfinden.
 | ----------------------------- | ------------ |
 | [Futterzeit](futter.md)       | 9/9 fertig   |
 | [Horch mal](horch.md)         | 9/9 fertig   |
-| [Tiere](tiere.md)             | 16/16 fertig |
-| [Tierstimmen](tierstimmen.md) | 6/6 fertig   |
+| [Tiere](tiere.md)             | 20/20 fertig |
+| [Tierstimmen](tierstimmen.md) | 8/8 fertig   |
 
 <!-- board:end -->

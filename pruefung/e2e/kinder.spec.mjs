@@ -118,7 +118,9 @@ test('Tierstimmen: ein Besuch mit Tipps wird eine Runde ohne Urteil, einer ohne 
    dekodieren – kurz und mit Ton darin (tiere.md AC-2, AC-3). */
 test('jede Aufnahme liegt vor, steht im Lager und lässt sich abspielen', async ({ page }) => {
   await oeffnen(page, '#/spiel/tierstimmen');
-  const ids = await page.evaluate(() => Tiere.TIERE.filter((t) => t.ton).map((t) => t.id));
+  // Jede einzelne Aufnahme, auch die zweite und dritte eines Tiers, und jede
+  // Ansage des Namens.
+  const ids = await page.evaluate(() => Tiere.TIERE.flatMap((t) => (t.ton ? [...t.aufnahmen, 'name-' + t.id] : [])));
   expect(ids.length).toBeGreaterThan(8);
   for (const id of ids) expect(GRUNDBESTAND, id).toContain('./toene/' + id + '.mp3');
 

@@ -1,7 +1,7 @@
 # Tiere
 
 **Datei:** [`spiele/tiere.js`](../../spiele/tiere.js)
-**Stand:** 16/16 fertig
+**Stand:** 20/20 fertig
 
 ## Zweck
 
@@ -16,9 +16,9 @@ wieder herausfinden –, steht hier einmal. Es kennt kein einzelnes Spiel.
 ### Tiere und Aufnahmen
 
 - **AC-1** `fertig` **Jedes Tier vollständig** — Jedes Tier hat Kennung,
-  Name mit Artikel, ein Emoji als Bild, das seit spätestens Unicode 13 (2020)
-  existiert, und eine Farbe. Einen Ton hat nur ein Tier mit Ruf und Aufnahme.
-  Jedes Futter gehört genau einem Tier.
+  Name mit Artikel, ein Emoji als Bild – bis Unicode 13 (2020), jüngere nur
+  mit der Prüfung aus AC-18 –, einen Ort und eine Farbe. Einen Ton hat nur ein
+  Tier mit Ruf und Aufnahme. Jedes Futter gehört genau einem Tier.
 - **AC-2** `fertig` **Aufnahmen frei und im Lager** — Jede Aufnahme liegt
   als `toene/<id>.mp3` vor, steht in `GRUNDBESTAND` und in `NOTICE` mit
   Quelle, Urheber und Lizenz. Erlaubt sind nur gemeinfreie Aufnahmen, CC0,
@@ -28,6 +28,13 @@ wieder herausfinden –, steht hier einmal. Es kennt kein einzelnes Spiel.
   kurz (unter 3,6 s), auf etwa −16 LUFS angeglichen und übersteuert nicht
   (Spitze höchstens −1,5 dBTP). Löwe, Wolf und Elefant spielen zusätzlich
   leiser, weil ihr Ruf auch bei gleicher Lautheit erschreckt.
+- **AC-17** `fertig` **Mehrere Aufnahmen je Tier** — Hat ein Tier mehrere
+  Aufnahmen (`<id>.mp3`, `<id>-2.mp3`, …), tönt bei jedem Ruf zufällig eine
+  davon, nie zweimal hintereinander dieselbe. Vorab geholt werden alle.
+- **AC-18** `fertig` **Junge Emoji nur, wo sichtbar** — Ein Tier, dessen
+  Emoji erst mit Unicode 15 kam, erscheint nur, wenn das Gerät es farbig
+  zeichnet. Sonst fehlt es in allen Kinderspielen, statt als leeres Kästchen
+  zu rufen.
 
 ### Klang
 
@@ -43,6 +50,14 @@ wieder herausfinden –, steht hier einmal. Es kennt kein einzelnes Spiel.
   oder lässt sie sich nicht lesen, bleibt das Tier stumm. Das Spiel läuft
   weiter, nichts wirft, und in der Konsole steht kein Fehler außer dem
   fehlgeschlagenen Laden selbst.
+- **AC-19** `fertig` **Name und Ruf nahtlos** — Ein Spiel kann dem Ruf den
+  gesprochenen Namen mit Artikel voranstellen (`toene/name-<id>.mp3`). Der Ruf
+  beginnt 0,2 s nach dem Ende des Namens; ein neuer Ruf stoppt beide, auch
+  einen Ruf, der noch gar nicht begonnen hat. Fehlt die Ansage eines Tiers,
+  kommt nur der Ruf. Die Ansagen sind mit einer freien Stimme erzeugt, stehen
+  in `NOTICE` und liegen einheitlich knapp unter den Rufen (um −20 LUFS,
+  gemessen mit Stille dahinter; Spitze höchstens −1 dBTP), damit das Tier die
+  Hauptsache bleibt.
 
 ### Vorhang
 
@@ -52,6 +67,10 @@ wieder herausfinden –, steht hier einmal. Es kennt kein einzelnes Spiel.
   „Los geht's" und der Hinweis, wie man beendet und wie man das Handy
   festsetzt („App anheften" unter Android, „Geführter Zugriff" am iPhone).
   Kopfzeile und Zurück funktionieren wie bei jedem Spiel.
+- **AC-20** `fertig` **Schalter der Eltern** — Ein Spiel kann auf dem
+  Vorhang Ein/Aus-Schalter anbieten, für Vorleser als Schalter erkennbar. Die
+  Wahl bleibt gemerkt, auch über Neuladen; ein unlesbarer gemerkter Wert ergibt
+  die Vorgabe. Im Zimmer gibt es keinen Schalter.
 
 ### Kinderzimmer
 
@@ -103,9 +122,10 @@ wieder herausfinden –, steht hier einmal. Es kennt kein einzelnes Spiel.
 
 **Warum Emoji statt Zeichnungen:** Sie sind auf jedem Gerät da, groß, bunt und
 ohne eine einzige Datei. Eine Kuh sieht am iPhone anders aus als unter
-Android, bleibt aber eine Kuh. Esel, Gans und Kuckuck fehlen, weil ihre Emoji
-erst mit Unicode 15 (2022) kamen und auf älteren Geräten als leeres Kästchen
-erscheinen.
+Android, bleibt aber eine Kuh. Esel und Gans kamen erst mit Unicode 15 (2022)
+und erschienen auf älteren Geräten als leeres Kästchen; sie stehen deshalb nur
+da, wo das Gerät sie farbig zeichnet (AC-18). Für den Kuckuck gibt es gar kein
+Emoji, und ein allgemeiner Vogel wäre von der Amsel nicht zu unterscheiden.
 
 **Warum Web Audio statt `<audio>`:** Ein `<audio>` braucht auf manchen
 Handys spürbar, bis es tönt, und ein Kind hat bis dahin schon das nächste
@@ -126,15 +146,25 @@ am iPhone. Der Vorhang sagt das den Eltern.
 **Die Aufnahmen** stammen von Wikimedia Commons, sind auf einen einzigen Ruf
 geschnitten, mono, als MP3 mit 64 kbit/s und auf gleiche Lautheit gebracht
 (gemessen −16,3 bis −17,6 LUFS, das Knabbern −18,3; True Peak überall
-höchstens −1,5 dBTP). Zusammen sind es 19 Dateien und 271 KB. Wer welche
+höchstens −1,5 dBTP). Zusammen sind es 36 Aufnahmen für 30 Tiere und das
+Knabbern, gut 510 KB; Hund und Katze haben je drei, das Pferd zwei. Wer welche
 Aufnahme gemacht hat und unter welcher Lizenz sie steht, steht in
 [`NOTICE`](../../NOTICE); jede Lizenz ist gegen die Commons-API nachgeprüft.
 Verworfen wurden Aufnahmen, deren Hochlader sie als eigenes Werk ausgab,
 obwohl die Quelle eine kommerzielle Geräuschsammlung nennt.
 
-Drei Tiere klingen anders, als das Bild verspricht, weil es nichts Besseres
+Manche Tiere klingen anders, als das Bild verspricht, weil es nichts Besseres
 Freies gab: Die „Biene" ist eine Hummel, der „Frosch" ein knarrender Seefrosch
-statt eines Quak, und das Trompeten des Elefanten ist kurz und leicht
-verrauscht. Für die Maus gibt es auf Commons nur Ultraschall aus dem Labor –
-sie bleibt stumm, ebenso Hase und Eichhörnchen, die keinen Ruf haben, den ein
-Kind kennt.
+statt eines Quak, der Tiger jault eher, als dass er brüllt, die Gans
+schnattert im Chor, und das Trompeten des Elefanten ist kurz und leicht
+verrauscht. Für Maus, Bär, Seehund, Gorilla, Kamel, Delfin, Schlange, Mücke
+und Fliege fand sich keine freie Aufnahme, die taugt – nur Ultraschall aus dem
+Labor, Kampfgebrüll, stumme Zoo-Videos oder Aufnahmen, in denen das Tier kaum
+lauter ist als die Umgebung. Die Maus bleibt deshalb stumm, die anderen
+fehlen; Hase und Eichhörnchen haben keinen Ruf, den ein Kind kennt.
+
+Die gesprochenen Namen (AC-19) sind mit Piper und der Stimme „Thorsten"
+erzeugt, deren Datensatz unter CC0 steht. Gemessen wird ihre Lautheit mit
+einer Sekunde Stille dahinter: Die Namen sind kürzer als das 400-ms-Fenster
+der Messung, und ohne die Stille galt „Der Hund." als unmessbar leise und
+wurde um über 50 dB verstärkt.
