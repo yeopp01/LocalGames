@@ -3,6 +3,47 @@
 
 import { test, expect, SPIELE, VERSION, oeffnen, kachel, partie, gespeichert, blattSchliessen } from './helfer.mjs';
 
+test.describe('Kopfzeile', () => {
+  /* Auf dem Handy lief „Schafkopf" unter fünf Werkzeuge, Statistik und Menü,
+     bei 360 px ragten die Knöpfe aus dem Fenster (auswahl.md AC-17). */
+  test('kein Titel läuft unter die Knöpfe, auch nicht bei 360 px', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 740 });
+    for (const s of SPIELE) {
+      await oeffnen(page, '#/spiel/' + s.id);
+      await expect(page.locator('#kopf-titel')).toHaveText(s.name);
+      // Gepollt, weil nach dem Laden der Schrift noch einmal eingepasst wird.
+      await expect.poll(() => page.evaluate(() => {
+        const name = document.getElementById('kopf-titel');
+        const zeile = document.querySelector('.topbar-row');
+        return {
+          titel: name.scrollWidth <= name.parentElement.clientWidth,
+          zeile: zeile.scrollWidth <= zeile.clientWidth,
+        };
+      }), { message: s.id }).toEqual({ titel: true, zeile: true });
+    }
+  });
+
+  test('was nicht in die Zeile passt, liegt hinter „Weitere Werkzeuge"', async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 740 });
+    await oeffnen(page, '#/spiel/schafkopf');
+    await blattSchliessen(page);
+    const mehr = page.getByRole('button', { name: 'Weitere Werkzeuge' });
+    const menue = page.locator('.kopf-mehr-menue');
+
+    await mehr.click();
+    await expect(menue).toBeVisible();
+    await expect(mehr).toHaveAttribute('aria-expanded', 'true');
+    await page.keyboard.press('Escape');
+    await expect(menue).toBeHidden();
+    await expect(mehr).toBeFocused();
+
+    await mehr.click();
+    await page.getByRole('menuitem', { name: 'Regeln des Rechners' }).click();
+    await expect(menue).toBeHidden();
+    await expect(page.locator('#sheet-spiel')).toBeVisible();
+  });
+});
+
 test.describe('Auswahl', () => {
   test('zeigt jedes angemeldete Spiel als Kachel', async ({ page }) => {
     await oeffnen(page);

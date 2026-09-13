@@ -1,7 +1,7 @@
 # Auswahl und Navigation
 
 **Datei:** [`app.js`](../../app.js), [`index.html`](../../index.html)
-**Stand:** 16/16 fertig
+**Stand:** 17/17 fertig
 
 ## Zweck
 
@@ -83,6 +83,15 @@ Dialog, die alle Spiele benutzen.
   ebenfalls oben, statt die alte Scrollposition wiederherzustellen. Aufgefallen
   bei Damen: Aus der gescrollten Auswahl geöffnet, war die oberste Zeile halb
   abgeschnitten.
+- **AC-17** `fertig` **Kopfzeile passt aufs Handy** — Titel und Unterzeile
+  bleiben einzeilig, und kein Titel läuft unter die Knöpfe. Wird es eng, wird
+  der Titel stufenweise kleiner (bis 17 px); reicht das nicht, wandern die
+  hinteren Werkzeuge – immer mindestens zwei – hinter „Weitere Werkzeuge" in
+  ein Menü, zuletzt endet der Titel mit „…". Das Menü schließt mit einem Tipp
+  daneben, mit Escape oder mit der Wahl eines Eintrags; neu eingepasst wird bei
+  anderer Fensterbreite und sobald die Schrift geladen ist. Aufgefallen bei
+  Schafkopf: Neben fünf Werkzeugen, Statistik und Menü blieben dem Titel auf
+  einem Pixel 7 16 Pixel, bei 360 px ragten die Knöpfe aus dem Fenster.
 
 ## Randfälle
 

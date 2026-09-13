@@ -270,21 +270,96 @@ const Rahmen = (() => {
 
   const buehne = () => document.getElementById('buehne');
 
+  /* Die Kopfzeile teilt sich die Breite eines Handys mit bis zu acht Knöpfen.
+     Bei Schafkopf blieben dem Titel so 16 Pixel, und „Schafkopf" lief unter
+     die Symbole. Deshalb wird eingepasst, in dieser Reihenfolge: Erst wird der
+     Titel kleiner, dann wandern die hinteren Werkzeuge in ein Menü, zuletzt
+     endet der Titel mit „…". Ein einzelnes Werkzeug wandert nie – es tauschte
+     nur seinen Platz mit dem Menüknopf. */
+  let kopfWerkzeuge = [];
+  let kopfBreite = 0;
+  const TITEL_STUFEN = 4;   // die Größen je Stufe stehen im Stylesheet
+
   function kopfSetzen(titel, unter, werkzeuge) {
     document.getElementById('kopf-titel').textContent = titel;
     document.getElementById('kopf-unter').textContent = unter || '';
     document.getElementById('btn-zurueck').hidden = ansicht.name === 'auswahl';
+    kopfWerkzeuge = werkzeuge || [];
+    kopfEinpassen();
+  }
+
+  /* Im Menü trägt der Eintrag dasselbe aria-label wie der Knopf in der Zeile –
+     wer ein Werkzeug über seinen Namen sucht, findet es an beiden Orten. */
+  function werkzeugKnopf(w, imMenue) {
+    const b = el('button', imMenue ? 'kopf-mehr-eintrag' : 'icon-button', null);
+    b.type = 'button';
+    b.setAttribute('aria-label', w.label);
+    b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + w.symbol + '</svg>';
+    if (imMenue) {
+      b.setAttribute('role', 'menuitem');
+      b.append(el('span', null, w.label));
+    }
+    b.addEventListener('click', (e) => { mehrZu(false); w.tun(e); });
+    if (w.marke) b.dataset.marke = w.marke;
+    return b;
+  }
+
+  function kopfBauen(offen) {
     const schacht = document.getElementById('kopf-werkzeuge');
     schacht.replaceChildren();
-    for (const w of werkzeuge || []) {
-      const b = el('button', 'icon-button', null);
-      b.type = 'button';
-      b.setAttribute('aria-label', w.label);
-      b.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' + w.symbol + '</svg>';
-      b.addEventListener('click', w.tun);
-      if (w.marke) b.dataset.marke = w.marke;
-      schacht.append(b);
+    for (const w of kopfWerkzeuge.slice(0, offen)) schacht.append(werkzeugKnopf(w, false));
+    if (offen >= kopfWerkzeuge.length) return;
+
+    const huelle = el('div', 'kopf-mehr');
+    const knopf = el('button', 'icon-button kopf-mehr-knopf', null);
+    knopf.type = 'button';
+    knopf.setAttribute('aria-label', 'Weitere Werkzeuge');
+    knopf.setAttribute('aria-haspopup', 'menu');
+    knopf.setAttribute('aria-expanded', 'false');
+    knopf.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+      + '<circle cx="5.5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="18.5" cy="12" r="1.9"/></svg>';
+    const menue = el('div', 'kopf-mehr-menue');
+    menue.setAttribute('role', 'menu');
+    menue.hidden = true;
+    for (const w of kopfWerkzeuge.slice(offen)) menue.append(werkzeugKnopf(w, true));
+    knopf.addEventListener('click', () => (menue.hidden ? mehrAuf() : mehrZu(true)));
+    huelle.append(knopf, menue);
+    schacht.append(huelle);
+  }
+
+  function kopfEinpassen() {
+    kopfBreite = window.innerWidth;
+    const name = document.getElementById('kopf-titel');
+    const platz = name.parentElement;
+    const n = kopfWerkzeuge.length;
+    const aufteilungen = [n];
+    for (let offen = n - 2; offen >= 0; offen -= 1) aufteilungen.push(offen);
+    for (const offen of aufteilungen) {
+      kopfBauen(offen);
+      for (let stufe = 0; stufe < TITEL_STUFEN; stufe += 1) {
+        name.dataset.stufe = String(stufe);
+        if (name.scrollWidth <= platz.clientWidth) return;
+      }
     }
+    // Passt nichts, bleibt die engste Fassung stehen, und der Titel endet mit „…".
+  }
+
+  function mehrAuf() {
+    const knopf = document.querySelector('.kopf-mehr-knopf');
+    const menue = document.querySelector('.kopf-mehr-menue');
+    if (!knopf) return;
+    menue.hidden = false;
+    knopf.setAttribute('aria-expanded', 'true');
+    menue.querySelector('button').focus();
+  }
+
+  function mehrZu(fokusZurueck) {
+    const knopf = document.querySelector('.kopf-mehr-knopf');
+    const menue = document.querySelector('.kopf-mehr-menue');
+    if (!knopf || menue.hidden) return;
+    menue.hidden = true;
+    knopf.setAttribute('aria-expanded', 'false');
+    if (fokusZurueck) knopf.focus();
   }
 
   /* Ein offenes Blatt gehört zu der Ansicht, aus der es kam – seine Knöpfe
@@ -674,6 +749,31 @@ const Rahmen = (() => {
     });
     document.getElementById('btn-einstellungen')
       .addEventListener('click', einstellungenZeigen);
+
+    /* Eingepasst wird neu, wenn sich die Breite ändert – auf dem Handy feuert
+       resize auch beim Ein- und Ausfahren der Adressleiste, und dabei soll ein
+       offenes Menü nicht zugehen. Und sobald die eigene Schrift da ist: mit der
+       Ersatzschrift gemessen, stimmen die Breiten nicht. */
+    window.addEventListener('resize', () => {
+      if (window.innerWidth !== kopfBreite) kopfEinpassen();
+    });
+    if (document.fonts) {
+      document.fonts.ready.then(kopfEinpassen);
+      document.fonts.addEventListener('loadingdone', kopfEinpassen);
+    }
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.kopf-mehr')) mehrZu(false);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') { mehrZu(true); return; }
+      const menue = document.querySelector('.kopf-mehr-menue');
+      if (!menue || menue.hidden || (e.key !== 'ArrowDown' && e.key !== 'ArrowUp')) return;
+      const eintraege = [...menue.querySelectorAll('button')];
+      const jetzt = eintraege.indexOf(document.activeElement);
+      const schritt = e.key === 'ArrowDown' ? 1 : -1;
+      eintraege[(jetzt + schritt + eintraege.length) % eintraege.length].focus();
+      e.preventDefault();
+    });
 
     for (const knopf of document.querySelectorAll('[data-schliessen]')) {
       knopf.addEventListener('click', (e) => {

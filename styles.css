@@ -171,19 +171,93 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   flex-direction: column;
   line-height: 1.15;
 }
+/* Titel und Unterzeile bleiben einzeilig. Wird es eng, macht app.js den Titel
+   stufenweise kleiner und schiebt Werkzeuge ins Menü; das "…" ist nur der
+   letzte Ausweg. Die Unterzeile brach vorher um - "Herz-Solo" stand in zwei
+   Zeilen und machte den Kopf hoeher. */
 .wordmark-name {
   font-size: 24px;
   font-weight: 800;
   letter-spacing: -.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+.wordmark-name[data-stufe='1'] { font-size: 21px; }
+.wordmark-name[data-stufe='2'] { font-size: 19px; }
+.wordmark-name[data-stufe='3'] { font-size: 17px; }
 .wordmark-unter {
   font-size: 13px;
   color: var(--tinte-leise);
   font-family: 'DM Mono', ui-monospace, monospace;
   min-height: 1.1em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.topbar-werkzeuge { display: flex; gap: 4px; }
+.topbar-werkzeuge { display: flex; align-items: center; gap: 4px; }
+
+/* Auf kleinen Handys (360 px) blieben einem Spiel mit zwei Werkzeugen 96 Pixel
+   fuer den Titel - "Flattervogel" musste dafuer seine Pause ins Menue legen.
+   Vier Pixel weniger je Knopf und Luecke geben dem Titel gut 35 Pixel. */
+@media (max-width: 380px) {
+  .topbar-row { gap: 4px; }
+  .topbar .icon-button { width: 36px; height: 36px; }
+}
+
+/* Werkzeuge, die nicht mehr in die Zeile passen, liegen hinter drei
+   liegenden Punkten - die stehenden gehoeren dem Einstellungsmenue. Das Menue
+   haengt rechtsbuendig unter seinem Knopf und waechst nach links ins Fenster. */
+.kopf-mehr { position: relative; }
+.kopf-mehr-knopf svg circle { fill: currentColor; stroke: none; }
+.kopf-mehr-knopf[aria-expanded='true'] { background: var(--karte-rand); }
+.kopf-mehr-menue {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  /* Ohne feste Breite schrumpfte das Menue auf die 40 Pixel seines Knopfs,
+     und "Was du wissen kannst" brach in zwei Zeilen. */
+  width: max-content;
+  min-width: 210px;
+  max-width: calc(100vw - 2 * var(--lueftung));
+  padding: 6px;
+  background: var(--karte);
+  border: 1px solid var(--karte-rand);
+  border-radius: var(--rund-klein);
+  box-shadow: var(--schatten);
+}
+.kopf-mehr-eintrag {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--tinte);
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+}
+.kopf-mehr-eintrag:hover,
+.kopf-mehr-eintrag:focus-visible { background: color-mix(in srgb, var(--karte-rand) 70%, transparent); outline: none; }
+.kopf-mehr-eintrag:active { background: var(--karte-rand); }
+.kopf-mehr-eintrag svg {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+}
+.kopf-mehr-eintrag[data-marke='an'] { color: var(--rost); }
 
 .icon-button {
   flex: 0 0 auto;
