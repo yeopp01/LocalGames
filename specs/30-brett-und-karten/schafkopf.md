@@ -1,7 +1,7 @@
 # Schafkopf
 
 **Datei:** [`spiele/schafkopf.js`](../../spiele/schafkopf.js) · [`spiele/karten.js`](../../spiele/karten.js)
-**Stand:** 42/42 fertig
+**Stand:** 45/45 fertig
 
 ## Zweck
 
@@ -145,6 +145,23 @@ drei Stufen erklärt Züge aus derselben Sicht, die ein Mensch am Tisch hat.
   besten Trumpf der Rechnung – auch ohne den höchsten. Vorher spielte er nach
   durchgelaufener Herz-Sau den Herz-König in den offenen Zehner, und die
   Gegenpartei schmierte darauf.
+- **AC-43** `fertig` **Solist: Trumpf vor der Sau** — Dasselbe wie in AC-40 gilt
+  für eine Farb-Sau: Spielt der Farbsolist aus, solange nach dem Zug noch mehr
+  als dreizehn Karten offen sind, die Gegner Trumpf haben können und die
+  Rechnung eine Farb-Sau vorn sieht, legt er den besten Trumpf der Rechnung.
+  Vorher brachte er nach dem ersten Stich die Herz-Sau vor jedem Trumpf.
+- **AC-44** `fertig` **Gegenspieler hält den Chef** — Gegen ein Farbsolo spielt
+  ein Gegenspieler in den ersten vier Stichen den höchsten Trumpf, der noch
+  draußen ist, nicht aus, wenn er eine Farbkarte hat, sondern die beste
+  Farbkarte der Rechnung. Ab dem fünften Stich entscheidet wieder die Rechnung.
+  Tipp und Urteil folgen, und die Begründung sagt, warum der Trumpf auf der Hand
+  bleibt. Vorher brachte er, nachdem sein Herz-Zehner den Herz-König geholt
+  hatte, den Eichel-Ober.
+- **AC-45** `fertig` **Chef nicht unnötig zugeben** — Gegen ein Farbsolo legt
+  ein Gegenspieler in den ersten fünf Stichen den höchsten Trumpf, der noch
+  draußen ist, nicht zu, wenn ein kleinerer erlaubter Trumpf den Stich ebenfalls
+  holt; er nimmt die beste andere Karte der Rechnung. Vorher galt der Ober mit
+  drei Augen beim Stechen als „teuerste Karte, die hält".
 
 ### Der Lehrer
 
@@ -619,6 +636,50 @@ aufgedeckten Verteilungen fast immer einen freien Mitspieler sieht. Ihn zu
 entschärfen – die Sau schonen, wenn auch der Solist frei ist, oder nur mit dem
 Solisten in der Mitte nachspielen – ändert am ganzen Solo nichts messbar.
 
+Aus derselben Gabe kamen zwei weitere Meldungen. Der Solist hatte nach dem
+ersten Stich die Herz-Sau vor jedem Trumpf gebracht, und der Gegenspieler,
+dessen Herz-Zehner den König geholt hatte, spielte danach den Eichel-Ober aus.
+Beides stand bisher als richtig im Regelwerk – die Sau früh anzuspielen, und
+den höchsten Trumpf zu ziehen in jeder Rolle. Die Zahlen dafür stammten aus
+Ausspielungen mit offenen Karten.
+
+Dieselbe Gabelung, je Lage aus Sicht der Partei, die den Zug macht:
+
+| Stich | Solist: Sau statt Trumpf (Augen) | Gegenspieler: Chef-Trumpf statt Farbkarte (Augen / Siegquote) |
+| --- | --- | --- |
+| 1 | −7,1 ± 5,1 (16) | −5,7 ± 2,5 / −8,1 ± 4,2 (118) |
+| 2 | −5,5 ± 2,6 (130) | −6,3 ± 5,0 / −21,7 ± 17,3 (30) |
+| 3 | −5,4 ± 2,0 (113) | −3,1 ± 2,2 / −8,7 ± 7,7 (59) |
+| 4 | −6,2 ± 2,0 (135) | −3,3 ± 2,4 / **−16,6 ± 8,4** (79) |
+| 5 | −2,2 ± 2,1 (86) | +2,5 ± 1,7 / +2,5 ± 4,3 (100) |
+| 6–8 | +5,8 ± 3,8 (52) | +2,5 ± 1,0 / +3,2 ± 2,9 (162) |
+
+Die Sau folgt der Grenze des Schätzens wie der Herz-König (AC-43). Beim
+Chef-Trumpf der Gegenpartei liegt sie früher, zwischen Stich 4 und 5: Danach
+sind die Trümpfe der Mitspieler, die er ihnen abzieht, zum großen Teil schon
+gefallen (AC-44). Die Eichel-Ober-Lage vom Tisch war Stich 4.
+
+Beim Nachsehen fiel ein drittes Muster auf: Der Gegenspieler legt den höchsten
+Trumpf auch dort zu, wo ein kleinerer den Stich genauso holt. Die Faustregel
+schützt ihn beim Stechen nur, wenn er zehn Augen trägt, ein Ober gilt dort als
+„teuerste Karte, die hält". Gegabelt kostet das in den ersten fünf Stichen 3,5 ±
+1,4 Augen je Lage (AC-45).
+
+Am ganzen Spiel, jede Regel für sich gegen den Stand davor, dieselben 2000
+Soli:
+
+| Regel | anders gespielt | Siegquote | Augen |
+| --- | --- | --- | --- |
+| Solist: Trumpf vor der Sau | 466 | **+1,4 ± 0,8** | +1,2 ± 0,4 |
+| Gegenspieler hält den Chef | 241 | **+0,9 ± 0,6** | +0,7 ± 0,2 |
+| Chef nicht unnötig zugeben | 206 | +0,1 ± 0,3 | **+0,5 ± 0,2** |
+
+Gezählt für die Partei, die die Regel anwendet. Alle drei einzeln, weil eine
+Regel für den Solisten und eine für die Gegenpartei sich im Ganzspiel
+gegenseitig aufheben: Zusammen gemessen standen sie bei −1,1 ± 2,1 und sagten
+nichts. Die letzte bringt nur Augen und kostet nichts – drin aus demselben
+Grund wie die Partner-Sitte.
+
 ### Was von den Merksätzen übrig blieb
 
 Alle bisher geprüften, jeder in der Fassung, die tatsächlich gemessen wurde.
@@ -650,6 +711,9 @@ genau daran ist diese Tabelle schon einmal missverstanden worden.
 | dasselbe, Solist in der Mitte | freier Mitspieler sitzt hinter dem Solisten, oder der Solist muss bedienen | −0,79 ± 1,87 (884 Soli) | verworfen |
 | Gegen ein Solo keine Sau, die nicht durchgehen kann | höchstens zwei Karten der Farbe draußen – gegabelt | Sau gegen beste andere Karte: +2,5 ± 3,2, Augen +1,1 ± 1,2 (257 Lagen) | kein Unterschied |
 | Solist: Trumpf statt Fehlkarte | über der Farbkarte ist noch eine höhere draußen, Gegner mit Trumpf, solange geschätzt wird – gegabelt | **+13,2 ± 3,5** je Lage (346 Lagen); am ganzen Solo **+4,2 ± 1,9**, Augen +1,4 ± 0,6 (714 Soli) | eingebaut |
+| Solist: Trumpf vor der Sau | Farb-Sau, Gegner mit Trumpf, solange geschätzt wird – gegabelt | +3,7 ± 2,2, Augen +5,1 ± 1,1 je Lage (480); am ganzen Solo **+1,4 ± 0,8**, Augen +1,2 ± 0,4 (2000 Soli) | eingebaut |
+| Gegen ein Solo den Chef-Trumpf nicht ausspielen | Gegenpartei, Stich 1–4, beste Farbkarte statt höchstem Trumpf – gegabelt | +12,0 ± 3,8, Augen +4,6 ± 1,4 je Lage (286); ab Stich 5 −3,0 ± 2,4; am ganzen Solo **+0,9 ± 0,6**, Augen +0,7 ± 0,2 (2000 Soli) | eingebaut |
+| Den Chef-Trumpf nicht zugeben, wenn ein kleinerer holt | Gegenpartei gegen ein Solo, Stich 1–5 – gegabelt | +4,1 ± 3,4, Augen +3,5 ± 1,4 je Lage (210); am ganzen Solo +0,1 ± 0,3, Augen **+0,5 ± 0,2** (2000 Soli) | eingebaut |
 | Kurzer Weg – lange Farbe | nur die Farbwahl, überstimmt nichts | ±0,4, kein Unterschied | offen |
 | Langer Weg – lange Farbe | dieselbe enge Fassung | −0,5 ± 0,5, nicht bestätigt | offen |
 | Farbeln: längste Farbe spielen | dieselbe enge Fassung | ±0,6, kein Unterschied | offen |

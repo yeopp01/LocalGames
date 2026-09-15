@@ -76,6 +76,56 @@ test('als Solist rät der Tipp zu Trumpf statt zum Herz-König, über den noch d
   await expect(page.locator('.sk-notiz-titel')).toHaveText(/Ober|Unter|Schellen/);
 });
 
+test('als Solist rät der Tipp nach dem ersten Stich zu Trumpf statt zur Herz-Sau', async ({ page }) => {
+  /* Dieselbe Gabe einen Stich früher: Eichel gestochen, auf der Hand Herz-Sau,
+     Herz-König und fünf Trümpfe (AC-43). */
+  const haende = [
+    [4, 11, 16, 18, 19, 24, 25],
+    [8, 10, 29, 28, 30, 31, 23],
+    [0, 2, 5, 9, 14, 15, 22],
+    [3, 12, 17, 20, 26, 13, 21],
+  ];
+  const stand = leererStand({
+    geber: 1, lehre: 'tipp', haende,
+    start: [[...haende[0], 27], [...haende[1], 6], [...haende[2], 7], [...haende[3], 1]],
+    spielart: { art: 'solo', farbe: 3 }, spieler: 0,
+    gebote: [{ p: 2, spiel: null }, { p: 3, spiel: null }, { p: 0, spiel: { art: 'solo', farbe: 3 } }, { p: 1, spiel: null }],
+    stiche: [{ start: 2, karten: [7, 1, 27, 6], sieger: 0 }],
+    aktuell: { start: 0, karten: [] }, amZug: 0,
+  });
+  await oeffnen(page, '#/spiel/schafkopf', { stand: { schafkopf: stand } });
+  await page.getByRole('button', { name: 'Tipp', exact: true }).click();
+  await expect(page.locator('.sk-notiz-titel')).toHaveText(/Ober|Unter|Schellen/);
+});
+
+test('als Gegenspieler rät der Tipp in Stich 4 nicht zum Eichel-Ober', async ({ page }) => {
+  /* Der Solist hat die Herz-Sau durchgebracht und den Herz-König nachgespielt,
+     dein Herz-Zehner hat ihn geholt. Jetzt spielst du aus und hältst den
+     höchsten Trumpf – gegen ein Solo so früh die falsche Karte (AC-44). */
+  const haende = [
+    [3, 12, 20, 26, 13],
+    [4, 11, 19, 24, 25],
+    [8, 29, 28, 30, 31],
+    [0, 2, 5, 9, 14],
+  ];
+  const stand = leererStand({
+    geber: 2, lehre: 'tipp', haende,
+    start: [[...haende[0], 1, 21, 17], [...haende[1], 27, 16, 18], [...haende[2], 6, 23, 10], [...haende[3], 7, 22, 15]],
+    spielart: { art: 'solo', farbe: 3 }, spieler: 1,
+    gebote: [{ p: 3, spiel: null }, { p: 0, spiel: null }, { p: 1, spiel: { art: 'solo', farbe: 3 } }, { p: 2, spiel: null }],
+    stiche: [
+      { start: 3, karten: [7, 1, 27, 6], sieger: 1 },
+      { start: 1, karten: [16, 23, 22, 21], sieger: 1 },
+      { start: 1, karten: [18, 10, 15, 17], sieger: 0 },
+    ],
+    aktuell: { start: 0, karten: [] }, amZug: 0,
+  });
+  await oeffnen(page, '#/spiel/schafkopf', { stand: { schafkopf: stand } });
+  await page.getByRole('button', { name: 'Tipp', exact: true }).click();
+  await expect(page.locator('.sk-notiz-text')).toBeVisible();
+  await expect(page.locator('.sk-notiz-titel')).not.toHaveText('Eichel-Ober');
+});
+
 test('beim Mitlesen heißt der Herz-König in dieser Lage „Besser: …"', async ({ page }) => {
   await oeffnen(page, '#/spiel/schafkopf', { stand: { schafkopf: soloNachHerzSau('mit') } });
   await page.getByRole('button', { name: /^Herz-König/ }).dispatchEvent('click');

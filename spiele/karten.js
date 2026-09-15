@@ -483,6 +483,10 @@ const Karten = (() => {
            den Spieler und −1,88 für den Mitspieler über 20000 Gaben. Die
            Farbe zu meiden statt zu warten trifft es.
 
+           Für den Farbsolisten gilt das nur hier in der Faustregel. Am Tisch
+           nachgespielt, mit verdeckten Karten, kostet ihn die frühe Sau in
+           den ersten fünf Stichen – dort entscheidet trumpfStattFarbe.
+
            Nur beim Solo. Beim Rufspiel ohne Wirkung (±0,0 über 20000 Gaben),
            beim Wenz und Geier schädlich (+1,6 bzw. +1,7 für die Gegenseite) –
            dort ist eine lange Farbe die Waffe und nicht der Trumpf. */
@@ -1299,7 +1303,20 @@ const Karten = (() => {
      anders gespielt: Solist +4,2 ± 1,9 Punkte Siegquote, +1,4 ± 0,6 Augen.
 
      Nur beim Farbsolo gemessen, nur dort eingebaut. */
-  function trumpfStattFehlkarte(s, werte) {
+  /* Dasselbe gilt für die Farb-Sau, obwohl über sie niemand drüberkommt:
+     Solange die Gegner Trumpf haben, sticht sie, wer dort frei ist. Die
+     Faustregel spielt sie früh an, und im Regelwerk stand das auch so – nach
+     einer Messung, in der alle Ausspielungen aufgedeckt liefen. Dieselbe
+     Gabelung, Sau gegen den besten Trumpf, aus Sicht des Solisten:
+
+        Stich 1–5 (480)   Augen −5,1 ± 1,1   Siegquote −3,7 ± 2,2
+        Stich 6–8  (52)   Augen +5,8 ± 3,8   Siegquote +20,9 ± 12,3
+
+     Wieder dieselbe Grenze: Solange geschätzt wird, zuerst Trumpf.
+
+     Am ganzen Spiel gegen die Fassung ohne Sau, 2000 gepaarte Soli, 466 davon
+     anders gespielt: Solist +1,4 ± 0,8 Punkte Siegquote, +1,2 ± 0,4 Augen. */
+  function trumpfStattFarbe(s, werte) {
     if (s.sp.art !== 'solo' || s.ich !== s.spieler || s.trick.length) return null;
     const ord = s.ord;
     const oben = werte[0].karte;
@@ -1307,11 +1324,87 @@ const Karten = (() => {
     const offenDanach = s.anzahl.reduce((n, a) => n + a, 0) - 1;
     if (offenDanach <= EXAKT_AB) return null;
     if (!s.unbekannt.some((c) => ord.trumpf[c])) return null;
-    if (!s.unbekannt.some((c) => ord.reihe(c) === ord.reihe(oben) && ord.rang[c] > ord.rang[oben])) {
-      return null;
-    }
+    const hoeher = s.unbekannt.some((c) => ord.reihe(c) === ord.reihe(oben) && ord.rang[c] > ord.rang[oben]);
+    if (!hoeher && wert(oben) !== 0) return null;
     return werte.find((e) => ord.trumpf[e.karte]) || null;
   }
+
+  /* ------------------------------------------ Gegen ein Solo: Chef bleibt
+
+     Der Gegenspieler spielt aus und hält den höchsten Trumpf, der noch
+     draußen ist. Die Faustregel zieht ihn – für alle Rollen. Gegen ein Solo
+     ist das früh ein Fehler: Der Solist gibt einen kleinen Trumpf zu, die
+     beiden Mitspieler müssen ebenfalls Trumpf legen, und genau die fehlen
+     ihnen dann gegen ihn. Gemeldet vom Tisch, nachdem der Herz-Zehner einen
+     Stich geholt hatte und der Gegenspieler danach den Eichel-Ober brachte.
+
+     Gegabelt wie beim Solisten, Chef-Trumpf gegen die beste Farbkarte der
+     Rechnung, aus Sicht der Gegenpartei, 548 Lagen:
+
+        Stich 1 (118)   Augen −5,7 ± 2,5   Siegquote  −8,1 ± 4,2
+        Stich 2  (30)   Augen −6,3 ± 5,0   Siegquote −21,7 ± 17,3
+        Stich 3  (59)   Augen −3,1 ± 2,2   Siegquote  −8,7 ± 7,7
+        Stich 4  (79)   Augen −3,3 ± 2,4   Siegquote −16,6 ± 8,4
+        Stich 5 (100)   Augen +2,5 ± 1,7   Siegquote  +2,5 ± 4,3
+        Stich 6–8 (162) Augen +2,5 ± 1,0   Siegquote  +3,2 ± 2,9
+
+     Die Grenze liegt hier früher als beim Solisten, zwischen Stich 4 und 5:
+     Danach sind die Trümpfe der Mitspieler ohnehin zum großen Teil gefallen,
+     und der Chef holt, was noch draußen ist.
+
+     Am ganzen Spiel, 2000 gepaarte Soli, 241 davon anders gespielt:
+     Gegenpartei +0,9 ± 0,6 Punkte Siegquote, +0,7 ± 0,2 Augen. */
+  function gegenSoloChefZurueck(s, werte) {
+    if (s.sp.art !== 'solo' || s.ich === s.spieler || s.trick.length) return null;
+    if (s.stiche.length >= 4) return null;
+    const ord = s.ord;
+    const oben = werte[0].karte;
+    if (!ord.trumpf[oben] || s.unbekannt.some((c) => ord.trumpf[c] && ord.rang[c] > ord.rang[oben])) {
+      return null;
+    }
+    return werte.find((e) => !ord.trumpf[e.karte]) || null;
+  }
+
+  /* --------------------------------------- Den Chef nicht verheizen
+
+     Beim Zugeben dasselbe Muster: Der Gegenspieler könnte den Stich mit
+     einem kleineren Trumpf holen, die Rechnung will aber den höchsten, der
+     noch draußen ist. In der Faustregel ist er beim Stechen nur geschützt,
+     wenn er zehn Augen trägt – ein Ober mit drei wird als die „teuerste
+     Karte, die hält" verbraucht. Gegabelt gegen die beste andere Karte der
+     Rechnung (in 216 von 232 Lagen ein kleinerer Trumpf), Gegenpartei:
+
+        Stich 1–5 (210)   Augen −3,5 ± 1,4   Siegquote −4,1 ± 3,4
+        Stich 6–8  (22)   Augen +0,5 ± 3,1   Siegquote +4,5 ± 8,9
+
+     Am ganzen Spiel, 2000 gepaarte Soli, 206 davon anders gespielt:
+     Gegenpartei +0,5 ± 0,2 Augen, Siegquote +0,1 ± 0,3 – also gleich. Drin aus
+     demselben Grund wie die Partner-Sitte: Es kostet nichts und bringt Augen. */
+  function chefNichtVerheizen(s, werte) {
+    if (s.sp.art !== 'solo' || s.ich === s.spieler || !s.trick.length) return null;
+    if (s.stiche.length > 4) return null;
+    const ord = s.ord;
+    const oben = werte[0].karte;
+    if (!ord.trumpf[oben] || s.unbekannt.some((c) => ord.trumpf[c] && ord.rang[c] > ord.rang[oben])) {
+      return null;
+    }
+    const ang = ord.reihe(s.trick[0]);
+    const bester = s.trick[stichPlatz(s.trick, ord)];
+    if (!schlaegt(oben, bester, ang, ord)) return null;
+    const kleiner = werte.some((e) => e.karte !== oben && ord.trumpf[e.karte]
+      && schlaegt(e.karte, bester, ang, ord));
+    if (!kleiner) return null;
+    return werte.find((e) => e.karte !== oben) || null;
+  }
+
+  /* Züge, bei denen die Rechnung vorn liegt und der Tisch nicht. Sie
+     schließen sich aus – eine gilt nur für den Solisten, zwei nur für die
+     Gegenpartei, und von denen eine beim Ausspielen, eine beim Zugeben. */
+  const KORREKTUREN = [
+    ['solotrumpf', trumpfStattFarbe],
+    ['gegensolo', gegenSoloChefZurueck],
+    ['cheftrumpf', chefNichtVerheizen],
+  ];
 
   function bewerten(s, opt) {
     const einst = opt || {};
@@ -1422,17 +1515,21 @@ const Karten = (() => {
       werte.splice(werte.indexOf(sitteWert), 1);
       werte.unshift(sitteWert);
     }
-    const fehlkarte = werte[0].karte;
-    const trumpfWert = trumpfStattFehlkarte(s, werte);
-    if (trumpfWert) {
-      werte.splice(werte.indexOf(trumpfWert), 1);
-      werte.unshift(trumpfWert);
+    const verdraengt = werte[0].karte;
+    let korrektur = null;
+    for (const [art, regel] of KORREKTUREN) {
+      const e = regel(s, werte);
+      if (e) { korrektur = { art, e }; break; }
+    }
+    if (korrektur) {
+      werte.splice(werte.indexOf(korrektur.e), 1);
+      werte.unshift(korrektur.e);
     }
     return {
       werte, welten, einzig: false, gleichauf, regelWahl,
       regelAnteil: welten ? regelBeste / welten : 0,
-      sitte: sitteWert ? sitte.art : trumpfWert ? 'solotrumpf' : null,
-      fehlkarte: trumpfWert ? fehlkarte : -1,
+      sitte: sitteWert ? sitte.art : korrektur ? korrektur.art : null,
+      verdraengt: korrektur ? verdraengt : -1,
     };
   }
 
@@ -1499,7 +1596,7 @@ const Karten = (() => {
             + 'den du jetzt herausholst, kann später keinen deiner Stiche mehr wegnehmen.';
         }
         /* Als Solist ohne den höchsten Trumpf, und daneben liegt eine Farbkarte,
-           über die noch jemand kann – siehe trumpfStattFehlkarte. Ohne diesen
+           über die noch jemand kann – siehe trumpfStattFarbe. Ohne diesen
            Satz hieß es hier „die Führung behalten", obwohl ein höherer Trumpf
            draußen ist. */
         if (s.sp.art === 'solo' && s.ich === s.spieler && draussen.length) {
@@ -1512,6 +1609,12 @@ const Karten = (() => {
               + 'holt ihre Trümpfe heraus – auch wenn noch ein höherer draußen ist, geht damit '
               + 'nachgemessen weniger verloren als mit der Farbkarte.';
           }
+          const sau = s.hand.find((c) => !ord.trumpf[c] && wert(c) === 0);
+          if (sau != null && s.stiche.length <= 4) {
+            return 'Erst Trumpf, dann ' + kartenName(sau) + ': Solange die Gegner Trumpf haben, '
+              + 'kann sie stechen, wer in der Farbe frei ist, und die anderen schmieren darauf. '
+              + 'Nachgemessen bringt die Sau dem Solisten früh im Spiel weniger als der Trumpf.';
+          }
         }
         if (s.sp.art === 'sau' && s.ich !== s.spieler
             && (s.hand.indexOf(s.sauK) >= 0 || s.sauBei === s.ich)) {
@@ -1519,7 +1622,11 @@ const Karten = (() => {
             + 'zugeben muss, sticht später keine eurer Karten mehr.';
         }
         if (augen(k) === 0) return 'Klein antrumpfen – das kostet nichts und zieht trotzdem.';
-        return 'Mit Trumpf anspielen und die Führung behalten.';
+        /* Hier stand „und die Führung behalten". Erreicht wird die Zeile aber nur,
+           wenn draußen noch ein höherer Trumpf ist – die Führung behält man dann
+           gerade nicht sicher. */
+        return 'Mit Trumpf anspielen, auch wenn draußen noch ein höherer ist – die Rechnung '
+          + 'sieht das hier vorn.';
       }
       /* Nachspielen gegen ein Solo, in der Reihenfolge, in der die Faustregel
          es auch prüft: gleich hinter dem Trumpfziehen. */
@@ -1531,6 +1638,19 @@ const Karten = (() => {
             + 'frei – er sticht, und die ' + augen(k) + ' Augen fallen euch zu statt '
             + 'dem Alleinspieler. Deshalb eine hohe Karte und keine kleine: mit der '
             + 'kleinsten verbrennt er einen Trumpf für einen Stich ohne Augen.';
+        }
+      }
+      /* Gegen ein Solo bleibt der höchste Trumpf früh auf der Hand – siehe
+         gegenSoloChefZurueck. Ohne den Satz sähe es aus, als hätte der
+         Rechner ihn übersehen. */
+      if (!meins && s.sp.art === 'solo' && s.stiche.length < 4) {
+        const chefT = s.hand.find((c) => ord.trumpf[c]
+          && !s.unbekannt.some((x) => ord.trumpf[x] && ord.rang[x] > ord.rang[c]));
+        if (chefT != null) {
+          return kartenName(chefT) + ' bleibt noch auf der Hand. Gegen ein Solo zieht der höchste '
+            + 'Trumpf vor allem deinen Mitspielern die Trümpfe, die sie gegen den Solisten '
+            + 'brauchen – der kann einen kleinen zugeben. Früh im Spiel kostet das nachgemessen, '
+            + 'ab dem fünften Stich nicht mehr.';
         }
       }
       if (s.sp.art === 'sau' && farbe(k) === s.sp.farbe && !s.sauWeg && !meins) {
