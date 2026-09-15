@@ -45,6 +45,44 @@ test('die Rufsau lässt sich nicht abwerfen – und das Blatt sagt genau das', a
   expect((await gespeichert(page)).stand.schafkopf.haende[0]).toContain(8);
 });
 
+/* Du spielst ein Schellen-Solo und bist wieder am Ausspielen: Eichel hast du
+   gestochen, die Herz-Sau ist durchgelaufen. Übrig sind fünf Trümpfe ohne den
+   Eichel-Ober und der Herz-König – der Zehner ist noch draußen. Die Rechnung
+   sieht den König vorn; am Tisch nachgespielt kostet er (AC-40, AC-42). */
+const soloNachHerzSau = (lehre) => {
+  const haende = [
+    [4, 11, 18, 19, 24, 25],   // Eichel-Unter, Gras-Ober, Herz-König, Herz-Ober, Schellen-Sau, -Zehner
+    [8, 10, 13, 28, 30, 31],
+    [0, 2, 5, 9, 14, 15],
+    [3, 12, 17, 20, 26, 29],   // hält den Herz-Zehner und den Eichel-Ober
+  ];
+  return leererStand({
+    geber: 1, lehre, haende,
+    start: [[...haende[0], 16, 27], [...haende[1], 6, 23], [...haende[2], 7, 22], [...haende[3], 1, 21]],
+    spielart: { art: 'solo', farbe: 3 }, spieler: 0,
+    gebote: [{ p: 2, spiel: null }, { p: 3, spiel: null }, { p: 0, spiel: { art: 'solo', farbe: 3 } }, { p: 1, spiel: null }],
+    stiche: [
+      { start: 2, karten: [7, 1, 27, 6], sieger: 0 },
+      { start: 0, karten: [16, 23, 22, 21], sieger: 0 },
+    ],
+    aktuell: { start: 0, karten: [] }, amZug: 0,
+  });
+};
+
+test('als Solist rät der Tipp zu Trumpf statt zum Herz-König, über den noch der Zehner kann', async ({ page }) => {
+  await oeffnen(page, '#/spiel/schafkopf', { stand: { schafkopf: soloNachHerzSau('tipp') } });
+  await page.getByRole('button', { name: 'Tipp', exact: true }).click();
+  await expect(page.locator('.sk-notiz-text')).toContainText('Trumpf statt Herz-König');
+  await expect(page.locator('.sk-notiz-titel')).toHaveText(/Ober|Unter|Schellen/);
+});
+
+test('beim Mitlesen heißt der Herz-König in dieser Lage „Besser: …"', async ({ page }) => {
+  await oeffnen(page, '#/spiel/schafkopf', { stand: { schafkopf: soloNachHerzSau('mit') } });
+  await page.getByRole('button', { name: /^Herz-König/ }).dispatchEvent('click');
+  await expect(page.locator('.sk-notiz-titel')).toHaveText(/^Besser: (.*Ober|.*Unter|Schellen)/);
+  await expect(page.locator('.sk-notiz-text')).toContainText('Trumpf statt Herz-König');
+});
+
 test('der Tisch bleibt gleich hoch, ob in der Mitte eine Karte liegt oder keine', async ({ page }) => {
   /* Die Stichmitte wuchs mit der ersten Karte, und Hand und Knöpfe
      sprangen bei jedem Stich auf und ab (AC-36). */

@@ -186,6 +186,16 @@
           + 'ist gemessen schlechter. Die Farbe zu meiden trifft es, das Warten nicht.',
         zahl: 'Farbe meiden: Spieler +0,20 ± 0,13, Gegenpartei +0,98 ± 0,44. Erst Trumpf '
           + 'ziehen und warten kostet dagegen: Spieler −0,51, Mitspieler −1,88.' },
+      { titel: 'Als Solist Trumpf statt einer Farbkarte, über die noch jemand kann',
+        gilt: 'Solo, Spieler – bis Stich 5',
+        text: 'Liegt über deiner Farbkarte noch eine höhere draußen und haben die Gegner noch '
+          + 'Trumpf, spielst du Trumpf – auch ohne den höchsten. Die Farbkarte holt den Stich '
+          + 'nicht sicher, und geht er weg, schmieren die anderen darauf. Die Rechnung sieht '
+          + 'das nicht: Sie spielt jede Verteilung mit einem Solisten zu Ende, der ohne den '
+          + 'höchsten Trumpf keinen nachzieht. Deshalb wurde am Tisch nachgespielt.',
+        zahl: 'In 346 gegabelten Lagen kostet die Farbkarte den Solisten 5,0 ± 1,2 Augen und '
+          + '13,2 ± 3,5 Punkte Siegquote, mit dem König 16. Ab Stich 6 dreht es eher – dort '
+          + 'rechnet der Rechner ohnehin exakt. Am ganzen Solo: +4,2 ± 1,9 für den Solisten.' },
       { titel: 'Als Gegenspieler im ersten Stich die Rufsau suchen',
         gilt: 'Sauspiel, Gegenpartei – Tischsitte',
         text: 'Hast du die gerufene Farbe, spielst du sie im ersten Stich klein an: Wer die '
@@ -381,6 +391,16 @@
           + 'Bedingung „der Mitspieler ist dort frei" und einer hohen Karte wird eine Regel '
           + 'daraus – und auch dann nur beim Solo.',
         zahl: '±0,4, kein Unterschied.' },
+      { titel: 'Gegen ein Solo keine Sau, die nicht durchgehen kann',
+        gilt: 'Solo, Gegenpartei',
+        text: 'Mit vier Karten einer Farbe sind höchstens zwei draußen, einer ist also frei, und '
+          + 'der Solist sticht die Sau fast sicher. Klingt nach einem klaren Fehler – nachgespielt '
+          + 'ist es keiner: Die Sau holt der Gegenpartei nicht weniger als die beste andere Karte. '
+          + 'Auch beim Nachspielen die Sau zu schonen, wenn der Solist ebenfalls frei ist, oder '
+          + 'nur nachzuspielen, wenn der freie Mitspieler hinter dem Solisten sitzt, ändert nichts.',
+        zahl: 'Sau mit höchstens zwei Karten draußen: +1,1 ± 1,2 Augen über 257 gegabelte Lagen. '
+          + 'Sau schonen +0,34 ± 1,65, Solist in der Mitte −0,79 ± 1,87 für die Gegenpartei über '
+          + '884 gepaarte Soli.' },
       { titel: 'Als Spieler die blanke Sau aufheben',
         gilt: 'alle',
         text: 'Erst Trumpf ziehen und die Sau bis dahin halten klingt vernünftig und kostet. '
@@ -995,6 +1015,12 @@
       if (rat.sitte && e === rat.werte[0] && rat.werte.length > 1) {
         const vorn = rat.werte.slice(1).reduce((a, b) => (b.nutzen > a.nutzen ? b : a));
         const u = K.unterschied(vorn, e);
+        if (u.klar && rat.sitte === 'solotrumpf') {
+          return kopf + ', mit ' + K.kartenName(vorn.karte) + ' in ' + prozentText(vorn.quote)
+            + '. Die Rechnung spielt jede Verteilung aber mit einem Solisten zu Ende, der ohne '
+            + 'den höchsten Trumpf keinen nachzieht – den Trumpf unterschätzt sie deshalb. Am '
+            + 'Tisch nachgespielt kostet die Farbkarte in dieser Lage rund 13 Punkte Siegquote.';
+        }
         if (u.klar) {
           return kopf + ', mit ' + K.kartenName(vorn.karte) + ' in ' + prozentText(vorn.quote)
             + '. Die Rechnung spielt aber jede Verteilung aufgedeckt – was dein Anspiel dem '
@@ -1029,6 +1055,9 @@
         return 'Das ist Tischsitte: Der Partner zieht Trumpf, solange die Gegner welchen '
           + 'haben können. Die drei Mitspieler spielen genauso.';
       }
+      if (rat && rat.sitte === 'solotrumpf') {
+        return 'Die drei Mitspieler spielen als Solist genauso.';
+      }
       if (!rat || rat.regelWahl == null || rat.regelWahl < 0) return '';
       const beste = rat.werte[0].karte;
       if (rat.regelWahl === beste) {
@@ -1059,6 +1088,18 @@
          Eine feste Schwelle wäre hier falsch – mal sind drei Punkte Zufall,
          mal ist ein Punkt echt. */
       const u = K.unterschied(beste, meine);
+      /* Die Tischsitte kostet nichts, wer von ihr abweicht, spielt also nicht
+         schlechter. Trumpf statt Fehlkarte dagegen kostet am Tisch gemessen –
+         die Farbkarte ist dort die schlechtere, auch wenn die Rechnung sie vorn
+         sieht und der paarweise Vergleich deshalb nichts findet. */
+      if (rat.sitte === 'solotrumpf' && karte !== beste.karte && !ord().trumpf[karte]) {
+        stand.notiz = {
+          art: 'schlecht',
+          titel: 'Besser: ' + K.kartenName(beste.karte),
+          text: K.begruenden(sicht, beste.karte, meineSeite(), zuege),
+        };
+        return;
+      }
       if (!u.klar) {
         stand.treffer += 1;
         stand.notiz = {

@@ -1268,6 +1268,51 @@ const Karten = (() => {
     return { karte: truempfe.reduce((a, b) => (ord.rang[b] > ord.rang[a] ? b : a)), art: 'trumpf' };
   }
 
+  /* ------------------------------------------------ Trumpf statt Fehlkarte
+
+     Der Solist spielt aus, die Rechnung sieht eine Farbkarte vorn, über die
+     noch jemand drüberkommt, und die Gegner haben noch Trumpf. Am Tisch ist
+     das ein Geschenk: Der Stich geht weg, und die anderen schmieren darauf.
+     Die Rechnung sieht es anders, weil sie jede Verteilung mit der
+     Faustregel zu Ende spielt – und die zieht als Solist nur mit dem höchsten
+     Trumpf, der noch draußen ist. In den Ausspielungen nach einem Trumpf
+     spielt der Solist also schwach weiter, und der Trumpf wird gerade dort
+     unterschätzt, wo er zählt.
+
+     Deshalb wurde nicht die Rechnung gefragt, sondern der Tisch: 346 solcher
+     Lagen aus echten Soli, vier Rechner mit eigener Sicht, jede Lage
+     gegabelt und beide Zweige achtmal zu Ende gespielt, derselbe Zufall in
+     beiden. Aus Sicht des Solisten, Farbkarte gegen den besten Trumpf der
+     Rechnung:
+
+        alle            Augen −5,0 ± 1,2   Siegquote −13,2 ± 3,5
+        König     (58)  Augen −6,3 ± 2,9   Siegquote −16,0 ± 7,6
+        ohne Augen (265) Augen −4,9 ± 1,5  Siegquote −13,2 ± 4,2
+        Stich 1–5 (333) Augen −5,5         Siegquote −14,0
+        Stich 6–8  (13) Augen +5,6 ± 5,6   Siegquote +5,8 ± 15,8
+
+     Ab Stich 6 dreht es eher. Dort rechnet die Welt nach dem Zug exakt, und
+     die Schwäche der Faustregel spielt keine Rolle mehr. Die Regel hängt
+     deshalb nicht an der Stichnummer, sondern daran, ob noch geschätzt wird.
+
+     Eingebaut und am ganzen Spiel nachgemessen, 714 gepaarte Soli, 169 davon
+     anders gespielt: Solist +4,2 ± 1,9 Punkte Siegquote, +1,4 ± 0,6 Augen.
+
+     Nur beim Farbsolo gemessen, nur dort eingebaut. */
+  function trumpfStattFehlkarte(s, werte) {
+    if (s.sp.art !== 'solo' || s.ich !== s.spieler || s.trick.length) return null;
+    const ord = s.ord;
+    const oben = werte[0].karte;
+    if (ord.trumpf[oben]) return null;
+    const offenDanach = s.anzahl.reduce((n, a) => n + a, 0) - 1;
+    if (offenDanach <= EXAKT_AB) return null;
+    if (!s.unbekannt.some((c) => ord.trumpf[c])) return null;
+    if (!s.unbekannt.some((c) => ord.reihe(c) === ord.reihe(oben) && ord.rang[c] > ord.rang[oben])) {
+      return null;
+    }
+    return werte.find((e) => ord.trumpf[e.karte]) || null;
+  }
+
   function bewerten(s, opt) {
     const einst = opt || {};
     const proben = einst.proben || 80;
@@ -1377,10 +1422,17 @@ const Karten = (() => {
       werte.splice(werte.indexOf(sitteWert), 1);
       werte.unshift(sitteWert);
     }
+    const fehlkarte = werte[0].karte;
+    const trumpfWert = trumpfStattFehlkarte(s, werte);
+    if (trumpfWert) {
+      werte.splice(werte.indexOf(trumpfWert), 1);
+      werte.unshift(trumpfWert);
+    }
     return {
       werte, welten, einzig: false, gleichauf, regelWahl,
       regelAnteil: welten ? regelBeste / welten : 0,
-      sitte: sitteWert ? sitte.art : null,
+      sitte: sitteWert ? sitte.art : trumpfWert ? 'solotrumpf' : null,
+      fehlkarte: trumpfWert ? fehlkarte : -1,
     };
   }
 
@@ -1446,6 +1498,21 @@ const Karten = (() => {
           return 'Trumpf ziehen: höher ist nichts mehr draußen. Jeder Trumpf, '
             + 'den du jetzt herausholst, kann später keinen deiner Stiche mehr wegnehmen.';
         }
+        /* Als Solist ohne den höchsten Trumpf, und daneben liegt eine Farbkarte,
+           über die noch jemand kann – siehe trumpfStattFehlkarte. Ohne diesen
+           Satz hieß es hier „die Führung behalten", obwohl ein höherer Trumpf
+           draußen ist. */
+        if (s.sp.art === 'solo' && s.ich === s.spieler && draussen.length) {
+          const fehl = s.hand.filter((c) => !ord.trumpf[c] && s.unbekannt.some((x) => (
+            ord.reihe(x) === ord.reihe(c) && ord.rang[x] > ord.rang[c])));
+          if (fehl.length) {
+            const teuerste = fehl.reduce((a, b) => (augen(b) > augen(a) ? b : a));
+            return 'Trumpf statt ' + kartenName(teuerste) + ': Da kann noch jemand drüber, '
+              + 'und solange die Gegner Trumpf haben, schmieren die anderen darauf. Der Trumpf '
+              + 'holt ihre Trümpfe heraus – auch wenn noch ein höherer draußen ist, geht damit '
+              + 'nachgemessen weniger verloren als mit der Farbkarte.';
+          }
+        }
         if (s.sp.art === 'sau' && s.ich !== s.spieler
             && (s.hand.indexOf(s.sauK) >= 0 || s.sauBei === s.ich)) {
           return 'Als Partner Trumpf ziehen: Jeder Trumpf, den die Gegenpartei jetzt '
@@ -1472,8 +1539,31 @@ const Karten = (() => {
           + 'sicheren Stich schmieren.';
       }
       if (wert(k) === 0) {
-        return 'Die Sau anspielen, solange die Farbe noch läuft. Wartest du, '
-          + 'ist irgendwann jemand blank und sticht sie weg.';
+        /* „Solange die Farbe noch läuft" stimmt nur, wenn sie noch laufen kann.
+           Durch geht die Sau erst, wenn alle drei anderen bedienen – dafür
+           müssen mindestens drei Karten der Farbe draußen sein. Wer vier davon
+           selbst hält, bekam den Satz trotzdem zu lesen. */
+        const f = farbe(k);
+        const draussenF = s.unbekannt.filter((c) => !ord.trumpf[c] && farbe(c) === f).length;
+        const freiF = [0, 1, 2, 3].some((q) => q !== s.ich && s.frei[q][f]);
+        if (draussenF >= 3 && !freiF) {
+          return 'Die Sau anspielen, solange die Farbe noch läuft. Wartest du, '
+            + 'ist irgendwann jemand blank und sticht sie weg.';
+        }
+        const warum = freiF ? 'In der Farbe ist schon jemand frei.'
+          : draussenF === 0 ? 'Von der Farbe ist keine Karte mehr draußen.'
+            : 'Von der Farbe ' + (draussenF === 1 ? 'ist nur noch eine Karte' : 'sind nur noch zwei Karten')
+              + ' draußen, einer der drei anderen hat also keine.';
+        let satz = 'Durchgehen kann die Sau nicht mehr. ' + warum + ' Wer dort Trumpf hat, '
+          + 'kann sie stechen – jetzt wie später, aufheben macht sie also nicht sicherer.';
+        /* Gemessen nur gegen das Solo, und nur für die knappe Farbe: 257 Lagen,
+           gegabelt und zu Ende gespielt, Sau gegen die beste andere Karte der
+           Rechnung, für die Gegenpartei +1,1 ± 1,2 Augen. */
+        if (s.sp.art === 'solo' && !meins && draussenF <= 2) {
+          satz += ' Ein Fehler ist das Anspiel trotzdem nicht: In nachgespielten Soli holt die '
+            + 'Gegenpartei damit nicht weniger als mit der besten anderen Karte.';
+        }
+        return satz;
       }
       /* Warum eine Sau liegen bleibt, die man eigentlich anspielen würde. Ohne
          diesen Satz sieht der Zug aus, als hätte der Rechner sie übersehen. */

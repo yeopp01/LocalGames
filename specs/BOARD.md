@@ -6,7 +6,7 @@
 Eine Zeile je Akzeptanzkriterium. Gepflegt wird der Status in der Spec
 selbst, hier steht er zusammengefasst.
 
-**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 1 zurückgestellt · 546 fertig
+**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 1 zurückgestellt · 549 fertig
 
 ## Nach Spezifikation
 
@@ -28,7 +28,7 @@ selbst, hier steht er zusammengefasst.
 | [Weg](10-raetsel/zip.md)                           | -         | -       | -     | -              | 20     |
 | [Galgenmännchen](20-wortspiele/galgen.md)          | -         | -       | -     | -              | 14     |
 | [Wördle](20-wortspiele/wordle.md)                  | -         | -       | -     | -              | 24     |
-| [Schafkopf](30-brett-und-karten/schafkopf.md)      | -         | -       | -     | -              | 39     |
+| [Schafkopf](30-brett-und-karten/schafkopf.md)      | -         | -       | -     | -              | 42     |
 | [Vier gewinnt](30-brett-und-karten/viergewinnt.md) | -         | -       | -     | -              | 16     |
 | [2048](30-brett-und-karten/zweitausend.md)         | -         | -       | -     | -              | 13     |
 | [Wer am ehesten](40-zu-mehreren/amehesten.md)      | -         | -       | -     | -              | 11     |
@@ -61,7 +61,7 @@ selbst, hier steht er zusammengefasst.
 | --------- | ------------------------------------ | -------------------------- | -------------------------------------------- |
 | verraeter | [AC-13](40-zu-mehreren/verraeter.md) | Stimmen übers Netz sammeln | braucht eine Verbindung zwischen den Geräten |
 
-## Fertig (546)
+## Fertig (549)
 
 | Spec          | AC                                          | Titel                                  | Anmerkung                                       |
 | ------------- | ------------------------------------------- | -------------------------------------- | ----------------------------------------------- |
@@ -366,6 +366,9 @@ selbst, hier steht er zusammengefasst.
 | schafkopf     | [AC-37](30-brett-und-karten/schafkopf.md)   | Tischsitte im Anspiel                  | Die Gegner                                      |
 | schafkopf     | [AC-38](30-brett-und-karten/schafkopf.md)   | Lehrer kennt die Tischsitte            | Der Lehrer                                      |
 | schafkopf     | [AC-39](30-brett-und-karten/schafkopf.md)   | Partner-Indizien nachgezählt           | Der Lehrer                                      |
+| schafkopf     | [AC-40](30-brett-und-karten/schafkopf.md)   | Solist zieht Trumpf statt Fehlkarte    | Die Gegner                                      |
+| schafkopf     | [AC-41](30-brett-und-karten/schafkopf.md)   | Sau-Satz nur bei laufender Farbe       | Der Lehrer                                      |
+| schafkopf     | [AC-42](30-brett-und-karten/schafkopf.md)   | Lehrer kennt Trumpf statt Fehlkarte    | Der Lehrer                                      |
 | viergewinnt   | [AC-1](30-brett-und-karten/viergewinnt.md)  | Sieben mal sechs Felder                | Brett und Gegner                                |
 | viergewinnt   | [AC-2](30-brett-und-karten/viergewinnt.md)  | Drei Stufen gegen den Rechner          | Brett und Gegner                                |
 | viergewinnt   | [AC-3](30-brett-und-karten/viergewinnt.md)  | Sofortsieg wird genommen               | Brett und Gegner                                |

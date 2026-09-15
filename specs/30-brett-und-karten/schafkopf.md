@@ -1,7 +1,7 @@
 # Schafkopf
 
 **Datei:** [`spiele/schafkopf.js`](../../spiele/schafkopf.js) · [`spiele/karten.js`](../../spiele/karten.js)
-**Stand:** 39/39 fertig
+**Stand:** 42/42 fertig
 
 ## Zweck
 
@@ -138,6 +138,13 @@ drei Stufen erklärt Züge aus derselben Sicht, die ein Mensch am Tisch hat.
   auch dann, wenn die Rechnung eine andere Karte vorn sieht. Vorher legte der
   Gegenspieler oft eine eigene Sau vor, und der Partner hörte mit dem Trumpf
   auf, sobald er nicht mehr den höchsten hielt.
+- **AC-40** `fertig` **Solist zieht Trumpf statt Fehlkarte** — Spielt der
+  Farbsolist aus, solange nach dem Zug noch mehr als dreizehn Karten offen
+  sind, und sieht die Rechnung eine Farbkarte vorn, über der noch eine höhere
+  draußen ist, während die Gegner Trumpf haben können, legt er stattdessen den
+  besten Trumpf der Rechnung – auch ohne den höchsten. Vorher spielte er nach
+  durchgelaufener Herz-Sau den Herz-König in den offenen Zehner, und die
+  Gegenpartei schmierte darauf.
 
 ### Der Lehrer
 
@@ -189,6 +196,18 @@ drei Stufen erklärt Züge aus derselben Sicht, die ein Mensch am Tisch hat.
   Trumpf angespielt 72 von 100. Ein Indiz, das nach einem fertigen Stich nicht
   vorkommen kann, steht nicht in der Liste. Vorher standen dort 57 und 55 und
   „Rufffarbe angespielt" mit 60 – gezählt 67, 42 und nie.
+- **AC-41** `fertig` **Sau-Satz nur bei laufender Farbe** — „Die Sau
+  anspielen, solange die Farbe noch läuft" steht nur, wenn aus deiner Sicht
+  mindestens drei Karten der Farbe draußen sind und niemand dort frei ist.
+  Sonst sagt die Begründung, dass die Sau nicht durchgehen kann und warum; gegen
+  ein Solo mit höchstens zwei Karten draußen auch, dass das Anspiel
+  nachgespielt kein Fehler ist. Vorher bekam den Satz auch, wer vier Karten der
+  Farbe selbst hielt.
+- **AC-42** `fertig` **Lehrer kennt Trumpf statt Fehlkarte** — In der Lage aus
+  AC-40 zeigt der Tipp auf den Trumpf, die Begründung beginnt mit „Trumpf statt
+  …" und nennt die Farbkarte, der Zahlsatz sagt, dass die Rechnung den Trumpf
+  unterschätzt. Wer beim Mitlesen die Farbkarte legt, liest „Besser: …", auch
+  wenn deren Quote in der Rechnung höher ist.
 
 ### Darstellung
 
@@ -551,6 +570,55 @@ nach jedem fertigen Stich, solange die Rufsau noch lag, über 1966 Sauspiele:
 
 Trumpf anspielen war vorher kein Zeichen, jetzt ist es das stärkste (AC-39).
 
+### Wo die Ausspielung den Trumpf unterschätzt
+
+Gemeldet vom Tisch: Der Solist sticht, spielt die Herz-Sau, sie läuft durch –
+und er spielt den Herz-König nach, in den offenen Zehner. Die Gegenpartei
+schmiert. Die Rechnung hielt den König für den besten Zug, und zwar nicht
+knapp, sondern klar vor jedem Trumpf.
+
+Der Grund liegt nicht in der Rechnung, sondern in dem, womit sie jede
+Verteilung zu Ende spielt. Die Faustregel zieht als Solist nur mit dem
+höchsten Trumpf, der noch draußen ist. Wer ohne ihn einen Trumpf anspielt,
+spielt in der Ausspielung danach genauso zögerlich weiter – der erste Trumpf
+wird also an einem Solisten gemessen, der den zweiten nicht nachzieht.
+
+Deshalb wurde am Tisch gefragt statt an der Rechnung: echte Soli, vier Rechner
+mit eigener Sicht. Wo der Solist eine Farbkarte ausspielen will, über der noch
+eine höhere draußen ist, und beide Seiten Trumpf haben, wird die Partie
+gegabelt – einmal die Farbkarte, einmal der beste Trumpf der Rechnung – und
+jeder Zweig achtmal mit verdeckten Karten zu Ende gespielt, derselbe Zufall in
+beiden. Aus Sicht des Solisten, Farbkarte minus Trumpf:
+
+| Lage | n | Augen | Siegquote |
+| --- | --- | --- | --- |
+| alle | 346 | −5,0 ± 1,2 | **−13,2 ± 3,5** |
+| Farbkarte ohne Augen | 265 | −4,9 ± 1,5 | −13,2 ± 4,2 |
+| König | 58 | −6,3 ± 2,9 | −16,0 ± 7,6 |
+| Zehner | 23 | −3,7 ± 4,2 | −6,5 ± 7,8 |
+| Stich 1–3 | 195 | −5,4 ± 1,6 | −14,0 ± 4,3 |
+| Stich 4–5 | 138 | −5,5 ± 2,0 | −14,0 ± 6,2 |
+| Stich 6–8 | 13 | +5,6 ± 5,6 | +5,8 ± 15,8 |
+
+Ab Stich 6 dreht es eher. Dort rechnet die Welt nach dem Zug exakt, die
+Schwäche der Faustregel spielt keine Rolle mehr – und genau daran hängt die
+Regel, nicht an der Stichnummer (AC-40).
+
+Eingebaut und am ganzen Spiel nachgemessen, dieselben 714 Soli mit und ohne
+die Regel, Zufall an Gabe und Zugnummer gebunden: 169 gehen anders aus, und
+der Solist gewinnt **+4,2 ± 1,9** Punkte öfter, mit +1,4 ± 0,6 Augen.
+
+Im selben Zug kam eine zweite Meldung: Gegen ein Solo, mit der Eichel-Sau und
+drei weiteren Eicheln in der Vorhand, riet der Tipp zur Sau, „solange die Farbe
+noch läuft". Mit vier eigenen Karten sind höchstens zwei draußen – laufen kann
+da nichts, der Satz war schlicht falsch (AC-41). Der Zug selbst aber nicht.
+Dieselbe Gabelung, Sau gegen die beste andere Karte, 257 Lagen: für die
+Gegenpartei +1,1 ± 1,2 Augen und +2,5 ± 3,2 Punkte, also kein Unterschied. Die
+Sau steht bei Gleichstand oben, weil der Merksatz „Nachspielen" in den
+aufgedeckten Verteilungen fast immer einen freien Mitspieler sieht. Ihn zu
+entschärfen – die Sau schonen, wenn auch der Solist frei ist, oder nur mit dem
+Solisten in der Mitte nachspielen – ändert am ganzen Solo nichts messbar.
+
 ### Was von den Merksätzen übrig blieb
 
 Alle bisher geprüften, jeder in der Fassung, die tatsächlich gemessen wurde.
@@ -578,6 +646,10 @@ genau daran ist diese Tabelle schon einmal missverstanden worden.
 | Nachspielen gegen ein Solo | **hohe** Karte in eine Farbe, in der der Mitspieler frei ist | **−3,2 / −3,8** für die Spielerpartei | eingebaut |
 | dasselbe mit kleiner Karte | sonst gleich | +5,0 bis +5,5, also schädlich | verworfen |
 | dasselbe, Spieler muss bedienen | zusätzliche Bedingung | −0,8, Wirkung weg | verworfen |
+| dasselbe, aber die Sau schonen | wenn der Solist in der Farbe auch frei ist | +0,34 ± 1,65 (884 Soli) | verworfen |
+| dasselbe, Solist in der Mitte | freier Mitspieler sitzt hinter dem Solisten, oder der Solist muss bedienen | −0,79 ± 1,87 (884 Soli) | verworfen |
+| Gegen ein Solo keine Sau, die nicht durchgehen kann | höchstens zwei Karten der Farbe draußen – gegabelt | Sau gegen beste andere Karte: +2,5 ± 3,2, Augen +1,1 ± 1,2 (257 Lagen) | kein Unterschied |
+| Solist: Trumpf statt Fehlkarte | über der Farbkarte ist noch eine höhere draußen, Gegner mit Trumpf, solange geschätzt wird – gegabelt | **+13,2 ± 3,5** je Lage (346 Lagen); am ganzen Solo **+4,2 ± 1,9**, Augen +1,4 ± 0,6 (714 Soli) | eingebaut |
 | Kurzer Weg – lange Farbe | nur die Farbwahl, überstimmt nichts | ±0,4, kein Unterschied | offen |
 | Langer Weg – lange Farbe | dieselbe enge Fassung | −0,5 ± 0,5, nicht bestätigt | offen |
 | Farbeln: längste Farbe spielen | dieselbe enge Fassung | ±0,6, kein Unterschied | offen |
