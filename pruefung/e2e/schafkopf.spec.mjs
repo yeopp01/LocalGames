@@ -98,10 +98,11 @@ test('als Solist rät der Tipp nach dem ersten Stich zu Trumpf statt zur Herz-Sa
   await expect(page.locator('.sk-notiz-titel')).toHaveText(/Ober|Unter|Schellen/);
 });
 
-test('als Gegenspieler rät der Tipp in Stich 4 nicht zum Eichel-Ober', async ({ page }) => {
+test('als Gegenspieler rät der Tipp in Stich 4 zur Farbkarte statt zu Trumpf', async ({ page }) => {
   /* Der Solist hat die Herz-Sau durchgebracht und den Herz-König nachgespielt,
      dein Herz-Zehner hat ihn geholt. Jetzt spielst du aus und hältst den
-     höchsten Trumpf – gegen ein Solo so früh die falsche Karte (AC-44). */
+     höchsten Trumpf und drei weitere – gegen ein Solo spielt man so früh gar
+     keinen aus. Der Gras-Neuner ist die einzige Farbkarte (AC-44, AC-46). */
   const haende = [
     [3, 12, 20, 26, 13],
     [4, 11, 19, 24, 25],
@@ -122,8 +123,8 @@ test('als Gegenspieler rät der Tipp in Stich 4 nicht zum Eichel-Ober', async ({
   });
   await oeffnen(page, '#/spiel/schafkopf', { stand: { schafkopf: stand } });
   await page.getByRole('button', { name: 'Tipp', exact: true }).click();
-  await expect(page.locator('.sk-notiz-text')).toBeVisible();
-  await expect(page.locator('.sk-notiz-titel')).not.toHaveText('Eichel-Ober');
+  await expect(page.locator('.sk-notiz-titel')).toHaveText('Gras-Neuner');
+  await expect(page.locator('.sk-notiz-text')).toContainText('noch auf der Hand');
 });
 
 test('beim Mitlesen heißt der Herz-König in dieser Lage „Besser: …"', async ({ page }) => {

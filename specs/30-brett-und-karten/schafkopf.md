@@ -1,7 +1,7 @@
 # Schafkopf
 
 **Datei:** [`spiele/schafkopf.js`](../../spiele/schafkopf.js) · [`spiele/karten.js`](../../spiele/karten.js)
-**Stand:** 45/45 fertig
+**Stand:** 46/46 fertig
 
 ## Zweck
 
@@ -162,6 +162,12 @@ drei Stufen erklärt Züge aus derselben Sicht, die ein Mensch am Tisch hat.
   draußen ist, nicht zu, wenn ein kleinerer erlaubter Trumpf den Stich ebenfalls
   holt; er nimmt die beste andere Karte der Rechnung. Vorher galt der Ober mit
   drei Augen beim Stechen als „teuerste Karte, die hält".
+- **AC-46** `fertig` **Gegenspieler spielt früh keinen Trumpf** — Was AC-44 für
+  den höchsten Trumpf regelt, gilt für jeden: Gegen ein Farbsolo spielt ein
+  Gegenspieler in den ersten vier Stichen keinen Trumpf aus, wenn er eine
+  Farbkarte hat. Die Begründung sagt dann, dass Trumpf auf der Hand bleibt und
+  warum – aber nur, wenn die Regel den Zug gewählt hat. Vorher spielte er nach
+  AC-44 statt des Eichel-Obers den Gras-Unter oder den Schellen-König aus.
 
 ### Der Lehrer
 
@@ -680,6 +686,21 @@ gegenseitig aufheben: Zusammen gemessen standen sie bei −1,1 ± 2,1 und sagten
 nichts. Die letzte bringt nur Augen und kostet nichts – drin aus demselben
 Grund wie die Partner-Sitte.
 
+Offen blieb danach: In der Tischlage spielte der Gegenspieler statt des
+Eichel-Obers nun oft den Gras-Unter oder den Schellen-König aus. Dieselbe
+Gabelung für jeden Trumpf, der nicht der höchste ist – mit der Grenze von oben,
+nicht mit einer neu gesuchten. In Stich 1–4 kostet er die Gegenpartei
+−6,0 ± 1,7 Augen und −9,7 ± 4,0 Punkte je Lage (238), ab Stich 5 ist nichts
+messbar (57). Wie viele Trümpfe er selbst hält, ändert nichts: mit ein, zwei
+Trümpfen −4,3 Augen, mit vier und mehr −7,9. Die Regel gilt seither für jeden
+Trumpf (AC-46). Am ganzen Spiel, 2500 gepaarte Soli, 185 anders gespielt:
+Gegenpartei **+0,9 ± 0,4** Punkte, +0,7 ± 0,2 Augen.
+
+Die Grenze zwischen Stich 4 und 5 war nach dem Blick auf die Daten gezogen.
+Sie hält der Gegenprobe an frischen Gaben stand: Den höchsten Trumpf ab Stich 5
+doch auszuspielen bringt der Gegenpartei +2,9 ± 0,9 Augen (408 Lagen), in
+Stich 6 +5,2 ± 1,4.
+
 ### Was von den Merksätzen übrig blieb
 
 Alle bisher geprüften, jeder in der Fassung, die tatsächlich gemessen wurde.
@@ -713,6 +734,8 @@ genau daran ist diese Tabelle schon einmal missverstanden worden.
 | Solist: Trumpf statt Fehlkarte | über der Farbkarte ist noch eine höhere draußen, Gegner mit Trumpf, solange geschätzt wird – gegabelt | **+13,2 ± 3,5** je Lage (346 Lagen); am ganzen Solo **+4,2 ± 1,9**, Augen +1,4 ± 0,6 (714 Soli) | eingebaut |
 | Solist: Trumpf vor der Sau | Farb-Sau, Gegner mit Trumpf, solange geschätzt wird – gegabelt | +3,7 ± 2,2, Augen +5,1 ± 1,1 je Lage (480); am ganzen Solo **+1,4 ± 0,8**, Augen +1,2 ± 0,4 (2000 Soli) | eingebaut |
 | Gegen ein Solo den Chef-Trumpf nicht ausspielen | Gegenpartei, Stich 1–4, beste Farbkarte statt höchstem Trumpf – gegabelt | +12,0 ± 3,8, Augen +4,6 ± 1,4 je Lage (286); ab Stich 5 −3,0 ± 2,4; am ganzen Solo **+0,9 ± 0,6**, Augen +0,7 ± 0,2 (2000 Soli) | eingebaut |
+| dasselbe mit jedem anderen Trumpf | Gegenpartei, Stich 1–4, Grenze übernommen statt neu gesucht – gegabelt | +9,7 ± 4,0, Augen +6,0 ± 1,7 je Lage (238); ab Stich 5 ±0 (57); am ganzen Solo **+0,9 ± 0,4**, Augen +0,7 ± 0,2 (2500 Soli) | eingebaut |
+| Gegenprobe: den Chef-Trumpf ab Stich 5 doch ausspielen | frische Gaben, nach der Regel | Augen +2,9 ± 0,9 je Lage (408) für das Ausspielen, Stich 6 +5,2 ± 1,4 | Grenze bestätigt |
 | Den Chef-Trumpf nicht zugeben, wenn ein kleinerer holt | Gegenpartei gegen ein Solo, Stich 1–5 – gegabelt | +4,1 ± 3,4, Augen +3,5 ± 1,4 je Lage (210); am ganzen Solo +0,1 ± 0,3, Augen **+0,5 ± 0,2** (2000 Soli) | eingebaut |
 | Kurzer Weg – lange Farbe | nur die Farbwahl, überstimmt nichts | ±0,4, kein Unterschied | offen |
 | Langer Weg – lange Farbe | dieselbe enge Fassung | −0,5 ± 0,5, nicht bestätigt | offen |

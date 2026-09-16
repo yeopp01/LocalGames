@@ -200,14 +200,17 @@
           + 'rechnet der Rechner ohnehin exakt. Am ganzen Solo: +4,2 ± 1,9 für den Solisten. '
           + 'Dasselbe mit der Farb-Sau: 5,1 ± 1,1 Augen je Lage in den ersten fünf Stichen, am '
           + 'ganzen Solo +1,4 ± 0,8, wenn er erst Trumpf zieht.' },
-      { titel: 'Gegen ein Solo den höchsten Trumpf nicht früh ausspielen',
+      { titel: 'Gegen ein Solo früh keinen Trumpf ausspielen – auch nicht den höchsten',
         gilt: 'Solo, Gegenpartei – Stich 1 bis 4',
-        text: 'Hältst du den höchsten Trumpf, der noch draußen ist, spielst du ihn in den ersten '
-          + 'vier Stichen nicht aus, sondern eine Farbkarte. Der Solist gibt einen kleinen Trumpf '
-          + 'zu, deine Mitspieler müssen ebenfalls Trumpf legen – und genau die fehlen ihnen dann '
-          + 'gegen ihn. Später sind ihre Trümpfe ohnehin gefallen, dann zieht er, was noch draußen ist.',
-        zahl: 'Gegabelt, je Lage für die Gegenpartei: Stich 1 −8 Punkte, Stich 4 −17, ab Stich 5 '
-          + 'eher Gewinn. Am ganzen Solo +0,9 ± 0,6 und +0,7 ± 0,2 Augen für die Gegenpartei.' },
+        text: 'In den ersten vier Stichen spielst du keinen Trumpf aus, wenn du eine Farbkarte '
+          + 'hast – weder den höchsten noch einen anderen. Der Solist gibt einen kleinen zu, deine '
+          + 'Mitspieler müssen ebenfalls Trumpf legen, und genau die fehlen ihnen dann gegen ihn. '
+          + 'Ab dem fünften Stich sind ihre Trümpfe zum großen Teil gefallen; dann darf der '
+          + 'höchste ziehen, was noch draußen ist.',
+        zahl: 'Gegabelt, je Lage, Stich 1–4: der höchste Trumpf kostet die Gegenpartei 12,0 ± 3,8 '
+          + 'Punkte, jeder andere 9,7 ± 4,0. Den höchsten ab Stich 5 doch auszuspielen bringt '
+          + '+2,9 ± 0,9 Augen. Am ganzen Solo: +0,9 ± 0,6 für den höchsten, weitere +0,9 ± 0,4 '
+          + 'für die übrigen, jeweils mit +0,7 ± 0,2 Augen.' },
       { titel: 'Als Gegenspieler im ersten Stich die Rufsau suchen',
         gilt: 'Sauspiel, Gegenpartei – Tischsitte',
         text: 'Hast du die gerufene Farbe, spielst du sie im ersten Stich klein an: Wer die '
@@ -348,7 +351,9 @@
         text: 'Die schärfste Regel im ganzen Spiel. Wer als Gegenspieler Trumpf anspielt, '
           + 'ohne den höchsten zu halten, spielt dem Alleinspieler die Trümpfe frei.',
         zahl: 'In 398 solchen Lagen spielt der Rechner 3 % Trumpf. 89 Prozent aller '
-          + 'Anspiele der Gegenpartei folgen allein dieser einen Frage.' },
+          + 'Anspiele der Gegenpartei folgen allein dieser einen Frage. Gegen ein Solo in den '
+          + 'ersten vier Stichen gilt es inzwischen ausnahmslos: Dort kostet jedes solche Anspiel '
+          + 'die Gegenpartei 9,7 ± 4,0 Punkte je Lage.' },
       { titel: 'Als Spieler ohne den höchsten Trumpf: je später, desto weniger',
         gilt: 'Spieler',
         text: 'Früh und wenn ohnehin schon wenig fremder Trumpf unterwegs ist, lohnt es '
@@ -1011,7 +1016,7 @@
         text: rat.einzig
           ? 'Du hast gar keine Wahl – nur diese eine Karte ist erlaubt.'
           : K.begruenden(K.sichtVon(zustand(), ICH), beste.karte, meineSeite(),
-            rat.werte.map((e) => e.karte)),
+            rat.werte.map((e) => e.karte), rat.sitte),
         zahl: rat.einzig ? '' : zahlSatz(rat, beste) + ' ' + herkunftSatz(rat),
       };
       sichern();
@@ -1027,8 +1032,9 @@
       solotrumpf: 'Die Rechnung spielt jede Verteilung aber mit einem Solisten zu Ende, der '
         + 'ohne den höchsten Trumpf keinen nachzieht – den Trumpf unterschätzt sie deshalb. '
         + 'Am Tisch nachgespielt kommt der Solist in dieser Lage mit Trumpf besser weg.',
-      gegensolo: 'Am Tisch nachgespielt kostet der höchste Trumpf die Gegenpartei in den ersten '
-        + 'vier Stichen aber deutlich: Er zieht vor allem den eigenen Mitspielern die Trümpfe.',
+      gegensolo: 'Am Tisch nachgespielt kostet ein Trumpf-Anspiel die Gegenpartei in den ersten '
+        + 'vier Stichen aber deutlich – mit dem höchsten Trumpf wie mit einem anderen: Es zieht '
+        + 'vor allem den eigenen Mitspielern die Trümpfe.',
       cheftrumpf: 'Am Tisch nachgespielt kostet der höchste Trumpf hier aber Augen: Ein kleinerer '
         + 'holt den Stich genauso, und der höchste fehlt später gegen den Solisten.',
     };
@@ -1130,7 +1136,7 @@
         stand.notiz = {
           art: 'schlecht',
           titel: 'Besser: ' + K.kartenName(beste.karte),
-          text: K.begruenden(sicht, beste.karte, meineSeite(), zuege),
+          text: K.begruenden(sicht, beste.karte, meineSeite(), zuege, rat.sitte),
         };
         return;
       }
@@ -1139,14 +1145,14 @@
         stand.notiz = {
           art: 'gut',
           titel: karte === beste.karte ? 'Genau die.' : 'Geht auch.',
-          text: K.begruenden(sicht, karte, meineSeite(), zuege),
+          text: K.begruenden(sicht, karte, meineSeite(), zuege, rat.sitte),
         };
         return;
       }
       stand.notiz = {
         art: 'schlecht',
         titel: 'Besser: ' + K.kartenName(beste.karte),
-        text: K.begruenden(sicht, beste.karte, meineSeite(), zuege)
+        text: K.begruenden(sicht, beste.karte, meineSeite(), zuege, rat.sitte)
           + ' Deine Karte reicht in ' + prozentText(meine.quote) + ' der Verteilungen, jene in '
           + prozentText(beste.quote) + '.',
       };

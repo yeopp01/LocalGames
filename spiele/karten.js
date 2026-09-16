@@ -1354,14 +1354,28 @@ const Karten = (() => {
 
      Am ganzen Spiel, 2000 gepaarte Soli, 241 davon anders gespielt:
      Gegenpartei +0,9 ± 0,6 Punkte Siegquote, +0,7 ± 0,2 Augen. */
-  function gegenSoloChefZurueck(s, werte) {
+  /* Und nicht nur der höchste. Dieselbe Gabelung für jeden anderen Trumpf,
+     den die Rechnung ausspielen will – gemessen mit der Grenze von oben, nicht
+     mit einer neu gesuchten. Gegenpartei, Trumpf gegen beste Farbkarte:
+
+        Stich 1–4 (238)   Augen −6,0 ± 1,7   Siegquote −9,7 ± 4,0
+        Stich 5–8  (57)   Augen −1,0 ± 2,7   Siegquote −0,2 ± 10,8
+
+     Wie viele Trümpfe er selbst hält, ändert daran nichts: mit ein, zwei
+     Trümpfen −4,3 Augen, mit vier und mehr −7,9.
+
+     Die Grenze hält auch der Gegenprobe an frischen Gaben stand: Den höchsten
+     Trumpf ab Stich 5 auszuspielen bringt der Gegenpartei +2,9 ± 0,9 Augen
+     (408 Lagen), in Stich 6 +5,2 ± 1,4.
+
+     Am ganzen Spiel gegen die Fassung nur für den höchsten Trumpf, 2500
+     gepaarte Soli, 185 davon anders gespielt: Gegenpartei +0,9 ± 0,4 Punkte
+     Siegquote, +0,7 ± 0,2 Augen. */
+  function gegenSoloKeinTrumpf(s, werte) {
     if (s.sp.art !== 'solo' || s.ich === s.spieler || s.trick.length) return null;
     if (s.stiche.length >= 4) return null;
     const ord = s.ord;
-    const oben = werte[0].karte;
-    if (!ord.trumpf[oben] || s.unbekannt.some((c) => ord.trumpf[c] && ord.rang[c] > ord.rang[oben])) {
-      return null;
-    }
+    if (!ord.trumpf[werte[0].karte]) return null;
     return werte.find((e) => !ord.trumpf[e.karte]) || null;
   }
 
@@ -1402,7 +1416,7 @@ const Karten = (() => {
      Gegenpartei, und von denen eine beim Ausspielen, eine beim Zugeben. */
   const KORREKTUREN = [
     ['solotrumpf', trumpfStattFarbe],
-    ['gegensolo', gegenSoloChefZurueck],
+    ['gegensolo', gegenSoloKeinTrumpf],
     ['cheftrumpf', chefNichtVerheizen],
   ];
 
@@ -1564,7 +1578,10 @@ const Karten = (() => {
      Der Rechner sagt nicht nur was, sondern warum. Die Begründung kommt nicht
      aus der Suche – die kann nur zählen –, sondern aus der Lage: dieselben
      Fragen, die ein Mensch am Tisch stellt, in dieser Reihenfolge. */
-  function begruenden(s, k, seite, zuege) {
+  /* korrektur: die Art der nachgespielten Korrektur, die den Zug gewählt hat
+     (siehe KORREKTUREN), sonst leer. Manche Sätze gelten nur dann – ohne sie
+     würden sie jede Farbkarte der Gegenpartei „erklären". */
+  function begruenden(s, k, seite, zuege, korrektur) {
     const ord = s.ord;
     const meins = seite;                        // gehöre ich zur Spielerpartei?
     const trumpf = ord.trumpf[k] === 1;
@@ -1640,18 +1657,16 @@ const Karten = (() => {
             + 'kleinsten verbrennt er einen Trumpf für einen Stich ohne Augen.';
         }
       }
-      /* Gegen ein Solo bleibt der höchste Trumpf früh auf der Hand – siehe
-         gegenSoloChefZurueck. Ohne den Satz sähe es aus, als hätte der
-         Rechner ihn übersehen. */
-      if (!meins && s.sp.art === 'solo' && s.stiche.length < 4) {
+      /* Gegen ein Solo bleibt Trumpf früh auf der Hand – siehe
+         gegenSoloKeinTrumpf. Nur wenn die Regel den Zug gewählt hat: Ohne den
+         Satz sähe es aus, als hätte der Rechner den Trumpf übersehen. */
+      if (korrektur === 'gegensolo' && !meins) {
         const chefT = s.hand.find((c) => ord.trumpf[c]
           && !s.unbekannt.some((x) => ord.trumpf[x] && ord.rang[x] > ord.rang[c]));
-        if (chefT != null) {
-          return kartenName(chefT) + ' bleibt noch auf der Hand. Gegen ein Solo zieht der höchste '
-            + 'Trumpf vor allem deinen Mitspielern die Trümpfe, die sie gegen den Solisten '
-            + 'brauchen – der kann einen kleinen zugeben. Früh im Spiel kostet das nachgemessen, '
-            + 'ab dem fünften Stich nicht mehr.';
-        }
+        return (chefT != null ? 'Auch ' + kartenName(chefT) + ' bleibt' : 'Trumpf bleibt')
+          + ' noch auf der Hand. Gegen ein Solo zieht ein Trumpf-Anspiel vor allem deinen '
+          + 'Mitspielern die Trümpfe, die sie gegen den Solisten brauchen – der kann einen '
+          + 'kleinen zugeben. In den ersten vier Stichen kostet das nachgemessen, danach nicht mehr.';
       }
       if (s.sp.art === 'sau' && farbe(k) === s.sp.farbe && !s.sauWeg && !meins) {
         return 'Die Sau suchen: wer sie hat, muss sie legen. Danach weißt du, '
