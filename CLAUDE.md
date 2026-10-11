@@ -57,7 +57,10 @@ Spiel ohne Änderung auf.
 
 Die `sitzung` ist die einzige Verbindung zum Rahmen: `unter`, `werkzeuge`,
 `toast`, `blatt`/`blattZu`, `merken`/`erinnert`/`vergessen` (laufender
-Spielstand), `notieren`/`partien` (Statistik), `zurueck`, `el`, `dauerText`.
+Spielstand), `notieren`/`partien` (Statistik), `zurueck`, `el`, `dauerText`,
+dazu `stufenZeichen`/`stufenName`/`stufenAktionen`/`stufenLeiste` und
+`bildzeichen` – Stufen, „Nochmal" und „Fertig" so, dass ein Kind sie ohne
+Lesen erkennt. Ein Spiel mit Stufen nimmt diese statt eigener Knöpfe.
 
 ## Verträge, die leicht kaputtgehen
 

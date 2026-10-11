@@ -271,7 +271,7 @@
 
     function kopfZeichnen() {
       kopf.replaceChildren();
-      kopf.append(el('span', null, STUFEN[stand.stufe].name));
+      kopf.append(s.stufenName(STUFEN, stand.stufe));
       const rest = el('span', null, '');
       rest.append(el('b', null, String(maxVersuche() - stand.versuche.length)));
       rest.append(document.createTextNode(' Versuche frei'));
@@ -283,19 +283,12 @@
       endeKasten.replaceChildren();
       endeKasten.hidden = !vorbei();
       if (!vorbei()) return;
+      if (stand.fertig === 'sieg') endeKasten.append(s.bildzeichen('fertig'));
       endeKasten.append(el('p', 'ende-titel',
         stand.fertig === 'sieg' ? 'Code geknackt.' : 'Nicht geknackt.'));
       endeKasten.append(el('p', 'notiz', 'Der Code war ' + stand.code + '.'
         + (stand.fertig === 'sieg' ? ' Gebraucht: ' + stand.versuche.length + ' Versuche.' : '')));
-      const l = el('div', 'leiste');
-      for (const stufe of Object.keys(STUFEN)) {
-        const b = el('button', 'knopf ' + (stufe === stand.stufe ? 'knopf--voll' : 'knopf--still'),
-          'Neu, ' + STUFEN[stufe].name);
-        b.type = 'button';
-        b.addEventListener('click', () => neu(stufe));
-        l.append(b);
-      }
-      endeKasten.append(l);
+      endeKasten.append(s.stufenLeiste(STUFEN, stand.stufe, neu));
     }
 
     function neu(stufe) {
@@ -309,10 +302,7 @@
       s.blatt({
         titel: 'Neuer Code',
         inhalt: 'Normal sind vier Stellen und zehn Versuche, schwer fünf Stellen und zwölf. Ziffern dürfen sich wiederholen.',
-        aktionen: [
-          { text: 'Normal', tun: () => neu('normal') },
-          { text: 'Schwer', art: 'still', tun: () => neu('schwer') },
-        ],
+        aktionen: s.stufenAktionen(STUFEN, neu),
       });
     }
 

@@ -865,7 +865,7 @@
 
     function kopfZeichnen() {
       kopf.replaceChildren();
-      kopf.append(el('span', null, STUFEN[stand.stufe].name));
+      kopf.append(s.stufenName(STUFEN, stand.stufe));
       const zeit = el('span', null, '');
       zeit.append(el('b', null, s.dauerText(zeitJetzt()) === '–' ? '0 s' : s.dauerText(zeitJetzt())));
       kopf.append(zeit);
@@ -877,17 +877,11 @@
       endeKasten.replaceChildren();
       endeKasten.hidden = !stand.fertig;
       if (!stand.fertig) return;
+      endeKasten.append(s.bildzeichen('fertig'));
       endeKasten.append(el('p', 'ende-titel', 'Weg gefunden.'));
       endeKasten.append(el('p', 'notiz', STUFEN[stand.stufe].name + ' · ' + s.dauerText(stand.verbraucht)
         + (stand.hilfen ? ' · ' + stand.hilfen + ' Hinweise' : ' · ohne Hinweis')));
-      const l = el('div', 'leiste');
-      for (const stufe of Object.keys(STUFEN)) {
-        const b = el('button', 'knopf ' + (stufe === stand.stufe ? 'knopf--voll' : 'knopf--still'), 'Neu, ' + STUFEN[stufe].name);
-        b.type = 'button';
-        b.addEventListener('click', () => neu(stufe));
-        l.append(b);
-      }
-      endeKasten.append(l);
+      endeKasten.append(s.stufenLeiste(STUFEN, stand.stufe, neu));
     }
 
     /* Ein 7×7-Rätsel ist meist in Millisekunden gebaut, auf einem langsamen
@@ -913,11 +907,7 @@
       s.blatt({
         titel: 'Neues Rätsel',
         inhalt: 'Leicht ist 5 × 5, mittel 6 × 6, schwer 7 × 7. Jedes Rätsel hat genau einen möglichen Weg, und der lässt sich ohne Raten herleiten.',
-        aktionen: [
-          { text: 'Leicht', tun: () => neu('leicht') },
-          { text: 'Mittel', art: 'still', tun: () => neu('mittel') },
-          { text: 'Schwer', art: 'still', tun: () => neu('schwer') },
-        ],
+        aktionen: s.stufenAktionen(STUFEN, neu),
       });
     }
 

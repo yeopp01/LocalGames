@@ -1,7 +1,7 @@
 # Vier gewinnt
 
 **Datei:** [`spiele/viergewinnt.js`](../../spiele/viergewinnt.js)
-**Stand:** 16/16 fertig
+**Stand:** 17/17 fertig
 
 ## Zweck
 
@@ -94,6 +94,11 @@ schnelle Partie auf dem Handy wie am Rechner.
   „–"), die Zahl der Unentschieden und – nur wenn es welche gibt – „Runde zu
   zweit" bzw. „Runden zu zweit". Eine leere Liste und Partien ohne `stufe`,
   `gewonnen` oder `modus` ergeben keinen Fehler.
+- **AC-17** `fertig` **Stufe und Ende ohne Lesen** — Kopfzeile, Blatt „Neue
+  Partie" und Knöpfe unter dem Ergebnis zeigen die Stufe auch als Punkte in
+  Ampelfarbe (Schnittstelle AC-15); die gespielte heißt dort „Nochmal" und trägt
+  den Kreispfeil. Über „Du gewinnst." steht ein grüner Haken, sonst nicht. Zu
+  zweit trägt „Noch eine" den Kreispfeil.
 
 ## Randfälle
 

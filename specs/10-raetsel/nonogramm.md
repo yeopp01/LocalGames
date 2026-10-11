@@ -1,7 +1,7 @@
 # Nonogramm
 
 **Datei:** [`spiele/nonogramm.js`](../../spiele/nonogramm.js)
-**Stand:** 15/15 fertig
+**Stand:** 16/16 fertig
 
 ## Zweck
 
@@ -81,6 +81,10 @@ gleichermaßen, von 5 × 5 für zwischendurch bis 10 × 10 für länger.
 - **AC-15** `fertig` **Anleitung auf Abruf** — Das Werkzeug „Anleitung" erklärt
   die Zahlen mit Beispiel, das Tippen und Wischen, die drei Wege zum Kreuz und
   rät, bei den größten Zahlen anzufangen.
+- **AC-16** `fertig` **Stufe und Ende ohne Lesen** — Kopfzeile, Blatt „Neues
+  Rätsel" und Knöpfe unter dem Ergebnis zeigen die Stufe auch als Punkte in
+  Ampelfarbe (Schnittstelle AC-15); die gespielte heißt dort „Nochmal" und trägt
+  den Kreispfeil. Über „Bild fertig." steht ein grüner Haken.
 
 ## Randfälle
 

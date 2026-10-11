@@ -1,7 +1,7 @@
 # Zahlencode
 
 **Datei:** [`spiele/mastermind.js`](../../spiele/mastermind.js)
-**Stand:** 15/15 fertig
+**Stand:** 16/16 fertig
 
 ## Zweck
 
@@ -18,8 +18,8 @@ zeigt, welcher Zug am meisten verrät – zum Lernen oder wenn man feststeckt.
   erlaubt. Die Kopfzeile zeigt Stufe und „n Versuche frei", darüber
   „4 Stellen, Ziffern 1 bis 6".
 - **AC-2** `fertig` **Neuer Code wählbar** — Das Werkzeug „Neuer Code" bietet
-  Normal und Schwer an; nach einer beendeten Partie stehen „Neu, normal" und
-  „Neu, schwer" unter dem Ergebnis.
+  Normal und Schwer an; nach einer beendeten Partie stehen „Nochmal" für die
+  gespielte Stufe und die andere mit ihrem Namen unter dem Ergebnis.
 
 ### Eingabe
 
@@ -82,6 +82,11 @@ zeigt, welcher Zug am meisten verrät – zum Lernen oder wenn man feststeckt.
   Stellenzahl und Ziffernvorrat, dass Ziffern mehrfach vorkommen dürfen, die
   Bedeutung der beiden Punktarten, dass ihre Reihenfolge nichts verrät, und
   was der Vorschlag tut.
+- **AC-16** `fertig` **Stufe und Ende ohne Lesen** — Kopfzeile, Blatt „Neuer
+  Code" und Knöpfe unter dem Ergebnis zeigen die Stufe auch als Punkte in
+  Ampelfarbe (Schnittstelle AC-15); die gespielte heißt dort „Nochmal" und trägt
+  den Kreispfeil. Über „Code geknackt." steht ein grüner Haken, über „Nicht
+  geknackt." nicht.
 
 ## Randfälle
 

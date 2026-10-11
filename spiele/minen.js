@@ -262,7 +262,7 @@
     function kopfZeichnen() {
       kopf.replaceChildren();
       const gesetzt = stand.fahne.filter(Boolean).length;
-      kopf.append(el('span', null, STUFEN[stand.stufe].name));
+      kopf.append(s.stufenName(STUFEN, stand.stufe));
       const minenText = el('span', null, '');
       minenText.append(el('b', null, String(stand.minen - gesetzt)));
       minenText.append(document.createTextNode(' Minen'));
@@ -277,19 +277,12 @@
       endeKasten.replaceChildren();
       endeKasten.hidden = !stand.fertig;
       if (!stand.fertig) return;
+      if (stand.fertig === 'sieg') endeKasten.append(s.bildzeichen('fertig'));
       endeKasten.append(el('p', 'ende-titel', stand.fertig === 'sieg' ? 'Feld geräumt.' : 'Bumm.'));
       endeKasten.append(el('p', 'notiz', stand.fertig === 'sieg'
         ? STUFEN[stand.stufe].name + ' · ' + s.dauerText(stand.verbraucht)
         : 'Eine Mine erwischt. Die anderen liegen jetzt offen.'));
-
-      const l = el('div', 'leiste');
-      for (const stufe of Object.keys(STUFEN)) {
-        const b = el('button', 'knopf ' + (stufe === stand.stufe ? 'knopf--voll' : 'knopf--still'), 'Neu, ' + STUFEN[stufe].name);
-        b.type = 'button';
-        b.addEventListener('click', () => neu(stufe));
-        l.append(b);
-      }
-      endeKasten.append(l);
+      endeKasten.append(s.stufenLeiste(STUFEN, stand.stufe, neu));
     }
 
     function neu(stufe) {
@@ -303,11 +296,7 @@
       s.blatt({
         titel: 'Neues Feld',
         inhalt: 'Klein ist 8 × 10 mit 10 Minen, mittel 10 × 14 mit 24, groß 12 × 18 mit 40.',
-        aktionen: [
-          { text: 'Klein', tun: () => neu('klein') },
-          { text: 'Mittel', art: 'still', tun: () => neu('mittel') },
-          { text: 'Groß', art: 'still', tun: () => neu('gross') },
-        ],
+        aktionen: s.stufenAktionen(STUFEN, neu),
       });
     }
 

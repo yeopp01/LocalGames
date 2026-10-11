@@ -442,7 +442,7 @@
 
     function kopfZeichnen() {
       kopf.replaceChildren();
-      kopf.append(el('span', null, zuZweit() ? 'zu zweit' : STUFEN[stand.stufe].name));
+      kopf.append(zuZweit() ? el('span', null, 'zu zweit') : s.stufenName(STUFEN, stand.stufe));
       const wer = el('span', null, '');
       if (zuZweit() && !vorbei()) {
         const punkt = el('span', 'v-punkt');
@@ -466,6 +466,7 @@
       endeKasten.replaceChildren();
       endeKasten.hidden = !vorbei();
       if (!vorbei()) return;
+      if (stand.fertig === 'sieg' && !zuZweit()) endeKasten.append(s.bildzeichen('fertig'));
       endeKasten.append(el('p', 'ende-titel',
         stand.fertig === 'remis' ? 'Unentschieden.'
           : zuZweit() ? FARBE[stand.fertig === 'sieg' ? MENSCH : RECHNER] + ' gewinnt.'
@@ -475,28 +476,24 @@
         : 'Stufe ' + STUFEN[stand.stufe].name + ', ' + stand.zuege + ' Steine.'
           + (stand.fertig === 'pleite' && stand.stufe !== 'leicht' ? ' Eine Stufe tiefer ist keine Schande.' : '')));
 
-      const l = el('div', 'leiste');
       if (zuZweit()) {
+        const l = el('div', 'leiste');
         // Wer verloren hat, fängt an; nach einem Unentschieden wieder Rot.
         const anfang = stand.fertig === 'sieg' ? RECHNER : MENSCH;
         const noch = el('button', 'knopf knopf--voll', 'Noch eine');
         noch.type = 'button';
+        noch.prepend(s.bildzeichen('nochmal'));
         noch.addEventListener('click', () => neu(stand.stufe, anfang, 'zwei'));
         const gegen = el('button', 'knopf knopf--still', 'Gegen den Rechner');
         gegen.type = 'button';
         gegen.addEventListener('click', () => neu(stand.stufe, MENSCH, 'rechner'));
         l.append(noch, gegen);
+        endeKasten.append(l);
       } else {
-        for (const stufe of Object.keys(STUFEN)) {
-          const b = el('button', 'knopf ' + (stufe === stand.stufe ? 'knopf--voll' : 'knopf--still'),
-            'Neu, ' + STUFEN[stufe].name);
-          b.type = 'button';
-          // Wer verloren hat, darf anfangen.
-          b.addEventListener('click', () => neu(stufe, stand.fertig === 'pleite' ? MENSCH : RECHNER, 'rechner'));
-          l.append(b);
-        }
+        // Wer verloren hat, darf anfangen.
+        endeKasten.append(s.stufenLeiste(STUFEN, stand.stufe,
+          (stufe) => neu(stufe, stand.fertig === 'pleite' ? MENSCH : RECHNER, 'rechner')));
       }
-      endeKasten.append(l);
     }
 
     function neu(stufe, anfang, modus) {
@@ -524,11 +521,7 @@
       s.blatt({
         titel: 'Neue Partie',
         inhalt: d,
-        aktionen: [
-          { text: 'Leicht', tun: () => neu('leicht', MENSCH, 'rechner') },
-          { text: 'Mittel', art: 'still', tun: () => neu('mittel', MENSCH, 'rechner') },
-          { text: 'Schwer', art: 'still', tun: () => neu('schwer', MENSCH, 'rechner') },
-        ],
+        aktionen: s.stufenAktionen(STUFEN, (stufe) => neu(stufe, MENSCH, 'rechner')),
       });
     }
 

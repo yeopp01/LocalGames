@@ -514,8 +514,10 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 .zeile-titel { font-weight: 700; font-size: 15.5px; }
 .zeile-unter { font-size: 13px; color: var(--tinte-leise); }
 .zeile--gefahr .zeile-titel { color: var(--rost); }
-.sheet-aktionen { display: flex; gap: 8px; margin-top: 14px; }
+.sheet-aktionen { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
 .sheet-aktionen .knopf { flex: 1 1 auto; }
+/* Drei Stufen mit Punkten passen sonst auf einem schmalen Handy nicht nebeneinander. */
+.sheet-aktionen .knopf:has(> .stufe) { padding-inline: 10px; gap: 6px; }
 .sheet-aktionen--frei { margin: 22px 0 10px; }
 
 .notiz { margin: 8px 0; font-size: 14px; color: var(--tinte-leise); line-height: 1.5; }
@@ -574,6 +576,44 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   text-align: center;
 }
 .ende-titel { font-size: 19px; font-weight: 800; margin: 0 0 4px; }
+
+/* Stufe als Punkte in Ampelfarbe, Kreispfeil und Haken – app.js,
+   stufenZeichen und bildzeichen. Leere Punkte sind Ringe in derselben Farbe,
+   damit die Zahl auch auf einem vollen Knopf lesbar bleibt. */
+.stufe { display: inline-flex; gap: 3px; align-items: center; vertical-align: middle; }
+.stufe[data-ton='leicht'] { --stufe-farbe: var(--gruen); }
+.stufe[data-ton='mittel'] { --stufe-farbe: var(--gelb); }
+.stufe[data-ton='schwer'] { --stufe-farbe: var(--rost); }
+.stufe-punkt {
+  width: .6em;
+  height: .6em;
+  border-radius: 50%;
+  border: 2px solid var(--stufe-farbe);
+  box-sizing: border-box;
+}
+.stufe-punkt--voll { background: var(--stufe-farbe); }
+.stufen-name { display: inline-flex; gap: 6px; align-items: center; }
+
+.bildzeichen { display: inline-flex; vertical-align: middle; }
+.bildzeichen svg {
+  width: 1.2em;
+  height: 1.2em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.bildzeichen--fertig { display: flex; justify-content: center; margin: 0 0 6px; color: #fff; }
+.bildzeichen--fertig svg { width: 46px; height: 46px; }
+.bildzeichen--fertig .bildzeichen-grund { fill: var(--gruen); stroke: none; }
+
+.knopf:has(> .stufe, > .bildzeichen) {
+  display: inline-flex;
+  gap: 7px;
+  align-items: center;
+  justify-content: center;
+}
 
 /* ============================================================== 1. Wördle */
 

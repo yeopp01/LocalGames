@@ -1,7 +1,7 @@
 # Weg
 
 **Datei:** [`spiele/zip.js`](../../spiele/zip.js)
-**Stand:** 20/20 fertig
+**Stand:** 21/21 fertig
 
 ## Zweck
 
@@ -19,7 +19,7 @@ mit dem Finger oder der Maus, auf „schwer" stehen Mauern im Weg.
   „n/k² Felder", darüber steht „Zahl x von n".
 - **AC-2** `fertig` **Neues Rätsel wählbar** — Das Werkzeug „Neues Rätsel"
   bietet alle drei Stufen an; nach einem gelösten Rätsel stehen sie als Knöpfe
-  „Neu, leicht/mittel/schwer" unter dem Ergebnis. Auf schwer erscheint vor dem
+  unter dem Ergebnis, die gespielte als „Nochmal". Auf schwer erscheint vor dem
   Rechnen „Der Weg wird gesucht – einen Moment.", statt dass die Oberfläche
   stumm einfriert.
 - **AC-3** `fertig` **Mauern nie auf dem Weg** — Mauern stehen als dicke
@@ -109,6 +109,10 @@ mit dem Finger oder der Maus, auf „schwer" stehen Mauern im Weg.
   die Regel (bei der 1 beginnen, Zahlen der Reihe nach, jedes Feld genau
   einmal, bei der höchsten Zahl enden), das Ziehen ohne Ecken, das
   Zurückziehen, die Mauern auf schwer und Ecken und Ränder als guten Anfang.
+- **AC-21** `fertig` **Stufe und Ende ohne Lesen** — Kopfzeile, Blatt „Neues
+  Rätsel" und Knöpfe unter dem Ergebnis zeigen die Stufe auch als Punkte in
+  Ampelfarbe (Schnittstelle AC-15); die gespielte heißt dort „Nochmal" und trägt
+  den Kreispfeil. Über „Weg gefunden." steht ein grüner Haken.
 
 ## Randfälle
 

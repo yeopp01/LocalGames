@@ -8,7 +8,7 @@ Karten.
 | Spezifikation                  | Stand        |
 | ------------------------------ | ------------ |
 | [Schafkopf](schafkopf.md)      | 46/46 fertig |
-| [Vier gewinnt](viergewinnt.md) | 16/16 fertig |
+| [Vier gewinnt](viergewinnt.md) | 17/17 fertig |
 | [2048](zweitausend.md)         | 13/13 fertig |
 
 <!-- board:end -->

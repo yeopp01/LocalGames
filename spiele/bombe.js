@@ -84,7 +84,8 @@
         const st = STUFEN[id];
         const b = el('button', 'v-wahl-knopf', null);
         b.type = 'button';
-        b.append(el('span', 'v-wahl-name', st.name));
+        b.append(s.stufenName(STUFEN, id));
+        b.lastChild.classList.add('v-wahl-name');
         b.append(el('span', 'v-wahl-unter', 'um die ' + st.sekunden + ' Sekunden'));
         if (einst.stufe === id) b.dataset.an = 'ja';
         b.addEventListener('click', () => { einst.stufe = id; merken(); zeigeAufbau(); });

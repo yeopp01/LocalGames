@@ -1,7 +1,7 @@
 # Minenfeld
 
 **Datei:** [`spiele/minen.js`](../../spiele/minen.js)
-**Stand:** 12/12 fertig
+**Stand:** 13/13 fertig
 
 ## Zweck
 
@@ -18,7 +18,7 @@ Maus am Rechner.
   nennt Spalten × Zeilen, darüber stehen Stufe, verbleibende Minen und Zeit.
 - **AC-2** `fertig` **Neues Feld wählbar** — Das Werkzeug „Neues Feld" bietet
   alle drei Stufen an; nach einer beendeten Partie stehen sie als Knöpfe
-  „Neu, klein/mittel/groß" unter dem Ergebnis.
+  unter dem Ergebnis, die gespielte als „Nochmal".
 - **AC-3** `fertig` **Passt aufs Handy** — Die Kachelgröße richtet sich nach der
   Fensterbreite (höchstens 400 Pixel Feld, mindestens 20 Pixel je Kachel) und
   wird beim Ändern der Fenstergröße neu berechnet.
@@ -58,6 +58,11 @@ Maus am Rechner.
   `gewonnen`, `dauer`, `stufe` und `aufgedeckt` notiert. Die Statistik zeigt je
   Stufe die Bestzeit aus gewonnenen Partien und „–", solange es keine gibt –
   auch bei Partien, denen `stufe` oder `dauer` fehlt.
+- **AC-13** `fertig` **Stufe und Ende ohne Lesen** — Kopfzeile, Blatt „Neues
+  Feld" und Knöpfe unter dem Ergebnis zeigen die Stufe auch als Punkte in
+  Ampelfarbe (Schnittstelle AC-15); die gespielte heißt dort „Nochmal" und trägt
+  den Kreispfeil. Über „Feld geräumt." steht ein grüner Haken, über „Bumm."
+  nicht.
 
 ## Randfälle
 

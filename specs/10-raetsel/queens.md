@@ -1,7 +1,7 @@
 # Damen
 
 **Datei:** [`spiele/queens.js`](../../spiele/queens.js)
-**Stand:** 18/18 fertig
+**Stand:** 19/19 fertig
 
 ## Zweck
 
@@ -20,7 +20,7 @@ werden muss.
   darüber steht „k × k".
 - **AC-2** `fertig` **Neues Rätsel wählbar** — Das Werkzeug „Neues Rätsel"
   bietet alle drei Stufen an; nach einem gelösten Rätsel stehen sie als Knöpfe
-  „Neu, leicht/mittel/schwer" unter dem Ergebnis.
+  unter dem Ergebnis, die gespielte als „Nochmal".
 - **AC-3** `fertig` **Gebiete klar getrennt** — Jedes Gebiet hat seine Farbe,
   an jeder Gebietsgrenze liegt eine dicke Linie. Die Feldgröße richtet sich
   nach der Fensterbreite (höchstens 340 Pixel Brett) und wird beim Ändern der
@@ -102,6 +102,10 @@ werden muss.
   die Regeln (auch: keine Diagonale über mehr als ein Feld), die Bedienung,
   die automatischen Kreuze, Rückgängig, einen guten Anfang und dass der
   Hinweis nie in die Lösung schaut, aber Falsches zuerst meldet.
+- **AC-19** `fertig` **Stufe und Ende ohne Lesen** — Kopfzeile, Blatt „Neues
+  Rätsel" und Knöpfe unter dem Ergebnis zeigen die Stufe auch als Punkte in
+  Ampelfarbe (Schnittstelle AC-15); die gespielte heißt dort „Nochmal" und trägt
+  den Kreispfeil. Über „Alle Damen sitzen." steht ein grüner Haken.
 
 ## Randfälle
 

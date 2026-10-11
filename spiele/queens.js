@@ -981,7 +981,7 @@
 
     function kopfZeichnen() {
       kopf.replaceChildren();
-      kopf.append(el('span', null, STUFEN[stand.stufe].name));
+      kopf.append(s.stufenName(STUFEN, stand.stufe));
       const zeit = el('span', null, '');
       zeit.append(el('b', null, s.dauerText(zeitJetzt()) === '–' ? '0 s' : s.dauerText(zeitJetzt())));
       kopf.append(zeit);
@@ -993,17 +993,11 @@
       endeKasten.replaceChildren();
       endeKasten.hidden = !stand.fertig;
       if (!stand.fertig) return;
+      endeKasten.append(s.bildzeichen('fertig'));
       endeKasten.append(el('p', 'ende-titel', 'Alle Damen sitzen.'));
       endeKasten.append(el('p', 'notiz', STUFEN[stand.stufe].name + ' · ' + s.dauerText(stand.verbraucht)
         + (stand.hilfen ? ' · ' + stand.hilfen + ' Hinweise' : ' · ohne Hinweis')));
-      const l = el('div', 'leiste');
-      for (const stufe of Object.keys(STUFEN)) {
-        const b = el('button', 'knopf ' + (stufe === stand.stufe ? 'knopf--voll' : 'knopf--still'), 'Neu, ' + STUFEN[stufe].name);
-        b.type = 'button';
-        b.addEventListener('click', () => neu(stufe));
-        l.append(b);
-      }
-      endeKasten.append(l);
+      endeKasten.append(s.stufenLeiste(STUFEN, stand.stufe, neu));
     }
 
     function neu(stufe) {
@@ -1017,11 +1011,7 @@
       s.blatt({
         titel: 'Neues Rätsel',
         inhalt: 'Leicht ist 6 × 6, mittel 7 × 7, schwer 8 × 8 – je größer, desto mehr Farbgebiete. Jedes Rätsel hat genau eine Lösung.',
-        aktionen: [
-          { text: 'Leicht', tun: () => neu('leicht') },
-          { text: 'Mittel', art: 'still', tun: () => neu('mittel') },
-          { text: 'Schwer', art: 'still', tun: () => neu('schwer') },
-        ],
+        aktionen: s.stufenAktionen(STUFEN, neu),
       });
     }
 

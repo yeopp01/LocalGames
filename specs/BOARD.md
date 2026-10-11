@@ -6,7 +6,7 @@
 Eine Zeile je Akzeptanzkriterium. Gepflegt wird der Status in der Spec
 selbst, hier steht er zusammengefasst.
 
-**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 2 zurückgestellt · 553 fertig
+**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 2 zurückgestellt · 563 fertig
 
 ## Nach Spezifikation
 
@@ -15,24 +15,24 @@ selbst, hier steht er zusammengefasst.
 | [Auswahl und Navigation](00-rahmen/auswahl.md)     | -         | -       | -     | -              | 18     |
 | [Datenschutz](00-rahmen/datenschutz.md)            | -         | -       | -     | -              | 11     |
 | [Offline und Versionen](00-rahmen/offline.md)      | -         | -       | -     | -              | 14     |
-| [Spielschnittstelle](00-rahmen/schnittstelle.md)   | -         | -       | -     | -              | 14     |
+| [Spielschnittstelle](00-rahmen/schnittstelle.md)   | -         | -       | -     | -              | 15     |
 | [Sicherung](00-rahmen/sicherung.md)                | -         | -       | -     | -              | 14     |
 | [Statistik](00-rahmen/statistik.md)                | -         | -       | -     | -              | 14     |
-| [Zahlencode](10-raetsel/mastermind.md)             | -         | -       | -     | -              | 15     |
-| [Minenfeld](10-raetsel/minen.md)                   | -         | -       | -     | -              | 12     |
-| [Nonogramm](10-raetsel/nonogramm.md)               | -         | -       | -     | -              | 15     |
+| [Zahlencode](10-raetsel/mastermind.md)             | -         | -       | -     | -              | 16     |
+| [Minenfeld](10-raetsel/minen.md)                   | -         | -       | -     | -              | 13     |
+| [Nonogramm](10-raetsel/nonogramm.md)               | -         | -       | -     | -              | 16     |
 | [Riegel](10-raetsel/pins.md)                       | -         | -       | -     | -              | 27     |
-| [Damen](10-raetsel/queens.md)                      | -         | -       | -     | -              | 18     |
-| [Mini-Sudoku](10-raetsel/sudoku.md)                | -         | -       | -     | 1              | 18     |
-| [Tango](10-raetsel/tango.md)                       | -         | -       | -     | -              | 14     |
-| [Weg](10-raetsel/zip.md)                           | -         | -       | -     | -              | 20     |
+| [Damen](10-raetsel/queens.md)                      | -         | -       | -     | -              | 19     |
+| [Mini-Sudoku](10-raetsel/sudoku.md)                | -         | -       | -     | 1              | 19     |
+| [Tango](10-raetsel/tango.md)                       | -         | -       | -     | -              | 15     |
+| [Weg](10-raetsel/zip.md)                           | -         | -       | -     | -              | 21     |
 | [Galgenmännchen](20-wortspiele/galgen.md)          | -         | -       | -     | -              | 14     |
 | [Wördle](20-wortspiele/wordle.md)                  | -         | -       | -     | -              | 24     |
 | [Schafkopf](30-brett-und-karten/schafkopf.md)      | -         | -       | -     | -              | 46     |
-| [Vier gewinnt](30-brett-und-karten/viergewinnt.md) | -         | -       | -     | -              | 16     |
+| [Vier gewinnt](30-brett-und-karten/viergewinnt.md) | -         | -       | -     | -              | 17     |
 | [2048](30-brett-und-karten/zweitausend.md)         | -         | -       | -     | -              | 13     |
 | [Wer am ehesten](40-zu-mehreren/amehesten.md)      | -         | -       | -     | -              | 11     |
-| [Bombe](40-zu-mehreren/bombe.md)                   | -         | -       | -     | -              | 11     |
+| [Bombe](40-zu-mehreren/bombe.md)                   | -         | -       | -     | -              | 12     |
 | [Bausteine für Runden](40-zu-mehreren/runde.md)    | -         | -       | -     | -              | 12     |
 | [Verräter](40-zu-mehreren/verraeter.md)            | -         | -       | -     | 1              | 15     |
 | [Zwei Wahrheiten](40-zu-mehreren/wahrheiten.md)    | -         | -       | -     | -              | 10     |
@@ -62,7 +62,7 @@ selbst, hier steht er zusammengefasst.
 | sudoku    | [AC-11](10-raetsel/sudoku.md)        | Hinweis räumt Fehler zuerst | ersetzt durch AC-19                          |
 | verraeter | [AC-13](40-zu-mehreren/verraeter.md) | Stimmen übers Netz sammeln  | braucht eine Verbindung zwischen den Geräten |
 
-## Fertig (553)
+## Fertig (563)
 
 | Spec          | AC                                          | Titel                                  | Anmerkung                                       |
 | ------------- | ------------------------------------------- | -------------------------------------- | ----------------------------------------------- |
@@ -123,6 +123,7 @@ selbst, hier steht er zusammengefasst.
 | schnittstelle | [AC-12](00-rahmen/schnittstelle.md)         | Auswertung verträgt Lücken             | Urteil und Auswertung                           |
 | schnittstelle | [AC-13](00-rahmen/schnittstelle.md)         | Gruppe ist der Spec-Bereich            | Anmeldung                                       |
 | schnittstelle | [AC-14](00-rahmen/schnittstelle.md)         | Spiel, das beim Start wirft            | Anmeldung                                       |
+| schnittstelle | [AC-15](00-rahmen/schnittstelle.md)         | Stufen und Zeichen ohne Lesen          | Urteil und Auswertung                           |
 | sicherung     | [AC-1](00-rahmen/sicherung.md)              | Sichern an zwei Stellen                | Sichern                                         |
 | sicherung     | [AC-2](00-rahmen/sicherung.md)              | Datei mit allen Partien                | Sichern                                         |
 | sicherung     | [AC-3](00-rahmen/sicherung.md)              | Laufende Partien bleiben daheim        | Sichern                                         |
@@ -166,6 +167,7 @@ selbst, hier steht er zusammengefasst.
 | mastermind    | [AC-13](10-raetsel/mastermind.md)           | Partie in der Statistik                | Speicher und Statistik                          |
 | mastermind    | [AC-14](10-raetsel/mastermind.md)           | Lückenhafte Partien vertragen          | Speicher und Statistik                          |
 | mastermind    | [AC-15](10-raetsel/mastermind.md)           | Anleitung erklärt alles                | Speicher und Statistik                          |
+| mastermind    | [AC-16](10-raetsel/mastermind.md)           | Stufe und Ende ohne Lesen              | Speicher und Statistik                          |
 | minen         | [AC-1](10-raetsel/minen.md)                 | Drei Größen                            | Feld und Stufen                                 |
 | minen         | [AC-2](10-raetsel/minen.md)                 | Neues Feld wählbar                     | Feld und Stufen                                 |
 | minen         | [AC-3](10-raetsel/minen.md)                 | Passt aufs Handy                       | Feld und Stufen                                 |
@@ -178,6 +180,7 @@ selbst, hier steht er zusammengefasst.
 | minen         | [AC-10](10-raetsel/minen.md)                | Verlust zeigt alles                    | Ende der Partie                                 |
 | minen         | [AC-11](10-raetsel/minen.md)                | Partie überlebt Schließen              | Speicher und Statistik                          |
 | minen         | [AC-12](10-raetsel/minen.md)                | Partie in der Statistik                | Speicher und Statistik                          |
+| minen         | [AC-13](10-raetsel/minen.md)                | Stufe und Ende ohne Lesen              | Speicher und Statistik                          |
 | nonogramm     | [AC-1](10-raetsel/nonogramm.md)             | Drei Größen                            | Feld und Stufen                                 |
 | nonogramm     | [AC-2](10-raetsel/nonogramm.md)             | Neues Rätsel wählbar                   | Feld und Stufen                                 |
 | nonogramm     | [AC-3](10-raetsel/nonogramm.md)             | Passt aufs Handy                       | Feld und Stufen                                 |
@@ -193,6 +196,7 @@ selbst, hier steht er zusammengefasst.
 | nonogramm     | [AC-13](10-raetsel/nonogramm.md)            | Fertiges Bild in der Statistik         | Ende, Speicher und Statistik                    |
 | nonogramm     | [AC-14](10-raetsel/nonogramm.md)            | Bestzeit je Größe                      | Ende, Speicher und Statistik                    |
 | nonogramm     | [AC-15](10-raetsel/nonogramm.md)            | Anleitung auf Abruf                    | Ende, Speicher und Statistik                    |
+| nonogramm     | [AC-16](10-raetsel/nonogramm.md)            | Stufe und Ende ohne Lesen              | Ende, Speicher und Statistik                    |
 | pins          | [AC-1](10-raetsel/pins.md)                  | Siebzehn feste Level                   | Level                                           |
 | pins          | [AC-2](10-raetsel/pins.md)                  | Level wählen                           | Level                                           |
 | pins          | [AC-3](10-raetsel/pins.md)                  | Jedes Level lösbar                     | Level                                           |
@@ -238,6 +242,7 @@ selbst, hier steht er zusammengefasst.
 | queens        | [AC-16](10-raetsel/queens.md)               | Partie überlebt Schließen              | Ende, Speicher und Statistik                    |
 | queens        | [AC-17](10-raetsel/queens.md)               | Partie in der Statistik                | Ende, Speicher und Statistik                    |
 | queens        | [AC-18](10-raetsel/queens.md)               | Anleitung erklärt alles                | Ende, Speicher und Statistik                    |
+| queens        | [AC-19](10-raetsel/queens.md)               | Stufe und Ende ohne Lesen              | Ende, Speicher und Statistik                    |
 | sudoku        | [AC-1](10-raetsel/sudoku.md)                | Sechs mal sechs                        | Feld und Stufen                                 |
 | sudoku        | [AC-2](10-raetsel/sudoku.md)                | Drei Stufen wählbar                    | Feld und Stufen                                 |
 | sudoku        | [AC-3](10-raetsel/sudoku.md)                | Vorgaben genau nach Stufe              | Feld und Stufen                                 |
@@ -256,6 +261,7 @@ selbst, hier steht er zusammengefasst.
 | sudoku        | [AC-17](10-raetsel/sudoku.md)               | Bestzeit je Stufe                      | Ende, Speicher und Statistik                    |
 | sudoku        | [AC-18](10-raetsel/sudoku.md)               | Regeln auf Abruf                       | Ende, Speicher und Statistik                    |
 | sudoku        | [AC-19](10-raetsel/sudoku.md)               | Hinweis nimmt Falsches weg             | Fehler und Hinweise                             |
+| sudoku        | [AC-20](10-raetsel/sudoku.md)               | Stufe und Ende ohne Lesen              | Ende, Speicher und Statistik                    |
 | tango         | [AC-1](10-raetsel/tango.md)                 | Drei Regeln                            | Regeln und Stufen                               |
 | tango         | [AC-2](10-raetsel/tango.md)                 | Drei Stufen nach Zeichen               | Regeln und Stufen                               |
 | tango         | [AC-3](10-raetsel/tango.md)                 | Ohne Raten lösbar                      | Erzeugung                                       |
@@ -270,6 +276,7 @@ selbst, hier steht er zusammengefasst.
 | tango         | [AC-12](10-raetsel/tango.md)                | Gelöstes in der Statistik              | Ende, Speicher und Statistik                    |
 | tango         | [AC-13](10-raetsel/tango.md)                | Bestzeit je Stufe                      | Ende, Speicher und Statistik                    |
 | tango         | [AC-14](10-raetsel/tango.md)                | Anleitung auf Abruf                    | Ende, Speicher und Statistik                    |
+| tango         | [AC-15](10-raetsel/tango.md)                | Stufe und Ende ohne Lesen              | Ende, Speicher und Statistik                    |
 | zip           | [AC-1](10-raetsel/zip.md)                   | Drei Größen                            | Feld und Stufen                                 |
 | zip           | [AC-2](10-raetsel/zip.md)                   | Neues Rätsel wählbar                   | Feld und Stufen                                 |
 | zip           | [AC-3](10-raetsel/zip.md)                   | Mauern nie auf dem Weg                 | Feld und Stufen                                 |
@@ -290,6 +297,7 @@ selbst, hier steht er zusammengefasst.
 | zip           | [AC-18](10-raetsel/zip.md)                  | Ein Satz Schlüsse                      | Hinweise und Erzeugung                          |
 | zip           | [AC-19](10-raetsel/zip.md)                  | Merklinien aus dem Hinweis             | Hinweise und Erzeugung                          |
 | zip           | [AC-20](10-raetsel/zip.md)                  | Altes Rätsel wird ersetzt              | Hinweise und Erzeugung                          |
+| zip           | [AC-21](10-raetsel/zip.md)                  | Stufe und Ende ohne Lesen              | Ende, Speicher und Statistik                    |
 | galgen        | [AC-1](20-wortspiele/galgen.md)             | Wort aus der Wördle-Liste              | Regeln und Eingabe                              |
 | galgen        | [AC-2](20-wortspiele/galgen.md)             | Treffer an allen Stellen               | Regeln und Eingabe                              |
 | galgen        | [AC-3](20-wortspiele/galgen.md)             | Tafel und Tastatur                     | Regeln und Eingabe                              |
@@ -390,6 +398,7 @@ selbst, hier steht er zusammengefasst.
 | viergewinnt   | [AC-14](30-brett-und-karten/viergewinnt.md) | Zu zweit ohne Urteil                   | Speicher und Statistik                          |
 | viergewinnt   | [AC-15](30-brett-und-karten/viergewinnt.md) | Dauer zählt nur Spielzeit              | Speicher und Statistik                          |
 | viergewinnt   | [AC-16](30-brett-und-karten/viergewinnt.md) | Auswertung verträgt Lücken             | Speicher und Statistik                          |
+| viergewinnt   | [AC-17](30-brett-und-karten/viergewinnt.md) | Stufe und Ende ohne Lesen              | Speicher und Statistik                          |
 | zweitausend   | [AC-1](30-brett-und-karten/zweitausend.md)  | Vier mal vier Felder                   | Brett und Steuerung                             |
 | zweitausend   | [AC-2](30-brett-und-karten/zweitausend.md)  | Pfeiltasten und WASD                   | Brett und Steuerung                             |
 | zweitausend   | [AC-3](30-brett-und-karten/zweitausend.md)  | Wischen über das Brett                 | Brett und Steuerung                             |
@@ -425,6 +434,7 @@ selbst, hier steht er zusammengefasst.
 | bombe         | [AC-9](40-zu-mehreren/bombe.md)             | Einstellungen bleiben, Runde nicht     | Speicher und Statistik                          |
 | bombe         | [AC-10](40-zu-mehreren/bombe.md)            | Runde ohne Urteil notiert              | Speicher und Statistik                          |
 | bombe         | [AC-11](40-zu-mehreren/bombe.md)            | Auswertung verträgt Lücken             | Speicher und Statistik                          |
+| bombe         | [AC-12](40-zu-mehreren/bombe.md)            | Stufe ohne Lesen                       | Speicher und Statistik                          |
 | runde         | [AC-1](40-zu-mehreren/runde.md)             | Gleicher Code, gleiche Folge           | Würfel und Code                                 |
 | runde         | [AC-2](40-zu-mehreren/runde.md)             | Vorlesbarer Zeichenvorrat              | Würfel und Code                                 |
 | runde         | [AC-3](40-zu-mehreren/runde.md)             | Eingabe wird still bereinigt           | Würfel und Code                                 |

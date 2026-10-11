@@ -1,7 +1,7 @@
 # Mini-Sudoku
 
 **Datei:** [`spiele/sudoku.js`](../../spiele/sudoku.js)
-**Stand:** 18/19 fertig · 1 zurückgestellt
+**Stand:** 19/20 fertig · 1 zurückgestellt
 
 ## Zweck
 
@@ -105,6 +105,10 @@ Schluss erklärt, statt eine Ziffer zu verraten.
 - **AC-18** `fertig` **Regeln auf Abruf** — Das Werkzeug „Regeln" erklärt die
   Regel, das Setzen und Wegnehmen von Ziffern, die Notizen, die rote Markierung
   und was der Hinweis tut – und dass er die richtige Ziffer nicht verrät.
+- **AC-20** `fertig` **Stufe und Ende ohne Lesen** — Kopfzeile, Blatt „Neues
+  Rätsel" und Knöpfe unter dem Ergebnis zeigen die Stufe auch als Punkte in
+  Ampelfarbe (Schnittstelle AC-15); die gespielte heißt dort „Nochmal" und trägt
+  den Kreispfeil. Über „Gelöst." steht ein grüner Haken.
 
 ## Randfälle
 

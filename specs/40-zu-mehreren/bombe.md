@@ -1,7 +1,7 @@
 # Bombe
 
 **Datei:** [`spiele/bombe.js`](../../spiele/bombe.js)
-**Stand:** 11/11 fertig
+**Stand:** 12/12 fertig
 
 ## Zweck
 
@@ -61,6 +61,8 @@ Knall hält, ist raus, bis einer übrig bleibt.
   Silben je Runde (Schnitt mit einer Nachkommastelle), die längste Runde und
   die übliche Spielerzahl. Eine leere Liste ergibt keine Kennzahlen; Partien
   ohne `runden` oder `spieler` fließen nicht ein, fehlt alles, steht „–".
+- **AC-12** `fertig` **Stufe ohne Lesen** — Jede Stufe in der Wahl trägt vor
+  ihrem Namen Punkte in Ampelfarbe (Schnittstelle AC-15).
 
 ## Randfälle
 

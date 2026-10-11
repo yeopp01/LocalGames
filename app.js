@@ -188,6 +188,7 @@ const Rahmen = (() => {
     for (const a of aktionen || [{ text: 'Fertig' }]) {
       const b = el('button', 'knopf ' + (a.art === 'still' ? 'knopf--still' : 'knopf--voll'), a.text);
       b.type = 'button';
+      if (a.zeichen) b.prepend(a.zeichen);
       b.addEventListener('click', () => { blattZu(); if (a.tun) a.tun(); });
       leiste.append(b);
     }
@@ -195,6 +196,72 @@ const Rahmen = (() => {
   }
 
   const blattZu = () => { document.getElementById('sheet-spiel').hidden = true; };
+
+  /* -------------------------------------------------- Stufen und Zeichen */
+
+  /* Stufen, die man ohne Lesen erkennt – gewünscht für ein Kind im
+     Vorschulalter. So viele volle Punkte, wie die Stufe in der Reihe steht,
+     dazu Ampelfarbe: grün die leichteste, rot die schwerste. Punkte und Farbe
+     sagen dasselbe, so trägt es auch, wer Farben schlecht unterscheidet. Der
+     Rang folgt der Reihenfolge im STUFEN-Objekt des Spiels, darum passt es
+     auf leicht/mittel/schwer ebenso wie auf klein/groß oder normal/schwer. */
+  function stufenZeichen(stufen, id) {
+    const ids = Object.keys(stufen);
+    const rang = ids.indexOf(id) + 1;
+    const z = el('span', 'stufe');
+    z.dataset.ton = rang <= 1 ? 'leicht' : rang >= ids.length ? 'schwer' : 'mittel';
+    z.setAttribute('aria-hidden', 'true');
+    for (let i = 1; i <= ids.length; i += 1) {
+      z.append(el('i', i <= rang ? 'stufe-punkt stufe-punkt--voll' : 'stufe-punkt'));
+    }
+    return z;
+  }
+
+  function stufenName(stufen, id) {
+    const n = el('span', 'stufen-name', stufen[id].name);
+    n.prepend(stufenZeichen(stufen, id));
+    return n;
+  }
+
+  const grossAnfang = (text) => text.charAt(0).toUpperCase() + text.slice(1);
+
+  /* Für das Blatt „Neues Rätsel": die leichteste Stufe voll, die übrigen still. */
+  const stufenAktionen = (stufen, tun) => Object.keys(stufen).map((id, i) => ({
+    text: grossAnfang(stufen[id].name),
+    art: i ? 'still' : undefined,
+    zeichen: stufenZeichen(stufen, id),
+    tun: () => tun(id),
+  }));
+
+  const BILDZEICHEN = {
+    nochmal: '<path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/>',
+    fertig: '<circle class="bildzeichen-grund" cx="12" cy="12" r="11"/><path d="M6.8 12.4l3.4 3.4 7-7.2"/>',
+  };
+
+  function bildzeichen(name) {
+    const z = el('span', 'bildzeichen bildzeichen--' + name);
+    z.setAttribute('aria-hidden', 'true');
+    z.innerHTML = '<svg viewBox="0 0 24 24" focusable="false">' + BILDZEICHEN[name] + '</svg>';
+    return z;
+  }
+
+  /* Die Knöpfe unter einer beendeten Partie, in der Reihenfolge der Stufen,
+     damit jede immer an derselben Stelle steht. Die gerade gespielte heißt
+     „Nochmal" und trägt den Kreispfeil. */
+  function stufenLeiste(stufen, aktuell, tun) {
+    const l = el('div', 'leiste');
+    for (const id of Object.keys(stufen)) {
+      const gleich = id === aktuell;
+      const b = el('button', 'knopf ' + (gleich ? 'knopf--voll' : 'knopf--still'),
+        gleich ? 'Nochmal' : grossAnfang(stufen[id].name));
+      b.type = 'button';
+      b.prepend(stufenZeichen(stufen, id));
+      if (gleich) b.prepend(bildzeichen('nochmal'));
+      b.addEventListener('click', () => tun(id));
+      l.append(b);
+    }
+    return l;
+  }
 
   /* ------------------------------------------------------------- Statistik */
 
@@ -543,6 +610,13 @@ const Rahmen = (() => {
       zurueck: () => gehe({ name: 'auswahl' }),
       el,
       dauerText,
+
+      /* Stufen und Zeichen, die man ohne Lesen erkennt */
+      stufenZeichen,
+      stufenName,
+      stufenAktionen,
+      stufenLeiste,
+      bildzeichen,
     };
 
     const boden = el('div', 'spielboden');

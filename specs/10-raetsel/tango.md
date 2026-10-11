@@ -1,7 +1,7 @@
 # Tango
 
 **Datei:** [`spiele/tango.js`](../../spiele/tango.js)
-**Stand:** 14/14 fertig
+**Stand:** 15/15 fertig
 
 ## Zweck
 
@@ -19,7 +19,7 @@ für Schritt herleiten, und der Hinweis sagt, worauf der nächste Schritt beruht
   gleich, ein „×" verschieden. Sonne und Mond sehen auf jedem Gerät gleich aus.
 - **AC-2** `fertig` **Drei Stufen nach Zeichen** — Die Stufen unterscheiden sich
   in der Zahl der Zeichen zwischen den Feldern: leicht 10, mittel 6, schwer 3.
-  Wählbar über das Werkzeug „Neues Rätsel" und nach dem Lösen über „Neu, …". Über
+  Wählbar über das Werkzeug „Neues Rätsel" und nach dem Lösen über „Nochmal" und die anderen Stufen. Über
   dem Feld stehen Stufe, laufende Zeit und die Zahl der offenen Felder.
 
 ### Erzeugung
@@ -77,6 +77,10 @@ für Schritt herleiten, und der Hinweis sagt, worauf der nächste Schritt beruht
   das Weiterschalten, die drei Regeln, die rote Markierung, dass nie geraten
   werden muss und der Hinweis nicht in die Lösung schaut, und nennt einen guten
   Anfang.
+- **AC-15** `fertig` **Stufe und Ende ohne Lesen** — Kopfzeile, Blatt „Neues
+  Rätsel" und Knöpfe unter dem Ergebnis zeigen die Stufe auch als Punkte in
+  Ampelfarbe (Schnittstelle AC-15); die gespielte heißt dort „Nochmal" und trägt
+  den Kreispfeil. Über „Gelöst." steht ein grüner Haken.
 
 ## Randfälle
 

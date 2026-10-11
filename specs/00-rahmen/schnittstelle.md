@@ -1,7 +1,7 @@
 # Spielschnittstelle
 
 **Datei:** [`app.js`](../../app.js)
-**Stand:** 14/14 fertig
+**Stand:** 15/15 fertig
 
 ## Zweck
 
@@ -84,6 +84,17 @@ Rahmen ein Spiel kennen muss.
   jeder `zusatz` kommen mit einer leeren Liste und mit Partien aus, denen Felder
   fehlen, ohne zu werfen und ohne „NaN", „undefined" oder „Infinity" anzuzeigen.
   Nachgeprüft an allen 16 Spielen mit je 400 zufällig lückenhaften Listen.
+- **AC-15** `fertig` **Stufen und Zeichen ohne Lesen** — `sitzung.stufenZeichen(stufen,
+  id)` liefert so viele Punkte, wie das `STUFEN`-Objekt Stufen hat; voll sind so
+  viele, wie die Stufe in der Reihe steht. Die erste ist grün, die letzte rot,
+  dazwischen gelb; leere Punkte sind Ringe in derselben Farbe.
+  `stufenName` setzt den Namen dahinter (für die Kopfzeile), `stufenAktionen(stufen,
+  tun)` liefert die Aktionen fürs Blatt „Neues …" mit Punkten, die erste voll.
+  `stufenLeiste(stufen, aktuell, tun)` baut die Knöpfe unter einer beendeten
+  Partie in Stufenreihenfolge, die gespielte voll als „Nochmal" mit Kreispfeil.
+  `bildzeichen('nochmal' | 'fertig')` liefert Kreispfeil oder grünen Haken.
+  Blatt-Aktionen nehmen ein `zeichen`-Element vor den Text. Alle Zeichen sind
+  für Vorleser verborgen, der Knopf heißt weiter wie sein Text.
 
 ## Randfälle
 
