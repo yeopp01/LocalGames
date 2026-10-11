@@ -1,7 +1,7 @@
 # Mini-Sudoku
 
 **Datei:** [`spiele/sudoku.js`](../../spiele/sudoku.js)
-**Stand:** 18/18 fertig
+**Stand:** 18/19 fertig · 1 zurückgestellt
 
 ## Zweck
 
@@ -61,11 +61,11 @@ Schluss erklärt, statt eine Ziffer zu verraten.
 - **AC-10** `fertig` **Doppelte Ziffern werden rot** — Steht eine Ziffer doppelt
   in einer Zeile, Spalte oder einem Block, sind beide Felder sofort rot. Andere
   Fehler zeigt das Gitter von sich aus nicht.
-- **AC-11** `fertig` **Hinweis räumt Fehler zuerst** — Solange etwas rot ist,
-  sagt der Hinweis nur „Erst die roten Felder". Stehen Ziffern, die in der Lösung
-  dort nicht vorkommen, umrandet er alle auf einmal, nennt nicht die richtige und
-  bietet „Alle wegnehmen" oder „Ich such es selbst" an. Die Umrandung verschwindet
-  am Feld, sobald es angefasst wird, und kommt nach dem Neuladen nicht wieder.
+- **AC-11** `zurueckgestellt` (ersetzt durch AC-19) **Hinweis räumt Fehler zuerst** — Solange
+  etwas rot ist, sagt der Hinweis nur „Erst die roten Felder". Stehen Ziffern,
+  die in der Lösung dort nicht vorkommen, umrandet er alle auf einmal und bietet
+  „Alle wegnehmen" oder „Ich such es selbst" an. Nur zu zeigen, wo etwas falsch
+  steht, ließ aber einen festsitzen, wer den Fehler nicht fand.
 - **AC-12** `fertig` **Hinweis begründet seinen Schluss** — Sonst nennt der
   Hinweis ein Feld und seine Ziffer mit Grund: Entweder passt dort nur noch diese
   Ziffer, oder die Ziffer hat in einer Zeile, Spalte oder einem Block nur noch
@@ -76,6 +76,13 @@ Schluss erklärt, statt eine Ziffer zu verraten.
   Schluss ziehen, sagt der Hinweis „Hier hilft nur Ausprobieren" und bietet an,
   ein Feld aufzudecken – das gewählte, wenn es leer ist, sonst ein zufälliges
   leeres.
+- **AC-19** `fertig` **Hinweis nimmt Falsches weg** — Stehen Ziffern, die in der
+  Lösung dort nicht vorkommen, nimmt der Hinweis sie alle auf einmal weg, bevor
+  er irgendetwas schließt – auch wenn sie rot doppelt stehen; danach ist nichts
+  mehr rot. Die geleerten Felder sind umrandet, die richtige Ziffer nennt er
+  nicht. Das Blatt „Falsches weggenommen" bietet „Nächster Hinweis" oder
+  „Weiter" an. Die Umrandung verschwindet am Feld, sobald es angefasst wird, und
+  kommt nach dem Neuladen nicht wieder.
 
 ### Ende, Speicher und Statistik
 
@@ -89,9 +96,9 @@ Schluss erklärt, statt eine Ziffer zu verraten.
   Nach einem gelösten Rätsel beginnt beim nächsten Öffnen ein neues auf leicht.
 - **AC-16** `fertig` **Gelöstes in der Statistik** — Jedes gelöste Rätsel wird
   mit `gewonnen: true`, `dauer`, `stufe` (`leicht`, `mittel`, `schwer`) und
-  `hilfen` notiert. `hilfen` zählt jedes gezeigte Blatt mit Umrandung, Schluss
-  oder „Hier hilft nur Ausprobieren", auch wenn man den Vorschlag ablehnt – nicht
-  aber „Erst die roten Felder". Ein verworfenes Rätsel wird nicht notiert.
+  `hilfen` notiert. `hilfen` zählt jedes gezeigte Blatt „Falsches weggenommen",
+  mit Schluss oder „Hier hilft nur Ausprobieren", auch wenn man den Vorschlag
+  ablehnt. Ein verworfenes Rätsel wird nicht notiert.
 - **AC-17** `fertig` **Bestzeit je Stufe** — Die Statistik zeigt je Stufe die
   Bestzeit aus gelösten Partien und „–", solange es keine gibt – auch bei leerer
   Liste und bei Partien, denen `stufe`, `dauer` oder `gewonnen` fehlt.
@@ -107,7 +114,7 @@ Schluss erklärt, statt eine Ziffer zu verraten.
 | RF-2 | Notiz in ein Feld, in dem schon eine Ziffer steht     | Die Ziffer verschwindet, die Notiz steht.                              |
 | RF-3 | Ziffer auf ein vorgegebenes Feld                      | Nichts ändert sich, Meldung „Das Feld war vorgegeben."                 |
 | RF-4 | Pfeil links am Zeilenanfang oder rechts am Zeilenende | Die Auswahl bleibt stehen und springt nicht in die Nachbarzeile.       |
-| RF-5 | Gitter voll, aber mit doppelten Ziffern               | Kein Sieg; die Doppelten sind rot, der Hinweis verweist auf sie.       |
+| RF-5 | Gitter voll, aber mit doppelten Ziffern               | Kein Sieg; die Doppelten sind rot, der Hinweis nimmt die falschen weg. |
 | RF-6 | „Feld aufdecken" füllt das letzte leere Feld          | Die Partie gilt als gelöst und wird notiert.                           |
 
 ## Hintergrund

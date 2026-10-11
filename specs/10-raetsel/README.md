@@ -6,15 +6,15 @@ die Lösung zu schauen.
 
 <!-- board:start -->
 
-| Spezifikation               | Stand        |
-| --------------------------- | ------------ |
-| [Zahlencode](mastermind.md) | 15/15 fertig |
-| [Minenfeld](minen.md)       | 12/12 fertig |
-| [Nonogramm](nonogramm.md)   | 15/15 fertig |
-| [Riegel](pins.md)           | 27/27 fertig |
-| [Damen](queens.md)          | 18/18 fertig |
-| [Mini-Sudoku](sudoku.md)    | 18/18 fertig |
-| [Tango](tango.md)           | 14/14 fertig |
-| [Weg](zip.md)               | 20/20 fertig |
+| Spezifikation               | Stand                           |
+| --------------------------- | ------------------------------- |
+| [Zahlencode](mastermind.md) | 15/15 fertig                    |
+| [Minenfeld](minen.md)       | 12/12 fertig                    |
+| [Nonogramm](nonogramm.md)   | 15/15 fertig                    |
+| [Riegel](pins.md)           | 27/27 fertig                    |
+| [Damen](queens.md)          | 18/18 fertig                    |
+| [Mini-Sudoku](sudoku.md)    | 18/19 fertig · 1 zurückgestellt |
+| [Tango](tango.md)           | 14/14 fertig                    |
+| [Weg](zip.md)               | 20/20 fertig                    |
 
 <!-- board:end -->

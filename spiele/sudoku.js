@@ -226,8 +226,8 @@
     let gewaehlt = -1;
     let notizModus = false;
     let uhr = null;
-    /* Vom Hinweis aufgedeckte Falschziffern. Bewusst nur im Arbeitsspeicher
-       und nicht im Stand: die Markierung gehört zu einem einzelnen Hinweis
+    /* Felder, aus denen der Hinweis eine falsche Ziffer genommen hat. Bewusst
+       nur im Arbeitsspeicher und nicht im Stand: die Markierung gehört zu einem einzelnen Hinweis
        und soll nicht dauerhaft mitlaufen, sonst tippt man blind und wartet
        auf die Farbe. Sie verschwindet, sobald das Feld angefasst wird. */
     let markiert = new Set();
@@ -469,39 +469,30 @@
     function hinweis() {
       if (stand.fertig) return;
 
-      // Mit einer falschen Ziffer im Feld stimmt jede Begründung nicht mehr.
-      if (fehlerhaft().size) {
-        s.blatt({
-          titel: 'Erst die roten Felder',
-          inhalt: 'Eine Ziffer steht doppelt in Zeile, Spalte oder Block. Solange das so ist, führt jede Überlegung in die Irre – räum das zuerst weg.',
-          aktionen: [{ text: 'Mach ich' }],
-        });
-        return;
-      }
-
       /* Eine falsch gesetzte Ziffer macht jede weitere Begründung wertlos –
          darum kommt sie vor jedem Schluss dran, und zwar alle auf einmal.
-         Weggenommen wird nichts von selbst: Wer nachvollziehen will, wo er
-         sich verrannt hat, sieht die Felder und räumt selber auf. */
+         Weggenommen wird sofort: Nur zu zeigen, wo etwas falsch steht, ließ
+         einen festsitzen, wer den Fehler nicht fand. Rote Doppelte sind damit
+         mit erledigt – Vorgaben stimmen immer, also ist von zwei gleichen
+         Ziffern mindestens eine falsch. */
       const falsch = falscheZiffern();
       if (falsch.length) {
         stand.hilfen += 1;
+        wegnehmen(falsch);
         markiert = new Set(falsch);
         zeichnen();
         s.blatt({
-          titel: 'Da steht etwas falsch',
+          titel: 'Falsches weggenommen',
           inhalt: (falsch.length === 1
-            ? 'Eine Ziffer steht auf einem Feld, auf dem sie in der Lösung nicht vorkommt'
-            : falsch.length + ' Ziffern stehen auf Feldern, auf denen sie in der Lösung nicht vorkommen')
-            + ' – markiert sind sie umrandet. Doppelt steht deshalb noch nichts, aber das Rätsel '
-            + 'hat nur eine Lösung, und mit diesen Ziffern lässt es sich nicht mehr vervollständigen. '
-            + 'Welche richtig wäre, verrate ich nicht.',
+            ? 'Eine Ziffer stand auf einem Feld, auf dem sie in der Lösung nicht vorkommt'
+            : falsch.length + ' Ziffern standen auf Feldern, auf denen sie in der Lösung nicht vorkommen')
+            + ' – mit ihnen ließ sich das Rätsel nicht mehr vervollständigen. Die geleerten Felder '
+            + 'sind umrandet. Welche Ziffer dort richtig wäre, verrate ich nicht.',
           aktionen: [
-            { text: 'Alle wegnehmen', tun: () => wegnehmen(falsch) },
-            { text: 'Ich such es selbst', art: 'still' },
+            { text: 'Nächster Hinweis', tun: hinweis },
+            { text: 'Weiter', art: 'still' },
           ],
         });
-        sichern();
         return;
       }
 
@@ -605,7 +596,7 @@
       d.append(el('p', 'notiz', 'In jede Zeile, jede Spalte und jeden der sechs Blöcke gehört jede Ziffer von 1 bis 6 genau einmal.'));
       d.append(el('p', 'notiz', 'Ein Feld antippen, dann eine Ziffer wählen. Nochmal dieselbe Ziffer nimmt sie wieder weg.'));
       d.append(el('p', 'notiz', 'Notizen merken sich Kandidaten in kleiner Schrift. Doppelte Ziffern werden sofort rot.'));
-      d.append(el('p', 'notiz', 'Der Hinweis sucht einen Schluss, der sich aus Zeile, Spalte und Block begründen lässt. Steht aber schon eine Ziffer nachweislich falsch, zeigt er zuerst alle diese Felder umrandet an – sonst führt jede weitere Überlegung in die Irre. Welche Ziffer richtig wäre, sagt er dabei nicht.'));
+      d.append(el('p', 'notiz', 'Der Hinweis sucht einen Schluss, der sich aus Zeile, Spalte und Block begründen lässt. Steht aber schon eine Ziffer nachweislich falsch, nimmt er zuerst alle diese Ziffern weg und umrandet die Felder – sonst führt jede weitere Überlegung in die Irre. Welche Ziffer richtig wäre, sagt er dabei nicht.'));
       s.blatt({ titel: 'Mini-Sudoku', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
 

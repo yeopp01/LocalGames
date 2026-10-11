@@ -6,7 +6,7 @@
 Eine Zeile je Akzeptanzkriterium. Gepflegt wird der Status in der Spec
 selbst, hier steht er zusammengefasst.
 
-**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 1 zurückgestellt · 553 fertig
+**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 2 zurückgestellt · 553 fertig
 
 ## Nach Spezifikation
 
@@ -23,7 +23,7 @@ selbst, hier steht er zusammengefasst.
 | [Nonogramm](10-raetsel/nonogramm.md)               | -         | -       | -     | -              | 15     |
 | [Riegel](10-raetsel/pins.md)                       | -         | -       | -     | -              | 27     |
 | [Damen](10-raetsel/queens.md)                      | -         | -       | -     | -              | 18     |
-| [Mini-Sudoku](10-raetsel/sudoku.md)                | -         | -       | -     | -              | 18     |
+| [Mini-Sudoku](10-raetsel/sudoku.md)                | -         | -       | -     | 1              | 18     |
 | [Tango](10-raetsel/tango.md)                       | -         | -       | -     | -              | 14     |
 | [Weg](10-raetsel/zip.md)                           | -         | -       | -     | -              | 20     |
 | [Galgenmännchen](20-wortspiele/galgen.md)          | -         | -       | -     | -              | 14     |
@@ -55,11 +55,12 @@ selbst, hier steht er zusammengefasst.
 | doodle | [AC-4](50-geschick/doodle.md)  | Erlaubnis auf dem iPhone | Steuerung |
 | doodle | [AC-20](50-geschick/doodle.md) | Geräusche                | Klang     |
 
-## Zurückgestellt (1)
+## Zurückgestellt (2)
 
-| Spec      | AC                                   | Titel                      | Anmerkung                                    |
-| --------- | ------------------------------------ | -------------------------- | -------------------------------------------- |
-| verraeter | [AC-13](40-zu-mehreren/verraeter.md) | Stimmen übers Netz sammeln | braucht eine Verbindung zwischen den Geräten |
+| Spec      | AC                                   | Titel                       | Anmerkung                                    |
+| --------- | ------------------------------------ | --------------------------- | -------------------------------------------- |
+| sudoku    | [AC-11](10-raetsel/sudoku.md)        | Hinweis räumt Fehler zuerst | ersetzt durch AC-19                          |
+| verraeter | [AC-13](40-zu-mehreren/verraeter.md) | Stimmen übers Netz sammeln  | braucht eine Verbindung zwischen den Geräten |
 
 ## Fertig (553)
 
@@ -247,7 +248,6 @@ selbst, hier steht er zusammengefasst.
 | sudoku        | [AC-8](10-raetsel/sudoku.md)                | Notizen als Kandidaten                 | Eingabe                                         |
 | sudoku        | [AC-9](10-raetsel/sudoku.md)                | Orientierung im Gitter                 | Eingabe                                         |
 | sudoku        | [AC-10](10-raetsel/sudoku.md)               | Doppelte Ziffern werden rot            | Fehler und Hinweise                             |
-| sudoku        | [AC-11](10-raetsel/sudoku.md)               | Hinweis räumt Fehler zuerst            | Fehler und Hinweise                             |
 | sudoku        | [AC-12](10-raetsel/sudoku.md)               | Hinweis begründet seinen Schluss       | Fehler und Hinweise                             |
 | sudoku        | [AC-13](10-raetsel/sudoku.md)               | Ehrlich, wenn nichts zwingt            | Fehler und Hinweise                             |
 | sudoku        | [AC-14](10-raetsel/sudoku.md)               | Gelöst beendet die Partie              | Ende, Speicher und Statistik                    |
@@ -255,6 +255,7 @@ selbst, hier steht er zusammengefasst.
 | sudoku        | [AC-16](10-raetsel/sudoku.md)               | Gelöstes in der Statistik              | Ende, Speicher und Statistik                    |
 | sudoku        | [AC-17](10-raetsel/sudoku.md)               | Bestzeit je Stufe                      | Ende, Speicher und Statistik                    |
 | sudoku        | [AC-18](10-raetsel/sudoku.md)               | Regeln auf Abruf                       | Ende, Speicher und Statistik                    |
+| sudoku        | [AC-19](10-raetsel/sudoku.md)               | Hinweis nimmt Falsches weg             | Fehler und Hinweise                             |
 | tango         | [AC-1](10-raetsel/tango.md)                 | Drei Regeln                            | Regeln und Stufen                               |
 | tango         | [AC-2](10-raetsel/tango.md)                 | Drei Stufen nach Zeichen               | Regeln und Stufen                               |
 | tango         | [AC-3](10-raetsel/tango.md)                 | Ohne Raten lösbar                      | Erzeugung                                       |
