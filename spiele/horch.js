@@ -15,9 +15,9 @@
 (() => {
   const JE_RUNDE = 6;
   const STUFEN = [
-    { wert: 2, text: 'Zwei Tiere' },
-    { wert: 3, text: 'Drei Tiere' },
-    { wert: 4, text: 'Vier Tiere' },
+    { wert: 2, text: 'Zwei Tiere', bilder: ['🐮', '🐸'] },
+    { wert: 3, text: 'Drei Tiere', bilder: ['🐮', '🐸', '🐷'] },
+    { wert: 4, text: 'Vier Tiere', bilder: ['🐮', '🐸', '🐷', '🐶'] },
   ];
   const VERWECHSELBAR = [
     ['schaf', 'ziege'], ['huhn', 'hahn'], ['huhn', 'truthahn'],
@@ -70,7 +70,10 @@
         ohr.setAttribute('aria-label', 'Nochmal hören');
         ohr.innerHTML = LAUTSPRECHER;
         const feld = h.el('div', 'ho-feld');
-        buehne.append(ohr, feld);
+        const spiel = h.el('div', 'ho-spiel');
+        spiel.append(ohr, feld);
+        const reihe = h.reihe(JE_RUNDE);
+        buehne.append(spiel, reihe.knoten);
 
         let liste = [];
         let frage = null;   // { ziel, kacheln: [{ tier, knoten }], zug, fehl, frei }
@@ -79,6 +82,7 @@
         function neueRunde() {
           liste = Tiere.mischen(RUFER).slice(0, JE_RUNDE);
           stand = { nr: 0, aufAnhieb: 0, beginn: h.uhr(), stufe: h.stufe };
+          reihe.leeren();
           stellen();
         }
 
@@ -120,7 +124,9 @@
           h.klang.freude();
           const r = w.knoten.getBoundingClientRect();
           h.konfetti(r.left + r.width / 2, r.top + r.height / 2);
-          h.blase('Das war ' + Tiere.mitArtikel(w.tier) + '!');
+          h.fuehlen(12);
+          h.blase('Ja, das war ' + Tiere.mitArtikel(w.tier) + '!');
+          reihe.fuellen(stand.nr, w.tier.bild);
           h.spaeter(async () => {
             Tiere.anstossen(w.knoten.firstChild, 'kz-hops');
             const dauer = await h.klang.tier(w.tier.id, w.tier.laut);
@@ -155,11 +161,21 @@
           h.fest('Super zugehört!', liste.map((t) => t.bild), neueRunde);
         }
 
-        h.an(ohr, 'pointerdown', (e) => {
-          e.preventDefault();
+        function nochmal() {
           if (!frage || !frage.frei) return;
           frage.zug += 1;
           vorspielen();
+        }
+
+        h.an(ohr, 'pointerdown', (e) => {
+          e.preventDefault();
+          nochmal();
+        });
+        // Jede Taste wirkt wie der Lautsprecher – eine Antwort soll ein Kind,
+        // das auf die Tastatur haut, damit nicht geben.
+        h.an(window, 'keydown', (e) => {
+          if (e.key === 'Escape' || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+          nochmal();
         });
 
         h.an(feld, 'pointerdown', (e) => {

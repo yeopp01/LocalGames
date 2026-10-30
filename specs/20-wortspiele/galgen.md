@@ -1,7 +1,7 @@
 # Galgenmännchen
 
 **Datei:** [`spiele/galgen.js`](../../spiele/galgen.js)
-**Stand:** 14/14 fertig
+**Stand:** 16/16 fertig
 
 ## Zweck
 
@@ -24,10 +24,11 @@ oder an der Tastatur, und mit einer Umschreibung für den, der festhängt.
   QWERTZ-Muster, Ä, Ö und Ü eingeschlossen. Am Rechner geht auch die Tastatur,
   ohne Rücksicht auf Groß- und Kleinschreibung; Tasten mit Strg, Alt oder Meta und
   jede Taste bei offenem Blatt werden nicht verarbeitet.
-- **AC-4** `fertig` **Elf Striche bis zum Ende** — Jeder Fehlgriff zeichnet ein
-  Teil des Galgens, von Boden und Pfosten bis zum rechten Bein. Unter dem Titel
-  steht „11 Fehler frei" und zählt herunter; der elfte Fehlgriff vollendet das
-  Männchen und beendet die Runde als verloren.
+- **AC-4** `fertig` **Elf Striche bis zum Ende** — Das ganze Bild steht von Anfang
+  an blass da, jeder Fehlgriff zieht ein Teil nach, von Boden und Pfosten bis zum
+  rechten Bein. Unter dem Titel steht „11 Fehler frei" und zählt herunter; der
+  elfte Fehlgriff vollendet das Männchen, färbt es und beendet die Runde als
+  verloren.
 
 ### Ende der Runde
 
@@ -36,15 +37,17 @@ oder an der Tastatur, und mit einer Umschreibung für den, der festhängt.
   Buchstaben farbig abgesetzt im Wort. Beides zeigt „Das Wort war X –
   Umschreibung" und die Knöpfe „Noch ein Wort" und „Zur Auswahl"; die Tafel ist
   weg und nimmt keine Züge mehr an.
-- **AC-6** `fertig` **Neues Wort sofort** — Das Werkzeug „Neues Wort" beginnt ohne
-  Rückfrage ein frisches Wort. Eine abgebrochene Runde landet nicht in der
+- **AC-6** `fertig` **Neues Wort mit Rückfrage** — Das Werkzeug „Neues Wort" fragt
+  nach, wenn schon ein Buchstabe geraten ist („Die angefangene Runde geht dabei
+  verloren."), sonst beginnt es sofort. Eine abgebrochene Runde landet nicht in der
   Statistik.
 
 ### Hilfe
 
 - **AC-7** `fertig` **Tipp kostet keinen Fehler** — „Tipp" zeigt die Umschreibung
   des Wortes und ist danach für dieses Wort gesperrt. Es wird kein Teil
-  gezeichnet, die Runde zählt aber als mit Hilfe gespielt.
+  gezeichnet, die Runde zählt aber als mit Hilfe gespielt. Mit dem Ende verschwindet
+  der Kasten, die Umschreibung steht dann im Ergebnis.
 
 ### Speicher und Statistik
 
@@ -70,6 +73,15 @@ oder an der Tastatur, und mit einer Umschreibung für den, der festhängt.
   der die Runde offen war. Eine über Nacht geschlossene Runde bringt die Nacht
   nicht in die Spielzeit; bis Version 59 war es die Uhrzeit seit dem Ziehen des
   Wortes.
+
+### Bedienung und Bild
+
+- **AC-15** `fertig` **Passt ins Fenster** — Bild, Wort, Tafel und Tipp passen auf dem
+  Handy und in einem flachen Fenster (1366×700, auch 1000×560) ohne Scrollen, auch
+  mit eingeblendetem Tipp: Das Bild nimmt sich, was übrig bleibt. Tasten sind
+  mindestens 42 px hoch. Das Ergebnis wird von selbst ins Bild geholt.
+- **AC-16** `fertig` **Enter holt das nächste Wort** — Nach dem Ende beginnt Enter ein
+  neues Wort. Die Anleitung nennt das.
 
 ## Randfälle
 

@@ -1,7 +1,7 @@
 # Flipper
 
 **Datei:** [`spiele/pinball.js`](../../spiele/pinball.js)
-**Stand:** 22/22 fertig
+**Stand:** 24/24 fertig
 
 ## Zweck
 
@@ -19,12 +19,15 @@ Leertaste wie damals. Nachgebaut sind Regeln und Gefühl, nicht das Bild.
   Hälfte des Feldes hebt den linken Flipper, auf der rechten den rechten,
   solange er liegt; mehrere Finger zugleich gehen, auch neben dem Tisch. Am
   Rechner: Z, Y, Pfeil links oder Umschalt links für links; /, -, Pfeil rechts
-  oder Umschalt rechts für rechts. P und Escape schalten die Pause um.
+  oder Umschalt rechts für rechts. P, Escape und Enter schalten die Pause um;
+  Enter startet auch. Nach einem Klick auf den Pause-Knopf im Kopf gehört die
+  Leertaste wieder der Feder.
 - **AC-2** `fertig` **Feder spannen, loslassen** — Liegt die Kugel auf der
   Feder, spannt ein Finger auf der rechten Hälfte (am Rechner Leertaste oder
   Pfeil runter) die Feder, in 0,8 s bis zum Anschlag. Loslassen schießt mit 260
   bis 800 Einheiten je Sekunde, je nach Spannung. Der erste Tipp startet die
-  Partie; bis dahin steht „Feder spannen" da. Zu schwach Geschossenes rollt
+  Partie; bis dahin steht „Feder spannen" da, am Rechner mit den Tasten, auf dem
+  Handy mit den Hälften. Zu schwach Geschossenes rollt
   zurück auf die Feder.
 - **AC-3** `fertig` **Rütteln und TILT** — X, Punkt und Pfeil hoch stoßen die
   rollende Kugel nach links, rechts oder oben. Jeder Stoß zählt eins, der
@@ -106,9 +109,21 @@ Leertaste wie damals. Nachgebaut sind Regeln und Gefühl, nicht das Bild.
   einmal je Kugel. Eine Rettung aus dem Wurmloch hält, bis sie gebraucht wird
   oder die Kugel verloren ist. Bei TILT rettet nichts.
 - **AC-17** `fertig` **Ende mit Bilanz** — Nach der letzten Kugel (drei und die
-  Extrakugeln) steht „Spiel vorbei." mit Punkten, Rang, Missionen und
-  Spielzeit unter dem Feld, bei neuem Bestwert „Das ist dein Bestwert.",
-  darunter „Nochmal". Tipps und Tasten starten keine neue Partie.
+  Extrakugeln) steht in einer Karte auf dem Tisch „Spiel vorbei." mit Punkten,
+  Rang, Missionen und Spielzeit, ohne neuen Rekord auch dem Bestwert, bei neuem
+  Bestwert „Das ist dein Bestwert.", darunter „Nochmal". Das beginnt sofort die
+  nächste Partie, ohne zweiten Tipp. Tipps aufs Feld und die Spieltasten starten
+  keine neue Partie: Beim letzten Fall trommeln die Daumen noch. Enter schon, es
+  gehört zu keinem Griff.
+- **AC-23** `fertig` **Tisch passt ins Fenster** — Der Tisch nimmt die
+  ganze Höhe: 396 × 712 auf dem Pixel 7, 324 × 583 in 1366 × 700, und die Seite
+  ist nicht höher als das Fenster. Pause und Ende stehen samt Knöpfen in einer
+  Karte auf dem Tisch; darunter hätten „Weiter" und „Nochmal" außerhalb des
+  Fensters gelegen, bis Version 86 auf dem Handy und am Laptop. In der Pause
+  weicht die Karte der Kugel aus, und „Neu anfangen" spielt sofort los. Ein Tipp
+  auf die Knöpfe tut nur, was auf ihnen steht, ein Tipp daneben spielt weiter.
+- **AC-24** `fertig` **Rekord im Spiel** — Überholen die Punkte den alten Bestwert,
+  wird ihre Zahl oben grün.
 
 ### Anzeige und Klang
 

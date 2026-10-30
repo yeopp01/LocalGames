@@ -1,7 +1,7 @@
 # Zwei Wahrheiten
 
 **Datei:** [`spiele/wahrheiten.js`](../../spiele/wahrheiten.js)
-**Stand:** 10/10 fertig
+**Stand:** 11/11 fertig
 
 ## Zweck
 
@@ -21,11 +21,17 @@ Das Gerät prüft nichts nach – es hält nur auseinander, wer was sehen darf.
 
 - **AC-2** `fertig` **Schreiben hinter dem Sperrschirm** — Vor dem Schreiben
   steht ein Sperrschirm „Schreiben darf ‹Name›", die Kopfzeile nennt „‹Name› ist
-  dran". Danach gibt es drei Felder (je höchstens 90 Zeichen) und die Wahl „Der
-  erste", „Der zweite", „Der dritte" für die Lüge.
+  dran". Danach gibt es drei Felder (je höchstens 90 Zeichen), und an jedem Satz
+  sitzt ein Schalter „Lüge", von dem genau einer an ist.
 - **AC-3** `fertig` **Nur vollständig weitergeben** — „Fertig – weitergeben"
   bleibt gesperrt, bis alle drei Sätze etwas anderes als Leerzeichen enthalten
-  und die Lüge gewählt ist.
+  und die Lüge gewählt ist. Eine Zeile darüber sagt, was noch fehlt.
+- **AC-11** `fertig` **Schreiben mit Tastatur** — Nach „Ich bin ‹Name›" steht der
+  Fokus im ersten Satz. Das Feld wächst mit dem Satz, sodass er ganz lesbar bleibt
+  (geprüft mit 80 Zeichen auf dem Handy: drei Zeilen). Enter macht keinen Zeilenumbruch,
+  sondern springt zum nächsten Satz; nach dem dritten auf „Fertig", wenn alles da
+  ist, sonst schließt er die Tastatur. Eingefügte Zeilenumbrüche werden zu
+  Leerzeichen.
 - **AC-4** `fertig` **Sätze werden gemischt** — Vor dem Raten kommen die drei
   Sätze in eine zufällige Reihenfolge; die Lüge steht nicht mehr dort, wo sie
   geschrieben wurde. Gemessen an 3000 Runden, in denen die Lüge immer als
@@ -38,12 +44,13 @@ Das Gerät prüft nichts nach – es hält nur auseinander, wer was sehen darf.
   in Sitzreihenfolge, jeder hinter einem Sperrschirm „Raten darf ‹Name›". Kein
   Sperrschirm zeigt einen Satz, und niemand sieht beim Raten, was vor ihm
   getippt wurde. Ein Tipp auf einen Satz gibt die Stimme ab und zeigt sofort den
-  nächsten Sperrschirm.
+  nächsten Sperrschirm. Frage und Kopfzeile nennen, von wem die Sätze sind.
 - **AC-6** `fertig` **Auflösung mit Namen** — Nach dem letzten Tipp zeigt das
   Ende „Durchschaut.", wenn mehr als die Hälfte die Lüge gefunden hat, sonst
   „Gut gelogen.", dazu „r von n haben die Lüge gefunden.". Darunter stehen die
-  drei Sätze in der gemischten Reihenfolge, die Lüge markiert, und zu jedem
-  Satz, wer ihn für gelogen hielt („–", wenn niemand).
+  drei Sätze in der gemischten Reihenfolge, die Lüge markiert und mit „Die Lüge"
+  beschriftet, und zu jedem Satz „Getippt von ‹Namen›" oder „Von niemandem
+  getippt".
 - **AC-7** `fertig` **Der Nächste ist dran** — „Weiter – ‹Name› ist dran" gibt
   das Schreiben reihum an den nächsten Spieler; nach dem letzten ist wieder der
   erste dran. Die neue Runde beginnt direkt beim Sperrschirm fürs Schreiben.
@@ -51,7 +58,7 @@ Das Gerät prüft nichts nach – es hält nur auseinander, wer was sehen darf.
 ### Speicher und Statistik
 
 - **AC-8** `fertig` **Keine Sätze im Speicher** — Gemerkt werden nur die Namen
-  und wer als Nächstes schreibt. Sätze, Lüge und Tipps werden nie gespeichert;
+  (schon beim Tippen) und wer als Nächstes schreibt. Sätze, Lüge und Tipps werden nie gespeichert;
   eine unterbrochene Runde beginnt beim nächsten Öffnen mit dem Aufbau. Passt
   der gemerkte Schreiber nicht mehr zur Gruppe, ist der erste dran.
 - **AC-9** `fertig` **Runde in der Statistik** — Jede aufgelöste Runde wird

@@ -1,7 +1,7 @@
 # Schafkopf
 
 **Datei:** [`spiele/schafkopf.js`](../../spiele/schafkopf.js) · [`spiele/karten.js`](../../spiele/karten.js)
-**Stand:** 46/46 fertig
+**Stand:** 53/53 fertig
 
 ## Zweck
 
@@ -180,9 +180,11 @@ drei Stufen erklärt Züge aus derselben Sicht, die ein Mensch am Tisch hat.
   stehen die Zahl der durchgerechneten Verteilungen, die Quote dieser Karte und
   die der nächstbesten sowie, ob der Zug der Faustregel folgt. Ist der
   Unterschied kleiner als sein Fehler – paarweise in denselben Verteilungen
-  verglichen –, sagt der Hinweis das, statt eine Rangfolge zu behaupten. In
-  der Ansage heißt der Knopf „Was geht?" und zeigt die Quoten der noch
-  möglichen Spiele samt Fehler.
+  verglichen –, sagt der Hinweis das, statt eine Rangfolge zu behaupten. Die
+  Zahlen stehen neben dem Tisch offen; wo der Hinweis unter der Hand steht, klappt
+  „Die Zahlen" sie auf. Noch einmal „Tipp" nimmt den Hinweis weg, ohne neu zu
+  rechnen. In der Ansage heißt der Knopf „Was geht?", steht bei „Weiter" und zeigt
+  die Quoten der noch möglichen Spiele samt Fehler.
 - **AC-25** `fertig` **Gleichauf entscheidet die Farbe** — Sind mehrere
   Sauspiele rechnerisch nicht zu unterscheiden, ruft der Rechner die Farbe, in
   der die meisten eigenen Augen stehen. „Was geht?" sagt dann, dass die Rufe
@@ -269,6 +271,44 @@ drei Stufen erklärt Züge aus derselben Sicht, die ein Mensch am Tisch hat.
   Hand und Knöpfe bleiben an ihrem Platz. Nur in Ansage und nach dem
   Zusammenwerfen darf er flacher sein. Vorher wuchs er mit der ersten Karte
   um 55 bis 95 Pixel und schrumpfte nach jedem Stich wieder.
+- **AC-47** `fertig` **Hand nutzt die Breite** — Die Karten verteilen sich über
+  die ganze Breite: Auf dem Handy (412 Punkte) bleiben von jeder Karte 41 Pixel
+  sichtbar, bei 360 Punkten 35, auf dem Laptop liegen acht Karten nebeneinander. Der
+  Trumpfpunkt steht im sichtbaren Streifen unter dem Eckzeichen. Vorher blieben am
+  Handy 33 Pixel, obwohl links und rechts Platz war, und der Punkt lag unter der
+  Nachbarkarte.
+- **AC-48** `fertig` **Hinweis schiebt die Hand nicht** — Tipp, Urteil und Ansage
+  stehen unter der Hand oder, ab 1320 Pixeln Breite, neben dem Tisch. Die Hand bleibt
+  dabei an ihrem Platz und die Tippkarte im Bild. Über eine ganze Gabe bleibt die
+  Dran-Zeile einzeilig; ein Zusatz wird gekürzt, statt umzubrechen. Auch der letzte
+  Stich rückt nichts hoch. Vorher schob der Tipp genau die Karte aus dem Fenster, auf
+  die er zeigte.
+- **AC-49** `fertig` **Stich mitbekommen** — Eine neue Karte kommt vom Platz ihres
+  Spielers auf den Tisch. Die stechende Karte steht mit hellem Rand vor, der
+  Gewinner ist hervorgehoben, und nach der Liegezeit wandert der Stich zu ihm. Wer ihn
+  gesehen hat, tippt auf den Tisch oder drückt Enter, dann geht er sofort. Bewegung
+  entfällt, wenn das Gerät darum bittet.
+- **AC-50** `fertig` **Tastatur** — Im Spiel legen die Ziffern 1 bis 8 die Karte an
+  dieser Stelle der Hand (oder merken sie vor), die Pfeile wandern über die erlaubten
+  Karten, Enter legt; T zeigt den Tipp, L den letzten Stich, die Rücktaste nimmt den
+  Zug zurück. In der Ansage führen die Pfeile durch die Knöpfe, der erste Druck auf
+  „Weiter"; T fragt „Was geht?". Am Ende gibt Enter neu. Solange ein Blatt oder das
+  Werkzeugmenü offen ist, gehören die Tasten diesen. Die Anleitung nennt das.
+- **AC-51** `fertig` **Zug zurück sofort** — „Zug zurück" ist frei, sobald du eine
+  Karte gelegt hast, auch während die Rechner noch legen oder der Stich noch liegt;
+  ein angesetzter Rechnerzug fällt danach nicht mehr. Vorher musste man warten, bis
+  man wieder dran war, also oft bis zum nächsten Stich.
+- **AC-52** `fertig` **Ansage in Ruhe** — Die Dran-Zeile steht auch in der Ansage:
+  wer überlegt, und was du selbst gesagt hast. Wer überlegt, ist am Tisch
+  hervorgehoben. Die Antwort steht unter der Hand, die Sauspiele nennen die Farbe zum
+  Namen („Gras · die Blaue"), die Knöpfe sind mindestens 40 Pixel hoch. Die Vorhand steht
+  in der Kopfzeile des Tisches, „Stand" vor der Zahl. Ab 1320 Pixeln Breite bleibt
+  der Tisch voll hoch, und die Hand rutscht zum Spielbeginn nicht.
+- **AC-53** `fertig` **Ende im Bild** — Am Ende räumt der leere Tisch den Platz, die
+  Abrechnung samt „Nächste Gabe" liegt auf Handy und Laptop ohne Scrollen im Bild.
+  Spielst du allein, erklärt „Allein gegen drei × 3" die Summe; „Für dich" ist grün oder
+  rot, der Abendstand steht in vier Spalten. Vorher lagen auf dem Laptop die Knöpfe
+  unter dem Rand, und aus 50 + 10 + 40 wurde ohne Erklärung 300.
 
 ## Randfälle
 

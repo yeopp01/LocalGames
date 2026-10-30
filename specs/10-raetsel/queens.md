@@ -1,7 +1,7 @@
 # Damen
 
 **Datei:** [`spiele/queens.js`](../../spiele/queens.js)
-**Stand:** 19/19 fertig
+**Stand:** 22/22 fertig
 
 ## Zweck
 
@@ -21,10 +21,13 @@ werden muss.
 - **AC-2** `fertig` **Neues Rätsel wählbar** — Das Werkzeug „Neues Rätsel"
   bietet alle drei Stufen an; nach einem gelösten Rätsel stehen sie als Knöpfe
   unter dem Ergebnis, die gespielte als „Nochmal".
-- **AC-3** `fertig` **Gebiete klar getrennt** — Jedes Gebiet hat seine Farbe,
-  an jeder Gebietsgrenze liegt eine dicke Linie. Die Feldgröße richtet sich
-  nach der Fensterbreite (höchstens 340 Pixel Brett) und wird beim Ändern der
-  Fenstergröße neu berechnet.
+- **AC-3** `fertig` **Gebiete klar getrennt** — Jedes Gebiet hat seine Farbe, an
+  jeder Gebietsgrenze liegt eine kräftigere Linie. Hell sind die Farben sanft mit
+  dunklem Zeichen, dunkel gedeckt mit hellem Zeichen. Das Brett ist so groß, wie
+  Breite und Höhe des Fensters es erlauben, und passt samt Knöpfen auf 6 × 6 ohne
+  Scrollen ins Fenster (Handy, 1366 × 700, 1000 × 560). Ein Feld ist mindestens
+  40 Pixel groß, wo die Breite es hergibt; beim Ändern der Fenstergröße wird neu
+  gerechnet. Dame und Kreuz sind gezeichnet und sehen auf jedem Gerät gleich aus.
 
 ### Eingabe
 
@@ -33,21 +36,36 @@ werden muss.
   setzt der Tipp gleich die Dame. Tastatur und Vorlesehilfen lösen denselben
   Wechsel aus.
 - **AC-5** `fertig` **Streichen setzt Kreuze** — Wer über mehrere Felder
-  streicht, setzt auf allen ein Kreuz; beginnt der Strich auf einem Kreuz,
-  entfernt er stattdessen Kreuze. Gesetzte Damen bleiben dabei unberührt.
-- **AC-6** `fertig` **Kreuze automatisch** — Ist der Schalter an, erscheint
+  streicht, setzt auf allen ein Kreuz, auch wenn der Finger so schnell ist, dass
+  er Felder überspringt; beginnt der Strich auf einem Kreuz, entfernt er
+  stattdessen Kreuze. Gesetzte Damen bleiben dabei unberührt, und Felder, die eine
+  Dame schon von selbst auskreuzt, bekommen kein eigenes Kreuz dazu.
+- **AC-6** `fertig` **Schalter Auto-Kreuze** — Ist der Schalter an, erscheint
   auf jedem Feld, das eine gesetzte Dame abdeckt (Zeile, Spalte, Farbe, acht
   Nachbarn), ein blasses Kreuz. Diese Kreuze werden nicht gespeichert und
   verschwinden, sobald die Dame weicht; eigene Kreuze bleiben.
 - **AC-7** `fertig` **Rückgängig je Zug** — „Rückgängig" nimmt den letzten Zug
-  zurück, ein ganzer Streichzug zählt als einer. Mindestens 60 Schritte bleiben
-  erhalten, auch über ein Neuladen hinweg. Ohne Verlauf ist der Knopf gesperrt.
+  zurück. Ein ganzer Streichzug zählt als einer, ebenso mehrere Tipps nacheinander
+  auf dasselbe Feld; wer einmal ganz herum tippt, hat gar keinen gemacht. Mindestens
+  60 Schritte bleiben erhalten, auch über ein Neuladen hinweg. Ohne Verlauf ist der
+  Knopf gesperrt.
+- **AC-20** `fertig` **Von vorn ohne Rückfrage** — „Von vorn" räumt Damen und Kreuze
+  ab; Rätsel, Zeit und Hinweise bleiben. Es fragt nicht nach, weil „Rückgängig" alles
+  wiederholt. Liegt nichts auf dem Brett, ist der Knopf gesperrt.
+- **AC-21** `fertig` **Am Rechner per Tastatur** — Die Pfeile wandern von Feld zu
+  Feld, Enter und Leertaste schalten weiter wie ein Tipp, D setzt die Dame, X das
+  Kreuz, Entf oder 0 leert das Feld. Rücktaste und Strg+Z sind „Rückgängig". Bei
+  offenem Blatt bleiben die Tasten beim Blatt.
 
 ### Konflikte und Hinweise
 
 - **AC-8** `fertig` **Konflikte rot umrandet** — Stehen zwei Damen in derselben
   Zeile, Spalte oder Farbe oder berühren sie sich, sind beide sofort rot
   umrandet – ohne dass jemand den Hinweis drückt.
+- **AC-22** `fertig` **Die Störung wird genannt** — Unter dem Brett steht in einem
+  Satz, was stört („Zwei Damen in Spalte 1."). Liegt nichts auf dem Brett, sagt
+  dieselbe Zeile, was Tippen und Streichen tun. Die Zeile hält ihren Platz, die
+  Knöpfe springen nicht.
 - **AC-9** `fertig` **Hinweis nennt seinen Schluss** — Der Hinweis kennt genau
   zwei Schlüsse: „Nur ein Feld bleibt übrig" (eine Zeile, Spalte oder Farbe hat
   nur noch einen möglichen Platz) und „Das fällt so oder so weg" (jede noch
@@ -86,8 +104,10 @@ werden muss.
 ### Ende, Speicher und Statistik
 
 - **AC-15** `fertig` **Sieg bei voller Lösung** — Stehen alle k Damen auf den
-  Feldern der Lösung, erscheint „Alle Damen sitzen." mit Stufe, Zeit und Zahl
-  der Hinweise („ohne Hinweis", wenn keiner). Danach nimmt das Brett keine
+  Feldern der Lösung, verschwinden alle Kreuze, eine Welle läuft über die Damen,
+  und es erscheint „Alle Damen sitzen." mit Stufe, Zeit und Zahl der Hinweise
+  („ohne Hinweis", wenn keiner), bei einem neuen Rekord dieser Stufe dazu „Neue
+  Bestzeit". Das Ergebnis rückt von selbst ins Bild. Danach nimmt das Brett keine
   Züge mehr an, Leiste und Hinweis verschwinden.
 - **AC-16** `fertig` **Partie überlebt Schließen** — Ein laufendes Rätsel steht
   nach Zurück, Neuladen oder Neustart unverändert wieder da, samt Kreuzen,
@@ -115,7 +135,7 @@ werden muss.
 | RF-2 | Gespeicherter Stand aus einer Fassung ohne Verlauf    | Das Rätsel lädt, Rückgängig beginnt mit leerem Verlauf.                      |
 | RF-3 | „Kreuze automatisch" aus, Hinweis gedrückt            | Der Hinweis rechnet trotzdem mit allem, was gesetzte Damen abdecken.         |
 | RF-4 | Nach einem gelösten Rätsel das Spiel neu öffnen       | Es beginnt ein frisches Rätsel der Stufe leicht.                             |
-| RF-5 | Fenster wird während der Partie schmaler              | Das Brett wird neu gebaut, der Spielstand bleibt.                            |
+| RF-5 | Fenster wird während der Partie schmaler              | Die Felder werden kleiner, Spielstand und Tastaturfokus bleiben.             |
 | RF-6 | Eigenes Kreuz auf einem Feld, das keine Dame trägt    | Gilt als Notiz; der Hinweis rechnet es als ausgeschlossen und meldet nichts. |
 | RF-7 | Erzeuger liefert auf keiner Stufe ein Rätsel          | Kein Absturz: das hinterlegte 6 × 6-Rätsel, bei mittel/schwer mit Meldung.   |
 

@@ -1,7 +1,7 @@
 # Vier gewinnt
 
 **Datei:** [`spiele/viergewinnt.js`](../../spiele/viergewinnt.js)
-**Stand:** 17/17 fertig
+**Stand:** 22/22 fertig
 
 ## Zweck
 
@@ -61,8 +61,9 @@ schnelle Partie auf dem Handy wie am Rechner.
 
 - **AC-10** `fertig` **Sieg und Unentschieden** — Vier gleiche Steine
   waagerecht, senkrecht oder in einer der beiden Schrägen beenden die Partie
-  sofort, die vier Felder sind markiert. Es erscheint „Du gewinnst." oder „Der
-  Rechner gewinnt.", zu zweit „Rot gewinnt." oder „Gelb gewinnt.". Ist das Brett
+  sofort, die vier Steine leuchten auf, die übrigen treten zurück. Es erscheint
+  „Du gewinnst." oder „Der Rechner gewinnt.", zu zweit „Rot gewinnt." oder „Gelb
+  gewinnt.". Ist das Brett
   voll, ohne dass vier in einer Reihe liegen, heißt es „Unentschieden.".
   Danach nimmt das Brett keine Steine mehr an.
 
@@ -99,6 +100,28 @@ schnelle Partie auf dem Handy wie am Rechner.
   Ampelfarbe (Schnittstelle AC-15); die gespielte heißt dort „Nochmal" und trägt
   den Kreispfeil. Über „Du gewinnst." steht ein grüner Haken, sonst nicht. Zu
   zweit trägt „Noch eine" den Kreispfeil.
+
+### Bedienung und Bild
+
+- **AC-18** `fertig` **Der Stein fällt sichtbar** — Ein gelegter Stein
+  fällt sichtbar von oben in sein Feld (höchstens 300 ms), auch der des Rechners.
+  Der zuletzt gelegte Stein trägt einen hellen Punkt; das gilt auch nach dem Neuladen,
+  gefallen wird dann nicht noch einmal.
+- **AC-19** `fertig` **Vorschau mit der Maus** — Steht die Maus über einer Spalte und
+  darf man gerade legen, zeigt ein blasser Stein den Landeplatz in der eigenen
+  Farbe. Während der Rechner überlegt, in einer vollen Spalte und auf dem
+  Touchscreen gibt es keine Vorschau.
+- **AC-20** `fertig` **Tasten** — Die Tasten 1 bis 7 legen in die jeweilige Spalte,
+  die Rücktaste tut dasselbe wie „Zug zurück", Enter nach dem Ende spielt nochmal
+  auf derselben Stufe bzw. zu zweit. Mit gedrückter Strg-, Alt- oder Meta-Taste, bei
+  gehaltener Taste und bei offenem Blatt passiert nichts.
+- **AC-21** `fertig` **Wer dran ist** — Oben steht auch gegen den Rechner ein Punkt in
+  der Steinfarbe vor „du am Zug" bzw. „Rechner am Zug"; solange der Rechner rechnet,
+  pulsiert er. Nach dem Ende entfällt die Angabe.
+- **AC-22** `fertig` **Brett nach Fenster** — Das Brett nutzt den Platz, höchstens
+  532 px breit; Stufe, Brett und „Zug zurück" passen auf dem Handy und in einem flachen
+  Fenster (1366×700, auch 1000×560) ohne Scrollen. Zwischen den Feldern gibt es keine
+  toten Stellen. Das Ergebnis wird von selbst ins Bild geholt.
 
 ## Randfälle
 

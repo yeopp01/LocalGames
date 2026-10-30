@@ -1,7 +1,7 @@
 # Spielschnittstelle
 
 **Datei:** [`app.js`](../../app.js)
-**Stand:** 15/15 fertig
+**Stand:** 16/16 fertig
 
 ## Zweck
 
@@ -95,6 +95,13 @@ Rahmen ein Spiel kennen muss.
   `bildzeichen('nochmal' | 'fertig')` liefert Kreispfeil oder grünen Haken.
   Blatt-Aktionen nehmen ein `zeichen`-Element vor den Text. Alle Zeichen sind
   für Vorleser verborgen, der Knopf heißt weiter wie sein Text.
+- **AC-16** `fertig` **Bausteine für gutes Handling** — `sitzung.brettKante(reserve)`
+  liefert die Kantenlänge, die ein Brett bei `reserve` Pixeln Kopf und Leiste
+  haben darf (mindestens 260, höchstens 532; dasselbe wie `--brett` in
+  `styles.css`). `sitzung.leistenKnopf(text, zeichen, tun)` baut einen Knopf für
+  die Leiste unter dem Brett, `bildzeichen` kennt dafür auch `rueckgaengig`,
+  `leeren`, `hinweis` und `notiz`. `sitzung.fuehlen(ms)` gibt ein kurzes Antippen
+  in der Hand und tut nichts, wo das Gerät es nicht kann.
 
 ## Randfälle
 

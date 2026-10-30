@@ -23,11 +23,16 @@
   const KREUZ = 1;
   const DAME = 2;
 
-  /* Genug Farben für die größte Stufe, in Reihenfolge gut unterscheidbar. */
-  const FARBEN = [
-    '#C64B3A', '#4573B8', '#4E8A54', '#C9A227', '#6A4FA3',
-    '#2E8B8B', '#B8577F', '#8C6A4F',
-  ];
+  /* Genug Farben für die größte Stufe, in Reihenfolge gut unterscheidbar. Die
+     Töne selbst stehen in styles.css: hell und dunkel brauchen andere. */
+  const FARBEN = [0, 1, 2, 3, 4, 5, 6, 7].map((n) => 'var(--q-g' + n + ')');
+
+  /* Dame und Kreuz werden gezeichnet: ♛ kommt je nach Gerät in anderer Größe,
+     dünn oder als Emoji, und auf einer Farbe muss es sofort zu lesen sein. */
+  const DAME_BILD = '<svg class="q-bild q-bild--dame" viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+    + '<path d="M5.2 17.6h13.6L21 7.8l-5.2 3.8L12 4.6l-3.8 7L3 7.8z"/><path d="M5.6 21h12.8"/></svg>';
+  const KREUZ_BILD = '<svg class="q-bild q-bild--kreuz" viewBox="0 0 24 24" aria-hidden="true" focusable="false">'
+    + '<path d="M5 5l14 14M19 5L5 19"/></svg>';
 
   const mischen = (feld) => {
     for (let i = feld.length - 1; i > 0; i -= 1) {
@@ -379,6 +384,7 @@
     let uhr = null;
     let zieht = null;          // Streichen statt Tippen
     let gemaltGerade = false;  // merkt sich, dass gestrichen wurde
+    let neueBestzeit = false;
 
     /* Findet die Suche bis zur Frist nichts, weicht sie auf die nächstkleinere
        Stufe aus und sagt das – lieber ein kleineres Brett als ein Rätsel, das
@@ -436,25 +442,26 @@
 
     const kopf = el('div', 'm-kopf');
     const gitter = el('div', 'q-gitter');
+    // Sagt, warum etwas rot ist; hält den Platz frei, damit nichts springt.
+    const lage = el('p', 'q-lage');
+    lage.setAttribute('aria-live', 'polite');
     const endeKasten = el('div', 'ende-kasten');
     endeKasten.hidden = true;
     const leiste = el('div', 'leiste');
-    wurzel.append(kopf, gitter, endeKasten, leiste);
+    wurzel.append(kopf, gitter, lage, endeKasten, leiste);
 
-    const autoKnopf = el('button', 'knopf knopf--still', 'Kreuze automatisch');
-    autoKnopf.type = 'button';
-    autoKnopf.addEventListener('click', () => {
+    const zurueckKnopf = s.leistenKnopf('Rückgängig', 'rueckgaengig', zurueckNehmen);
+    const leerenKnopf = s.leistenKnopf('Von vorn', 'leeren', vonVorn);
+    const hinweisKnopf = s.leistenKnopf('Hinweis', 'hinweis', hinweis);
+    /* Ein Schalter, der selten bedient wird: Er steht als letzter, und an bleibt
+       er leise. Als schwarzer Knopf war er das Lauteste auf der Seite. */
+    const autoKnopf = s.leistenKnopf('Auto-Kreuze', null, () => {
       stand.autoKreuze = !stand.autoKreuze;
       sichern();
       zeichnen();
     });
-    const zurueckKnopf = el('button', 'knopf knopf--still', 'Rückgängig');
-    zurueckKnopf.type = 'button';
-    zurueckKnopf.addEventListener('click', zurueckNehmen);
-    const hinweisKnopf = el('button', 'knopf knopf--still', 'Hinweis');
-    hinweisKnopf.type = 'button';
-    hinweisKnopf.addEventListener('click', hinweis);
-    leiste.append(zurueckKnopf, autoKnopf, hinweisKnopf);
+    autoKnopf.classList.add('q-schalter');
+    leiste.append(zurueckKnopf, leerenKnopf, hinweisKnopf, autoKnopf);
 
     s.werkzeuge([
       { label: 'Anleitung', symbol: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01" stroke-linecap="round"/>', tun: anleitung },
@@ -463,11 +470,19 @@
 
     let felder = [];
 
+    /* So groß, wie das Fenster es erlaubt – aber nie so klein, dass ein Feld
+       unter den Finger rutscht: Auf einem sehr flachen Fenster wird lieber
+       gescrollt, als dass acht Zeilen auf 32 Pixel schrumpfen. */
+    function masseSetzen() {
+      const k = stand.kanten;
+      const platz = Math.max(s.brettKante(230), Math.min(window.innerWidth - 28, k * 40));
+      gitter.style.setProperty('--kanten', String(k));
+      gitter.style.setProperty('--zelle', Math.floor(platz / k) + 'px');
+    }
+
     function gitterBauen() {
       const k = stand.kanten;
-      gitter.style.setProperty('--kanten', String(k));
-      const platz = Math.min(340, window.innerWidth - 30);
-      gitter.style.setProperty('--zelle', Math.floor(platz / k) + 'px');
+      masseSetzen();
 
       gitter.replaceChildren();
       felder = [];
@@ -480,11 +495,15 @@
         const sp = i % k;
         if (sp < k - 1 && stand.gebiet[i] !== stand.gebiet[i + 1]) f.dataset.grenzeRechts = 'ja';
         if (z < k - 1 && stand.gebiet[i] !== stand.gebiet[i + k]) f.dataset.grenzeUnten = 'ja';
+        // Am Außenrand des Bretts keine Linie, die sich gegen den Rahmen drückt.
+        if (sp === k - 1) f.dataset.randRechts = 'ja';
+        if (z === k - 1) f.dataset.randUnten = 'ja';
+        f.style.setProperty('--schritt', String(z + sp));
         const nr = i;
         // Tippen schaltet weiter, Streichen malt Kreuze. Unterschieden wird
         // erst beim Loslassen: Wer nie ein zweites Feld berührt hat, hat getippt.
         f.addEventListener('pointerdown', (e) => {
-          zieht = { start: nr, wert: stand.feld[nr] === KREUZ ? LEER : KREUZ };
+          zieht = { start: nr, letztes: nr, zeiger: e.pointerId, wert: stand.feld[nr] === KREUZ ? LEER : KREUZ };
           // Muss hier zurückgesetzt werden, nicht erst beim Klick: Endet ein
           // Streichzug auf einer anderen Zelle als er begann, landet der Klick
           // beim Gitter statt bei einer Zelle – das Flag bliebe sonst hängen
@@ -495,14 +514,6 @@
           if (e.pointerId !== undefined && f.hasPointerCapture(e.pointerId)) {
             f.releasePointerCapture(e.pointerId);
           }
-        });
-        f.addEventListener('pointerenter', () => {
-          if (!zieht) return;
-          if (!gemaltGerade) {
-            gemaltGerade = true;
-            malen(zieht.start, zieht.wert);
-          }
-          malen(nr, zieht.wert);
         });
         // Das Weiterschalten hängt bewusst am Klick und nicht am Loslassen:
         // so funktionieren auch Tastatur und Vorlesehilfen weiter.
@@ -523,34 +534,132 @@
        Schritte muss der Stapel nicht sein; er liegt im gespeicherten Stand,
        damit er ein Neuladen übersteht. */
     const VERLAUF_TIEFE = 60;
+    let letztesFeld = -1;
 
-    function schrittMerken() {
+    /* Zwei Tipps bis zur Dame sind ein Zug, nicht zwei: Wer mehrmals auf
+       dasselbe Feld tippt, legt nur beim ersten Mal einen Stand weg. */
+    function schrittMerken(i = -1) {
+      if (i >= 0 && i === letztesFeld) return;
       stand.verlauf.push(stand.feld.slice());
       if (stand.verlauf.length > VERLAUF_TIEFE) stand.verlauf.shift();
+      letztesFeld = i;
     }
 
     function zurueckNehmen() {
       if (stand.fertig || !stand.verlauf.length) return;
       stand.feld = stand.verlauf.pop();
+      letztesFeld = -1;
+      s.fuehlen();
+      sichern();
+      zeichnen();
+    }
+
+    const hatMarken = () => stand.feld.some((w) => w !== LEER);
+
+    /* Keine Rückfrage: „Rückgängig" holt alles wieder. */
+    function vonVorn() {
+      if (stand.fertig || !hatMarken()) return;
+      schrittMerken();
+      stand.feld = stand.feld.map(() => LEER);
       sichern();
       zeichnen();
     }
 
     /* Beim Streichen werden nur leere Felder und Kreuze angefasst –
-       eine gesetzte Dame überfährt man nicht aus Versehen. */
+       eine gesetzte Dame überfährt man nicht aus Versehen. Was eine Dame schon
+       von selbst auskreuzt, bleibt ebenfalls liegen: Als eigenes Kreuz stünde
+       es noch da, wenn die Dame längst weg ist. */
     function malen(i, wert) {
       if (stand.fertig) return;
       if (stand.feld[i] === DAME) return;
       if (stand.feld[i] === wert) return;
+      if (wert === KREUZ && abgedeckt().has(i)) return;
       if (zieht && !zieht.gemerkt) { zieht.gemerkt = true; schrittMerken(); }
       stand.feld[i] = wert;
+      s.fuehlen(4);
       sichern();
       zeichnen();
     }
 
-    const losgelassen = () => { zieht = null; };
+    const feldUnter = (e) => {
+      const ziel = document.elementFromPoint(e.clientX, e.clientY);
+      const feld = ziel && ziel.closest('.q-feld');
+      return feld ? felder.indexOf(feld) : -1;
+    };
+
+    /* Wer flott streicht, überspringt Felder: Der Browser fasst die Bewegung zu
+       wenigen Meldungen zusammen. Darum die Einzelpunkte holen und dazwischen
+       auffüllen, sonst bleiben im Wisch Lücken. */
+    function streichenBis(i) {
+      const k = stand.kanten;
+      const von = zieht.letztes;
+      const dz = Math.floor(i / k) - Math.floor(von / k);
+      const ds = (i % k) - (von % k);
+      const schritte = Math.max(Math.abs(dz), Math.abs(ds));
+      if (!gemaltGerade) {
+        gemaltGerade = true;
+        malen(zieht.start, zieht.wert);
+      }
+      for (let t = 1; t <= schritte; t += 1) {
+        const z = Math.floor(von / k) + Math.round((dz * t) / schritte);
+        const sp = (von % k) + Math.round((ds * t) / schritte);
+        malen(z * k + sp, zieht.wert);
+      }
+      zieht.letztes = i;
+    }
+
+    const beiBewegung = (e) => {
+      if (!zieht || e.pointerId !== zieht.zeiger) return;
+      const punkte = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+      for (const p of punkte.length ? punkte : [e]) {
+        const i = feldUnter(p);
+        if (i >= 0 && i !== zieht.letztes) streichenBis(i);
+      }
+    };
+    window.addEventListener('pointermove', beiBewegung);
+
+    const losgelassen = () => {
+      if (!zieht) return;
+      zieht = null;
+      if (gemaltGerade) {
+        letztesFeld = -1;
+        // Der Klick, der zum Strich gehört, kommt gleich noch und wird verschluckt.
+        // Danach darf das Merkmal nicht liegen bleiben, sonst schluckt es die Tastatur.
+        setTimeout(() => { gemaltGerade = false; }, 0);
+      }
+    };
     window.addEventListener('pointerup', losgelassen);
     window.addEventListener('pointercancel', losgelassen);
+
+    /* Pfeile wandern von Feld zu Feld, Enter und Leertaste schalten weiter wie
+       ein Tipp. D und X setzen direkt, ohne den Umweg über das Weiterschalten. */
+    const PFEILE = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
+    const beiTaste = (e) => {
+      if (stand.fertig || Echtzeit.blattOffen() || e.altKey) return;
+      if (e.target && e.target.closest && e.target.closest('input, textarea, select')) return;
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'z') { e.preventDefault(); zurueckNehmen(); }
+        return;
+      }
+      const k = stand.kanten;
+      const hier = felder.indexOf(document.activeElement);
+      const pfeil = PFEILE[e.key];
+      if (pfeil) {
+        e.preventDefault();
+        if (hier < 0) { felder[0].focus(); return; }
+        const z = Math.floor(hier / k) + pfeil[0];
+        const sp = (hier % k) + pfeil[1];
+        if (z >= 0 && z < k && sp >= 0 && sp < k) felder[z * k + sp].focus();
+        return;
+      }
+      if (e.key === 'Backspace') { e.preventDefault(); zurueckNehmen(); return; }
+      if (hier < 0) return;
+      const taste = e.key.toLowerCase();
+      if (taste === 'd') setzen(hier, DAME);
+      else if (taste === 'x') setzen(hier, KREUZ);
+      else if (taste === 'delete' || taste === '0') setzen(hier, LEER);
+    };
+    window.addEventListener('keydown', beiTaste);
 
     /* ---------------------------------------------------------------- Zug */
 
@@ -581,16 +690,27 @@
       return raus;
     }
 
-    function weiterschalten(i) {
-      if (stand.fertig) return;
-      schrittMerken();
-      // Ist das Feld ohnehin schon automatisch ausgekreuzt, wäre ein eigenes
-      // Kreuz nur ein überflüssiger Zwischenschritt.
-      if (stand.feld[i] === LEER && abgedeckt().has(i)) stand.feld[i] = DAME;
-      else stand.feld[i] = stand.feld[i] === LEER ? KREUZ : stand.feld[i] === KREUZ ? DAME : LEER;
+    function setzen(i, wert) {
+      if (stand.fertig || stand.feld[i] === wert) return;
+      schrittMerken(i);
+      stand.feld[i] = wert;
+      // Einmal ganz herum getippt: Dann war es gar kein Zug.
+      const vorher = stand.verlauf[stand.verlauf.length - 1];
+      if (vorher && vorher.every((w, j) => w === stand.feld[j])) {
+        stand.verlauf.pop();
+        letztesFeld = -1;
+      }
+      s.fuehlen(wert === DAME ? 14 : 6);
       sichern();
       zeichnen();
       pruefenObFertig();
+    }
+
+    function weiterschalten(i) {
+      // Ist das Feld ohnehin schon automatisch ausgekreuzt, wäre ein eigenes
+      // Kreuz nur ein überflüssiger Zwischenschritt.
+      if (stand.feld[i] === LEER && abgedeckt().has(i)) setzen(i, DAME);
+      else setzen(i, stand.feld[i] === LEER ? KREUZ : stand.feld[i] === KREUZ ? DAME : LEER);
     }
 
     /* Welche Damen stehen einander im Weg? */
@@ -623,6 +743,22 @@
         }
       }
       return raus;
+    }
+
+    /* Rot allein sagt nicht, was nicht stimmt. Genannt wird das Erste, was stört. */
+    function stoerText() {
+      const k = stand.kanten;
+      const damen = stand.feld.map((w, i) => (w === DAME ? i : -1)).filter((i) => i >= 0);
+      for (const a of damen) {
+        for (const b of damen) {
+          if (a >= b) continue;
+          if (Math.floor(a / k) === Math.floor(b / k)) return 'Zwei Damen in Zeile ' + (Math.floor(a / k) + 1) + '.';
+          if (a % k === b % k) return 'Zwei Damen in Spalte ' + ((a % k) + 1) + '.';
+          if (stand.gebiet[a] === stand.gebiet[b]) return 'Zwei Damen in derselben Farbe.';
+          if (Math.abs(Math.floor(a / k) - Math.floor(b / k)) <= 1 && Math.abs((a % k) - (b % k)) <= 1) return 'Zwei Damen berühren sich.';
+        }
+      }
+      return null;
     }
 
     /* Wo könnte überhaupt noch eine Dame stehen? Ausgeschlossen ist ein Feld,
@@ -746,7 +882,10 @@
       const miniBrett = ({ kandidaten, kreuze, dame, falsch }) => {
         const g = el('div', 'q-mini');
         g.style.setProperty('--kanten', String(k));
-        g.style.setProperty('--zelle', Math.floor(Math.min(280, window.innerWidth - 80) / k) + 'px');
+        /* Satz, Legende und Knöpfe brauchen ihren Platz im Blatt: Auf einem flachen
+           Fenster soll man nicht scrollen müssen, um das Bild zu sehen und zu antworten. */
+        const platz = Math.min(320, window.innerWidth - 64, Math.max(180, window.innerHeight - 400));
+        g.style.setProperty('--zelle', Math.floor(platz / k) + 'px');
         for (let i = 0; i < k * k; i += 1) {
           const f = el('div', 'q-mini-feld');
           f.style.setProperty('--gebiet', FARBEN[stand.gebiet[i] % FARBEN.length]);
@@ -754,11 +893,13 @@
           const sp = i % k;
           if (sp < k - 1 && stand.gebiet[i] !== stand.gebiet[i + 1]) f.dataset.grenzeRechts = 'ja';
           if (z < k - 1 && stand.gebiet[i] !== stand.gebiet[i + k]) f.dataset.grenzeUnten = 'ja';
-          if (stand.feld[i] === DAME) f.textContent = '♛';
-          else if (stand.feld[i] === KREUZ) { f.textContent = '×'; f.dataset.rolle = 'schon'; }
-          if (kandidaten && kandidaten.includes(i)) { f.textContent = '♛'; f.dataset.rolle = 'kandidat'; }
-          if (kreuze && kreuze.includes(i)) { f.textContent = '×'; f.dataset.rolle = 'raus'; }
-          if (dame === i) { f.textContent = '♛'; f.dataset.rolle = 'ziel'; }
+          if (sp === k - 1) f.dataset.randRechts = 'ja';
+          if (z === k - 1) f.dataset.randUnten = 'ja';
+          if (stand.feld[i] === DAME) f.innerHTML = DAME_BILD;
+          else if (stand.feld[i] === KREUZ) { f.innerHTML = KREUZ_BILD; f.dataset.rolle = 'schon'; }
+          if (kandidaten && kandidaten.includes(i)) { f.innerHTML = DAME_BILD; f.dataset.rolle = 'kandidat'; }
+          if (kreuze && kreuze.includes(i)) { f.innerHTML = KREUZ_BILD; f.dataset.rolle = 'raus'; }
+          if (dame === i) { f.innerHTML = DAME_BILD; f.dataset.rolle = 'ziel'; }
           // Zuletzt, damit die rote Umrandung jede andere Rolle sticht.
           if (falsch && falsch.includes(i)) f.dataset.rolle = 'falsch';
           g.append(f);
@@ -949,6 +1090,10 @@
 
       stand.verbraucht = zeitJetzt();
       stand.fertig = true;
+      // Vor dem Notieren schauen, sonst schlägt die Partie sich selbst.
+      const frueher = s.partien().filter((p) => p.gewonnen && p.stufe === stand.stufe && p.dauer > 0);
+      neueBestzeit = frueher.length > 0 && frueher.every((p) => p.dauer > stand.verbraucht);
+      s.fuehlen(30);
       s.notieren({
         gewonnen: true,
         dauer: stand.verbraucht,
@@ -957,6 +1102,8 @@
       });
       s.merken(stand);
       zeichnen();
+      // Auf einem flachen Fenster läge das Ergebnis sonst unter dem Rand.
+      endeKasten.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
 
     /* ------------------------------------------------------------ Zeichnen */
@@ -964,19 +1111,38 @@
     function zeichnen() {
       const fehler = fehlerhaft();
       const auto = abgedeckt();
+      const k = stand.kanten;
       for (let i = 0; i < felder.length; i += 1) {
         const f = felder[i];
         const w = stand.feld[i];
         const vonAllein = w === LEER && auto.has(i);
-        f.textContent = w === DAME ? '♛' : (w === KREUZ || vonAllein) ? '×' : '';
-        f.dataset.wert = w === DAME ? 'dame' : w === KREUZ ? 'kreuz' : vonAllein ? 'auto' : 'leer';
+        // Gelöst bleiben nur die Damen auf den Farben stehen.
+        const art = w === DAME ? 'dame' : stand.fertig ? 'leer' : w === KREUZ ? 'kreuz' : vonAllein ? 'auto' : 'leer';
+        // Nur neu setzen, was sich geändert hat: Sonst flackert beim Streichen
+        // jedes Zeichen des Bretts mit seiner Einblendung.
+        if (f.dataset.wert !== art) {
+          f.innerHTML = art === 'dame' ? DAME_BILD : art === 'leer' ? '' : KREUZ_BILD;
+          f.dataset.wert = art;
+          f.setAttribute('aria-label', 'Zeile ' + (Math.floor(i / k) + 1) + ', Spalte ' + ((i % k) + 1)
+            + ': ' + (art === 'dame' ? 'Dame' : art === 'leer' ? 'leer' : 'Kreuz'));
+        }
         if (fehler.has(i)) f.dataset.fehler = 'ja'; else delete f.dataset.fehler;
       }
-      autoKnopf.className = 'knopf ' + (stand.autoKreuze ? 'knopf--voll' : 'knopf--still');
+      gitter.dataset.fertig = stand.fertig ? 'ja' : 'nein';
+      autoKnopf.setAttribute('aria-pressed', stand.autoKreuze ? 'true' : 'false');
       zurueckKnopf.disabled = !stand.verlauf.length;
+      leerenKnopf.disabled = !hatMarken();
+      lageZeichnen();
       kopfZeichnen();
       endeZeichnen();
       leiste.hidden = stand.fertig;
+    }
+
+    function lageZeichnen() {
+      const stoer = stand.fertig ? null : stoerText();
+      lage.hidden = stand.fertig;
+      lage.dataset.fehler = stoer ? 'ja' : 'nein';
+      lage.textContent = stoer || (hatMarken() ? '' : 'Tippen setzt ein Kreuz, nochmal tippen die Dame. Streichen kreuzt mehrere.');
     }
 
     function kopfZeichnen() {
@@ -995,13 +1161,16 @@
       if (!stand.fertig) return;
       endeKasten.append(s.bildzeichen('fertig'));
       endeKasten.append(el('p', 'ende-titel', 'Alle Damen sitzen.'));
+      if (neueBestzeit) endeKasten.append(el('span', 'ende-marke', 'Neue Bestzeit'));
       endeKasten.append(el('p', 'notiz', STUFEN[stand.stufe].name + ' · ' + s.dauerText(stand.verbraucht)
-        + (stand.hilfen ? ' · ' + stand.hilfen + ' Hinweise' : ' · ohne Hinweis')));
+        + (stand.hilfen ? ' · ' + stand.hilfen + (stand.hilfen === 1 ? ' Hinweis' : ' Hinweise') : ' · ohne Hinweis')));
       endeKasten.append(s.stufenLeiste(STUFEN, stand.stufe, neu));
     }
 
     function neu(stufe) {
       stand = frisch(stufe);
+      neueBestzeit = false;
+      letztesFeld = -1;
       gitterBauen();
       sichern();
       zeichnen();
@@ -1017,17 +1186,18 @@
 
     function anleitung() {
       const d = el('div');
-      d.append(el('p', 'notiz', 'Setze in jede Zeile, jede Spalte und jedes Farbgebiet genau eine Dame ♛.'));
+      d.append(el('p', 'notiz', 'Setze in jede Zeile, jede Spalte und jedes Farbgebiet genau eine Dame.'));
       d.append(el('p', 'notiz', 'Zwei Damen dürfen sich nicht berühren – auch nicht über Eck. Anders als im Schach schlagen sie aber nicht über die ganze Diagonale; nur die acht direkten Nachbarfelder sind verboten.'));
-      d.append(el('p', 'notiz', 'Tippen schaltet weiter: leer → × → Dame → leer. Über mehrere Felder zu streichen setzt dort Kreuze – das geht deutlich schneller als einzeln zu tippen.'));
-      d.append(el('p', 'notiz', 'Mit „Kreuze automatisch" kreuzt die App alles aus, was durch eine gesetzte Dame ohnehin wegfällt. Diese blassen Kreuze sind nur abgeleitet und nirgends gespeichert: Nimmst du eine falsch gesetzte Dame wieder weg, verschwinden sie im selben Moment mit. Deine eigenen Kreuze bleiben davon unberührt.'));
-      d.append(el('p', 'notiz', 'Was sich in die Quere kommt, färbt sich rot.'));
-      d.append(el('p', 'notiz', '„Rückgängig“ nimmt den letzten Zug zurück – ein Streichzug zählt dabei als einer, ein schief geratener Wisch ist also mit einem Druck weg.'));
+      d.append(el('p', 'notiz', 'Tippen schaltet weiter: leer → × → Dame → leer. Über mehrere Felder zu streichen setzt dort Kreuze – das geht deutlich schneller als einzeln zu tippen. Am Rechner wandern die Pfeile von Feld zu Feld, D setzt die Dame, X das Kreuz.'));
+      d.append(el('p', 'notiz', 'Mit dem Schalter „Auto-Kreuze" kreuzt die App alles aus, was durch eine gesetzte Dame ohnehin wegfällt. Diese blassen Kreuze sind nur abgeleitet und nirgends gespeichert: Nimmst du eine falsch gesetzte Dame wieder weg, verschwinden sie im selben Moment mit. Deine eigenen Kreuze bleiben davon unberührt.'));
+      d.append(el('p', 'notiz', 'Was sich in die Quere kommt, färbt sich rot, und unter dem Brett steht, warum.'));
+      d.append(el('p', 'notiz', '„Rückgängig“ nimmt den letzten Zug zurück – ein Streichzug zählt dabei als einer, ein schief geratener Wisch ist also mit einem Druck weg. Auch „Von vorn“ lässt sich so zurückholen.'));
       d.append(el('p', 'notiz', 'Guter Anfang: Ein Farbgebiet, das nur in einer einzigen Zeile liegt, belegt diese Zeile – in allen anderen Feldern dieser Zeile kann dann keine Dame mehr stehen. Genau nach solchen Schlüssen sucht auch der Hinweis; er schaut nie in die Lösung. Steht dagegen schon eine Dame oder ein Kreuz nachweislich falsch, sagt er zuerst das – sonst führt jeder weitere Schluss in die Irre.'));
       s.blatt({ titel: 'Damen', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
 
-    function beiGroesse() { gitterBauen(); zeichnen(); }
+    // Die Felder bleiben dieselben, sonst ginge beim Drehen der Tastaturfokus verloren.
+    const beiGroesse = () => masseSetzen();
     window.addEventListener('resize', beiGroesse);
 
     gitterBauen();
@@ -1039,6 +1209,8 @@
       ende: () => {
         clearInterval(uhr);
         window.removeEventListener('resize', beiGroesse);
+        window.removeEventListener('keydown', beiTaste);
+        window.removeEventListener('pointermove', beiBewegung);
         window.removeEventListener('pointerup', losgelassen);
         window.removeEventListener('pointercancel', losgelassen);
         if (!stand.fertig) sichern();

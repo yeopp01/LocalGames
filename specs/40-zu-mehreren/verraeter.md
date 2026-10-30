@@ -1,7 +1,7 @@
 # Verräter
 
 **Datei:** [`spiele/verraeter.js`](../../spiele/verraeter.js), Wortpaare [`spiele/begriffe.js`](../../spiele/begriffe.js)
-**Stand:** 15/16 fertig · 1 zurückgestellt
+**Stand:** 16/17 fertig · 1 zurückgestellt
 
 ## Zweck
 
@@ -25,25 +25,33 @@ aller.
   sehen in jeder Fassung „Euer Wort" und das erste Wort des Paares.
 - **AC-3** `fertig` **Zwei Verräter ab fünf** — Die Fassung „Zwei Verräter" ist
   wählbar, sobald der Zähler im Aufbau auf fünf oder mehr steht, und darunter
-  gesperrt – auch beim ersten Öffnen. Zahl und Namen bleiben stehen, wenn danach
-  Fassung, Thema oder Zeit gewählt wird. Wird die Gruppe nach der Wahl unter
-  fünf verkleinert, gilt beim Verteilen still „Doppelgänger".
+  gesperrt – auch beim ersten Öffnen; der gesperrte Knopf sagt „ab 5". Zahl und
+  Namen bleiben stehen, wenn danach Fassung, Thema oder Zeit gewählt wird. Wird
+  die Gruppe nach der Wahl unter fünf verkleinert, steht schon im Aufbau wieder
+  „Doppelgänger" da, und das gilt auch beim Verteilen. Wächst sie zurück, ist
+  „Zwei Verräter" wieder gewählt.
 - **AC-4** `fertig` **Thema und Redezeit wählbar** — Mit einem Handy wählt man
-  „Bunt gemischt" oder eines der zehn Themen und die Zeit zum Reden: ohne Uhr,
-  2 oder 4 Minuten. Die Uhr läuft sichtbar auf dem Redeschirm und meldet am
-  Ende „Zeit vorbei.". Auch bei „Bunt gemischt" wird ein Thema gezogen, damit
-  der blinde Verräter etwas in der Hand hat.
+  in je einer Klappliste „Bunt gemischt" oder eines der zehn Themen und die Zeit
+  zum Reden: ohne Uhr, 2 oder 4 Minuten. Die Uhr läuft sichtbar auf dem Redeschirm
+  und meldet am Ende „Zeit vorbei.". Auch bei „Bunt gemischt" wird ein Thema
+  gezogen, damit der blinde Verräter etwas in der Hand hat. Ein gemerktes Thema,
+  das es nicht mehr gibt, zeigt „Bunt gemischt".
 - **AC-5** `fertig` **Handgeschriebener Wortschatz** — `spiele/begriffe.js`
   enthält 120 Paare in zehn Themen, je 12. Kein Wort kommt zweimal vor, die
   beiden Hälften eines Paares sind nie gleich. Das erste Wort geht an die
   Gruppe, das zweite an den Doppelgänger.
+- **AC-17** `fertig` **Aufbau auf einen Blick** — Mit drei bis vier Spielern passen
+  Weg, Fassung, Thema, Zeit, Spielerzahl, Namen und der Startknopf ohne Scrollen
+  ins Fenster (Handy und 1366×700). Die Fassungen stehen als drei Knöpfe in einer
+  Reihe, darunter steht nur die Erklärung der gewählten.
 
 ### Ein Handy
 
 - **AC-6** `fertig` **Rolle hinter dem Sperrschirm** — Beim Verteilen steht vor
   jedem Spieler ein Sperrschirm mit seinem Namen. Die Karte liegt unter dem
   Deckel „Gedrückt halten" und ist nur zu sehen, solange der Finger liegt;
-  „Gesehen" führt zum nächsten Sperrschirm. Weder ein Sperrschirm noch der
+  „Gesehen" wird frei, sobald der Deckel einmal offen war, und führt zum nächsten
+  Sperrschirm. Weder ein Sperrschirm noch der
   Schirm nach dem Verteilen zeigt ein Wort, die Kopfzeile nennt nur die Fassung.
 - **AC-7** `fertig` **Reden mit Startspieler** — Nach dem Verteilen steht „Es
   beginnt ‹Name›" mit der Regel „ein einziges Wort" auf dem Schirm, ohne Wort und
@@ -69,12 +77,12 @@ aller.
 - **AC-11** `fertig` **Probe oben auf dem Schirm** — Über der eigenen Rolle
   stehen Thema, Fassung und „zu n" mit dem Hinweis, dass die drei bei allen
   gleich sein müssen; die Kopfzeile zeigt „Code ‹Code›". Die eigene Rolle liegt
-  unter dem Deckel „Gedrückt halten". Mit weniger als drei Zeichen im Code
-  lässt sich die Rolle nicht aufrufen.
+  unter dem Deckel „Gedrückt halten"; „Weiter" wird erst frei, wenn er einmal offen
+  war. Mit weniger als drei Zeichen im Code lässt sich die Rolle nicht aufrufen.
 - **AC-12** `fertig` **Ausgang wird erfragt** — Nach dem Reden führt
   „Auflösen" zu Wort und Verrätern und zur Frage „Habt ihr ihn erwischt?" mit
   Ja und Nein. Erst die Antwort wird notiert; danach steht „Erwischt." oder
-  „Entkommen." da.
+  „Entkommen." als Überschrift der Auflösung da, wie am Ende mit Abstimmung.
 - **AC-13** `zurueckgestellt` (braucht eine Verbindung zwischen den Geräten) **Stimmen übers Netz sammeln** — Im
   Code-Weg sammeln die Geräte die Stimmen ein und zählen sie aus, statt nach dem
   Ausgang zu fragen. Ohne fremden Rechner nicht zu haben; der Code-Weg bleibt
@@ -103,7 +111,7 @@ aller.
 | #    | Fall                                                        | Erwartetes Verhalten                                                  |
 | ---- | ----------------------------------------------------------- | --------------------------------------------------------------------- |
 | RF-1 | Gleichstand an der Spitze der Abstimmung                    | „Entkommen." mit dem Hinweis, dass sich die Gruppe nicht einigen konnte. |
-| RF-2 | „Zwei Verräter" gewählt, dann auf vier verkleinert          | Verteilt wird still als Doppelgänger.                                 |
+| RF-2 | „Zwei Verräter" gewählt, dann auf vier verkleinert          | Der Aufbau zeigt schon Doppelgänger, verteilt wird als Doppelgänger.  |
 | RF-3 | Jemand hat sich beim Code vertippt                          | Seine Probe weicht ab; die Runde wird vor dem Reden neu aufgesetzt.   |
 | RF-4 | Zwei Geräte wählen dieselbe Nummer                          | Beide zeigen dieselbe Rolle.                                          |
 | RF-5 | Code-Weg: nach „Auflösen" verlassen, ohne Ja oder Nein      | Es wird nichts notiert.                                               |

@@ -7,7 +7,7 @@ Wortlisten, damit keine GPL auf das Projekt durchschlägt.
 
 | Spezifikation               | Stand        |
 | --------------------------- | ------------ |
-| [Galgenmännchen](galgen.md) | 14/14 fertig |
-| [Wördle](wordle.md)         | 24/24 fertig |
+| [Galgenmännchen](galgen.md) | 16/16 fertig |
+| [Wördle](wordle.md)         | 28/28 fertig |
 
 <!-- board:end -->

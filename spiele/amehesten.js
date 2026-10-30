@@ -151,6 +151,9 @@
         min: 3,
         max: 12,
         knopfText: 'Erste Frage',
+        /* Sofort gemerkt: Die Wahl der Fragen baut den Schirm neu, und dabei gingen
+           frisch getippte Namen sonst verloren. */
+        aendern(namen) { einst.namen = namen; merken(); },
         weiter(namen) {
           einst.namen = namen;
           merken();
@@ -203,6 +206,7 @@
       andere.type = 'button';
       andere.addEventListener('click', () => { partie.gestellt -= 1; naechsteFrage(); });
       boden.append(andere);
+      Runde.vorn(los);
     }
 
     function zeigeStimmen() {
@@ -251,6 +255,9 @@
       schluss.type = 'button';
       schluss.addEventListener('click', () => { abschluss(); neu(); });
       boden.append(schluss);
+
+      Runde.frisch(weiter, 450, () => Runde.vorn(weiter));
+      Runde.frisch(schluss, 450);
     }
 
     /* Eine Partie ist hier der ganze Abend, nicht die einzelne Frage – sonst

@@ -14,7 +14,15 @@
    Druck kommt nicht von einer Uhr, sondern von Fehlschüssen: Wer eine Blase
    anlegt, ohne dass etwas platzt, verbraucht einen Punkt unter der Kanone.
    Sind alle weg, schiebt sich oben eine neue Reihe herein. Wer nachdenkt,
-   verliert also nichts. */
+   verliert also nichts.
+
+   Zielhilfe, für kleine Hände: Ziehen und Loslassen verlangt, Zielen und
+   Schießen in einer einzigen Bewegung zu treffen. Beim Antippen ist beides
+   getrennt: Jede Stelle, die ein Schuss erreicht, trägt einen Punkt; ein Tipp
+   wählt die nächste, ein zweiter oder „Schießen" schießt. Die Punkte liegen auf
+   dem Feld statt als Raster darunter, weil eine Spalte unten mehrere Stellen
+   meinen könnte – und weil man am Feld sieht, wohin man zeigt. Die Stellen
+   rechnet dieselbe Bahn aus wie der Flug, die Blase landet also genau dort. */
 
 (() => {
   const B = 180;
@@ -36,6 +44,13 @@
   const WINKEL_MAX = Math.PI - 0.17;
   const START_REIHEN = 6;
   const FARBEN = ['#D9534F', '#E3AE1F', '#4C9F58', '#3F7FD0', '#9A5BC4', '#26A9A6'];
+  /* So lange nach dem Ende zählt ein Tipp nicht als neue Partie: Der letzte
+     Schuss liegt ja noch unter dem Finger. */
+  const SPERRE_MS = 600;
+  const TAUSCH_S = 0.16;
+  // Die Kanone wird in so feinen Schritten durchprobiert, dass auf fast 300
+  // Einheiten Flug keine Stelle durchrutscht, die man mit dem Finger träfe.
+  const WINKEL_SCHRITT = 0.003;
 
   const zufall = (n) => Math.floor(Math.random() * n);
   const farbenZahl = (punkte) => 4 + (punkte >= 1500 ? 1 : 0) + (punkte >= 5000 ? 1 : 0);
@@ -174,16 +189,39 @@
     let stand = laden();
     let fallen = [];        // platzende und fallende Blasen – nur fürs Bild, nicht im Stand
     let drehen = 0;         // Pfeiltasten: -1, 0, 1
+    let endeUm = 0;
+    let tauschT = TAUSCH_S; // Sekunden seit dem letzten Tausch – nur fürs Bild
+    let kein = false;       // Finger liegt unter der Kanone: Loslassen schießt nicht
+    let auswahl = null;     // Beim Antippen: die gewählte Stelle { r, c, winkel, x, y }
+    let zieleVon = '';      // Für welches Feld die Stellen gerechnet sind
+    let zieleListe = [];
+
+    /* Die Zielhilfe gilt über Partien hinweg, sie hängt am Kind, nicht am Feld.
+       Darum liest laden() sie auch aus einem Stand, der sonst nicht mehr gilt. */
+    function hilfeVon(alt) {
+      const h = alt && typeof alt.hilfe === 'object' && alt.hilfe ? alt.hilfe : {};
+      return { vorschau: h.vorschau === true, antippen: h.antippen === true };
+    }
 
     function laden() {
       const alt = s.erinnert();
-      if (!gueltig(alt)) return frisch();
+      if (!gueltig(alt)) {
+        const st = frisch();
+        st.hilfe = hilfeVon(alt);
+        return st;
+      }
       if (alt.zustand === 'laeuft') alt.zustand = 'pause';
+      alt.hilfe = hilfeVon(alt);
       return alt;
     }
 
     const sichern = () => s.merken(stand);
-    const bestwert = () => s.partien().reduce((h, p) => Math.max(h, Echtzeit.zahl(p.punkte)), 0);
+    // Mit Zielhilfe ist es ein anderes Spiel: Der Bestwert der einen schlägt den
+    // der anderen nicht.
+    const bestwert = () => {
+      const mit = stand.hilfe.vorschau || stand.hilfe.antippen || stand.mitHilfe === true;
+      return s.partien().reduce((h, p) => (!!p.mitHilfe === mit ? Math.max(h, Echtzeit.zahl(p.punkte)) : h), 0);
+    };
 
     /* ------------------------------------------------------------- Aufbau */
 
@@ -191,24 +229,49 @@
     const flaeche = el('div', 'ez-flaeche bl-flaeche');
     const feld = el('div', 'bl-kasten');
     const unten = el('div', 'ez-unten');
-    flaeche.append(feld);
-    wurzel.append(kopf, flaeche, unten);
+    // Groß und unter dem Daumen: Das ist der Knopf, den ein Kind sucht.
+    const losKnopf = el('button', 'knopf knopf--voll bl-los', 'Schießen');
+    losKnopf.type = 'button';
+    const losPunkt = el('span', 'bl-los-punkt');
+    losPunkt.setAttribute('aria-hidden', 'true');
+    losKnopf.prepend(losPunkt);
+    losKnopf.addEventListener('click', () => schiessen());
+    flaeche.append(feld, losKnopf);
+    wurzel.append(kopf, flaeche);
 
     const b = Echtzeit.buehne(feld, { breite: B, hoehe: H, schritt, zeichnen, beiHalt });
+    // Die Knöpfe liegen auf dem Feld, ihr Tipp ist aber kein Schuss.
+    b.an(unten, 'pointerdown', (e) => e.stopPropagation());
+    b.an(losKnopf, 'pointerdown', (e) => e.stopPropagation());
 
-    s.werkzeuge([
-      { label: 'Pause', symbol: Echtzeit.SYMBOL.pause, tun: pauseUmschalten },
-      { label: 'Anleitung', symbol: Echtzeit.SYMBOL.anleitung, tun: anleitung },
-    ]);
+    const SYMBOL_HILFE = '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4" stroke-linecap="round"/>';
+    function werkzeugeSetzen() {
+      s.werkzeuge([
+        { label: 'Pause', symbol: Echtzeit.SYMBOL.pause, tun: pauseUmschalten },
+        { label: 'Zielhilfe', symbol: SYMBOL_HILFE, tun: zielhilfeBlatt, marke: stand.hilfe.vorschau || stand.hilfe.antippen ? 'an' : undefined },
+        { label: 'Anleitung', symbol: Echtzeit.SYMBOL.anleitung, tun: anleitung },
+      ]);
+    }
+    werkzeugeSetzen();
 
     /* ------------------------------------------------------------ Ablauf */
 
     function weiter() {
       if (stand.zustand !== 'bereit' && stand.zustand !== 'pause') return;
       stand.zustand = 'laeuft';
+      // Der Pause-Knopf behielte sonst den Fokus, und die nächste Leertaste
+      // ginge an ihn statt an die Kanone.
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
       anzeigen();
       b.los();
     }
+
+    function nochmal() {
+      neu();
+      weiter();
+    }
+
+    const neustartFrei = () => stand.zustand === 'vorbei' && performance.now() - endeUm >= SPERRE_MS;
 
     function pauseUmschalten() {
       if (b.laeuft) b.halt();
@@ -218,6 +281,7 @@
     function beiHalt() {
       if (stand.zustand === 'laeuft') stand.zustand = 'pause';
       griff = null;
+      kein = false;
       drehen = 0;
       anzeigen();
       sichern();
@@ -225,6 +289,10 @@
 
     function schiessen() {
       if (stand.zustand !== 'laeuft' || stand.flug) return;
+      if (stand.hilfe.antippen && !auswahl) return;
+      auswahl = null;
+      if (stand.hilfe.vorschau || stand.hilfe.antippen) stand.mitHilfe = true;
+      s.fuehlen(10);
       const dx = Math.cos(stand.winkel);
       const dy = -Math.sin(stand.winkel);
       stand.flug = { x: SX, y: SY, dx, dy, farbe: stand.geladen };
@@ -235,11 +303,14 @@
     function tauschen() {
       if (stand.zustand !== 'laeuft') return;
       [stand.geladen, stand.naechste] = [stand.naechste, stand.geladen];
+      tauschT = 0;
+      s.fuehlen(6);
     }
 
     function schritt(dt) {
       const st = stand;
       st.zeit += dt;
+      if (tauschT < TAUSCH_S) tauschT += dt;
       if (drehen) st.winkel = Math.min(WINKEL_MAX, Math.max(WINKEL_MIN, st.winkel - drehen * 1.5 * dt));
 
       for (const f of fallen) {
@@ -295,6 +366,7 @@
           fallen.push({ art: 'fall', x: mitteX(st, a, c), y: mitteY(a), vx: (Math.random() - 0.5) * 40, vy: -40 - Math.random() * 60, farbe: st.gitter[a][c], t: 0 });
           st.gitter[a][c] = -1;
         }
+        s.fuehlen(lose.length ? 20 : 10);
         st.blasen += gruppe.length + lose.length;
         st.punkte += gruppe.length * 10 + lose.length * 20;
         stutzen(st);
@@ -347,12 +419,19 @@
     function vorbei() {
       stand.zustand = 'vorbei';
       stand.flug = null;
-      s.notieren({ punkte: stand.punkte, blasen: stand.blasen, dauer: Math.round(stand.zeit * 1000) });
+      endeUm = performance.now();
+      s.fuehlen(30);
+      const partie = { punkte: stand.punkte, blasen: stand.blasen, dauer: Math.round(stand.zeit * 1000) };
+      if (stand.mitHilfe) partie.mitHilfe = true;
+      s.notieren(partie);
       b.halt();
     }
 
     function neu() {
+      const hilfe = stand.hilfe;
       stand = frisch();
+      stand.hilfe = hilfe;
+      auswahl = null;
       fallen = [];
       anzeigen();
       sichern();
@@ -367,7 +446,108 @@
       p.append(el('b', null, String(stand.punkte)), document.createTextNode(' Punkte'));
       kopf.append(p, el('span', null, stand.blasen + (stand.blasen === 1 ? ' Blase' : ' Blasen')));
       const best = bestwert();
-      s.unter(best ? 'Bestwert ' + best : '');
+      s.unter('Bestwert ' + (best || '–'));
+    }
+
+    /* ---------------------------------------------------------- Zielhilfe */
+
+    /* Alle Stellen, an denen ein Schuss liegen bleiben kann. Über eine Bande
+       wie die Ziellinie – mehr zeigt das Feld auch sonst nicht. Bei mehreren
+       passenden Winkeln gilt die Mitte des breitesten Bereichs: Sie ist am
+       weitesten von den Winkeln entfernt, die woanders landen. Gezählt wird in
+       ganzen Schritten: So ist auch die Mitte ein Winkel, der wirklich
+       durchgerechnet wurde, und „genau dort" stimmt ohne Rundung. */
+    function ziele() {
+      const merkmal = JSON.stringify(stand.gitter) + stand.versatz;
+      if (merkmal === zieleVon) return zieleListe;
+      zieleVon = merkmal;
+      const stellen = new Map();
+      let zuletzt = null;
+      const anzahl = Math.floor((WINKEL_MAX - WINKEL_MIN) / WINKEL_SCHRITT);
+      for (let i = 0; i <= anzahl; i += 1) {
+        const w = WINKEL_MIN + i * WINKEL_SCHRITT;
+        const weg = bahn(stand, SX, SY, Math.cos(w), -Math.sin(w), 1);
+        const ziel = weg.ende && einrasten(stand, weg.ende[0], weg.ende[1]);
+        if (!ziel) { zuletzt = null; continue; }
+        const name = ziel.r + ':' + ziel.c;
+        let stelle = stellen.get(name);
+        if (!stelle) {
+          stelle = { r: ziel.r, c: ziel.c, x: mitteX(stand, ziel.r, ziel.c), y: mitteY(ziel.r), von: i, bis: i, jetzt: i };
+          stellen.set(name, stelle);
+        }
+        if (zuletzt !== name) stelle.jetzt = i;
+        if (i - stelle.jetzt > stelle.bis - stelle.von) { stelle.von = stelle.jetzt; stelle.bis = i; }
+        zuletzt = name;
+      }
+      zieleListe = [...stellen.values()]
+        .map((z) => ({ r: z.r, c: z.c, x: z.x, y: z.y, winkel: WINKEL_MIN + Math.floor((z.von + z.bis) / 2) * WINKEL_SCHRITT }))
+        .sort((a, c) => a.winkel - c.winkel);
+      auswahl = null;
+      return zieleListe;
+    }
+
+    function waehlen(ziel) {
+      auswahl = ziel;
+      stand.winkel = ziel.winkel;
+      s.fuehlen(6);
+      if (!b.laeuft) b.malen();
+    }
+
+    /** Die Stelle, die der Finger meint: die nächste, egal wie grob er trifft. */
+    function zielBei(x, y) {
+      let best = null;
+      let abstand = Infinity;
+      for (const z of ziele()) {
+        const d = (z.x - x) ** 2 + (z.y - y) ** 2;
+        if (d < abstand) { abstand = d; best = z; }
+      }
+      return best;
+    }
+
+    /** Pfeile gehen die Stellen der Reihe nach ab, der Kanone nach. */
+    function zielWeiter(richtung) {
+      const liste = ziele();
+      if (!liste.length) return;
+      const i = auswahl ? liste.findIndex((z) => z.r === auswahl.r && z.c === auswahl.c) : -1;
+      const n = i < 0 ? Math.floor(liste.length / 2) : Math.min(liste.length - 1, Math.max(0, i + richtung));
+      waehlen(liste[n]);
+    }
+
+    function zielhilfeBlatt() {
+      const d = el('div', 'bl-hilfe');
+      const zeile = (name, titel, text) => {
+        const k = el('button', 'bl-schalter');
+        k.type = 'button';
+        k.setAttribute('role', 'switch');
+        const zeigen = () => k.setAttribute('aria-checked', String(stand.hilfe[name]));
+        const worte = el('span', 'bl-schalter-worte');
+        worte.append(el('span', 'bl-schalter-titel', titel), el('span', 'bl-schalter-text', text));
+        k.append(worte, el('span', 'bl-schalter-knopf'));
+        zeigen();
+        k.addEventListener('click', () => {
+          stand.hilfe[name] = !stand.hilfe[name];
+          auswahl = null;
+          griff = null;
+          zeigen();
+          hilfeAnzeigen();
+          sichern();
+        });
+        return k;
+      };
+      d.append(zeile('vorschau', 'Landeplatz zeigen', 'Eine blasse Blase zeigt beim Zielen, wo die Blase liegen bleibt.'));
+      d.append(zeile('antippen', 'Antippen statt ziehen', 'Punkte zeigen, wo eine Blase hinkann. Antippen wählt, noch einmal antippen oder „Schießen" schießt – genau dorthin. Gut für kleine Hände.'));
+      d.append(el('p', 'notiz notiz--klein', 'Partien mit Zielhilfe haben einen eigenen Bestwert.'));
+      s.blatt({ titel: 'Zielhilfe', inhalt: d, aktionen: [{ text: 'Fertig' }] });
+    }
+
+    /* Das Feld wird schmaler, wenn der Knopf darunter Platz braucht – das Maß
+       steht in styles.css unter data-antippen. */
+    function hilfeAnzeigen() {
+      flaeche.dataset.antippen = stand.hilfe.antippen ? 'ja' : 'nein';
+      losKnopf.hidden = !stand.hilfe.antippen;
+      werkzeugeSetzen();
+      anzeigen();
+      b.malen();
     }
 
     function anzeigen() {
@@ -375,32 +555,37 @@
       const z = stand.zustand;
       unten.replaceChildren();
       if (z === 'bereit') {
-        b.schild('Zielen und loslassen', 'Finger aufs Feld, die Kanone zielt auf ihn. Loslassen schießt, die Blase links unten tauscht.');
+        if (stand.hilfe.antippen) b.schild('Tipp, wo sie hin soll', 'Tipp auf einen Punkt: Dort landet die Blase. Noch einmal antippen schießt.');
+        else b.schild('Zielen und loslassen', 'Finger aufs Feld, die Kanone zielt auf ihn. Loslassen schießt, die Blase links unten tauscht.');
       } else if (z === 'pause') {
-        b.schild('Pause', 'Tippen, um weiterzuspielen.');
-        unten.append(Echtzeit.kasten('Pause', stand.punkte + ' Punkte bisher.', [
+        b.schild('Pause', stand.punkte + ' Punkte bisher. Tippen, um weiterzuspielen.');
+        unten.append(Echtzeit.kasten('', null, [
           { text: 'Weiter', tun: weiter },
-          { text: 'Neu anfangen', art: 'still', tun: neu },
+          { text: 'Neu anfangen', art: 'still', tun: nochmal },
         ]));
       } else if (z === 'vorbei') {
-        b.schild('Über der Linie.');
-        const best = bestwert();
-        unten.append(Echtzeit.kasten('Über der Linie.',
+        b.schild('Über der Linie.',
           stand.punkte + ' Punkte, ' + stand.blasen + (stand.blasen === 1 ? ' Blase' : ' Blasen') + ' in ' +
-          s.dauerText(Math.round(stand.zeit * 1000)) + '.' +
-          (stand.punkte > 0 && stand.punkte >= best ? ' Das ist dein Bestwert.' : ''),
-          [{ text: 'Nochmal', tun: neu }]));
+          s.dauerText(Math.round(stand.zeit * 1000)) + '.');
+        const k = Echtzeit.kasten('', null, [{ text: 'Nochmal', tun: nochmal }]);
+        k.querySelector('.knopf').prepend(s.bildzeichen('nochmal'));
+        if (stand.punkte > 0 && stand.punkte >= bestwert()) k.prepend(el('span', 'ende-marke', 'Das ist dein Bestwert.'));
+        k.append(el('p', 'notiz notiz--klein', 'Ein Tipp aufs Feld oder die Leertaste geht auch.'));
+        unten.append(k);
       } else {
         b.schildWeg();
       }
       unten.hidden = !unten.childElementCount;
+      // In die Karte auf dem Feld: So bleibt „Nochmal" auch im flachen Fenster
+      // im Bild, und die Seite springt nicht.
+      if (!unten.hidden) feld.querySelector('.ez-schild').append(unten);
     }
 
     /* Ein Zeichen je Farbe, damit sich die Blasen auch ohne Farbsehen
        unterscheiden lassen. */
     function zeichen(ctx, farbe, x, y, k) {
-      ctx.fillStyle = 'rgba(255, 255, 255, .62)';
-      ctx.strokeStyle = 'rgba(255, 255, 255, .62)';
+      ctx.fillStyle = 'rgba(255, 255, 255, .92)';
+      ctx.strokeStyle = 'rgba(255, 255, 255, .92)';
       ctx.lineWidth = 1.1 * k;
       ctx.beginPath();
       const g = 2.6 * k;
@@ -437,7 +622,7 @@
 
       // Die Linie, über die nichts rutschen darf.
       ctx.strokeStyle = f.rost;
-      ctx.globalAlpha = 0.55;
+      ctx.globalAlpha = 0.85;
       ctx.lineWidth = 0.8;
       ctx.setLineDash([3, 3]);
       ctx.beginPath();
@@ -461,10 +646,34 @@
         }
       }
 
-      // Ziellinie – nur, wenn gerade nichts fliegt.
-      if (st.zustand !== 'vorbei' && !st.flug) {
+      const antippen = st.hilfe.antippen;
+      losPunkt.style.background = FARBEN[st.geladen];
+      losKnopf.disabled = !(auswahl && st.zustand === 'laeuft' && !st.flug);
+      if (antippen && st.zustand !== 'vorbei' && !st.flug) {
+        ctx.fillStyle = FARBEN[st.geladen];
+        ctx.globalAlpha = 0.6;
+        for (const z of ziele()) {
+          ctx.beginPath();
+          ctx.arc(z.x, z.y, 2.6, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+
+      // Ziellinie – nur, wenn gerade nichts fliegt und der Finger nicht gerade
+      // abbricht: Keine Linie heißt dann auch kein Schuss. Beim Antippen erst,
+      // wenn eine Stelle gewählt ist.
+      if (st.zustand !== 'vorbei' && !st.flug && !kein && (!antippen || auswahl)) {
         const weg = bahn(st, SX, SY, Math.cos(st.winkel), -Math.sin(st.winkel), 1);
-        ctx.fillStyle = f.tinteStill;
+        // Die blasse Blase rechnet dieselbe Stelle wie der Schuss. Ob dort etwas
+        // platzt, sagt sie nicht; das bleibt das Spiel.
+        const ziel = (st.hilfe.vorschau || antippen) && weg.ende && einrasten(st, weg.ende[0], weg.ende[1]);
+        if (ziel) {
+          ctx.globalAlpha = antippen ? 0.7 : 0.45;
+          blase(ctx, f, st.geladen, mitteX(st, ziel.r, ziel.c), mitteY(ziel.r), 1);
+          ctx.globalAlpha = 1;
+        }
+        ctx.fillStyle = f.tinteLeise;
         let rest = 0;
         for (let i = 1; i < weg.punkte.length; i += 1) {
           const [x0, y0] = weg.punkte[i - 1];
@@ -493,31 +702,38 @@
       ctx.beginPath();
       ctx.arc(SX, SY + 6, 15, Math.PI, 0);
       ctx.fill();
-      if (st.zustand !== 'vorbei') blase(ctx, f, st.geladen, SX, SY, 1);
+      // Beim Tausch wippen beide kurz – sonst sieht man leicht nicht, dass er geschah.
+      const wipp = tauschT < TAUSCH_S ? 1 + 0.2 * Math.sin((Math.PI * tauschT) / TAUSCH_S) : 1;
+      if (st.zustand !== 'vorbei') blase(ctx, f, st.geladen, SX, SY, wipp);
       if (st.flug) blase(ctx, f, st.flug.farbe, st.flug.x, st.flug.y, 1);
 
       // Vorrat und Fehlschüsse
-      blase(ctx, f, st.naechste, VORRAT_X, VORRAT_Y, 0.72);
-      ctx.fillStyle = f.tinteStill;
+      blase(ctx, f, st.naechste, VORRAT_X, VORRAT_Y, 0.72 * wipp);
+      ctx.fillStyle = f.tinteLeise;
       ctx.font = '500 7px "DM Mono", ui-monospace, monospace';
       ctx.textAlign = 'center';
       ctx.fillText('tauschen', VORRAT_X, VORRAT_Y - 10);
+      ctx.fillText('neue Reihe', 140, VORRAT_Y - 10);
       const erlaubt = fehlerErlaubt(st.reihenDazu);
+      const uebrig = erlaubt - st.fehl;
+      const links = 140 - ((erlaubt - 1) * 8) / 2;
       for (let i = 0; i < erlaubt; i += 1) {
-        ctx.fillStyle = i < erlaubt - st.fehl ? f.tinteLeise : f.karteRand;
+        // Der letzte Punkt warnt: Der nächste Fehlschuss schiebt eine Reihe nach.
+        ctx.fillStyle = i >= uebrig ? f.karteRand : uebrig === 1 ? f.rost : f.tinteLeise;
         ctx.beginPath();
-        ctx.arc(120 + i * 8, VORRAT_Y, 2.4, 0, Math.PI * 2);
+        ctx.arc(links + i * 8, VORRAT_Y, 2.6, 0, Math.PI * 2);
         ctx.fill();
       }
     }
 
     function anleitung() {
       const d = el('div');
-      d.append(el('p', 'notiz', 'Leg den Finger aufs Feld – die Kanone zielt auf ihn, die gestrichelte Linie zeigt den Flug. Loslassen schießt. Wer doch nicht schießen will, zieht den Finger unter die Kanone und lässt dort los.'));
+      d.append(el('p', 'notiz', 'Leg den Finger aufs Feld – die Kanone zielt auf ihn, die gepunktete Linie zeigt den Flug. Loslassen schießt. Wer doch nicht schießen will, zieht den Finger unter die Kanone, bis die Linie verschwindet, und lässt dort los.'));
+      d.append(el('p', 'notiz', 'Oben unter „Zielhilfe" lässt sich der Landeplatz als blasse Blase einblenden und das Ziehen durch Antippen ersetzen: Tipp auf einen Punkt, und die Blase landet genau dort.'));
       d.append(el('p', 'notiz', 'Drei oder mehr gleiche Farben, die sich berühren, platzen. Alles, was danach nicht mehr oben hängt, fällt mit – das bringt doppelt so viele Punkte.'));
       d.append(el('p', 'notiz', 'Die Blase links unten kommt als nächste. Ein Tipp darauf tauscht sie mit der in der Kanone. Die Wände werfen zurück.'));
       d.append(el('p', 'notiz', 'Die Punkte rechts unten sind deine Fehlschüsse: Jede Blase, bei der nichts platzt, kostet einen. Sind alle weg, schiebt sich oben eine neue Reihe herein. Rutscht eine Blase über die rote Linie, ist es vorbei.'));
-      d.append(el('p', 'notiz', 'Am Rechner: Pfeile links und rechts zielen, Leertaste schießt, Pfeil runter oder X tauscht.'));
+      d.append(el('p', 'notiz', 'Am Rechner: Die Maus zielt, ein Klick schießt. Oder Pfeile links und rechts zielen, Leertaste schießt, Pfeil runter oder X tauscht.'));
       s.blatt({ titel: 'Blasen', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
 
@@ -538,7 +754,16 @@
 
     let griff = null;
     b.an(flaeche, 'pointerdown', (e) => {
-      if (stand.zustand === 'vorbei' || griff) return;
+      if (griff) return;
+      if (stand.zustand === 'vorbei') {
+        e.preventDefault();
+        if (!neustartFrei()) return;
+        // Wie bei der Pause: Dieser Tipp beginnt die Partie, er schießt nicht.
+        nochmal();
+        griff = { id: e.pointerId, nurWeiter: true };
+        try { flaeche.setPointerCapture(e.pointerId); } catch { /* synthetisch */ }
+        return;
+      }
       e.preventDefault();
       const [x, y] = zuFeld(e);
       // Eine Pause endet mit dem Tipp, aber dieser Tipp schießt nicht – er
@@ -550,31 +775,73 @@
         return;
       }
       griff = { id: e.pointerId, nurWeiter: warPause };
-      if (!warPause) zielen(x, y);
+      if (stand.hilfe.antippen && !warPause) {
+        griff.antippen = true;
+        if (y <= SY - 4 && !stand.flug) {
+          const ziel = zielBei(x, y);
+          griff.zweiter = !!(ziel && auswahl && ziel.r === auswahl.r && ziel.c === auswahl.c);
+          if (ziel) waehlen(ziel);
+        }
+      } else if (!warPause) kein = !zielen(x, y);
       try { flaeche.setPointerCapture(e.pointerId); } catch { /* synthetisch */ }
     });
     b.an(flaeche, 'pointermove', (e) => {
-      if (!griff || e.pointerId !== griff.id || griff.nurWeiter) return;
-      zielen(...zuFeld(e));
+      // Die Maus zielt schon beim Überfahren; der Finger hat dafür nur den Griff.
+      if (!griff) {
+        if (e.pointerType === 'mouse' && !stand.hilfe.antippen && (stand.zustand === 'laeuft' || stand.zustand === 'bereit')) zielen(...zuFeld(e));
+        return;
+      }
+      if (e.pointerId !== griff.id || griff.nurWeiter) return;
+      if (griff.antippen) {
+        // Wer beim Antippen rutscht, wählt um – und das ist dann kein zweiter Tipp.
+        const [x, y] = zuFeld(e);
+        if (y > SY - 4 || stand.flug) return;
+        const ziel = zielBei(x, y);
+        if (ziel && !(auswahl && ziel.r === auswahl.r && ziel.c === auswahl.c)) {
+          griff.zweiter = false;
+          waehlen(ziel);
+        }
+        return;
+      }
+      kein = !zielen(...zuFeld(e));
+      if (!b.laeuft) b.malen();
     });
     b.an(flaeche, 'pointerup', (e) => {
       if (!griff || e.pointerId !== griff.id) return;
       const g = griff;
       griff = null;
+      kein = false;
+      if (g.antippen) {
+        if (g.zweiter) schiessen();
+        return;
+      }
       if (!g.nurWeiter && zielen(...zuFeld(e))) schiessen();
     });
     b.an(flaeche, 'pointercancel', (e) => {
-      if (griff && e.pointerId === griff.id) griff = null;
+      if (griff && e.pointerId === griff.id) {
+        griff = null;
+        kein = false;
+      }
     });
 
     const tasteVon = (e) => (e.key.length === 1 ? e.key.toLowerCase() : e.key);
     b.an(window, 'keydown', (e) => {
       if (!Echtzeit.tasteZaehlt(e)) return;
       const k = tasteVon(e);
-      if (k === 'ArrowLeft' || k === 'a') { e.preventDefault(); drehen = -1; weiter(); }
-      else if (k === 'ArrowRight' || k === 'd') { e.preventDefault(); drehen = 1; weiter(); }
-      else if ((k === ' ' && !Echtzeit.knopfHatFokus(e)) || k === 'ArrowUp' || k === 'w') {
+      const pfeil = k === 'ArrowLeft' || k === 'a' ? -1 : k === 'ArrowRight' || k === 'd' ? 1 : 0;
+      if (pfeil && stand.hilfe.antippen) {
+        // Links heißt größerer Winkel; die Liste ist nach dem Winkel sortiert.
         e.preventDefault();
+        weiter();
+        if (!stand.flug) zielWeiter(-pfeil);
+      } else if (k === 'ArrowLeft' || k === 'a') { e.preventDefault(); drehen = -1; weiter(); }
+      else if (k === 'ArrowRight' || k === 'd') { e.preventDefault(); drehen = 1; weiter(); }
+      else if (((k === ' ' || k === 'Enter') && !Echtzeit.knopfHatFokus(e)) || k === 'ArrowUp' || k === 'w') {
+        e.preventDefault();
+        if (stand.zustand === 'vorbei') {
+          if (!e.repeat && neustartFrei()) nochmal();
+          return;
+        }
         const warBereit = stand.zustand === 'laeuft';
         weiter();
         if (warBereit && !e.repeat) schiessen();
@@ -591,7 +858,7 @@
       else if ((k === 'ArrowRight' || k === 'd') && drehen > 0) drehen = 0;
     });
 
-    anzeigen();
+    hilfeAnzeigen();
 
     return {
       ende: () => {
@@ -605,14 +872,18 @@
 
   function auswertung(partien) {
     const z = Echtzeit.zahl;
-    const best = partien.reduce((h, p) => Math.max(h, z(p.punkte)), 0);
-    const schnitt = partien.length ? Math.round(partien.reduce((sum, p) => sum + z(p.punkte), 0) / partien.length) : 0;
-    const blasen = partien.reduce((h, p) => Math.max(h, z(p.blasen)), 0);
-    return [
+    const ohne = partien.filter((p) => !p.mitHilfe);
+    const best = ohne.reduce((h, p) => Math.max(h, z(p.punkte)), 0);
+    const schnitt = ohne.length ? Math.round(ohne.reduce((sum, p) => sum + z(p.punkte), 0) / ohne.length) : 0;
+    const blasen = ohne.reduce((h, p) => Math.max(h, z(p.blasen)), 0);
+    const liste = [
       { wert: String(best), label: 'Bestwert' },
       { wert: String(schnitt), label: 'Punkte im Schnitt' },
       { wert: String(blasen), label: 'meiste Blasen' },
     ];
+    const mit = partien.filter((p) => p.mitHilfe);
+    if (mit.length) liste.push({ wert: String(mit.reduce((h, p) => Math.max(h, z(p.punkte)), 0)), label: 'Bestwert mit Zielhilfe' });
+    return liste;
   }
 
   Rahmen.anmelden({

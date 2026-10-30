@@ -6,7 +6,7 @@
 Eine Zeile je Akzeptanzkriterium. Gepflegt wird der Status in der Spec
 selbst, hier steht er zusammengefasst.
 
-**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 2 zurückgestellt · 563 fertig
+**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 2 zurückgestellt · 660 fertig
 
 ## Nach Spezifikation
 
@@ -15,37 +15,37 @@ selbst, hier steht er zusammengefasst.
 | [Auswahl und Navigation](00-rahmen/auswahl.md)     | -         | -       | -     | -              | 18     |
 | [Datenschutz](00-rahmen/datenschutz.md)            | -         | -       | -     | -              | 11     |
 | [Offline und Versionen](00-rahmen/offline.md)      | -         | -       | -     | -              | 14     |
-| [Spielschnittstelle](00-rahmen/schnittstelle.md)   | -         | -       | -     | -              | 15     |
+| [Spielschnittstelle](00-rahmen/schnittstelle.md)   | -         | -       | -     | -              | 16     |
 | [Sicherung](00-rahmen/sicherung.md)                | -         | -       | -     | -              | 14     |
 | [Statistik](00-rahmen/statistik.md)                | -         | -       | -     | -              | 14     |
-| [Zahlencode](10-raetsel/mastermind.md)             | -         | -       | -     | -              | 16     |
-| [Minenfeld](10-raetsel/minen.md)                   | -         | -       | -     | -              | 13     |
-| [Nonogramm](10-raetsel/nonogramm.md)               | -         | -       | -     | -              | 16     |
-| [Riegel](10-raetsel/pins.md)                       | -         | -       | -     | -              | 27     |
-| [Damen](10-raetsel/queens.md)                      | -         | -       | -     | -              | 19     |
-| [Mini-Sudoku](10-raetsel/sudoku.md)                | -         | -       | -     | 1              | 19     |
-| [Tango](10-raetsel/tango.md)                       | -         | -       | -     | -              | 15     |
-| [Weg](10-raetsel/zip.md)                           | -         | -       | -     | -              | 21     |
-| [Galgenmännchen](20-wortspiele/galgen.md)          | -         | -       | -     | -              | 14     |
-| [Wördle](20-wortspiele/wordle.md)                  | -         | -       | -     | -              | 24     |
-| [Schafkopf](30-brett-und-karten/schafkopf.md)      | -         | -       | -     | -              | 46     |
-| [Vier gewinnt](30-brett-und-karten/viergewinnt.md) | -         | -       | -     | -              | 17     |
-| [2048](30-brett-und-karten/zweitausend.md)         | -         | -       | -     | -              | 13     |
+| [Zahlencode](10-raetsel/mastermind.md)             | -         | -       | -     | -              | 19     |
+| [Minenfeld](10-raetsel/minen.md)                   | -         | -       | -     | -              | 15     |
+| [Nonogramm](10-raetsel/nonogramm.md)               | -         | -       | -     | -              | 20     |
+| [Riegel](10-raetsel/pins.md)                       | -         | -       | -     | -              | 30     |
+| [Damen](10-raetsel/queens.md)                      | -         | -       | -     | -              | 22     |
+| [Mini-Sudoku](10-raetsel/sudoku.md)                | -         | -       | -     | 1              | 22     |
+| [Tango](10-raetsel/tango.md)                       | -         | -       | -     | -              | 21     |
+| [Weg](10-raetsel/zip.md)                           | -         | -       | -     | -              | 27     |
+| [Galgenmännchen](20-wortspiele/galgen.md)          | -         | -       | -     | -              | 16     |
+| [Wördle](20-wortspiele/wordle.md)                  | -         | -       | -     | -              | 28     |
+| [Schafkopf](30-brett-und-karten/schafkopf.md)      | -         | -       | -     | -              | 53     |
+| [Vier gewinnt](30-brett-und-karten/viergewinnt.md) | -         | -       | -     | -              | 22     |
+| [2048](30-brett-und-karten/zweitausend.md)         | -         | -       | -     | -              | 18     |
 | [Wer am ehesten](40-zu-mehreren/amehesten.md)      | -         | -       | -     | -              | 11     |
-| [Bombe](40-zu-mehreren/bombe.md)                   | -         | -       | -     | -              | 12     |
-| [Bausteine für Runden](40-zu-mehreren/runde.md)    | -         | -       | -     | -              | 12     |
-| [Verräter](40-zu-mehreren/verraeter.md)            | -         | -       | -     | 1              | 15     |
-| [Zwei Wahrheiten](40-zu-mehreren/wahrheiten.md)    | -         | -       | -     | -              | 10     |
-| [Blasen](50-geschick/bubbles.md)                   | -         | -       | -     | -              | 12     |
-| [Hochhinaus](50-geschick/doodle.md)                | 2         | -       | -     | -              | 27     |
+| [Bombe](40-zu-mehreren/bombe.md)                   | -         | -       | -     | -              | 16     |
+| [Bausteine für Runden](40-zu-mehreren/runde.md)    | -         | -       | -     | -              | 16     |
+| [Verräter](40-zu-mehreren/verraeter.md)            | -         | -       | -     | 1              | 16     |
+| [Zwei Wahrheiten](40-zu-mehreren/wahrheiten.md)    | -         | -       | -     | -              | 11     |
+| [Blasen](50-geschick/bubbles.md)                   | -         | -       | -     | -              | 16     |
+| [Hochhinaus](50-geschick/doodle.md)                | 2         | -       | -     | -              | 31     |
 | [Echtzeit](50-geschick/echtzeit.md)                | -         | -       | -     | -              | 12     |
-| [Flattervogel](50-geschick/flappy.md)              | -         | -       | -     | -              | 8      |
-| [Sternjäger](50-geschick/impact.md)                | -         | -       | -     | -              | 18     |
-| [Flipper](50-geschick/pinball.md)                  | -         | -       | -     | -              | 22     |
-| [Schlange](50-geschick/snake.md)                   | -         | -       | -     | -              | 12     |
-| [Futterzeit](60-kinder/futter.md)                  | -         | -       | -     | -              | 9      |
-| [Horch mal](60-kinder/horch.md)                    | -         | -       | -     | -              | 9      |
-| [Tiere](60-kinder/tiere.md)                        | -         | -       | -     | -              | 20     |
+| [Flattervogel](50-geschick/flappy.md)              | -         | -       | -     | -              | 11     |
+| [Sternjäger](50-geschick/impact.md)                | -         | -       | -     | -              | 22     |
+| [Flipper](50-geschick/pinball.md)                  | -         | -       | -     | -              | 24     |
+| [Schlange](50-geschick/snake.md)                   | -         | -       | -     | -              | 16     |
+| [Futterzeit](60-kinder/futter.md)                  | -         | -       | -     | -              | 16     |
+| [Horch mal](60-kinder/horch.md)                    | -         | -       | -     | -              | 11     |
+| [Tiere](60-kinder/tiere.md)                        | -         | -       | -     | -              | 23     |
 | [Tierstimmen](60-kinder/tierstimmen.md)            | -         | -       | -     | -              | 8      |
 
 ## In Arbeit (2)
@@ -62,7 +62,7 @@ selbst, hier steht er zusammengefasst.
 | sudoku    | [AC-11](10-raetsel/sudoku.md)        | Hinweis räumt Fehler zuerst | ersetzt durch AC-19                          |
 | verraeter | [AC-13](40-zu-mehreren/verraeter.md) | Stimmen übers Netz sammeln  | braucht eine Verbindung zwischen den Geräten |
 
-## Fertig (563)
+## Fertig (660)
 
 | Spec          | AC                                          | Titel                                  | Anmerkung                                       |
 | ------------- | ------------------------------------------- | -------------------------------------- | ----------------------------------------------- |
@@ -124,6 +124,7 @@ selbst, hier steht er zusammengefasst.
 | schnittstelle | [AC-13](00-rahmen/schnittstelle.md)         | Gruppe ist der Spec-Bereich            | Anmeldung                                       |
 | schnittstelle | [AC-14](00-rahmen/schnittstelle.md)         | Spiel, das beim Start wirft            | Anmeldung                                       |
 | schnittstelle | [AC-15](00-rahmen/schnittstelle.md)         | Stufen und Zeichen ohne Lesen          | Urteil und Auswertung                           |
+| schnittstelle | [AC-16](00-rahmen/schnittstelle.md)         | Bausteine für gutes Handling           | Urteil und Auswertung                           |
 | sicherung     | [AC-1](00-rahmen/sicherung.md)              | Sichern an zwei Stellen                | Sichern                                         |
 | sicherung     | [AC-2](00-rahmen/sicherung.md)              | Datei mit allen Partien                | Sichern                                         |
 | sicherung     | [AC-3](00-rahmen/sicherung.md)              | Laufende Partien bleiben daheim        | Sichern                                         |
@@ -168,9 +169,12 @@ selbst, hier steht er zusammengefasst.
 | mastermind    | [AC-14](10-raetsel/mastermind.md)           | Lückenhafte Partien vertragen          | Speicher und Statistik                          |
 | mastermind    | [AC-15](10-raetsel/mastermind.md)           | Anleitung erklärt alles                | Speicher und Statistik                          |
 | mastermind    | [AC-16](10-raetsel/mastermind.md)           | Stufe und Ende ohne Lesen              | Speicher und Statistik                          |
+| mastermind    | [AC-17](10-raetsel/mastermind.md)           | Stelle gezielt ändern                  | Eingabe                                         |
+| mastermind    | [AC-18](10-raetsel/mastermind.md)           | Früheren Versuch übernehmen            | Eingabe                                         |
+| mastermind    | [AC-19](10-raetsel/mastermind.md)           | Ganzes Brett von Anfang an             | Eingabe                                         |
 | minen         | [AC-1](10-raetsel/minen.md)                 | Drei Größen                            | Feld und Stufen                                 |
 | minen         | [AC-2](10-raetsel/minen.md)                 | Neues Feld wählbar                     | Feld und Stufen                                 |
-| minen         | [AC-3](10-raetsel/minen.md)                 | Passt aufs Handy                       | Feld und Stufen                                 |
+| minen         | [AC-3](10-raetsel/minen.md)                 | Brett nach Fenster                     | Feld und Stufen                                 |
 | minen         | [AC-4](10-raetsel/minen.md)                 | Erster Klick sicher                    | Spielzug                                        |
 | minen         | [AC-5](10-raetsel/minen.md)                 | Leere Felder öffnen mit                | Spielzug                                        |
 | minen         | [AC-6](10-raetsel/minen.md)                 | Fahne auf drei Wegen                   | Spielzug                                        |
@@ -181,9 +185,11 @@ selbst, hier steht er zusammengefasst.
 | minen         | [AC-11](10-raetsel/minen.md)                | Partie überlebt Schließen              | Speicher und Statistik                          |
 | minen         | [AC-12](10-raetsel/minen.md)                | Partie in der Statistik                | Speicher und Statistik                          |
 | minen         | [AC-13](10-raetsel/minen.md)                | Stufe und Ende ohne Lesen              | Speicher und Statistik                          |
+| minen         | [AC-14](10-raetsel/minen.md)                | Zahl sagt, was fehlt                   | Spielzug                                        |
+| minen         | [AC-15](10-raetsel/minen.md)                | Tastatur                               | Spielzug                                        |
 | nonogramm     | [AC-1](10-raetsel/nonogramm.md)             | Drei Größen                            | Feld und Stufen                                 |
 | nonogramm     | [AC-2](10-raetsel/nonogramm.md)             | Neues Rätsel wählbar                   | Feld und Stufen                                 |
-| nonogramm     | [AC-3](10-raetsel/nonogramm.md)             | Passt aufs Handy                       | Feld und Stufen                                 |
+| nonogramm     | [AC-3](10-raetsel/nonogramm.md)             | Brett nach Fenster                     | Feld und Stufen                                 |
 | nonogramm     | [AC-4](10-raetsel/nonogramm.md)             | Zahlen am Rand                         | Feld und Stufen                                 |
 | nonogramm     | [AC-5](10-raetsel/nonogramm.md)             | Rein logisch lösbar                    | Erzeugung                                       |
 | nonogramm     | [AC-6](10-raetsel/nonogramm.md)             | Tippen und Wischen                     | Eingabe                                         |
@@ -197,6 +203,10 @@ selbst, hier steht er zusammengefasst.
 | nonogramm     | [AC-14](10-raetsel/nonogramm.md)            | Bestzeit je Größe                      | Ende, Speicher und Statistik                    |
 | nonogramm     | [AC-15](10-raetsel/nonogramm.md)            | Anleitung auf Abruf                    | Ende, Speicher und Statistik                    |
 | nonogramm     | [AC-16](10-raetsel/nonogramm.md)            | Stufe und Ende ohne Lesen              | Ende, Speicher und Statistik                    |
+| nonogramm     | [AC-17](10-raetsel/nonogramm.md)            | Erfüllte Reihen werden blass           | Feld und Stufen                                 |
+| nonogramm     | [AC-18](10-raetsel/nonogramm.md)            | Wo man gerade ist                      | Feld und Stufen                                 |
+| nonogramm     | [AC-19](10-raetsel/nonogramm.md)            | Rückgängig und von vorn                | Eingabe                                         |
+| nonogramm     | [AC-20](10-raetsel/nonogramm.md)            | Tastatur                               | Eingabe                                         |
 | pins          | [AC-1](10-raetsel/pins.md)                  | Siebzehn feste Level                   | Level                                           |
 | pins          | [AC-2](10-raetsel/pins.md)                  | Level wählen                           | Level                                           |
 | pins          | [AC-3](10-raetsel/pins.md)                  | Jedes Level lösbar                     | Level                                           |
@@ -224,12 +234,15 @@ selbst, hier steht er zusammengefasst.
 | pins          | [AC-25](10-raetsel/pins.md)                 | Neuer Levelsatz zählt neu              | Level                                           |
 | pins          | [AC-26](10-raetsel/pins.md)                 | Rechnen mit Rückmeldung                | Hinweis                                         |
 | pins          | [AC-27](10-raetsel/pins.md)                 | Keine ewige Bewegung                   | Welt                                            |
+| pins          | [AC-28](10-raetsel/pins.md)                 | Feld zeigt nur das Level               | Level                                           |
+| pins          | [AC-29](10-raetsel/pins.md)                 | Griff trifft man                       | Riegel                                          |
+| pins          | [AC-30](10-raetsel/pins.md)                 | Urteil bleibt stehen                   | Ende                                            |
 | queens        | [AC-1](10-raetsel/queens.md)                | Drei Größen                            | Feld und Stufen                                 |
 | queens        | [AC-2](10-raetsel/queens.md)                | Neues Rätsel wählbar                   | Feld und Stufen                                 |
 | queens        | [AC-3](10-raetsel/queens.md)                | Gebiete klar getrennt                  | Feld und Stufen                                 |
 | queens        | [AC-4](10-raetsel/queens.md)                | Tippen schaltet weiter                 | Eingabe                                         |
 | queens        | [AC-5](10-raetsel/queens.md)                | Streichen setzt Kreuze                 | Eingabe                                         |
-| queens        | [AC-6](10-raetsel/queens.md)                | Kreuze automatisch                     | Eingabe                                         |
+| queens        | [AC-6](10-raetsel/queens.md)                | Schalter Auto-Kreuze                   | Eingabe                                         |
 | queens        | [AC-7](10-raetsel/queens.md)                | Rückgängig je Zug                      | Eingabe                                         |
 | queens        | [AC-8](10-raetsel/queens.md)                | Konflikte rot umrandet                 | Konflikte und Hinweise                          |
 | queens        | [AC-9](10-raetsel/queens.md)                | Hinweis nennt seinen Schluss           | Konflikte und Hinweise                          |
@@ -243,6 +256,9 @@ selbst, hier steht er zusammengefasst.
 | queens        | [AC-17](10-raetsel/queens.md)               | Partie in der Statistik                | Ende, Speicher und Statistik                    |
 | queens        | [AC-18](10-raetsel/queens.md)               | Anleitung erklärt alles                | Ende, Speicher und Statistik                    |
 | queens        | [AC-19](10-raetsel/queens.md)               | Stufe und Ende ohne Lesen              | Ende, Speicher und Statistik                    |
+| queens        | [AC-20](10-raetsel/queens.md)               | Von vorn ohne Rückfrage                | Eingabe                                         |
+| queens        | [AC-21](10-raetsel/queens.md)               | Am Rechner per Tastatur                | Eingabe                                         |
+| queens        | [AC-22](10-raetsel/queens.md)               | Die Störung wird genannt               | Konflikte und Hinweise                          |
 | sudoku        | [AC-1](10-raetsel/sudoku.md)                | Sechs mal sechs                        | Feld und Stufen                                 |
 | sudoku        | [AC-2](10-raetsel/sudoku.md)                | Drei Stufen wählbar                    | Feld und Stufen                                 |
 | sudoku        | [AC-3](10-raetsel/sudoku.md)                | Vorgaben genau nach Stufe              | Feld und Stufen                                 |
@@ -262,6 +278,9 @@ selbst, hier steht er zusammengefasst.
 | sudoku        | [AC-18](10-raetsel/sudoku.md)               | Regeln auf Abruf                       | Ende, Speicher und Statistik                    |
 | sudoku        | [AC-19](10-raetsel/sudoku.md)               | Hinweis nimmt Falsches weg             | Fehler und Hinweise                             |
 | sudoku        | [AC-20](10-raetsel/sudoku.md)               | Stufe und Ende ohne Lesen              | Ende, Speicher und Statistik                    |
+| sudoku        | [AC-21](10-raetsel/sudoku.md)               | Rückgängig                             | Eingabe                                         |
+| sudoku        | [AC-22](10-raetsel/sudoku.md)               | Ziffernblock zeigt den Stand           | Eingabe                                         |
+| sudoku        | [AC-23](10-raetsel/sudoku.md)               | Brett nach Fenster                     | Eingabe                                         |
 | tango         | [AC-1](10-raetsel/tango.md)                 | Drei Regeln                            | Regeln und Stufen                               |
 | tango         | [AC-2](10-raetsel/tango.md)                 | Drei Stufen nach Zeichen               | Regeln und Stufen                               |
 | tango         | [AC-3](10-raetsel/tango.md)                 | Ohne Raten lösbar                      | Erzeugung                                       |
@@ -277,6 +296,12 @@ selbst, hier steht er zusammengefasst.
 | tango         | [AC-13](10-raetsel/tango.md)                | Bestzeit je Stufe                      | Ende, Speicher und Statistik                    |
 | tango         | [AC-14](10-raetsel/tango.md)                | Anleitung auf Abruf                    | Ende, Speicher und Statistik                    |
 | tango         | [AC-15](10-raetsel/tango.md)                | Stufe und Ende ohne Lesen              | Ende, Speicher und Statistik                    |
+| tango         | [AC-16](10-raetsel/tango.md)                | Rückgängig nimmt das Feld zurück       | Eingabe                                         |
+| tango         | [AC-17](10-raetsel/tango.md)                | Von vorn ohne Rückfrage                | Eingabe                                         |
+| tango         | [AC-18](10-raetsel/tango.md)                | Am Rechner per Tastatur                | Eingabe                                         |
+| tango         | [AC-19](10-raetsel/tango.md)                | Brett nutzt das Fenster                | Eingabe                                         |
+| tango         | [AC-20](10-raetsel/tango.md)                | Der Verstoß wird genannt               | Fehler und Hinweise                             |
+| tango         | [AC-21](10-raetsel/tango.md)                | Der Hinweis zeigt die Stelle           | Fehler und Hinweise                             |
 | zip           | [AC-1](10-raetsel/zip.md)                   | Drei Größen                            | Feld und Stufen                                 |
 | zip           | [AC-2](10-raetsel/zip.md)                   | Neues Rätsel wählbar                   | Feld und Stufen                                 |
 | zip           | [AC-3](10-raetsel/zip.md)                   | Mauern nie auf dem Weg                 | Feld und Stufen                                 |
@@ -298,12 +323,18 @@ selbst, hier steht er zusammengefasst.
 | zip           | [AC-19](10-raetsel/zip.md)                  | Merklinien aus dem Hinweis             | Hinweise und Erzeugung                          |
 | zip           | [AC-20](10-raetsel/zip.md)                  | Altes Rätsel wird ersetzt              | Hinweise und Erzeugung                          |
 | zip           | [AC-21](10-raetsel/zip.md)                  | Stufe und Ende ohne Lesen              | Ende, Speicher und Statistik                    |
+| zip           | [AC-22](10-raetsel/zip.md)                  | Weg anfassen                           | Eingabe                                         |
+| zip           | [AC-23](10-raetsel/zip.md)                  | Rückgängig                             | Eingabe                                         |
+| zip           | [AC-24](10-raetsel/zip.md)                  | Tippen in gerader Linie                | Eingabe                                         |
+| zip           | [AC-25](10-raetsel/zip.md)                  | Tastatur                               | Eingabe                                         |
+| zip           | [AC-26](10-raetsel/zip.md)                  | Das Brett zeigt die Lage               | Eingabe                                         |
+| zip           | [AC-27](10-raetsel/zip.md)                  | Brett nach Fenster                     | Eingabe                                         |
 | galgen        | [AC-1](20-wortspiele/galgen.md)             | Wort aus der Wördle-Liste              | Regeln und Eingabe                              |
 | galgen        | [AC-2](20-wortspiele/galgen.md)             | Treffer an allen Stellen               | Regeln und Eingabe                              |
 | galgen        | [AC-3](20-wortspiele/galgen.md)             | Tafel und Tastatur                     | Regeln und Eingabe                              |
 | galgen        | [AC-4](20-wortspiele/galgen.md)             | Elf Striche bis zum Ende               | Regeln und Eingabe                              |
 | galgen        | [AC-5](20-wortspiele/galgen.md)             | Sieg und Verlust                       | Ende der Runde                                  |
-| galgen        | [AC-6](20-wortspiele/galgen.md)             | Neues Wort sofort                      | Ende der Runde                                  |
+| galgen        | [AC-6](20-wortspiele/galgen.md)             | Neues Wort mit Rückfrage               | Ende der Runde                                  |
 | galgen        | [AC-7](20-wortspiele/galgen.md)             | Tipp kostet keinen Fehler              | Hilfe                                           |
 | galgen        | [AC-8](20-wortspiele/galgen.md)             | Runde überlebt Schließen               | Speicher und Statistik                          |
 | galgen        | [AC-9](20-wortspiele/galgen.md)             | Partie in der Statistik                | Speicher und Statistik                          |
@@ -312,6 +343,8 @@ selbst, hier steht er zusammengefasst.
 | galgen        | [AC-12](20-wortspiele/galgen.md)            | Lückenhafte Partien verfälschen nichts | Speicher und Statistik                          |
 | galgen        | [AC-13](20-wortspiele/galgen.md)            | Anleitung als Blatt                    | Speicher und Statistik                          |
 | galgen        | [AC-14](20-wortspiele/galgen.md)            | Spielzeit ohne Pausen                  | Speicher und Statistik                          |
+| galgen        | [AC-15](20-wortspiele/galgen.md)            | Passt ins Fenster                      | Bedienung und Bild                              |
+| galgen        | [AC-16](20-wortspiele/galgen.md)            | Enter holt das nächste Wort            | Bedienung und Bild                              |
 | wordle        | [AC-1](20-wortspiele/wordle.md)             | Fünf Buchstaben, sechs Versuche        | Regeln und Eingabe                              |
 | wordle        | [AC-2](20-wortspiele/wordle.md)             | Bildschirmtastatur mit Umlauten        | Regeln und Eingabe                              |
 | wordle        | [AC-3](20-wortspiele/wordle.md)             | Buchstaben an jede Stelle              | Regeln und Eingabe                              |
@@ -336,6 +369,10 @@ selbst, hier steht er zusammengefasst.
 | wordle        | [AC-22](20-wortspiele/wordle.md)            | Lückenhafte Partien verfälschen nichts | Speicher und Statistik                          |
 | wordle        | [AC-23](20-wortspiele/wordle.md)            | Regeln als Blatt                       | Speicher und Statistik                          |
 | wordle        | [AC-24](20-wortspiele/wordle.md)            | Spielzeit ohne Pausen                  | Speicher und Statistik                          |
+| wordle        | [AC-25](20-wortspiele/wordle.md)            | Aufdecken Feld für Feld                | Bedienung und Bild                              |
+| wordle        | [AC-26](20-wortspiele/wordle.md)            | Passt ins Fenster                      | Bedienung und Bild                              |
+| wordle        | [AC-27](20-wortspiele/wordle.md)            | Gleich breite Tasten                   | Bedienung und Bild                              |
+| wordle        | [AC-28](20-wortspiele/wordle.md)            | Enter holt das nächste Wort            | Bedienung und Bild                              |
 | schafkopf     | [AC-1](30-brett-und-karten/schafkopf.md)    | Kurze Karte zu viert                   | Blatt und Geben                                 |
 | schafkopf     | [AC-2](30-brett-und-karten/schafkopf.md)    | Trumpf nach Spielart                   | Blatt und Geben                                 |
 | schafkopf     | [AC-3](30-brett-und-karten/schafkopf.md)    | Einmal reihum ab Vorhand               | Ansage                                          |
@@ -382,6 +419,13 @@ selbst, hier steht er zusammengefasst.
 | schafkopf     | [AC-44](30-brett-und-karten/schafkopf.md)   | Gegenspieler hält den Chef             | Die Gegner                                      |
 | schafkopf     | [AC-45](30-brett-und-karten/schafkopf.md)   | Chef nicht unnötig zugeben             | Die Gegner                                      |
 | schafkopf     | [AC-46](30-brett-und-karten/schafkopf.md)   | Gegenspieler spielt früh keinen Trumpf | Die Gegner                                      |
+| schafkopf     | [AC-47](30-brett-und-karten/schafkopf.md)   | Hand nutzt die Breite                  | Speicher und Statistik                          |
+| schafkopf     | [AC-48](30-brett-und-karten/schafkopf.md)   | Hinweis schiebt die Hand nicht         | Speicher und Statistik                          |
+| schafkopf     | [AC-49](30-brett-und-karten/schafkopf.md)   | Stich mitbekommen                      | Speicher und Statistik                          |
+| schafkopf     | [AC-50](30-brett-und-karten/schafkopf.md)   | Tastatur                               | Speicher und Statistik                          |
+| schafkopf     | [AC-51](30-brett-und-karten/schafkopf.md)   | Zug zurück sofort                      | Speicher und Statistik                          |
+| schafkopf     | [AC-52](30-brett-und-karten/schafkopf.md)   | Ansage in Ruhe                         | Speicher und Statistik                          |
+| schafkopf     | [AC-53](30-brett-und-karten/schafkopf.md)   | Ende im Bild                           | Speicher und Statistik                          |
 | viergewinnt   | [AC-1](30-brett-und-karten/viergewinnt.md)  | Sieben mal sechs Felder                | Brett und Gegner                                |
 | viergewinnt   | [AC-2](30-brett-und-karten/viergewinnt.md)  | Drei Stufen gegen den Rechner          | Brett und Gegner                                |
 | viergewinnt   | [AC-3](30-brett-und-karten/viergewinnt.md)  | Sofortsieg wird genommen               | Brett und Gegner                                |
@@ -399,6 +443,11 @@ selbst, hier steht er zusammengefasst.
 | viergewinnt   | [AC-15](30-brett-und-karten/viergewinnt.md) | Dauer zählt nur Spielzeit              | Speicher und Statistik                          |
 | viergewinnt   | [AC-16](30-brett-und-karten/viergewinnt.md) | Auswertung verträgt Lücken             | Speicher und Statistik                          |
 | viergewinnt   | [AC-17](30-brett-und-karten/viergewinnt.md) | Stufe und Ende ohne Lesen              | Speicher und Statistik                          |
+| viergewinnt   | [AC-18](30-brett-und-karten/viergewinnt.md) | Der Stein fällt sichtbar               | Bedienung und Bild                              |
+| viergewinnt   | [AC-19](30-brett-und-karten/viergewinnt.md) | Vorschau mit der Maus                  | Bedienung und Bild                              |
+| viergewinnt   | [AC-20](30-brett-und-karten/viergewinnt.md) | Tasten                                 | Bedienung und Bild                              |
+| viergewinnt   | [AC-21](30-brett-und-karten/viergewinnt.md) | Wer dran ist                           | Bedienung und Bild                              |
+| viergewinnt   | [AC-22](30-brett-und-karten/viergewinnt.md) | Brett nach Fenster                     | Bedienung und Bild                              |
 | zweitausend   | [AC-1](30-brett-und-karten/zweitausend.md)  | Vier mal vier Felder                   | Brett und Steuerung                             |
 | zweitausend   | [AC-2](30-brett-und-karten/zweitausend.md)  | Pfeiltasten und WASD                   | Brett und Steuerung                             |
 | zweitausend   | [AC-3](30-brett-und-karten/zweitausend.md)  | Wischen über das Brett                 | Brett und Steuerung                             |
@@ -412,6 +461,11 @@ selbst, hier steht er zusammengefasst.
 | zweitausend   | [AC-11](30-brett-und-karten/zweitausend.md) | Partie überlebt Schließen              | Speicher und Statistik                          |
 | zweitausend   | [AC-12](30-brett-und-karten/zweitausend.md) | Partie in der Statistik                | Speicher und Statistik                          |
 | zweitausend   | [AC-13](30-brett-und-karten/zweitausend.md) | Auswertung verträgt Lücken             | Speicher und Statistik                          |
+| zweitausend   | [AC-14](30-brett-und-karten/zweitausend.md) | Kacheln gleiten                        | Bedienung und Bild                              |
+| zweitausend   | [AC-15](30-brett-und-karten/zweitausend.md) | Ein Schritt zurück                     | Bedienung und Bild                              |
+| zweitausend   | [AC-16](30-brett-und-karten/zweitausend.md) | Brett nach Fenster                     | Bedienung und Bild                              |
+| zweitausend   | [AC-17](30-brett-und-karten/zweitausend.md) | Enter nach dem Ende                    | Bedienung und Bild                              |
+| zweitausend   | [AC-18](30-brett-und-karten/zweitausend.md) | Zug ohne Wirkung                       | Bedienung und Bild                              |
 | amehesten     | [AC-1](40-zu-mehreren/amehesten.md)         | Drei bis zwölf Spieler                 | Aufbau                                          |
 | amehesten     | [AC-2](40-zu-mehreren/amehesten.md)         | Harmlos, frech oder gemischt           | Aufbau                                          |
 | amehesten     | [AC-3](40-zu-mehreren/amehesten.md)         | Frage zum Vorlesen                     | Frage und Abstimmung                            |
@@ -435,6 +489,10 @@ selbst, hier steht er zusammengefasst.
 | bombe         | [AC-10](40-zu-mehreren/bombe.md)            | Runde ohne Urteil notiert              | Speicher und Statistik                          |
 | bombe         | [AC-11](40-zu-mehreren/bombe.md)            | Auswertung verträgt Lücken             | Speicher und Statistik                          |
 | bombe         | [AC-12](40-zu-mehreren/bombe.md)            | Stufe ohne Lesen                       | Speicher und Statistik                          |
+| bombe         | [AC-13](40-zu-mehreren/bombe.md)            | Ohne Hinschauen zu treffen             | Runde                                           |
+| bombe         | [AC-14](40-zu-mehreren/bombe.md)            | Doppeltipp reicht einmal               | Runde                                           |
+| bombe         | [AC-15](40-zu-mehreren/bombe.md)            | Leertaste reicht weiter                | Runde                                           |
+| bombe         | [AC-16](40-zu-mehreren/bombe.md)            | Knall nicht wegtippen                  | Runde                                           |
 | runde         | [AC-1](40-zu-mehreren/runde.md)             | Gleicher Code, gleiche Folge           | Würfel und Code                                 |
 | runde         | [AC-2](40-zu-mehreren/runde.md)             | Vorlesbarer Zeichenvorrat              | Würfel und Code                                 |
 | runde         | [AC-3](40-zu-mehreren/runde.md)             | Eingabe wird still bereinigt           | Würfel und Code                                 |
@@ -447,6 +505,10 @@ selbst, hier steht er zusammengefasst.
 | runde         | [AC-10](40-zu-mehreren/runde.md)            | Auszählung meldet Gleichstand          | Abstimmung                                      |
 | runde         | [AC-11](40-zu-mehreren/runde.md)            | Rücklaufende Uhr                       | Uhr                                             |
 | runde         | [AC-12](40-zu-mehreren/runde.md)            | Verdeckt und gestreut                  | Uhr                                             |
+| runde         | [AC-13](40-zu-mehreren/runde.md)            | Namen flott eintippen                  | Aufbau                                          |
+| runde         | [AC-14](40-zu-mehreren/runde.md)            | Passt auch mit zwölf                   | Aufbau                                          |
+| runde         | [AC-15](40-zu-mehreren/runde.md)            | Doppeltipp fällt nicht durch           | Weitergabe                                      |
+| runde         | [AC-16](40-zu-mehreren/runde.md)            | Erst aufdecken, dann weiter            | Weitergabe                                      |
 | verraeter     | [AC-1](40-zu-mehreren/verraeter.md)         | Drei bis zwölf Spieler                 | Runde und Fassungen                             |
 | verraeter     | [AC-2](40-zu-mehreren/verraeter.md)         | Drei Fassungen, drei Karten            | Runde und Fassungen                             |
 | verraeter     | [AC-3](40-zu-mehreren/verraeter.md)         | Zwei Verräter ab fünf                  | Runde und Fassungen                             |
@@ -462,6 +524,7 @@ selbst, hier steht er zusammengefasst.
 | verraeter     | [AC-14](40-zu-mehreren/verraeter.md)        | Einstellungen bleiben, Runde nicht     | Speicher und Statistik                          |
 | verraeter     | [AC-15](40-zu-mehreren/verraeter.md)        | Runde in der Statistik                 | Speicher und Statistik                          |
 | verraeter     | [AC-16](40-zu-mehreren/verraeter.md)        | Quote nur aus Urteilen                 | Speicher und Statistik                          |
+| verraeter     | [AC-17](40-zu-mehreren/verraeter.md)        | Aufbau auf einen Blick                 | Runde und Fassungen                             |
 | wahrheiten    | [AC-1](40-zu-mehreren/wahrheiten.md)        | Drei bis zehn Spieler                  | Aufbau                                          |
 | wahrheiten    | [AC-2](40-zu-mehreren/wahrheiten.md)        | Schreiben hinter dem Sperrschirm       | Schreiben                                       |
 | wahrheiten    | [AC-3](40-zu-mehreren/wahrheiten.md)        | Nur vollständig weitergeben            | Schreiben                                       |
@@ -472,6 +535,7 @@ selbst, hier steht er zusammengefasst.
 | wahrheiten    | [AC-8](40-zu-mehreren/wahrheiten.md)        | Keine Sätze im Speicher                | Speicher und Statistik                          |
 | wahrheiten    | [AC-9](40-zu-mehreren/wahrheiten.md)        | Runde in der Statistik                 | Speicher und Statistik                          |
 | wahrheiten    | [AC-10](40-zu-mehreren/wahrheiten.md)       | Auswertung verträgt Lücken             | Speicher und Statistik                          |
+| wahrheiten    | [AC-11](40-zu-mehreren/wahrheiten.md)       | Schreiben mit Tastatur                 | Schreiben                                       |
 | bubbles       | [AC-1](50-geschick/bubbles.md)              | Zielen mit dem Finger                  | Steuerung                                       |
 | bubbles       | [AC-2](50-geschick/bubbles.md)              | Ziellinie hält Wort                    | Steuerung                                       |
 | bubbles       | [AC-3](50-geschick/bubbles.md)              | Tauschen                               | Steuerung                                       |
@@ -484,6 +548,10 @@ selbst, hier steht er zusammengefasst.
 | bubbles       | [AC-10](50-geschick/bubbles.md)             | Farben mit Zeichen                     | Regeln                                          |
 | bubbles       | [AC-11](50-geschick/bubbles.md)             | Partie in der Statistik                | Speicher und Statistik                          |
 | bubbles       | [AC-12](50-geschick/bubbles.md)             | Auswertung verträgt Lücken             | Speicher und Statistik                          |
+| bubbles       | [AC-13](50-geschick/bubbles.md)             | Karte statt Schleier                   | Regeln                                          |
+| bubbles       | [AC-14](50-geschick/bubbles.md)             | Landeplatz zeigen                      | Steuerung                                       |
+| bubbles       | [AC-15](50-geschick/bubbles.md)             | Antippen statt ziehen                  | Steuerung                                       |
+| bubbles       | [AC-16](50-geschick/bubbles.md)             | Zielhilfe zählt getrennt               | Steuerung                                       |
 | doodle        | [AC-1](50-geschick/doodle.md)               | Springt von allein                     | Steuerung                                       |
 | doodle        | [AC-2](50-geschick/doodle.md)               | Halten lenkt                           | Steuerung                                       |
 | doodle        | [AC-3](50-geschick/doodle.md)               | Neigen lenkt                           | Steuerung                                       |
@@ -511,6 +579,10 @@ selbst, hier steht er zusammengefasst.
 | doodle        | [AC-27](50-geschick/doodle.md)              | Partie zählt alles mit                 | Speicher und Statistik                          |
 | doodle        | [AC-28](50-geschick/doodle.md)              | Statistik mit Monstern und Rang        | Speicher und Statistik                          |
 | doodle        | [AC-29](50-geschick/doodle.md)              | Alte Pause spielt weiter               | Speicher und Statistik                          |
+| doodle        | [AC-30](50-geschick/doodle.md)              | Das Fenster wird genutzt               | Platz und Tempo                                 |
+| doodle        | [AC-31](50-geschick/doodle.md)              | Karte auf dem Feld                     | Platz und Tempo                                 |
+| doodle        | [AC-32](50-geschick/doodle.md)              | Mit einem Griff wieder oben            | Platz und Tempo                                 |
+| doodle        | [AC-33](50-geschick/doodle.md)              | Rekord im Sprung                       | Platz und Tempo                                 |
 | echtzeit      | [AC-1](50-geschick/echtzeit.md)             | Feld passt ins Fenster                 | Leinwand                                        |
 | echtzeit      | [AC-2](50-geschick/echtzeit.md)             | Scharf auf jeder Pixeldichte           | Leinwand                                        |
 | echtzeit      | [AC-3](50-geschick/echtzeit.md)             | Hell und dunkel                        | Leinwand                                        |
@@ -531,6 +603,9 @@ selbst, hier steht er zusammengefasst.
 | flappy        | [AC-6](50-geschick/flappy.md)               | Ende mit Bilanz                        | Flug                                            |
 | flappy        | [AC-7](50-geschick/flappy.md)               | Partie in der Statistik                | Speicher und Statistik                          |
 | flappy        | [AC-8](50-geschick/flappy.md)               | Auswertung verträgt Lücken             | Speicher und Statistik                          |
+| flappy        | [AC-9](50-geschick/flappy.md)               | Karte statt Schleier                   | Ansicht                                         |
+| flappy        | [AC-10](50-geschick/flappy.md)              | Zahl im Feld                           | Ansicht                                         |
+| flappy        | [AC-11](50-geschick/flappy.md)              | Himmel und Boden                       | Ansicht                                         |
 | impact        | [AC-1](50-geschick/impact.md)               | Start mit drei Leben                   | Steuerung                                       |
 | impact        | [AC-2](50-geschick/impact.md)               | Ziehen lenkt, Berühren feuert          | Steuerung                                       |
 | impact        | [AC-3](50-geschick/impact.md)               | Tasten                                 | Steuerung                                       |
@@ -549,6 +624,10 @@ selbst, hier steht er zusammengefasst.
 | impact        | [AC-16](50-geschick/impact.md)              | Auswertung verträgt Lücken             | Speicher und Statistik                          |
 | impact        | [AC-17](50-geschick/impact.md)              | Invasoren-Partien bleiben              | Speicher und Statistik                          |
 | impact        | [AC-18](50-geschick/impact.md)              | Verlassene Partie in jedem Level       | Speicher und Statistik                          |
+| impact        | [AC-19](50-geschick/impact.md)              | Das Fenster wird genutzt               | Platz und Tempo                                 |
+| impact        | [AC-20](50-geschick/impact.md)              | Karte auf dem Feld                     | Platz und Tempo                                 |
+| impact        | [AC-21](50-geschick/impact.md)              | Schnell wieder im Flug                 | Platz und Tempo                                 |
+| impact        | [AC-22](50-geschick/impact.md)              | Rekord im Flug                         | Platz und Tempo                                 |
 | pinball       | [AC-1](50-geschick/pinball.md)              | Zwei Hälften, zwei Flipper             | Steuerung                                       |
 | pinball       | [AC-2](50-geschick/pinball.md)              | Feder spannen, loslassen               | Steuerung                                       |
 | pinball       | [AC-3](50-geschick/pinball.md)              | Rütteln und TILT                       | Steuerung                                       |
@@ -571,9 +650,11 @@ selbst, hier steht er zusammengefasst.
 | pinball       | [AC-20](50-geschick/pinball.md)             | Ton abschaltbar                        | Anzeige und Klang                               |
 | pinball       | [AC-21](50-geschick/pinball.md)             | Partie in der Statistik                | Speicher und Statistik                          |
 | pinball       | [AC-22](50-geschick/pinball.md)             | Auswertung verträgt Lücken             | Speicher und Statistik                          |
+| pinball       | [AC-23](50-geschick/pinball.md)             | Tisch passt ins Fenster                | Regeln                                          |
+| pinball       | [AC-24](50-geschick/pinball.md)             | Rekord im Spiel                        | Regeln                                          |
 | snake         | [AC-1](50-geschick/snake.md)                | Siebzehn mal siebzehn                  | Feld und Steuerung                              |
 | snake         | [AC-2](50-geschick/snake.md)                | Wischen, ohne abzusetzen               | Feld und Steuerung                              |
-| snake         | [AC-3](50-geschick/snake.md)                | Steuerkreuz unter dem Feld             | Feld und Steuerung                              |
+| snake         | [AC-3](50-geschick/snake.md)                | Steuerkreuz beim Daumen                | Feld und Steuerung                              |
 | snake         | [AC-4](50-geschick/snake.md)                | Tasten                                 | Feld und Steuerung                              |
 | snake         | [AC-5](50-geschick/snake.md)                | Schnelle Kehren                        | Feld und Steuerung                              |
 | snake         | [AC-6](50-geschick/snake.md)                | Schneller mit jedem Apfel              | Spielzug                                        |
@@ -583,15 +664,26 @@ selbst, hier steht er zusammengefasst.
 | snake         | [AC-10](50-geschick/snake.md)               | Partie in der Statistik                | Speicher und Statistik                          |
 | snake         | [AC-11](50-geschick/snake.md)               | Kopfzeile                              | Speicher und Statistik                          |
 | snake         | [AC-12](50-geschick/snake.md)               | Auswertung verträgt Lücken             | Speicher und Statistik                          |
+| snake         | [AC-13](50-geschick/snake.md)               | Neustart mit einem Tipp                | Spielzug                                        |
+| snake         | [AC-14](50-geschick/snake.md)               | Karte statt Schleier                   | Spielzug                                        |
+| snake         | [AC-15](50-geschick/snake.md)               | Wand und Kopf sichtbar                 | Spielzug                                        |
+| snake         | [AC-16](50-geschick/snake.md)               | Leertaste nach dem Pause-Knopf         | Spielzug                                        |
 | futter        | [AC-1](60-kinder/futter.md)                 | Ein bis drei Teller                    | Aufgabe                                         |
 | futter        | [AC-2](60-kinder/futter.md)                 | Immer genau ein richtiger Teller       | Aufgabe                                         |
 | futter        | [AC-3](60-kinder/futter.md)                 | Ziehen oder Teller tippen              | Ziehen und Tippen                               |
 | futter        | [AC-4](60-kinder/futter.md)                 | Richtiges Futter                       | Ziehen und Tippen                               |
 | futter        | [AC-5](60-kinder/futter.md)                 | Falsches Futter ohne Fehler            | Ziehen und Tippen                               |
-| futter        | [AC-6](60-kinder/futter.md)                 | Wink nach fünf Sekunden                | Ziehen und Tippen                               |
+| futter        | [AC-6](60-kinder/futter.md)                 | Der Weg ist zu sehen                   | Ziehen und Tippen                               |
 | futter        | [AC-7](60-kinder/futter.md)                 | Alle satt, dann weiter                 | Ziehen und Tippen                               |
 | futter        | [AC-8](60-kinder/futter.md)                 | Passt ins Fenster                      | Ziehen und Tippen                               |
 | futter        | [AC-9](60-kinder/futter.md)                 | Runde mit Tieren und Fehlgriffen       | Statistik                                       |
+| futter        | [AC-10](60-kinder/futter.md)                | Daneben greifen zählt                  | Ziehen und Tippen                               |
+| futter        | [AC-11](60-kinder/futter.md)                | Schnippen zählt                        | Ziehen und Tippen                               |
+| futter        | [AC-12](60-kinder/futter.md)                | Antippen zeigt den Weg                 | Ziehen und Tippen                               |
+| futter        | [AC-13](60-kinder/futter.md)                | Wer gerade dran ist                    | Ziehen und Tippen                               |
+| futter        | [AC-14](60-kinder/futter.md)                | Satte Tiere sammeln sich               | Ziehen und Tippen                               |
+| futter        | [AC-15](60-kinder/futter.md)                | Griff geht nie verloren                | Ziehen und Tippen                               |
+| futter        | [AC-16](60-kinder/futter.md)                | Tasten                                 | Ziehen und Tippen                               |
 | horch         | [AC-1](60-kinder/horch.md)                  | Zwei bis vier Tiere                    | Frage                                           |
 | horch         | [AC-2](60-kinder/horch.md)                  | Nichts Verwechselbares                 | Frage                                           |
 | horch         | [AC-3](60-kinder/horch.md)                  | Ruf kommt von selbst                   | Frage                                           |
@@ -601,6 +693,8 @@ selbst, hier steht er zusammengefasst.
 | horch         | [AC-7](60-kinder/horch.md)                  | Passt ins Fenster                      | Antwort                                         |
 | horch         | [AC-8](60-kinder/horch.md)                  | Ohne Ton gesperrt                      | Antwort                                         |
 | horch         | [AC-9](60-kinder/horch.md)                  | Erkannt und auf Anhieb                 | Statistik                                       |
+| horch         | [AC-10](60-kinder/horch.md)                 | Erkannte Tiere sammeln sich            | Antwort                                         |
+| horch         | [AC-11](60-kinder/horch.md)                 | Tasten                                 | Antwort                                         |
 | tiere         | [AC-1](60-kinder/tiere.md)                  | Jedes Tier vollständig                 | Tiere und Aufnahmen                             |
 | tiere         | [AC-2](60-kinder/tiere.md)                  | Aufnahmen frei und im Lager            | Tiere und Aufnahmen                             |
 | tiere         | [AC-3](60-kinder/tiere.md)                  | Aufnahmen gleich laut                  | Tiere und Aufnahmen                             |
@@ -621,6 +715,9 @@ selbst, hier steht er zusammengefasst.
 | tiere         | [AC-18](60-kinder/tiere.md)                 | Junge Emoji nur, wo sichtbar           | Tiere und Aufnahmen                             |
 | tiere         | [AC-19](60-kinder/tiere.md)                 | Name und Ruf nahtlos                   | Klang                                           |
 | tiere         | [AC-20](60-kinder/tiere.md)                 | Schalter der Eltern                    | Vorhang                                         |
+| tiere         | [AC-21](60-kinder/tiere.md)                 | Ohne Lesen loslegen                    | Vorhang                                         |
+| tiere         | [AC-22](60-kinder/tiere.md)                 | Jede Bewegung spielt                   | Gemeinsamer Vertrag der Kinderspiele            |
+| tiere         | [AC-23](60-kinder/tiere.md)                 | Reihe statt Punkte                     | Gemeinsamer Vertrag der Kinderspiele            |
 | tierstimmen   | [AC-1](60-kinder/tierstimmen.md)            | Sechs Tiere je Seite                   | Tiere                                           |
 | tierstimmen   | [AC-2](60-kinder/tierstimmen.md)            | Tipp lässt rufen                       | Tiere                                           |
 | tierstimmen   | [AC-3](60-kinder/tierstimmen.md)            | Blättern im Kreis                      | Tiere                                           |

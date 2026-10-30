@@ -1,7 +1,7 @@
 # Tiere
 
 **Datei:** [`spiele/tiere.js`](../../spiele/tiere.js)
-**Stand:** 20/20 fertig
+**Stand:** 23/23 fertig
 
 ## Zweck
 
@@ -62,11 +62,20 @@ wieder herausfinden –, steht hier einmal. Es kennt kein einzelnes Spiel.
 ### Vorhang
 
 - **AC-7** `fertig` **Vorhang vor dem Zimmer** — Jedes Kinderspiel öffnet
-  mit einem Vorhang für die Eltern: ein paar Bilder, ein Satz, was passiert,
+  mit einem Vorhang: ein paar Bilder, ein Satz, was passiert,
   bei Spielen mit Stufen die Wahl der Stufe (gemerkt, auch über Neuladen),
-  „Los geht's" und der Hinweis, wie man beendet und wie man das Handy
-  festsetzt („App anheften" unter Android, „Geführter Zugriff" am iPhone).
-  Kopfzeile und Zurück funktionieren wie bei jedem Spiel.
+  „Los geht's" und abseits in einem Kasten „Für Eltern" der Hinweis, wie man
+  beendet und wie man das Handy festsetzt („App anheften" unter Android,
+  „Geführter Zugriff" am iPhone). Kopfzeile und Zurück funktionieren wie bei
+  jedem Spiel. Stufe und Los sind auch auf dem quer gehaltenen Handy und in
+  1366 × 700 ohne Scrollen zu erreichen.
+- **AC-21** `fertig` **Ohne Lesen loslegen** — Die Stufen sind große Karten (gut 80 px
+  hoch) mit so vielen Bildern, wie im Spiel stehen werden; die Worte stehen
+  klein darunter für die, die lesen. Die gewählte Karte trägt einen grünen Ring,
+  ihre Bilder hüpfen beim Antippen. „Los geht's" ist der größte Knopf und trägt
+  das Dreieck vom Abspielen. Die Tiere oben hüpfen beim Antippen, führen aber
+  nirgends hin. Die Ampelpunkte der übrigen Spiele stehen hier nicht: Die Anzahl
+  der Bilder sagt es genauer.
 - **AC-20** `fertig` **Schalter der Eltern** — Ein Spiel kann auf dem
   Vorhang Ein/Aus-Schalter anbieten, für Vorleser als Schalter erkennbar. Die
   Wahl bleibt gemerkt, auch über Neuladen; ein unlesbarer gemerkter Wert ergibt
@@ -78,9 +87,11 @@ wieder herausfinden –, steht hier einmal. Es kennt kein einzelnes Spiel.
   das Kinderzimmer über dem ganzen Fenster, auch über der Kopfzeile. Kein Knopf
   des Rahmens ist zu treffen, und nichts im Zimmer scrollt oder zoomt.
 - **AC-9** `fertig` **Heraus nur durch Halten** — Oben rechts steht ein
-  blasses ×. Ein kurzer Tipp darauf zeigt nur „Zum Beenden gedrückt halten".
-  Erst nach 1,5 s Halten schließt das Zimmer; ein Ring um das × zeigt, wie weit
-  es ist. Escape, genauso lange gehalten, wirkt wie der Knopf.
+  blasses × ohne Fläche, die Trefferfläche bleibt 46 px groß. Ein kurzer Tipp
+  darauf zeigt nur „Zum Beenden gedrückt halten". Erst nach 1,5 s Halten schließt
+  das Zimmer; solange steht dort „Weiter halten …", und ein Ring außen um den
+  Daumen zeigt, wie weit es ist. Escape, genauso lange gehalten, wirkt wie der
+  Knopf.
 - **AC-10** `fertig` **Zweite Hand bricht ab** — Liegt beim Aufsetzen auf
   das × schon ein anderer Finger auf dem Zimmer, beginnt kein Halten; kommt
   währenddessen einer dazu, bricht es ab.
@@ -107,6 +118,14 @@ wieder herausfinden –, steht hier einmal. Es kennt kein einzelnes Spiel.
 - **AC-16** `fertig` **Kein Fehlerton, kein Rot** — Kein Kinderspiel hat
   einen Ton oder eine Farbe für „falsch". Eine falsche Wahl wackelt und geht
   zurück.
+- **AC-22** `fertig` **Jede Bewegung spielt** — Eine neue Bewegung (Hüpfen,
+  Wackeln, Winken, Kauen) läuft auch dann, wenn am selben Bild schon eine andere
+  lief. Anlass: Das Auftreten eines Bildes verdeckte im CSS alle späteren, das Tier
+  hüpfte beim Aufnehmen und bei der richtigen Antwort nicht, wackelte nicht und
+  kaute nicht – bei einem Spiel ohne Lesen die halbe Rückmeldung.
+- **AC-23** `fertig` **Reihe statt Punkte** — Ein Spiel mit Runden kann leere
+  Plätze zeigen, die sich mit den geschafften Tieren füllen. Es zeigt nur, wie weit
+  die Runde ist: keine Zahl, kein Vergleich, und am Ende sind immer alle da.
 
 ## Randfälle
 

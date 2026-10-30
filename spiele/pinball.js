@@ -384,6 +384,9 @@
 
     /* ------------------------------------------------------------- Aufbau */
 
+    // Am Rechner sagt das Schild die Tasten an, nicht den Finger.
+    const amRechner = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
     const kopf = el('div', 'm-kopf');
     const flaeche = el('div', 'ez-flaeche pb-flaeche');
     const feld = el('div', 'pb-kasten');
@@ -392,6 +395,8 @@
     wurzel.append(kopf, flaeche, unten);
 
     const b = Echtzeit.buehne(feld, { breite: B, hoehe: H, schritt, zeichnen, beiHalt });
+    // Die Knöpfe liegen auf dem Tisch; ihr Tipp darf nicht zugleich weiterspielen.
+    b.an(unten, 'pointerdown', (e) => e.stopPropagation());
 
     function werkzeugeSetzen() {
       s.werkzeuge([
@@ -408,8 +413,17 @@
       if (stand.zustand !== 'bereit' && stand.zustand !== 'pause') return;
       stand.zustand = 'laeuft';
       klang.wecken();
+      // Der angeklickte Pause-Knopf darf den Fokus nicht behalten: Sonst löst
+      // die Leertaste ihn aus, statt die Feder zu spannen.
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
       anzeigen();
       b.los();
+    }
+
+    /** Ein Tipp genügt: Wer nochmal will, soll nicht noch einmal aufs Feld müssen. */
+    function nochmal() {
+      neu();
+      weiter();
     }
 
     function pauseUmschalten() {
@@ -1048,8 +1062,8 @@
       const vorher = gedrueckt;
       gedrueckt = jetzt;
       if (stand.zustand !== 'laeuft') return;
-      if (jetzt.l && !vorher.l && !stand.tilt) { bahnenDrehen(-1); klang.klappe(); }
-      if (jetzt.r && !vorher.r && !stand.tilt) { bahnenDrehen(1); klang.klappe(); }
+      if (jetzt.l && !vorher.l && !stand.tilt) { bahnenDrehen(-1); klang.klappe(); s.fuehlen(8); }
+      if (jetzt.r && !vorher.r && !stand.tilt) { bahnenDrehen(1); klang.klappe(); s.fuehlen(8); }
       if (vorher.f && !jetzt.f) abschiessen();
     }
 
@@ -1095,6 +1109,14 @@
       } else if (k === 'x' || k === '.' || k === 'ArrowUp') {
         e.preventDefault();
         if (!e.repeat && stand.zustand === 'laeuft') ruetteln(k === 'x' ? -1 : k === '.' ? 1 : 0);
+      } else if (k === 'Enter' && !Echtzeit.knopfHatFokus(e)) {
+        // Enter gehört zu keinem Griff am Tisch: Es kann nicht aus Versehen
+        // gedrückt sein, wenn die letzte Kugel fällt – Leertaste und Flipper wären es.
+        e.preventDefault();
+        if (e.repeat) return;
+        if (stand.zustand === 'vorbei') nochmal();
+        else if (stand.zustand === 'bereit') weiter();
+        else pauseUmschalten();
       } else if (k === 'p' || k === 'Escape') {
         pauseUmschalten();
       }
@@ -1111,10 +1133,11 @@
     function kopfZeichnen() {
       const st = stand;
       kopf.replaceChildren();
-      const p = el('span');
-      p.append(el('b', null, zahlText(st.punkte)), document.createTextNode(' Punkte'));
-      kopf.append(p, el('span', null, 'Kugel ' + Math.min(st.kugelNr, st.kugeln) + '/' + st.kugeln));
       const best = bestwert();
+      const p = el('span');
+      // Grün, sobald der alte Bestwert überholt ist: Das sieht man im Spiel.
+      p.append(el('b', best && st.punkte > best ? 'pb-rekord' : null, zahlText(st.punkte)), document.createTextNode(' Punkte'));
+      kopf.append(p, el('span', null, 'Kugel ' + Math.min(st.kugelNr, st.kugeln) + '/' + st.kugeln));
       s.unter(RAENGE[st.rang] + (best ? ' · Bestwert ' + zahlText(best) : ''));
     }
 
@@ -1133,26 +1156,37 @@
       const z = st.zustand;
       unten.replaceChildren();
       if (z === 'bereit') {
-        b.schild('Feder spannen', 'Rechte Hälfte halten, loslassen schießt. Danach tippen links und rechts die Flipper.');
+        b.schild('Feder spannen', amRechner
+          ? 'Leertaste halten, loslassen schießt. Danach Z und / oder die Pfeile für die Flipper.'
+          : 'Rechte Hälfte halten, loslassen schießt. Danach tippen links und rechts die Flipper.');
       } else if (z === 'pause') {
-        b.schild('Pause', 'Tippen, um weiterzuspielen.');
-        unten.append(Echtzeit.kasten('Pause', zahlText(st.punkte) + ' Punkte, Kugel ' + st.kugelNr + ' von ' + st.kugeln + '.', [
+        b.schild('Pause', zahlText(st.punkte) + ' Punkte, Kugel ' + st.kugelNr + ' von ' + st.kugeln + '. ' + (amRechner ? 'Enter spielt weiter.' : 'Tippen, um weiterzuspielen.'));
+        unten.append(Echtzeit.kasten('', null, [
           { text: 'Weiter', tun: weiter },
-          { text: 'Neu anfangen', art: 'still', tun: neu },
+          { text: 'Neu anfangen', art: 'still', tun: nochmal },
         ]));
       } else if (z === 'vorbei') {
-        b.schild('Spiel vorbei.');
         const best = bestwert();
-        unten.append(Echtzeit.kasten('Spiel vorbei.',
-          zahlText(st.punkte) + ' Punkte als ' + RAENGE[st.rang] + ', ' +
+        const istBest = st.punkte > 0 && st.punkte >= best;
+        b.schild('Spiel vorbei.', zahlText(st.punkte) + ' Punkte als ' + RAENGE[st.rang] + ', ' +
           st.missionen + (st.missionen === 1 ? ' Mission' : ' Missionen') + ' in ' +
-          s.dauerText(Math.round(st.zeit * 1000)) + '.' +
-          (st.punkte > 0 && st.punkte >= best ? ' Das ist dein Bestwert.' : ''),
-          [{ text: 'Nochmal', tun: neu }]));
+          s.dauerText(Math.round(st.zeit * 1000)) + '.' + (!istBest && best ? ' Bestwert ' + zahlText(best) + '.' : ''));
+        // Anders als in den übrigen Geschicklichkeitsspielen startet ein Tipp
+        // aufs Feld hier nicht neu: Wenn die letzte Kugel fällt, trommeln beide
+        // Daumen noch auf die Flipper, und die Bilanz wäre weg, bevor man sie sieht.
+        const k = Echtzeit.kasten('', null, [{ text: 'Nochmal', tun: nochmal }]);
+        k.querySelector('.knopf').prepend(s.bildzeichen('nochmal'));
+        if (istBest) k.prepend(el('span', 'ende-marke', 'Das ist dein Bestwert.'));
+        if (amRechner) k.append(el('p', 'notiz notiz--klein', 'Enter geht auch.'));
+        unten.append(k);
       } else {
         b.schildWeg();
       }
       unten.hidden = !unten.childElementCount;
+      // In die Karte auf dem Tisch: Unter dem Tisch stand „Nochmal" außerhalb
+      // des Fensters. In der Pause weicht sie der Kugel aus.
+      feld.dataset.schild = z === 'pause' ? (st.kugel.y < H / 2 ? 'unten' : 'oben') : 'mitte';
+      if (!unten.hidden) feld.querySelector('.ez-schild').append(unten);
     }
 
     function anzeigeText(st) {
@@ -1619,7 +1653,7 @@
     function anleitung() {
       const d = el('div');
       d.append(el('p', 'notiz', 'Die Kugel liegt rechts auf der Feder. Die rechte Hälfte des Feldes halten spannt sie, loslassen schießt – je länger gehalten, desto kräftiger. Rollt ein sanfter Schuss durch die blinkende Bahn oben, ist das ein Geschicktreffer.'));
-      d.append(el('p', 'notiz', 'Dann bedient ein Tipp auf die linke Hälfte den linken Flipper, auf die rechte den rechten; halten hält ihn oben. Am Rechner: Z oder Umschalt links, / oder - oder Umschalt rechts, Leertaste für die Feder. X, Punkt und Pfeil hoch rütteln am Tisch – dreimal kurz hintereinander ist TILT, und die Flipper sind bis zur nächsten Kugel tot.'));
+      d.append(el('p', 'notiz', 'Dann bedient ein Tipp auf die linke Hälfte den linken Flipper, auf die rechte den rechten; halten hält ihn oben. Am Rechner: Z oder Pfeil links, / oder Pfeil rechts, Leertaste oder Pfeil runter für die Feder, Enter hält an und spielt weiter. X, Punkt und Pfeil hoch rütteln am Tisch – dreimal kurz hintereinander ist TILT, und die Flipper sind bis zur nächsten Kugel tot.'));
       d.append(el('p', 'notiz', 'Missionen: Triff die drei blauen Missionsziele links, dann nimm die Startrampe – sie nimmt die Mission an und tankt voll. Was zu tun ist, steht unten in der Anzeige. Während einer Mission sinkt der Treibstoff; Rampe und Bahnen oben füllen nach. Ist er leer, bricht die Mission ab.'));
       d.append(el('p', 'notiz', 'Zwei erfüllte Missionen bringen einen Rang höher, vom Kadetten bis zum Flottenadmiral. Kapitän und Kommodore bringen je eine Extrakugel.'));
       d.append(el('p', 'notiz', 'Leuchten alle drei Bahnen oben, werden die Bumper stärker; ein Flipperdruck schiebt die Lichter weiter. Die gelben Warnziele rechts machen den Rückstoß in beiden Außenbahnen scharf. Fünf Umläufe links sind ein Hyperraumsprung.'));

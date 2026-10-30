@@ -32,6 +32,23 @@ const Runde = (() => {
     return b;
   };
 
+  /* Beim Weiterreichen wird schnell und doppelt getippt. Was gerade erschienen
+     ist, nimmt deshalb einen Augenblick lang nichts an: Der zweite Tipp auf
+     „Ich bin …" darf keine Stimme abgeben, und der letzte Tipp einer Abstimmung
+     darf nicht das Ergebnis wegklicken, das eben erst aufgegangen ist. */
+  function frisch(element, ms = 350, danach) {
+    element.inert = true;
+    setTimeout(() => {
+      element.inert = false;
+      if (danach) danach();
+    }, ms);
+    return element;
+  }
+
+  /* Der Knopf, der als Nächstes dran ist, bekommt den Fokus: Auf dem Laptop geht
+     es mit Enter weiter, auf dem Handy sieht man davon nichts. */
+  const vorn = (knopfElement) => knopfElement.focus({ preventScroll: true });
+
   /* --------------------------------------------------------------- Zufall */
 
   /* Der Vorrat kennt kein O und keine 0, kein I und keine 1: der Code wird
@@ -118,7 +135,13 @@ const Runde = (() => {
      dessen Einstellungen daneben von der Spielerzahl abhängen. */
   function aufbau(wurzel, { titel, hinweis, min = 3, max = 12, namen, knopfText = 'Los', weiter, aendern }) {
     const standard = (i) => 'Spieler ' + (i + 1);
-    const liste = (namen && namen.length >= min) ? [...namen] : [standard(0), standard(1), standard(2)];
+    /* Gemerkt wird schon beim Tippen, also kann ein Feld gerade leer gewesen sein. */
+    const liste = (namen && namen.length >= min)
+      ? namen.map((n, i) => (String(n == null ? '' : n).trim() ? String(n) : standard(i)))
+      : [standard(0), standard(1), standard(2)];
+    /* Wer sich beim Zähler vertippt, verliert keinen Namen: „−" legt ihn beiseite,
+       „+" holt ihn wieder. */
+    const beiseite = [];
 
     const kasten = el('div', 'r-aufbau');
     if (titel) kasten.append(el('h2', 'r-titel', titel));
@@ -128,8 +151,8 @@ const Runde = (() => {
     const los = knopf('knopf knopf--voll r-los', knopfText);
 
     const zaehler = zaehlerBlock('Wir sind zu', () => liste.length, (n) => {
-      while (liste.length > n) liste.pop();
-      while (liste.length < n) liste.push(standard(liste.length));
+      while (liste.length > n) beiseite.push(liste.pop());
+      while (liste.length < n) liste.push(beiseite.length ? beiseite.pop() : standard(liste.length));
       zeichnen();
       if (aendern) aendern([...liste]);
     }, min, max);
@@ -148,14 +171,33 @@ const Runde = (() => {
         feld.value = name;
         feld.maxLength = 14;
         feld.autocomplete = 'off';
+        feld.autocapitalize = 'words';
+        feld.spellcheck = false;
+        feld.enterKeyHint = i < liste.length - 1 ? 'next' : 'done';
         feld.setAttribute('aria-label', 'Name von Spieler ' + (i + 1));
+        /* „Spieler 3" soll niemand von Hand löschen müssen: Der Vorgabename ist
+           markiert und verschwindet beim ersten Buchstaben. Erst nach diesem
+           Takt, sonst setzt der Klick die Einfügemarke wieder hinein. */
+        feld.addEventListener('focus', () => {
+          if (feld.value === standard(i)) requestAnimationFrame(() => feld.select());
+        });
+        feld.addEventListener('keydown', (e) => {
+          if (e.key !== 'Enter' || e.isComposing) return;
+          e.preventDefault();
+          const naechstes = namensfeld.querySelectorAll('input')[i + 1];
+          if (naechstes) naechstes.focus();
+          else los.focus();
+        });
         feld.addEventListener('input', () => {
           liste[i] = feld.value;
           if (aendern) aendern([...liste]);
         });
         /* Leer stehen lassen heißt: doch lieber die Nummer. */
         feld.addEventListener('blur', () => {
-          if (!feld.value.trim()) { liste[i] = standard(i); feld.value = liste[i]; }
+          if (feld.value.trim()) return;
+          liste[i] = standard(i);
+          feld.value = liste[i];
+          if (aendern) aendern([...liste]);
         });
         zeile.append(feld);
         namensfeld.append(zeile);
@@ -225,6 +267,9 @@ const Runde = (() => {
       stand.code = sauber;
       zeichnen();
     });
+    codeFeld.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.isComposing && !los.disabled) los.click();
+    });
     wuerfel.addEventListener('click', () => {
       stand.code = codeErzeugen();
       codeFeld.value = stand.code;
@@ -237,6 +282,42 @@ const Runde = (() => {
 
     zeichnen();
     return kasten;
+  }
+
+  /* --------------------------------------------------------------- Deckel */
+
+  /* Der Deckel liegt über dem Inhalt, nicht an seiner Stelle: so steht der
+     Schirm schon fertig da, wenn der Finger kommt, und nichts springt beim
+     Aufdecken. Auf dem Laptop tut es auch eine gehaltene Taste; e.repeat zählt
+     nicht, sonst öffnete das noch liegende Enter von „Ich bin …" den Deckel. */
+  function decke(flaeche, aufgedeckt) {
+    const huelle = el('div', 'r-decke');
+    const deckel = el('div', 'r-deckel');
+    deckel.append(el('span', 'r-deckel-text', 'Gedrückt halten'));
+    huelle.append(flaeche, deckel);
+    huelle.tabIndex = 0;
+    huelle.setAttribute('role', 'button');
+    huelle.setAttribute('aria-label', 'Gedrückt halten');
+
+    const oeffnen = () => {
+      huelle.dataset.offen = 'ja';
+      if (aufgedeckt) aufgedeckt();
+    };
+    const zu = () => { delete huelle.dataset.offen; };
+    const istTaste = (e) => e.key === ' ' || e.key === 'Enter';
+    huelle.addEventListener('pointerdown', (e) => { e.preventDefault(); oeffnen(); });
+    huelle.addEventListener('pointerup', zu);
+    huelle.addEventListener('pointercancel', zu);
+    huelle.addEventListener('pointerleave', zu);
+    huelle.addEventListener('contextmenu', (e) => e.preventDefault());
+    huelle.addEventListener('keydown', (e) => {
+      if (!istTaste(e)) return;
+      e.preventDefault();
+      if (!e.repeat) oeffnen();
+    });
+    huelle.addEventListener('keyup', (e) => { if (istTaste(e)) zu(); });
+    huelle.addEventListener('blur', zu);
+    return huelle;
   }
 
   /* ----------------------------------------------------------- Weitergabe */
@@ -268,6 +349,7 @@ const Runde = (() => {
       auf.addEventListener('click', geheim);
       karte.append(auf);
       buehne.append(karte);
+      frisch(karte, 350, () => vorn(auf));
     }
 
     function geheim() {
@@ -276,35 +358,21 @@ const Runde = (() => {
       karte.append(el('p', 'r-geheim-name', namen[i]));
 
       const flaeche = el('div', 'r-flaeche');
-      karte.append(halten ? decke(flaeche) : flaeche);
+      const w = knopfText ? knopf('knopf knopf--voll r-weiter', knopfText) : null;
+      const huelle = halten ? decke(flaeche, () => { if (w) w.disabled = false; }) : null;
+      karte.append(huelle || flaeche);
 
-      if (knopfText) {
-        const w = knopf('knopf knopf--voll r-weiter', knopfText);
+      if (w) {
+        /* Unter dem Deckel ist „Gesehen" erst wahr, wenn er einmal offen war. So
+           überspringt kein Doppeltipp eine Rolle, die dann niemand mehr sieht. */
+        w.disabled = halten;
         w.addEventListener('click', naechster);
         karte.append(w);
       }
 
       buehne.append(karte);
       zeigen(i, flaeche, naechster);
-    }
-
-    /* Der Deckel liegt über dem Inhalt, nicht an seiner Stelle: so steht der
-       Schirm schon fertig da, wenn der Finger kommt, und nichts springt beim
-       Aufdecken. */
-    function decke(flaeche) {
-      const huelle = el('div', 'r-decke');
-      const deckel = el('div', 'r-deckel');
-      deckel.append(el('span', 'r-deckel-text', 'Gedrückt halten'));
-      huelle.append(flaeche, deckel);
-
-      const auf = (e) => { e.preventDefault(); huelle.dataset.offen = 'ja'; };
-      const zu = () => { delete huelle.dataset.offen; };
-      huelle.addEventListener('pointerdown', auf);
-      huelle.addEventListener('pointerup', zu);
-      huelle.addEventListener('pointercancel', zu);
-      huelle.addEventListener('pointerleave', zu);
-      huelle.addEventListener('contextmenu', (e) => e.preventDefault());
-      return huelle;
+      if (huelle) vorn(huelle);
     }
 
     function naechster() {
@@ -338,7 +406,7 @@ const Runde = (() => {
           b.addEventListener('click', () => { gewaehlt[i] = k; weiter(); });
           liste.append(b);
         });
-        flaeche.append(liste);
+        flaeche.append(frisch(liste));
       },
       fertig: () => fertig(gewaehlt),
     });
@@ -398,6 +466,6 @@ const Runde = (() => {
 
   return {
     codeErzeugen, codeSauber, zufallAus, mischenMit, waehlen,
-    aufbau, codeAufbau, weitergabe, stimmen, auszaehlen, uhr,
+    aufbau, codeAufbau, weitergabe, decke, stimmen, auszaehlen, uhr, frisch, vorn,
   };
 })();

@@ -422,6 +422,9 @@
     let spezialWunsch = false;
     let zugX = 0;
     let zugY = 0;
+    let griff = null;
+    let sperreBis = 0;
+    const NOCHMAL_SPERRE = 600;
 
     function laden() {
       const alt = s.erinnert();
@@ -435,12 +438,19 @@
 
     /* ------------------------------------------------------------- Aufbau */
 
+    // Am Rechner lenken die Tasten: Dort sagt die Leiste die Tasten an, nicht den Finger.
+    const amRechner = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
     const kopf = el('div', 'm-kopf');
     const flaeche = el('div', 'ez-flaeche im-flaeche');
     const feld = el('div', 'im-kasten');
     const leiste = el('div', 'im-steuer');
-    const steuer = el('div', 'ez-steuer', 'Ziehen lenkt · Berühren feuert');
-    const spezialKnopf = el('button', 'knopf knopf--still im-spezial');
+    const steuer = el('div', 'ez-steuer');
+    const pfeile = el('span', 'im-steuer-pfeile');
+    pfeile.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3"/></svg>';
+    steuer.append(pfeile,
+      el('span', null, amRechner ? 'Pfeile lenken · Leertaste feuert · X zündet' : 'Ziehen lenkt · Berühren feuert'));
+    const spezialKnopf = el('button', 'knopf im-spezial');
     spezialKnopf.type = 'button';
     spezialKnopf.tabIndex = -1;
     leiste.append(steuer, spezialKnopf);
@@ -458,6 +468,8 @@
     };
 
     const b = Echtzeit.buehne(feld, { breite: B, hoehe: H, schritt, zeichnen, beiHalt });
+    // Die Knöpfe liegen auf dem Feld; ihr Tipp darf nicht zugleich weiterfliegen.
+    b.an(unten, 'pointerdown', (e) => e.stopPropagation());
 
     s.werkzeuge([
       { label: 'Pause', symbol: Echtzeit.SYMBOL.pause, tun: pauseUmschalten },
@@ -470,8 +482,17 @@
       if (stand.zustand !== 'bereit' && stand.zustand !== 'pause') return;
       stand.zustand = 'laeuft';
       zugX = zugY = 0;
+      // Der angeklickte Pause-Knopf darf den Fokus nicht behalten: Sonst löst
+      // die Leertaste ihn aus, statt zu feuern.
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
       anzeigen();
       b.los();
+    }
+
+    /** Ein Tipp genügt: Wer nochmal will, soll nicht noch einmal aufs Feld müssen. */
+    function nochmal() {
+      neu();
+      weiter();
     }
 
     function pauseUmschalten() {
@@ -483,6 +504,7 @@
       if (stand.zustand === 'laeuft') stand.zustand = 'pause';
       links = rechts = hoch = runter = feuer = feuerWunsch = spezialWunsch = false;
       griff = null;
+      leiste.classList.remove('im-steuer--aktiv');
       zugX = zugY = 0;
       anzeigen();
       sichern();
@@ -1009,6 +1031,7 @@
 
     function treffer(st) {
       st.leben -= 1;
+      s.fuehlen(st.leben <= 0 ? 60 : 30);
       st.knall.push({ x: st.schiff.x, y: st.schiff.y, t: 0.5, art: 'schiff' });
       // Alle feindlichen Schüsse verschwinden: Sonst trifft der nächste, bevor
       // man das Blinken überhaupt gesehen hat.
@@ -1023,8 +1046,12 @@
       kopfZeichnen();
     }
 
+    const neustartFrei = () => stand.zustand === 'vorbei' && performance.now() >= sperreBis;
+
     function vorbei() {
       stand.zustand = 'vorbei';
+      // Kurz gesperrt: Wer eben noch wild getippt hat, soll das Ergebnis erst sehen.
+      sperreBis = performance.now() + NOCHMAL_SPERRE;
       s.notieren({
         punkte: stand.punkte,
         level: stand.level,
@@ -1044,10 +1071,11 @@
 
     function kopfZeichnen() {
       kopf.replaceChildren();
-      const p = el('span');
-      p.append(el('b', null, String(stand.punkte)), document.createTextNode(' Punkte'));
-      kopf.append(p, el('span', null, 'Level ' + stand.level), el('span', null, Math.max(0, stand.leben) + ' Leben'));
       const best = bestwert();
+      const p = el('span');
+      // Grün, sobald der alte Bestwert überholt ist: Das sieht man im Flug.
+      p.append(el('b', best && stand.punkte > best ? 'im-rekord' : null, String(stand.punkte)), document.createTextNode(' Punkte'));
+      kopf.append(p, el('span', null, 'Level ' + stand.level), el('span', null, Math.max(0, stand.leben) + ' Leben'));
       s.unter(best ? 'Bestwert ' + best : '');
 
       const sp = stand.spezial;
@@ -1059,27 +1087,37 @@
     function anzeigen() {
       kopfZeichnen();
       const z = stand.zustand;
-      leiste.hidden = z === 'pause' || z === 'vorbei';
+      // Die Leiste bleibt in der Pause liegen: Ein Tipp darauf fliegt weiter.
+      leiste.classList.toggle('im-steuer--aus', z === 'vorbei');
       unten.replaceChildren();
       if (z === 'bereit') {
-        b.schild('Tippen zum Starten', 'Ziehen lenkt, solange der Finger liegt, wird geschossen. Am Rechner: Pfeile, Leertaste, X.');
+        b.schild('Tippen zum Starten', amRechner
+          ? 'Pfeile lenken, Leertaste feuert, X zündet die Spezialwaffe.'
+          : 'Ziehen lenkt, und solange der Finger liegt, wird geschossen.');
       } else if (z === 'pause') {
-        b.schild('Pause', 'Tippen, um weiterzufliegen.');
-        unten.append(Echtzeit.kasten('Pause', stand.punkte + ' Punkte in Level ' + stand.level + '.', [
+        b.schild('Pause', stand.punkte + ' Punkte in Level ' + stand.level + '. ' + (amRechner ? 'Enter fliegt weiter.' : 'Tippen, um weiterzufliegen.'));
+        unten.append(Echtzeit.kasten('', null, [
           { text: 'Weiter', tun: weiter },
-          { text: 'Neu anfangen', art: 'still', tun: neu },
+          { text: 'Neu anfangen', art: 'still', tun: nochmal },
         ]));
       } else if (z === 'vorbei') {
-        b.schild('Abgeschossen.');
         const best = bestwert();
-        unten.append(Echtzeit.kasten('Abgeschossen.',
-          stand.punkte + ' Punkte, Level ' + stand.level + ', ' + s.dauerText(Math.round(stand.zeit * 1000)) + '.' +
-          (stand.punkte > 0 && stand.punkte >= best ? ' Das ist dein Bestwert.' : ''),
-          [{ text: 'Nochmal', tun: neu }]));
+        const istBest = stand.punkte > 0 && stand.punkte >= best;
+        b.schild('Abgeschossen.', stand.punkte + ' Punkte, Level ' + stand.level + ', ' + s.dauerText(Math.round(stand.zeit * 1000)) + '.' +
+          (!istBest && best ? ' Bestwert ' + best + '.' : ''));
+        const k = Echtzeit.kasten('', null, [{ text: 'Nochmal', tun: nochmal }]);
+        k.querySelector('.knopf').prepend(s.bildzeichen('nochmal'));
+        if (istBest) k.prepend(el('span', 'ende-marke', 'Das ist dein Bestwert.'));
+        k.append(el('p', 'notiz notiz--klein', amRechner ? 'Enter geht auch.' : 'Ein Tipp aufs Feld geht auch.'));
+        unten.append(k);
       } else {
         b.schildWeg();
       }
       unten.hidden = !unten.childElementCount;
+      // In die Karte auf dem Feld: So bleibt „Nochmal" im Bild, und die Seite
+      // springt nicht. Das Schiff soll sie nicht verdecken.
+      feld.dataset.schild = stand.schiff.y < H / 2 ? 'unten' : 'oben';
+      if (!unten.hidden) feld.querySelector('.ez-schild').append(unten);
     }
 
     function malBild(ctx, p, x, y) {
@@ -1218,8 +1256,8 @@
 
     function anleitung() {
       const d = el('div');
-      d.append(el('p', 'notiz', 'Leg den Finger aufs Feld oder auf die Leiste darunter und zieh – das Schiff folgt der Bewegung, nach oben, unten und zur Seite. Solange der Finger liegt, schießt es. Am Rechner: Pfeiltasten oder WASD, Leertaste schießt.'));
-      d.append(el('p', 'notiz', 'Der Knopf rechts neben der Leiste zündet die Spezialwaffe, am Rechner X oder K. Rakete sucht sich ihr Ziel, Strahl trifft die ganze Zeile, Wand fegt über das Feld und schluckt feindliche Schüsse. Die Zahl sagt, wie viele du noch hast.'));
+      d.append(el('p', 'notiz', 'Leg den Finger aufs Feld oder auf die Leiste darunter und zieh – das Schiff folgt der Bewegung, nach oben, unten und zur Seite. Solange der Finger liegt, schießt es. Am Rechner: Pfeiltasten oder WASD, Leertaste schießt, Enter oder P halten an und fliegen weiter.'));
+      d.append(el('p', 'notiz', 'Der Knopf unten rechts auf der Leiste zündet die Spezialwaffe, am Rechner X oder K. Rakete sucht sich ihr Ziel, Strahl trifft die ganze Zeile, Wand fegt über das Feld und schluckt feindliche Schüsse. Die Zahl sagt, wie viele du noch hast.'));
       d.append(el('p', 'notiz', 'Gelbe Kästchen einsammeln: dieselbe Waffe füllt um drei auf, eine andere tauscht sie aus. Das Herz bringt ein Leben.'));
       d.append(el('p', 'notiz', 'Am Ende jedes Levels kommt ein Endgegner; der Balken oben zeigt, wie viel er noch aushält. Nach dem sechsten Level geht es von vorn los, schneller. Berge und Höhlenwände schieben dich nur weg – Schüsse, Gegner und der Endgegner selbst kosten ein Leben.'));
       s.blatt({ titel: 'Sternjäger', inhalt: d, aktionen: [{ text: 'Los' }] });
@@ -1227,11 +1265,15 @@
 
     /* ---------------------------------------------------------- Steuerung */
 
-    let griff = null;
     b.an(flaeche, 'pointerdown', (e) => {
-      if (stand.zustand === 'vorbei' || griff) return;
+      if (griff) return;
       e.preventDefault();
+      if (stand.zustand === 'vorbei') {
+        if (!neustartFrei()) return;
+        nochmal();
+      }
       griff = { id: e.pointerId, x: e.clientX, y: e.clientY };
+      leiste.classList.add('im-steuer--aktiv');
       try { flaeche.setPointerCapture(e.pointerId); } catch { /* synthetisch */ }
       feuer = true;
       feuerWunsch = true;
@@ -1249,6 +1291,7 @@
     const loslassen = (e) => {
       if (!griff || e.pointerId !== griff.id) return;
       griff = null;
+      leiste.classList.remove('im-steuer--aktiv');
       feuer = false;
     };
     b.an(flaeche, 'pointerup', loslassen);
@@ -1261,6 +1304,7 @@
       e.stopPropagation();
       if (stand.zustand === 'vorbei') return;
       spezialWunsch = true;
+      if (stand.spezial.anzahl > 0) s.fuehlen(12);
       weiter();
     });
 
@@ -1285,6 +1329,14 @@
         e.preventDefault();
         if (!e.repeat) spezialWunsch = true;
         weiter();
+      } else if (k === 'Enter' && !Echtzeit.knopfHatFokus(e)) {
+        // Enter gehört zu keinem Griff im Flug: Es kann nicht aus Versehen
+        // gedrückt sein, wenn die Partie endet – die Leertaste wäre es.
+        e.preventDefault();
+        if (e.repeat) return;
+        if (stand.zustand === 'vorbei') { if (neustartFrei()) nochmal(); }
+        else if (stand.zustand === 'bereit') weiter();
+        else pauseUmschalten();
       } else if (k === 'p' || k === 'Escape') {
         pauseUmschalten();
       }

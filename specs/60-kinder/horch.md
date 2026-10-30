@@ -1,7 +1,7 @@
 # Horch mal
 
 **Datei:** [`spiele/horch.js`](../../spiele/horch.js)
-**Stand:** 9/9 fertig
+**Stand:** 11/11 fertig
 
 ## Zweck
 
@@ -14,9 +14,9 @@ so oft man will. Zimmer, Klang und Aufnahmen kommen aus dem Werkzeug
 
 ### Frage
 
-- **AC-1** `fertig` **Zwei bis vier Tiere** — Auf dem Vorhang wählen die
-  Eltern „Zwei Tiere", „Drei Tiere" oder „Vier Tiere"; die Wahl bleibt gemerkt.
-  Vorgabe sind zwei.
+- **AC-1** `fertig` **Zwei bis vier Tiere** — Auf dem Vorhang steht die Wahl
+  „Zwei Tiere", „Drei Tiere" oder „Vier Tiere", jede mit so vielen Tierbildern
+  (Werkzeug AC-21); die Wahl bleibt gemerkt. Vorgabe sind zwei.
 - **AC-2** `fertig` **Nichts Verwechselbares** — Zur Wahl stehen nur Tiere
   mit Aufnahme. Nie zusammen stehen Tiere, die sich im Bild oder im Klang zu
   sehr ähneln: Schaf und Ziege, Huhn mit Hahn oder Truthahn, Löwe mit Tiger
@@ -30,8 +30,8 @@ so oft man will. Zimmer, Klang und Aufnahmen kommen aus dem Werkzeug
 ### Antwort
 
 - **AC-4** `fertig` **Richtig** — Das Tier hüpft, die anderen verblassen,
-  ein Dreiklang spielt, Konfetti fällt, oben steht „Das war die Kuh!", das Tier
-  ruft noch einmal, und danach kommt die nächste Frage.
+  ein Dreiklang spielt, Konfetti fällt, oben steht „Ja, das war die Kuh!", das
+  Tier ruft noch einmal, und danach kommt die nächste Frage.
 - **AC-5** `fertig` **Anderes Tier ruft selbst** — Ein anderes Tier wackelt,
   oben steht „Die Ente macht Quak!", und es ruft seinen eigenen Ruf. Danach
   kommt der gesuchte Ruf noch einmal. Tippt das Kind vorher schon wieder, gilt
@@ -41,8 +41,15 @@ so oft man will. Zimmer, Klang und Aufnahmen kommen aus dem Werkzeug
   einem Tipp (frühestens nach 1,2 s) beginnt die nächste Runde.
 - **AC-7** `fertig` **Passt ins Fenster** — Lautsprecher und Tiere sind bei
   jeder Stufe auf einem Pixel 7 hoch und quer und in 1366 × 700 ganz zu sehen.
+  Hoch steht der Lautsprecher oben, drei Tiere stehen als zwei plus eins und vier
+  als zwei mal zwei, so groß wie zwei. Quer steht der Lautsprecher links, damit die
+  Tiere die ganze Höhe bekommen.
 - **AC-8** `fertig` **Ohne Ton gesperrt** — Kann der Browser keine Töne
   abspielen, bleibt „Los geht's" aus, und der Vorhang sagt warum.
+- **AC-10** `fertig` **Erkannte Tiere sammeln sich** — Sechs Plätze am unteren
+  Rand (quer unten links) füllen sich mit den erkannten Tieren (Werkzeug AC-23).
+- **AC-11** `fertig` **Tasten** — Am Laptop wirkt jede Taste (ohne Strg, Alt,
+  Meta) wie der Lautsprecher. Antworten geht nur mit Maus oder Finger.
 
 ### Statistik
 

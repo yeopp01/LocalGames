@@ -8,9 +8,16 @@
      und zwar außerhalb des angetippten Feldes samt seiner Nachbarn.
    · Für Finger gibt es einen Fahnen-Modus. Am Rechner geht weiterhin die
      rechte Maustaste, auf dem Handy zusätzlich langes Drücken.
+   Die Spielregeln stehen in den Funktionen unter „Spielzug".
 */
 
 (() => {
+  /* Als Zeichnung statt als Schriftzeichen: ⚑ und ✳ sehen auf jedem Gerät
+     anders aus und sind auf kleinen Kacheln kaum zu erkennen. */
+  const FAHNE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="m-stange" d="M7.5 21V3.5"/><path class="m-tuch" d="M8.5 4l10.5 4.6-10.5 4.6z"/></svg>';
+  const MINE = '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="m-stange" d="M12 2.5v19M2.5 12h19M5.3 5.3l13.4 13.4M18.7 5.3L5.3 18.7"/><circle class="m-kugel" cx="12" cy="12" r="6.6"/></svg>';
+  const BLOCK = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="m-kugel" x="4.5" y="4.5" width="15" height="15" rx="3"/></svg>';
+
   const STUFEN = {
     klein:  { name: 'klein',  spalten: 8,  zeilen: 10, minen: 10 },
     mittel: { name: 'mittel', spalten: 10, zeilen: 14, minen: 24 },
@@ -24,6 +31,10 @@
     let uhr = null;
     let druckUhr = null;
     let langGedrueckt = false;
+    let cursor = 0;             // das Feld, auf dem die Pfeiltasten gerade stehen
+    let neueBestzeit = false;
+    let lage = '';              // was die Unterzeile gerade kurz zu sagen hat
+    let lageBis = 0;
 
     function frisch(stufe) {
       const { spalten, zeilen, minen } = STUFEN[stufe];
@@ -100,14 +111,24 @@
     const gitter = el('div', 'm-gitter');
     const endeKasten = el('div', 'ende-kasten');
     endeKasten.hidden = true;
-    const leiste = el('div', 'leiste');
+    /* Zwei Hälften statt eines Schalters: Man sieht jederzeit, was der nächste
+       Tipp tut, und ein Fehltipp auf „Fahne" schaltet nicht aus Versehen zurück. */
+    const leiste = el('div', 'm-modus');
+    leiste.setAttribute('role', 'group');
+    leiste.setAttribute('aria-label', 'Was ein Tipp tut');
+    const modusKnopf = (text, zeichen, fahne) => {
+      const b = el('button', 'm-modus-knopf');
+      b.type = 'button';
+      b.innerHTML = zeichen;
+      b.append(document.createTextNode(text));
+      b.addEventListener('click', () => { fahnenModus = fahne; s.fuehlen(); zeichnen(); });
+      return b;
+    };
+    const aufdeckKnopf = modusKnopf('Aufdecken', BLOCK, false);
+    const fahnenKnopf = modusKnopf('Fahne', FAHNE, true);
+    leiste.append(aufdeckKnopf, fahnenKnopf);
     rahmen.append(gitter);
     wurzel.append(kopf, rahmen, endeKasten, leiste);
-
-    const fahnenKnopf = el('button', 'knopf knopf--still', 'Fahne setzen');
-    fahnenKnopf.type = 'button';
-    fahnenKnopf.addEventListener('click', () => { fahnenModus = !fahnenModus; zeichnen(); });
-    leiste.append(fahnenKnopf);
 
     s.werkzeuge([
       { label: 'Regeln', symbol: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01" stroke-linecap="round"/>', tun: regelnZeigen },
@@ -116,23 +137,44 @@
 
     let felder = [];
 
+    /* Das Brett ist hochkant, also entscheidet mal die Breite, mal die Höhe. Die
+       Abzüge sind Kopfzeile, Zählerzeile, Moduswahl und der Rand der Karte. */
+    function kachelRechnen() {
+      const breit = Math.min(window.innerWidth - 28, 532) - 14;
+      const hoch = window.innerHeight - 214;
+      const passt = Math.min((breit - (stand.spalten - 1) * 2) / stand.spalten, (hoch - (stand.zeilen - 1) * 2) / stand.zeilen);
+      gitter.style.setProperty('--kachel', Math.max(22, Math.min(54, Math.floor(passt))) + 'px');
+    }
+
     function gitterBauen() {
+      gitter.style.gridTemplateColumns = 'repeat(' + stand.spalten + ', var(--kachel))';
+      kachelRechnen();
+      // Stehen die Felder schon, reicht die neue Größe; ein Neubau während eines
+      // langen Drucks, weil die Adressleiste einfährt, würde den Druck abbrechen.
+      if (felder.length === anzahl()) return;
       gitter.replaceChildren();
       felder = [];
-      gitter.style.gridTemplateColumns = 'repeat(' + stand.spalten + ', var(--kachel))';
-      const platz = Math.min(400, window.innerWidth - 28);
-      const kachel = Math.max(20, Math.floor((platz - (stand.spalten - 1) * 2) / stand.spalten));
-      gitter.style.setProperty('--kachel', kachel + 'px');
-
       for (let i = 0; i < anzahl(); i += 1) {
         const f = el('button', 'm-feld');
         f.type = 'button';
         const nr = i;
+        f.tabIndex = i === cursor ? 0 : -1;
         f.addEventListener('click', () => { if (!langGedrueckt) antippen(nr); langGedrueckt = false; });
-        f.addEventListener('contextmenu', (e) => { e.preventDefault(); fahneWechseln(nr); });
-        f.addEventListener('pointerdown', () => {
+        /* Android meldet einen langen Druck zusätzlich als contextmenu, etwas
+           später als unsere Uhr. Ohne die Abfrage käme die Fahne und ginge gleich wieder. */
+        f.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          if (langGedrueckt) return;
           clearTimeout(druckUhr);
-          druckUhr = setTimeout(() => { langGedrueckt = true; fahneWechseln(nr); }, 420);
+          fahneWechseln(nr);
+        });
+        f.addEventListener('pointerdown', (e) => {
+          // Zieht der Finger nach dem langen Druck vom Feld, kommt kein click, der
+          // das Merkmal zurücksetzt – dann schluckte es sonst den nächsten Tipp.
+          langGedrueckt = false;
+          clearTimeout(druckUhr);
+          if (e.button) return;
+          druckUhr = setTimeout(() => { langGedrueckt = true; s.fuehlen(20); fahneWechseln(nr); }, 420);
         });
         for (const art of ['pointerup', 'pointerleave', 'pointercancel']) {
           f.addEventListener(art, () => clearTimeout(druckUhr));
@@ -146,13 +188,15 @@
 
     function antippen(i) {
       if (stand.fertig) return;
+      cursorSetzen(i);
+      // Eine offene Zahl hat keine Fahne zu vergeben: Sie öffnet in jedem Modus.
+      if (stand.offen[i]) { umgebungOeffnen(i); return; }
       if (fahnenModus) { fahneWechseln(i); return; }
       if (stand.fahne[i]) return;
 
       if (!stand.gelegt) minenLegen(i);
 
-      if (stand.offen[i]) { umgebungOeffnen(i); return; }
-
+      s.fuehlen();
       if (stand.mine[i]) {
         stand.offen[i] = true;
         abschluss('bumm');
@@ -183,8 +227,26 @@
       const zahl = minenUm(i);
       if (!zahl) return;
       const um = nachbarn(i);
-      if (um.filter((j) => stand.fahne[j]).length !== zahl) return;
+      const fahnen = um.filter((j) => stand.fahne[j]).length;
+      if (fahnen !== zahl) {
+        const zu = um.filter((j) => !stand.fahne[j] && !stand.offen[j]);
+        if (!zu.length && fahnen < zahl) return;
+        /* Sagen, warum nichts passiert, und zeigen, um welche Felder es geht.
+           In der Unterzeile, weil eine Meldung unten die Moduswahl verdecken würde. */
+        lage = fahnen < zahl
+          ? 'Noch ' + (zahl - fahnen) + (zahl - fahnen === 1 ? ' Fahne' : ' Fahnen')
+          : fahnen + ' statt ' + zahl + ' Fahnen';
+        lageBis = Date.now() + 2500;
+        kopfZeichnen();
+        for (const j of zu) {
+          felder[j].classList.remove('m-feld--zeigt');
+          void felder[j].offsetWidth;
+          felder[j].classList.add('m-feld--zeigt');
+        }
+        return;
+      }
 
+      s.fuehlen();
       for (const j of um) {
         if (stand.fahne[j] || stand.offen[j]) continue;
         if (stand.mine[j]) { stand.offen[j] = true; abschluss('bumm'); return; }
@@ -198,6 +260,7 @@
     function fahneWechseln(i) {
       if (stand.fertig || stand.offen[i]) return;
       stand.fahne[i] = !stand.fahne[i];
+      s.fuehlen();
       sichern();
       zeichnen();
     }
@@ -214,6 +277,10 @@
     function abschluss(ausgang) {
       stand.verbraucht = zeitJetzt();
       stand.fertig = ausgang;
+      // Vor dem Notieren schauen, sonst schlägt die Partie sich selbst.
+      const frueher = s.partien().filter((p) => p.gewonnen && p.stufe === stand.stufe && p.dauer > 0);
+      neueBestzeit = ausgang === 'sieg' && frueher.length > 0 && frueher.every((p) => p.dauer > stand.verbraucht);
+      s.fuehlen(ausgang === 'sieg' ? 30 : 60);
       s.notieren({
         gewonnen: ausgang === 'sieg',
         dauer: stand.verbraucht,
@@ -222,39 +289,68 @@
       });
       s.merken(stand);
       zeichnen();
+      // Auf einem flachen Fenster läge das Ergebnis sonst unter dem Rand.
+      endeKasten.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
 
     /* ------------------------------------------------------------ Zeichnen */
 
+    function feldName(i) {
+      return 'Zeile ' + (Math.floor(i / stand.spalten) + 1) + ', Spalte ' + ((i % stand.spalten) + 1);
+    }
+
     function zeichnen() {
+      const verloren = stand.fertig === 'bumm';
       for (let i = 0; i < anzahl(); i += 1) {
         const f = felder[i];
         if (!f) continue;
-        for (const merkmal of ['offen', 'zahl', 'mine', 'fahne']) delete f.dataset[merkmal];
-        f.textContent = '';
-
-        const verloren = stand.fertig === 'bumm';
+        for (const merkmal of ['offen', 'zahl', 'mine', 'fahne', 'gezuendet', 'erledigt', 'zuviel', 'falsch']) delete f.dataset[merkmal];
+        const vorher = f.dataset.bild || '';
+        let bild = '';
+        let text = '';
+        let name = 'zugedeckt';
 
         if (stand.fahne[i] && !stand.offen[i]) {
           f.dataset.fahne = 'ja';
-          f.textContent = verloren && !stand.mine[i] ? '×' : '⚑';
-          continue;
-        }
-        if (stand.offen[i] || (verloren && stand.mine[i])) {
+          name = 'Fahne';
+          if (verloren && !stand.mine[i]) { f.dataset.falsch = 'ja'; text = '×'; name = 'falsche Fahne'; } else bild = 'fahne';
+        } else if (stand.offen[i] || (verloren && stand.mine[i])) {
           f.dataset.offen = 'ja';
+          name = 'offen';
           if (stand.mine[i]) {
             f.dataset.mine = 'ja';
-            f.textContent = '✳';
+            name = 'Mine';
+            if (stand.offen[i]) f.dataset.gezuendet = 'ja';
+            bild = 'mine';
           } else {
             const n = minenUm(i);
-            if (n) { f.textContent = String(n); f.dataset.zahl = String(n); }
+            if (n) {
+              text = String(n);
+              name = String(n);
+              f.dataset.zahl = String(n);
+              // Nur gezählt, nicht gewusst: Auch falsche Fahnen zählen mit.
+              const um = nachbarn(i);
+              const fahnen = um.filter((j) => stand.fahne[j]).length;
+              if (fahnen > n) f.dataset.zuviel = 'ja';
+              else if (fahnen === n && um.every((j) => stand.fahne[j] || stand.offen[j])) f.dataset.erledigt = 'ja';
+            }
           }
         }
+        // Nur schreiben, was sich ändert: Sonst springt der Zustand der Zeichnung
+        // bei jedem Tipp auf 216 Feldern zurück.
+        if (vorher !== bild + text) {
+          f.dataset.bild = bild + text;
+          if (bild) f.innerHTML = bild === 'fahne' ? FAHNE : MINE;
+          else f.textContent = text;
+        }
+        f.setAttribute('aria-label', feldName(i) + ', ' + name);
       }
 
       kopfZeichnen();
-      fahnenKnopf.className = 'knopf ' + (fahnenModus ? 'knopf--voll' : 'knopf--still');
-      fahnenKnopf.textContent = fahnenModus ? 'Fahne setzen: an' : 'Fahne setzen';
+      aufdeckKnopf.setAttribute('aria-pressed', fahnenModus ? 'false' : 'true');
+      fahnenKnopf.setAttribute('aria-pressed', fahnenModus ? 'true' : 'false');
+      rahmen.dataset.fahne = fahnenModus && !stand.fertig ? 'ja' : 'nein';
+      rahmen.dataset.ende = stand.fertig || 'nein';
       leiste.hidden = !!stand.fertig;
       endeZeichnen();
     }
@@ -268,9 +364,10 @@
       minenText.append(document.createTextNode(' Minen'));
       kopf.append(minenText);
       const zeit = el('span', null, '');
-      zeit.append(el('b', null, stand.gelegt ? s.dauerText(zeitJetzt()) : '0 s'));
+      // In der ersten Sekunde sagt dauerText noch „–".
+      zeit.append(el('b', null, !stand.gelegt || s.dauerText(zeitJetzt()) === '–' ? '0 s' : s.dauerText(zeitJetzt())));
       kopf.append(zeit);
-      s.unter(stand.spalten + ' × ' + stand.zeilen);
+      s.unter(!stand.fertig && Date.now() < lageBis ? lage : stand.spalten + ' × ' + stand.zeilen);
     }
 
     function endeZeichnen() {
@@ -279,6 +376,7 @@
       if (!stand.fertig) return;
       if (stand.fertig === 'sieg') endeKasten.append(s.bildzeichen('fertig'));
       endeKasten.append(el('p', 'ende-titel', stand.fertig === 'sieg' ? 'Feld geräumt.' : 'Bumm.'));
+      if (neueBestzeit) endeKasten.append(el('span', 'ende-marke', 'Neue Bestzeit'));
       endeKasten.append(el('p', 'notiz', stand.fertig === 'sieg'
         ? STUFEN[stand.stufe].name + ' · ' + s.dauerText(stand.verbraucht)
         : 'Eine Mine erwischt. Die anderen liegen jetzt offen.'));
@@ -287,7 +385,10 @@
 
     function neu(stufe) {
       stand = frisch(stufe);
+      neueBestzeit = false;
+      lageBis = 0;
       gitterBauen();
+      cursorSetzen(0);
       sichern();
       zeichnen();
     }
@@ -304,13 +405,44 @@
       const d = el('div');
       d.append(el('p', 'notiz', 'Decke alle Felder auf, unter denen keine Mine liegt. Die Zahl sagt, wie viele der acht Nachbarn vermint sind.'));
       d.append(el('p', 'notiz', 'Der erste Klick geht nie daneben – die Minen werden erst danach verteilt.'));
-      d.append(el('p', 'notiz', 'Fahne setzen: den Knopf einschalten, lange auf ein Feld drücken oder rechts klicken.'));
-      d.append(el('p', 'notiz', 'Auf eine schon offene Zahl tippen deckt die restlichen Nachbarn auf, sobald genug Fahnen stehen.'));
+      d.append(el('p', 'notiz', 'Eine Fahne setzt, wer unter dem Feld auf „Fahne" umschaltet, lange auf ein Feld drückt oder rechts klickt.'));
+      d.append(el('p', 'notiz', 'Auf eine schon offene Zahl tippen deckt die restlichen Nachbarn auf, sobald genug Fahnen stehen. Fehlen welche, zeigt das Spiel die Felder, um die es geht. Eine Zahl, um die herum alles geklärt ist, wird blass.'));
+      d.append(el('p', 'notiz', 'Am Rechner: Pfeile wandern übers Feld, Enter deckt auf, F setzt die Fahne.'));
       s.blatt({ titel: 'Minenfeld', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
 
-    function beiGroesse() { gitterBauen(); zeichnen(); }
+    function beiGroesse() { kachelRechnen(); }
     window.addEventListener('resize', beiGroesse);
+
+    /* Nur ein Feld steht in der Tab-Reihenfolge, sonst bräuchte man bis zu 216
+       Tabs, um an dem Brett vorbeizukommen. */
+    function cursorSetzen(i) {
+      if (felder[cursor]) felder[cursor].tabIndex = -1;
+      cursor = i;
+      if (felder[cursor]) felder[cursor].tabIndex = 0;
+    }
+
+    const PFEILE = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
+    function beiTaste(e) {
+      if (e.metaKey || e.ctrlKey || e.altKey || stand.fertig) return;
+      if (!document.getElementById('sheet-spiel').hidden) return;
+      const aufBrett = felder.includes(document.activeElement);
+      const pfeil = PFEILE[e.key];
+      if (pfeil) {
+        e.preventDefault();
+        if (aufBrett) {
+          const z = Math.floor(cursor / stand.spalten) + pfeil[0];
+          const sp = (cursor % stand.spalten) + pfeil[1];
+          if (z >= 0 && sp >= 0 && z < stand.zeilen && sp < stand.spalten) cursorSetzen(z * stand.spalten + sp);
+        }
+        felder[cursor].focus();
+      } else if (e.key === 'f' || e.key === 'F') {
+        e.preventDefault();
+        if (aufBrett) fahneWechseln(cursor);
+        else { fahnenModus = !fahnenModus; zeichnen(); }
+      }
+    }
+    window.addEventListener('keydown', beiTaste);
 
     gitterBauen();
     sichern();
@@ -322,6 +454,7 @@
         clearInterval(uhr);
         clearTimeout(druckUhr);
         window.removeEventListener('resize', beiGroesse);
+        window.removeEventListener('keydown', beiTaste);
         if (!stand.fertig) sichern();
       },
     };

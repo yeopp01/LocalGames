@@ -25,6 +25,9 @@
   const LUECKE = 62;
   const ABSTAND = 96;
   const VERSATZ = 64;
+  /* So lange nach dem Aufschlag zählt ein Tipp nicht als neuer Flug: Wer im
+     Absturz noch hämmert, soll nicht versehentlich neu starten. */
+  const SPERRE_MS = 600;
 
   function neueMitte(vorige) {
     const lo = 44;
@@ -66,6 +69,7 @@
   function starten(wurzel, s) {
     const el = s.el;
     let stand = laden();
+    let endeUm = 0;
 
     function laden() {
       const alt = s.erinnert();
@@ -84,9 +88,11 @@
     const feld = el('div', 'fl-kasten');
     const unten = el('div', 'ez-unten');
     flaeche.append(feld);
-    wurzel.append(kopf, flaeche, unten);
+    wurzel.append(kopf, flaeche);
 
     const b = Echtzeit.buehne(feld, { breite: B, hoehe: H, schritt, zeichnen, beiHalt });
+    // Die Knöpfe liegen auf dem Feld, ihr Tipp ist aber kein Flügelschlag.
+    b.an(unten, 'pointerdown', (e) => e.stopPropagation());
 
     s.werkzeuge([
       { label: 'Pause', symbol: Echtzeit.SYMBOL.pause, tun: pauseUmschalten },
@@ -96,7 +102,12 @@
     /* ------------------------------------------------------------ Ablauf */
 
     function flattern() {
-      if (stand.zustand === 'vorbei' || stand.tot) return;
+      if (stand.zustand === 'vorbei') {
+        if (performance.now() - endeUm < SPERRE_MS) return;
+        neu();
+      }
+      // Eine Pause mitten im Absturz: Der Tipp setzt fort, Flügel gibt es keine mehr.
+      if (stand.tot) { weiter(); return; }
       if (stand.zustand !== 'laeuft') weiter();
       stand.vogel.vy = SCHWUNG;
       stand.schlag = 0;
@@ -105,8 +116,17 @@
     function weiter() {
       if (stand.zustand !== 'bereit' && stand.zustand !== 'pause') return;
       stand.zustand = 'laeuft';
+      // Der Pause-Knopf behielte sonst den Fokus, und der nächste Flügelschlag
+      // mit der Leertaste ginge an ihn: Statt zu flattern, hielte das Spiel an.
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
       anzeigen();
       b.los();
+    }
+
+    /** „Nochmal" fliegt gleich los: Ohne den ersten Schlag läge der Vogel schon am Boden. */
+    function nochmal() {
+      neu();
+      flattern();
     }
 
     function pauseUmschalten() {
@@ -137,6 +157,7 @@
           if (!r.gezaehlt && r.x + ROHR / 2 < VOGEL_X) {
             r.gezaehlt = true;
             st.punkte += 1;
+            s.fuehlen(6);
             kopfZeichnen();
           }
         }
@@ -150,6 +171,7 @@
         // Wer anstößt, fällt noch zu Boden – das Spiel endet erst dort.
         if (st.roehren.some((r) => stoesst(v.y, r))) {
           st.tot = true;
+          s.fuehlen(30);
           v.vy = Math.max(v.vy, 0);
         }
       }
@@ -161,8 +183,10 @@
     }
 
     function vorbei() {
+      if (!stand.tot) s.fuehlen(30);
       stand.zustand = 'vorbei';
       stand.tot = true;
+      endeUm = performance.now();
       s.notieren({ punkte: stand.punkte, dauer: Math.round(stand.zeit * 1000) });
       b.halt();
     }
@@ -184,43 +208,49 @@
       p.append(el('b', null, String(stand.punkte)), document.createTextNode(stand.punkte === 1 ? ' Röhre' : ' Röhren'));
       kopf.append(p);
       const best = bestwert();
-      if (best) kopf.append(el('span', null, 'Bestwert ' + best));
-      s.unter('');
+      s.unter(best ? 'Bestwert ' + best : 'Noch kein Bestwert');
     }
 
     function anzeigen() {
       kopfZeichnen();
       const z = stand.zustand;
       unten.replaceChildren();
+      // Die Karte weicht dem Vogel aus: Wer weiterfliegt, muss ihn sehen. Nach
+      // dem Absturz liegt er am Boden, dann steht sie in der Mitte.
+      feld.dataset.schild = z === 'vorbei' ? 'mitte' : stand.vogel.y < H / 2 ? 'unten' : 'oben';
       if (z === 'bereit') {
         b.schild('Tippen zum Flattern', 'Jeder Tipp ein Flügelschlag. Am Rechner: Leertaste.');
       } else if (z === 'pause') {
-        b.schild('Pause', 'Tippen, um weiterzufliegen.');
-        unten.append(Echtzeit.kasten('Pause', roehrenText(stand.punkte) + ' bisher.', [
+        b.schild('Pause', roehrenText(stand.punkte) + ' bisher. Tippen, um weiterzufliegen.');
+        unten.append(Echtzeit.kasten('', null, [
           { text: 'Weiter', tun: weiter },
-          { text: 'Neu anfangen', art: 'still', tun: neu },
+          { text: 'Neu anfangen', art: 'still', tun: nochmal },
         ]));
       } else if (z === 'vorbei') {
-        b.schild('Abgestürzt.');
-        const best = bestwert();
-        unten.append(Echtzeit.kasten('Abgestürzt.',
-          roehrenText(stand.punkte) + ' in ' + s.dauerText(Math.round(stand.zeit * 1000)) + '.' +
-          (stand.punkte > 0 && stand.punkte >= best ? ' Das ist dein Bestwert.' : ''),
-          [{ text: 'Nochmal', tun: neu }]));
+        b.schild('Abgestürzt.', roehrenText(stand.punkte) + ' in ' + s.dauerText(Math.round(stand.zeit * 1000)) + '.');
+        const k = Echtzeit.kasten('', null, [{ text: 'Nochmal', tun: nochmal }]);
+        k.querySelector('.knopf').prepend(s.bildzeichen('nochmal'));
+        if (stand.punkte > 0 && stand.punkte >= bestwert()) k.prepend(el('span', 'ende-marke', 'Das ist dein Bestwert.'));
+        k.append(el('p', 'notiz notiz--klein', 'Ein Tipp aufs Feld oder die Leertaste geht auch.'));
+        unten.append(k);
       } else {
         b.schildWeg();
       }
       unten.hidden = !unten.childElementCount;
+      // In die Karte auf dem Feld: So bleibt „Nochmal" auch im flachen Fenster
+      // im Bild, und die Seite springt nicht.
+      if (!unten.hidden) feld.querySelector('.ez-schild').append(unten);
     }
 
     function zeichnen(ctx, f) {
       const st = stand;
-      ctx.fillStyle = f.karte;
-      ctx.fillRect(0, 0, B, H);
+      // Der Himmel ist der Hintergrund des Kastens (styles.css): Als Farbverlauf
+      // aus den Tokens stimmt er hell und dunkel, ohne hier unterscheiden zu müssen.
+      ctx.clearRect(0, 0, B, H);
 
       // Wolken ziehen langsamer als die Röhren – das gibt dem Bild Tiefe.
-      ctx.fillStyle = f.karteRand;
-      ctx.globalAlpha = 0.6;
+      ctx.fillStyle = f.karte;
+      ctx.globalAlpha = 0.7;
       for (let k = 0; k < 4; k += 1) {
         const spanne = B + 70;
         const x = (((k * 83 - st.weg * 0.25) % spanne) + spanne) % spanne - 35;
@@ -249,10 +279,14 @@
         ctx.fillRect(r.x - 2, unten_ + 6, ROHR + 4, 2);
       }
 
-      ctx.fillStyle = f.karteRand;
+      // Der Boden beendet den Flug und soll deshalb nach etwas Festem aussehen.
+      ctx.fillStyle = f.karte;
+      ctx.fillRect(0, BODEN, B, H - BODEN);
+      ctx.fillStyle = f.tSonne;
+      ctx.globalAlpha = 0.42;
       ctx.fillRect(0, BODEN, B, H - BODEN);
       ctx.fillStyle = f.karte;
-      ctx.globalAlpha = 0.5;
+      ctx.globalAlpha = 0.28;
       for (let x = -(st.weg % 12) - 12; x < B + 12; x += 12) {
         ctx.beginPath();
         ctx.moveTo(x, BODEN + 3);
@@ -264,6 +298,19 @@
       ctx.globalAlpha = 1;
       ctx.fillStyle = f.gruen;
       ctx.fillRect(0, BODEN, B, 3);
+
+      // Die Zahl groß im Feld: Beim Fliegen schaut niemand zur Kopfzeile.
+      if (st.zustand !== 'bereit') {
+        ctx.font = '800 26px "Bricolage Grotesque", system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'alphabetic';
+        ctx.lineJoin = 'round';
+        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = 'rgba(20, 30, 36, .45)';
+        ctx.strokeText(String(st.punkte), B / 2, 32);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText(String(st.punkte), B / 2, 32);
+      }
 
       const v = st.vogel;
       ctx.save();
@@ -307,9 +354,9 @@
 
     function anleitung() {
       const d = el('div');
-      d.append(el('p', 'notiz', 'Tippen irgendwo auf das Feld – jeder Tipp ist ein Flügelschlag nach oben. Dazwischen fällt der Vogel. Am Rechner geht es mit Leertaste, Pfeil hoch oder W.'));
+      d.append(el('p', 'notiz', 'Tippen irgendwo auf das Feld oder darunter – jeder Tipp ist ein Flügelschlag nach oben. Dazwischen fällt der Vogel. Am Rechner geht es mit Leertaste, Pfeil hoch oder W.'));
       d.append(el('p', 'notiz', 'Flieg durch die Lücken zwischen den Röhren. Jede Röhre, an der du vorbei bist, zählt einen Punkt.'));
-      d.append(el('p', 'notiz', 'Eine Röhre oder der Boden beendet den Flug. Die Decke hält dich nur auf.'));
+      d.append(el('p', 'notiz', 'Eine Röhre oder der Boden beendet den Flug. Die Decke hält dich nur auf. Nach dem Aufschlag beginnt ein Tipp gleich den nächsten Flug.'));
       d.append(el('p', 'notiz', 'Der Trick: nicht hektisch tippen. Lieber im Takt, und kurz vor der Lücke etwas tiefer ansetzen als zu hoch.'));
       s.blatt({ titel: 'Flattervogel', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
@@ -324,7 +371,7 @@
     b.an(window, 'keydown', (e) => {
       if (!Echtzeit.tasteZaehlt(e)) return;
       const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
-      if ((k === ' ' && !Echtzeit.knopfHatFokus(e)) || k === 'ArrowUp' || k === 'w') {
+      if (((k === ' ' || k === 'Enter') && !Echtzeit.knopfHatFokus(e)) || k === 'ArrowUp' || k === 'w') {
         e.preventDefault();
         if (!e.repeat) flattern();
       } else if (k === 'p' || k === 'Escape') {

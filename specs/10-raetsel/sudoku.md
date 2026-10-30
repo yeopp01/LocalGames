@@ -1,7 +1,7 @@
 # Mini-Sudoku
 
 **Datei:** [`spiele/sudoku.js`](../../spiele/sudoku.js)
-**Stand:** 19/20 fertig · 1 zurückgestellt
+**Stand:** 22/23 fertig · 1 zurückgestellt
 
 ## Zweck
 
@@ -44,9 +44,10 @@ Schluss erklärt, statt eine Ziffer zu verraten.
   gewählt, kommt „Erst ein Feld antippen."
 - **AC-7** `fertig` **Bedienung per Tastatur** — Die Pfeiltasten bewegen die
   Auswahl (ohne Auswahl beginnt sie oben links, am Rand bleibt sie stehen), 1 bis
-  6 setzt eine Ziffer, 0, Rücktaste und Entf leeren, n schaltet die Notizen um.
-  Solange ein Blatt offen ist oder Strg, Alt oder Cmd gedrückt sind, reagiert das
-  Spiel nicht auf Tasten.
+  6 setzt eine Ziffer, 0, Rücktaste und Entf leeren, n schaltet die Notizen um,
+  Strg+Z oder Cmd+Z nimmt zurück. Solange ein Blatt offen ist, die Partie vorbei
+  ist oder sonst Strg, Alt oder Cmd gedrückt sind, reagiert das Spiel nicht auf
+  Tasten.
 - **AC-8** `fertig` **Notizen als Kandidaten** — Im Notiz-Modus setzt und
   entfernt eine Ziffer eine kleine Notiz im Feld. Wird eine Ziffer gesetzt – von
   Hand oder über den Hinweis –, verschwindet sie aus den Notizen aller Felder in
@@ -55,6 +56,18 @@ Schluss erklärt, statt eine Ziffer zu verraten.
   hervorgehoben, dazu seine Zeile, Spalte und sein Block sowie alle Felder mit
   derselben Ziffer. Eine Ziffer, die schon sechsmal im Gitter steht, tritt im
   Ziffernblock zurück.
+- **AC-21** `fertig` **Rückgängig** — „Rückgängig" nimmt jeden Zug einzeln zurück:
+  Ziffer, Notiz, Löschen, „Eintragen" und was der Hinweis weggenommen hat. Die
+  Auswahl springt auf das Feld, das sich dabei ändert. Ohne Verlauf ist der Knopf
+  gesperrt; der Verlauf lebt nur im Speicher und ist nach dem Neuladen leer.
+- **AC-22** `fertig` **Ziffernblock zeigt den Stand** — Die Taste der Ziffer, die
+  im gewählten Feld steht, ist hervorgehoben, im Notiz-Modus auch die der gesetzten
+  Notizen, und die Tasten schreiben dann in Notizschrift. Die Löschtaste ist
+  gesperrt, wenn es im gewählten Feld nichts zu löschen gibt. Notizen mit derselben
+  Ziffer wie im gewählten Feld sind markiert.
+- **AC-23** `fertig` **Brett nach Fenster** — Das Brett nutzt Breite und Höhe des
+  Fensters, der Ziffernblock schließt bündig damit ab. Brett und Bedienung passen auf
+  Handy, 320 × 568, 1366 × 700 und 1000 × 560 ohne Scrollen ins Fenster.
 
 ### Fehler und Hinweise
 
@@ -89,7 +102,8 @@ Schluss erklärt, statt eine Ziffer zu verraten.
 - **AC-14** `fertig` **Gelöst beendet die Partie** — Stimmt jedes Feld mit der
   Lösung überein, erscheint „Gelöst." mit Stufe, Zeit und Zahl der Hinweise
   („ohne Hinweis", wenn keiner). Ziffernblock, Notizen- und Hinweisknopf
-  verschwinden, die Uhr steht.
+  verschwinden, die Uhr steht. Das Ergebnis scrollt ins Bild. War die Zeit besser als
+  alle früheren dieser Stufe, steht dort „Neue Bestzeit".
 - **AC-15** `fertig` **Rätsel überlebt Schließen** — Ein laufendes Rätsel steht
   nach Zurück, Neuladen oder Neustart der App mit Stufe, Eingaben, Notizen,
   Hinweiszahl und verbrauchter Zeit wieder da; die Zeit dazwischen zählt nicht.
@@ -103,8 +117,9 @@ Schluss erklärt, statt eine Ziffer zu verraten.
   Bestzeit aus gelösten Partien und „–", solange es keine gibt – auch bei leerer
   Liste und bei Partien, denen `stufe`, `dauer` oder `gewonnen` fehlt.
 - **AC-18** `fertig` **Regeln auf Abruf** — Das Werkzeug „Regeln" erklärt die
-  Regel, das Setzen und Wegnehmen von Ziffern, die Notizen, die rote Markierung
-  und was der Hinweis tut – und dass er die richtige Ziffer nicht verrät.
+  Regel, das Setzen und Wegnehmen von Ziffern, „Rückgängig", die Notizen, die rote
+  Markierung, die Tasten am Rechner und was der Hinweis tut – und dass er die
+  richtige Ziffer nicht verrät.
 - **AC-20** `fertig` **Stufe und Ende ohne Lesen** — Kopfzeile, Blatt „Neues
   Rätsel" und Knöpfe unter dem Ergebnis zeigen die Stufe auch als Punkte in
   Ampelfarbe (Schnittstelle AC-15); die gespielte heißt dort „Nochmal" und trägt

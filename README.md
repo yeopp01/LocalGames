@@ -30,7 +30,7 @@ Enthalten sind bisher:
 | [**Sternjäger**](specs/50-geschick/impact.md) | Space Impact wie auf dem alten Nokia: sechs Welten, Spezialwaffen, am Ende jedes Levels ein Endgegner. |
 | [**Flattervogel**](specs/50-geschick/flappy.md) | Flappy Bird: ein Tipp, ein Flügelschlag, durch die Lücke. Etwas gnädiger als das Vorbild. |
 | [**Hochhinaus**](specs/50-geschick/doodle.md) | Doodle Jump auf Karopapier: halten oder Handy neigen, schießen, Monster, schwarze Löcher, Propeller und Rakete – mit Geräuschen und Zielen in zehn Rängen. |
-| [**Blasen**](specs/50-geschick/bubbles.md) | Bubble Shooter: zielen, über die Bande spielen, drei gleiche platzen. Fehlschüsse schieben neue Reihen herein. |
+| [**Blasen**](specs/50-geschick/bubbles.md) | Bubble Shooter: zielen, über die Bande spielen, drei gleiche platzen. Fehlschüsse schieben neue Reihen herein. Für kleine Hände mit Zielhilfe: Landeplatz zeigen, antippen statt ziehen. |
 | [**Flipper**](specs/50-geschick/pinball.md) | Wie der Weltraumtisch unter Windows: Feder, Startrampe, Wurmlöcher, Schwarzes Loch, Treibstoff und Missionen vom Kadetten zum Flottenadmiral – mit Geräuschen. |
 | [**Tierstimmen**](specs/60-kinder/tierstimmen.md) | Für die Kleinsten: Tier antippen, eine Stimme sagt, wie es heißt, dann ruft es – dreißig Tiere mit echten Aufnahmen, von Bauernhof bis Wasser. Nichts kann schiefgehen, heraus kommen nur Erwachsene. |
 | [**Futterzeit**](specs/60-kinder/futter.md) | Hund zum Knochen, Hase zur Möhre: das Tier zum Futter ziehen oder den Teller antippen, ein bis drei Teller zur Wahl. |

@@ -9,6 +9,7 @@
 (() => {
   const N = 4;
   const ZIEL = 2048;
+  const GLEITEN_MS = 110;
 
   /* Eine Reihe nach links: erst Lücken schließen, dann gleiche Nachbarn
      einmalig verschmelzen, dann wieder Lücken schließen. */
@@ -58,14 +59,41 @@
     return { brett: neu, punkte, bewegt };
   }
 
+  /* Wer rutscht wohin? Nur fürs Bild: Die Regel bleibt allein in schiebeReihe,
+     das hier läuft dieselbe Reihe noch einmal ab und merkt sich die Wege. */
+  function wege(brett, richtung) {
+    const raus = [];
+    for (let nr = 0; nr < N; nr += 1) {
+      const felder = reihenFelder(richtung, nr);
+      let ziel = 0;
+      let offen = null;       // die vorderste Kachel, die noch verschmelzen kann
+      for (const von of felder) {
+        const wert = brett[von];
+        if (!wert) continue;
+        if (offen && offen.wert === wert) {
+          raus.push({ von, nach: offen.nach, wert, verschmilzt: true });
+          offen.verschmilzt = true;
+          offen = null;
+        } else {
+          offen = { von, nach: felder[ziel], wert, verschmilzt: false };
+          raus.push(offen);
+          ziel += 1;
+        }
+      }
+    }
+    return raus;
+  }
+
   const gehtNoch = (brett) =>
     ['links', 'rechts', 'hoch', 'runter'].some((r) => schieben(brett, r).bewegt);
 
+  /* Liefert die Stelle, damit das Bild sie auftauchen lassen kann. */
   function neueKachel(brett) {
     const frei = brett.map((w, i) => (w ? -1 : i)).filter((i) => i >= 0);
-    if (!frei.length) return;
+    if (!frei.length) return -1;
     const i = frei[Math.floor(Math.random() * frei.length)];
     brett[i] = Math.random() < 0.9 ? 2 : 4;
+    return i;
   }
 
   /* ------------------------------------------------------------------ Spiel */
@@ -73,7 +101,6 @@
   function starten(wurzel, s) {
     const el = s.el;
     let stand = laden();
-    let uhr = null;
 
     function frisch() {
       const brett = new Array(N * N).fill(0);
@@ -84,6 +111,7 @@
         punkte: 0,
         zuege: 0,
         gewonnenGemeldet: false,
+        vorher: null,          // { brett, punkte, zuege } vor dem letzten Zug
         verbraucht: 0,
         seit: Date.now(),
         fertig: false,
@@ -94,6 +122,8 @@
       const alt = s.erinnert();
       if (alt && Array.isArray(alt.brett) && alt.brett.length === N * N && !alt.fertig) {
         alt.seit = Date.now();
+        // Stände von früher kennen das Zurücknehmen nicht.
+        if (!alt.vorher || !Array.isArray(alt.vorher.brett) || alt.vorher.brett.length !== N * N) alt.vorher = null;
         return alt;
       }
       return frisch();
@@ -114,27 +144,49 @@
 
     /* ------------------------------------------------------------- Aufbau */
 
-    const kopf = el('div', 'm-kopf');
+    const kopf = el('div', 'z-kopf');
     const brettKasten = el('div', 'z-brett');
     const endeKasten = el('div', 'ende-kasten');
     endeKasten.hidden = true;
     const leiste = el('div', 'leiste');
     wurzel.append(kopf, brettKasten, endeKasten, leiste);
 
-    const felder = [];
-    for (let i = 0; i < N * N; i += 1) {
-      const f = el('div', 'z-feld');
-      brettKasten.append(f);
-      felder.push(f);
-    }
+    /* Die leeren Felder liegen fest im Gitter, die Kacheln in einer zweiten Schicht
+       genau darüber. So kann eine Kachel über die anderen hinwegrutschen. */
+    const platz = (knoten, i) => {
+      knoten.style.gridRow = String(Math.floor(i / N) + 1);
+      knoten.style.gridColumn = String((i % N) + 1);
+    };
+    for (let i = 0; i < N * N; i += 1) brettKasten.append(el('div', 'z-feld'));
+    const kachelSchicht = el('div', 'z-schicht');
+    brettKasten.append(kachelSchicht);
 
-    for (const [text, richtung] of [['←', 'links'], ['↑', 'hoch'], ['↓', 'runter'], ['→', 'rechts']]) {
-      const b = el('button', 'knopf knopf--still', text);
+    const knopfRichtung = (zeichen, richtung) => {
+      const b = el('button', 'knopf knopf--still z-pfeil', zeichen);
       b.type = 'button';
       b.setAttribute('aria-label', 'Nach ' + richtung);
       b.addEventListener('click', () => zug(richtung));
-      leiste.append(b);
-    }
+      return b;
+    };
+    const rueckKnopf = s.leistenKnopf('Rückgängig', 'rueckgaengig', rueckgaengig);
+    leiste.append(
+      knopfRichtung('←', 'links'), knopfRichtung('↑', 'hoch'),
+      knopfRichtung('↓', 'runter'), knopfRichtung('→', 'rechts'),
+      rueckKnopf,
+    );
+
+    /* Die Zahlen stehen in festen Kästchen. Sie werden nur neu beschriftet, nicht
+       neu gebaut – sonst wüsste das „+16" nicht, woran es hängt. */
+    const zahlKasten = (titel) => {
+      const k = el('div', 'z-zahl');
+      const wert = el('b', 'z-zahl-wert', '0');
+      k.append(el('span', 'z-zahl-titel', titel), wert);
+      kopf.append(k);
+      return { k, wert };
+    };
+    const punkteKasten = zahlKasten('Punkte');
+    const bestKasten = zahlKasten('Bestwert');
+    const zuegeKasten = zahlKasten('Züge');
 
     s.werkzeuge([
       { label: 'Anleitung', symbol: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01" stroke-linecap="round"/>', tun: anleitung },
@@ -146,12 +198,16 @@
     function zug(richtung) {
       if (stand.fertig) return;
       const erg = schieben(stand.brett, richtung);
-      if (!erg.bewegt) return;
+      // Nichts rutscht: Das Brett zuckt kurz, damit klar ist, dass die Geste ankam.
+      if (!erg.bewegt) { anstossen(richtung); return; }
 
+      const bewegungen = wege(stand.brett, richtung);
+      stand.vorher = { brett: stand.brett, punkte: stand.punkte, zuege: stand.zuege };
       stand.brett = erg.brett;
       stand.punkte += erg.punkte;
       stand.zuege += 1;
-      neueKachel(stand.brett);
+      const neuBei = neueKachel(stand.brett);
+      if (erg.punkte) s.fuehlen(8);
 
       // 2048 beendet das Spiel nicht – wer mag, spielt weiter.
       if (!stand.gewonnenGemeldet && stand.brett.some((w) => w >= ZIEL)) {
@@ -164,6 +220,22 @@
       }
 
       if (!gehtNoch(stand.brett)) abschluss();
+      sichern();
+      zeichnen({ bewegungen, neuBei, dazu: erg.punkte });
+      // Auf einem flachen Fenster läge das Ergebnis sonst unter dem Rand.
+      if (stand.fertig) endeKasten.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+
+    /* Ein Schritt zurück, nicht mehr: Der Fehlgriff ist billig, aber das Spiel
+       bleibt eines, in dem man vorausdenkt. Eine beendete Partie steht schon in
+       der Statistik und lässt sich nicht sauber zurückdrehen. */
+    function rueckgaengig() {
+      if (stand.fertig || !stand.vorher) return;
+      stand.brett = stand.vorher.brett;
+      stand.punkte = stand.vorher.punkte;
+      stand.zuege = stand.vorher.zuege;
+      stand.vorher = null;
+      s.fuehlen();
       sichern();
       zeichnen();
     }
@@ -182,27 +254,97 @@
 
     /* ------------------------------------------------------------ Zeichnen */
 
-    function zeichnen() {
-      for (let i = 0; i < N * N; i += 1) {
-        const w = stand.brett[i];
-        felder[i].textContent = w ? String(w) : '';
-        felder[i].dataset.wert = String(w);
-      }
-      kopfZeichnen();
+    function zeichnen(zugBild = null) {
+      kachelnZeichnen(zugBild);
+      rueckKnopf.disabled = stand.fertig || !stand.vorher;
+      kopfZeichnen(zugBild ? zugBild.dazu : 0);
       endeZeichnen();
       leiste.hidden = stand.fertig;
+      brettKasten.dataset.ende = stand.fertig ? 'ja' : 'nein';
     }
 
-    function kopfZeichnen() {
-      kopf.replaceChildren();
-      const punkte = el('span', null, '');
-      punkte.append(el('b', null, String(stand.punkte)));
-      punkte.append(document.createTextNode(' Punkte'));
-      kopf.append(punkte);
-      const best = bestwert();
-      if (best) kopf.append(el('span', null, 'Bestwert ' + best));
-      kopf.append(el('span', null, String(stand.zuege) + ' Züge'));
-      s.unter('Höchste Kachel: ' + Math.max(...stand.brett));
+    const bewegtSich = () => !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    function kachelBauen(i, wert) {
+      const k = el('div', 'z-kachel', String(wert));
+      k.dataset.wert = String(wert);
+      k.dataset.stellen = String(String(wert).length);
+      platz(k, i);
+      return k;
+    }
+
+    /* Das Brett steht sofort im neuen Stand, die Bewegung wird nur darübergespielt.
+       Wer schnell tippt, wartet so nie auf eine Animation: Der nächste Zug baut
+       einfach neu auf und nimmt die alte mit. */
+    function kachelnZeichnen(zugBild) {
+      const neu = [];
+      const abspielen = [];
+      const liegt = new Set();
+
+      if (zugBild && bewegtSich()) {
+        const masse = getComputedStyle(kachelSchicht);
+        const schritt = (kachelSchicht.getBoundingClientRect().width + parseFloat(masse.columnGap)) / N;
+        for (const b of zugBild.bewegungen) {
+          const weg = [
+            { transform: 'translate(' + ((b.von % N) - (b.nach % N)) * schritt + 'px,'
+              + (Math.floor(b.von / N) - Math.floor(b.nach / N)) * schritt + 'px)' },
+            { transform: 'translate(0, 0)' },
+          ];
+          const k = kachelBauen(b.nach, b.wert);
+          neu.push(k);
+          if (b.verschmilzt) {
+            // Beide Partner rutschen als Geister hin und verschwinden; die Summe
+            // erscheint erst, wenn sie angekommen sind.
+            k.classList.add('z-geist');
+            abspielen.push(() => k.animate(weg, { duration: GLEITEN_MS, easing: 'ease-out', fill: 'both' })
+              .finished.then(() => k.remove()).catch(() => {}));
+          } else {
+            liegt.add(b.nach);
+            if (b.von !== b.nach) abspielen.push(() => k.animate(weg, { duration: GLEITEN_MS, easing: 'ease-out' }));
+          }
+        }
+      }
+
+      for (let i = 0; i < N * N; i += 1) {
+        const w = stand.brett[i];
+        if (!w || liegt.has(i)) continue;
+        const k = kachelBauen(i, w);
+        neu.push(k);
+        if (zugBild && bewegtSich()) {
+          const auftritt = i === zugBild.neuBei
+            ? [{ transform: 'scale(.4)', opacity: 0 }, { transform: 'scale(1)', opacity: 1 }]
+            : [{ transform: 'scale(.9)', opacity: 0 }, { transform: 'scale(1.12)', opacity: 1, offset: .5 }, { transform: 'scale(1)', opacity: 1 }];
+          abspielen.push(() => k.animate(auftritt, { duration: 150, delay: GLEITEN_MS - 10, easing: 'ease-out', fill: 'backwards' }));
+        }
+      }
+
+      kachelSchicht.replaceChildren(...neu);
+      for (const los of abspielen) los();
+    }
+
+    function anstossen(richtung) {
+      if (!bewegtSich()) return;
+      const [x, y] = { links: [-5, 0], rechts: [5, 0], hoch: [0, -5], runter: [0, 5] }[richtung];
+      brettKasten.animate(
+        [{ transform: 'none' }, { transform: 'translate(' + x + 'px,' + y + 'px)' }, { transform: 'none' }],
+        { duration: 130, easing: 'ease-out' },
+      );
+    }
+
+    function kopfZeichnen(dazu = 0) {
+      punkteKasten.wert.textContent = String(stand.punkte);
+      zuegeKasten.wert.textContent = String(stand.zuege);
+      // Sobald die laufende Partie den alten Bestwert schlägt, läuft er mit.
+      const bisher = bestwert();
+      bestKasten.k.hidden = !bisher;
+      bestKasten.wert.textContent = String(Math.max(bisher, stand.punkte));
+      if (dazu && bewegtSich()) {
+        const plus = el('span', 'z-dazu', '+' + dazu);
+        punkteKasten.k.append(plus);
+        plus.addEventListener('animationend', () => plus.remove());
+      }
+      // „Höchste Kachel: 4096" passte im Kopf des Handys nicht und wurde abgeschnitten.
+      s.unter('Höchste: ' + Math.max(...stand.brett));
     }
 
     function endeZeichnen() {
@@ -211,12 +353,15 @@
       if (!stand.fertig) return;
       const hoechste = Math.max(...stand.brett);
       endeKasten.append(el('p', 'ende-titel', 'Kein Zug mehr möglich.'));
+      if (stand.punkte >= bestwert() && stand.punkte > 0) {
+        endeKasten.append(el('span', 'ende-marke', 'Das ist dein Bestwert.'));
+      }
       endeKasten.append(el('p', 'notiz',
-        stand.punkte + ' Punkte, höchste Kachel ' + hoechste + ', ' + stand.zuege + ' Züge.' +
-        (stand.punkte >= bestwert() && stand.punkte > 0 ? ' Das ist dein Bestwert.' : '')));
+        stand.punkte + ' Punkte, höchste Kachel ' + hoechste + ', ' + stand.zuege + ' Züge.'));
       const l = el('div', 'leiste');
       const b = el('button', 'knopf knopf--voll', 'Nochmal');
       b.type = 'button';
+      b.prepend(s.bildzeichen('nochmal'));
       b.addEventListener('click', neu);
       l.append(b);
       endeKasten.append(l);
@@ -246,6 +391,7 @@
       d.append(el('p', 'notiz', 'Treffen zwei gleiche Kacheln aufeinander, verschmelzen sie zu ihrer Summe – aus zwei Vieren wird eine Acht. Ihr Wert kommt als Punkte dazu.'));
       d.append(el('p', 'notiz', 'Pro Zug verschmilzt eine Kachel nur einmal: aus 2 2 2 2 wird 4 4, nicht 8.'));
       d.append(el('p', 'notiz', 'Nach jedem Zug, der etwas bewegt hat, erscheint an einer freien Stelle eine neue 2 (selten eine 4). Vorbei ist es, wenn keine Richtung mehr etwas bewegt.'));
+      d.append(el('p', 'notiz', '„Rückgängig" oder die Rücktaste nimmt den letzten Zug zurück: einen Schritt, nicht mehr. Nach dem Ende geht das nicht mehr, dann bringt Enter ein neues Brett.'));
       d.append(el('p', 'notiz', 'Der Rat der Erfahrenen: such dir eine Ecke, halte die größte Kachel dort und schiebe nie in die Gegenrichtung.'));
       s.blatt({ titel: '2048', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
@@ -255,36 +401,41 @@
     function taste(e) {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (!document.getElementById('sheet-spiel').hidden) return;
+      if (e.key === 'Backspace') { e.preventDefault(); rueckgaengig(); return; }
+      if (e.key === 'Enter' && stand.fertig) { e.preventDefault(); if (!e.repeat) neu(); return; }
       const richtung = {
         ArrowLeft: 'links', ArrowRight: 'rechts', ArrowUp: 'hoch', ArrowDown: 'runter',
         a: 'links', d: 'rechts', w: 'hoch', s: 'runter',
-      }[e.key];
+      }[e.key.length === 1 ? e.key.toLowerCase() : e.key];
       if (richtung) { e.preventDefault(); zug(richtung); }
     }
     window.addEventListener('keydown', taste);
 
-    // Wischen: ab 30 Pixeln zählt die stärkere der beiden Achsen.
+    /* Wischen: ab 30 Pixeln zählt die stärkere der beiden Achsen. Der Zug fällt,
+       sobald die Strecke erreicht ist, nicht erst beim Loslassen – das fühlt sich
+       direkt an. Der festgehaltene Zeiger meldet sich auch dann noch, wenn der
+       Finger oder die Maus das Brett verlässt. */
     let start = null;
-    const anfassen = (e) => { start = { x: e.clientX, y: e.clientY }; };
-    const loslassen = (e) => {
+    brettKasten.addEventListener('pointerdown', (e) => {
+      start = { x: e.clientX, y: e.clientY };
+      brettKasten.setPointerCapture(e.pointerId);
+    });
+    brettKasten.addEventListener('pointermove', (e) => {
       if (!start) return;
       const dx = e.clientX - start.x;
       const dy = e.clientY - start.y;
-      start = null;
       if (Math.max(Math.abs(dx), Math.abs(dy)) < 30) return;
+      start = null;
       zug(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'rechts' : 'links') : (dy > 0 ? 'runter' : 'hoch'));
-    };
-    brettKasten.addEventListener('pointerdown', anfassen);
-    brettKasten.addEventListener('pointerup', loslassen);
+    });
+    brettKasten.addEventListener('pointerup', () => { start = null; });
     brettKasten.addEventListener('pointercancel', () => { start = null; });
 
     sichern();
     zeichnen();
-    uhr = setInterval(() => { if (!stand.fertig) kopfZeichnen(); }, 5000);
 
     return {
       ende: () => {
-        clearInterval(uhr);
         window.removeEventListener('keydown', taste);
         if (!stand.fertig) sichern();
       },

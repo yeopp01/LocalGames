@@ -361,6 +361,7 @@
     let zieht = null;       // Zeiger-Nummer, solange gewischt wird
     let uhr = null;
     let mauern = new Set();   // Nachschlagewerk zum Feld stand.mauern
+    let neueBestzeit = false;
 
     const mauernUebernehmen = () => { mauern = new Set(stand.mauern || []); };
 
@@ -423,31 +424,52 @@
     const gitter = el('div', 'p-gitter');
     const linie = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     linie.classList.add('p-linie');
-    buehne.append(gitter, linie);
+    buehne.append(linie, gitter);
     const endeKasten = el('div', 'ende-kasten');
     endeKasten.hidden = true;
     const leiste = el('div', 'leiste');
     wurzel.append(kopf, buehne, endeKasten, leiste);
 
-    const zurueckKnopf = el('button', 'knopf knopf--still', 'Ein Feld zurück');
-    zurueckKnopf.type = 'button';
-    zurueckKnopf.addEventListener('click', () => {
-      if (stand.fertig || !stand.pfad.length) return;
-      stand.pfad.pop();
+    /* Der Verlauf hält den Weg vor jeder Geste fest. Eine Geste ist alles von
+       Aufsetzen bis Loslassen, ein Knopf oder eine Taste. So holt „Rückgängig"
+       auch zurück, was ein Griff weit nach hinten oder „Von vorn" abgeschnitten
+       hat – deshalb braucht beides keine Rückfrage. Er lebt nur im Speicher: Nach
+       dem Neuladen nimmt „Rückgängig" einfach das letzte Feld zurück. */
+    let verlauf = [];
+    let vorGeste = null;
+
+    const gleicherWeg = (a, b) => a.length === b.length && a.every((x, i) => x === b[i]);
+    function gesteEnde() {
+      if (vorGeste && !gleicherWeg(vorGeste, stand.pfad)) {
+        verlauf.push(vorGeste);
+        if (verlauf.length > 200) verlauf.shift();
+      }
+      vorGeste = null;
+    }
+    function alsGeste(tun) {
+      vorGeste = stand.pfad.slice();
+      tun();
+      gesteEnde();
       sichern();
       zeichnen();
-    });
-    const leerenKnopf = el('button', 'knopf knopf--still', 'Von vorn');
-    leerenKnopf.type = 'button';
-    leerenKnopf.addEventListener('click', () => {
+    }
+
+    function rueckgaengig() {
       if (stand.fertig) return;
-      stand.pfad = [];
+      if (verlauf.length) stand.pfad = verlauf.pop();
+      else if (stand.pfad.length) stand.pfad.pop();
+      else return;
+      s.fuehlen();
       sichern();
       zeichnen();
+    }
+
+    const zurueckKnopf = s.leistenKnopf('Rückgängig', 'rueckgaengig', rueckgaengig);
+    const leerenKnopf = s.leistenKnopf('Von vorn', 'leeren', () => {
+      if (stand.fertig || !stand.pfad.length) return;
+      alsGeste(() => { stand.pfad = []; });
     });
-    const hinweisKnopf = el('button', 'knopf knopf--still', 'Hinweis');
-    hinweisKnopf.type = 'button';
-    hinweisKnopf.addEventListener('click', hinweis);
+    const hinweisKnopf = s.leistenKnopf('Hinweis', 'hinweis', hinweis);
     leiste.append(zurueckKnopf, leerenKnopf, hinweisKnopf);
 
     s.werkzeuge([
@@ -460,12 +482,13 @@
     function gitterBauen() {
       const k = stand.kanten;
       gitter.style.setProperty('--kanten', String(k));
-      const platz = Math.min(340, window.innerWidth - 30);
-      const zelle = Math.floor(platz / k);
+      const zelle = Math.floor(s.brettKante(230) / k);
       buehne.style.setProperty('--zelle', zelle + 'px');
       buehne.style.setProperty('--kanten', String(k));
       linie.setAttribute('viewBox', '0 0 ' + k + ' ' + k);
 
+      // Die Felder sind schon da, wenn nur das Fenster die Größe wechselt.
+      if (felder.length === k * k) return;
       gitter.replaceChildren();
       felder = [];
       for (let i = 0; i < k * k; i += 1) {
@@ -480,7 +503,8 @@
           if (f.hasPointerCapture(e.pointerId)) f.releasePointerCapture(e.pointerId);
           zieht = e.pointerId;
           letztesFeld = nr;
-          anfassen(nr);
+          vorGeste = stand.pfad.slice();
+          nachziehen(nr);
         });
         gitter.append(f);
         felder.push(f);
@@ -495,40 +519,82 @@
       return feld ? felder.indexOf(feld) : -1;
     };
 
-    /* Beim schnellen Wischen kann ein Feld übersprungen werden. Liegt genau
-       eines gerade zwischen dem letzten und dem neuen, wird es nachgeholt;
-       über Eck bleibt es liegen, da wären zwei Wege denkbar. */
+    /* Ein Feld in gerader Linie zur Spitze wird Feld für Feld angesteuert – ob
+       ein schneller Wisch dazwischen Felder übersprungen hat oder ob jemand es
+       einfach angetippt hat. Das hält an, wo es nicht weitergeht. Über Eck
+       passiert nichts, da wären zwei Wege denkbar. */
     function nachziehen(i) {
       const pfad = stand.pfad;
       const k = stand.kanten;
-      const letzter = pfad.length ? pfad[pfad.length - 1] : -1;
-      if (letzter >= 0 && !nachbarnVon(letzter, k, mauern).includes(i)) {
-        const z1 = Math.floor(letzter / k); const s1 = letzter % k;
-        const z2 = Math.floor(i / k); const s2 = i % k;
-        if (z1 === z2 && Math.abs(s1 - s2) === 2) anfassen(z1 * k + (s1 + s2) / 2);
-        else if (s1 === s2 && Math.abs(z1 - z2) === 2) anfassen(((z1 + z2) / 2) * k + s1);
+      if (!pfad.length || pfad.includes(i)) { anfassen(i); return; }
+      const letzter = pfad[pfad.length - 1];
+      const z1 = Math.floor(letzter / k); const s1 = letzter % k;
+      const z2 = Math.floor(i / k); const s2 = i % k;
+      if (z1 !== z2 && s1 !== s2) return;
+      const schritt = z1 === z2 ? Math.sign(s2 - s1) : Math.sign(z2 - z1) * k;
+      for (let j = letzter + schritt; ; j += schritt) {
+        if (stand.pfad.includes(j) || !anfassen(j) || j === i) return;
       }
-      anfassen(i);
     }
 
     /* Innerhalb eines Feldes kommen viele Meldungen. Ohne dieses Gedächtnis
        würde ein unerlaubtes Feld bei jeder einzelnen davon meckern. */
     let letztesFeld = -1;
 
+    /* Der Browser fasst schnelle Bewegungen zu einer Meldung zusammen. Die
+       einzelnen Punkte holen wir uns zurück, sonst geht die Spur um eine Ecke
+       verloren, sobald der Finger flott ist. */
     const beiBewegung = (e) => {
       if (zieht === null || e.pointerId !== zieht) return;
-      const i = feldUnter(e);
-      if (i < 0 || i === letztesFeld) return;
-      letztesFeld = i;
-      nachziehen(i);
+      const punkte = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+      for (const p of punkte.length ? punkte : [e]) {
+        const i = feldUnter(p);
+        if (i < 0 || i === letztesFeld) continue;
+        letztesFeld = i;
+        nachziehen(i);
+      }
     };
 
-    const beiLoslassen = () => { zieht = null; letztesFeld = -1; };
+    const beiLoslassen = () => {
+      if (zieht === null) return;
+      zieht = null;
+      letztesFeld = -1;
+      gesteEnde();
+      zeichnen();
+    };
+
+    /* Pfeile gehen von der Spitze aus weiter, gegen die Richtung zurück. */
+    const PFEILE = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
+    const beiTaste = (e) => {
+      if (stand.fertig || !document.getElementById('sheet-spiel').hidden) return;
+      if (e.key === 'Backspace') { e.preventDefault(); rueckgaengig(); return; }
+      const pfeil = PFEILE[e.key];
+      if (!pfeil) return;
+      e.preventDefault();
+      const k = stand.kanten;
+      const pfad = stand.pfad;
+      if (!pfad.length) { alsGeste(() => anfassen(stand.zahlAn.indexOf(1))); return; }
+      const kopf = pfad[pfad.length - 1];
+      const z = Math.floor(kopf / k) + pfeil[0];
+      const sp = (kopf % k) + pfeil[1];
+      if (z < 0 || z >= k || sp < 0 || sp >= k) return;
+      const ziel = z * k + sp;
+      // Nur der Schritt zurück: ein Pfeil soll nicht weit hinten abschneiden.
+      if (pfad.includes(ziel) && ziel !== pfad[pfad.length - 2]) return;
+      alsGeste(() => anfassen(ziel));
+    };
+    window.addEventListener('keydown', beiTaste);
     window.addEventListener('pointermove', beiBewegung);
     window.addEventListener('pointerup', beiLoslassen);
     window.addEventListener('pointercancel', beiLoslassen);
 
     /* ---------------------------------------------------------------- Zug */
+
+    // Dürfte der Weg von seiner Spitze auf dieses Nachbarfeld? Die Zahlen zählen mit.
+    function darfBetreten(i) {
+      const zahl = stand.zahlAn[i];
+      return !stand.pfad.includes(i) && (!zahl || zahl === erreichteZahl(stand.pfad) + 1);
+    }
 
     /* Wie viele Zahlen sind bisher abgeklappert? */
     function erreichteZahl(pfad) {
@@ -537,46 +603,50 @@
       return hoch;
     }
 
+    /* Liefert, ob der Weg jetzt auf dem Feld steht – `nachziehen` hält sonst an. */
     function anfassen(i) {
-      if (stand.fertig) return;
+      if (stand.fertig) return false;
       const pfad = stand.pfad;
 
       if (!pfad.length) {
         // Losgehen darf man nur bei der 1.
-        if (stand.zahlAn[i] !== 1) { s.toast('Der Weg beginnt bei der 1.'); return; }
+        if (stand.zahlAn[i] !== 1) { s.toast('Der Weg beginnt bei der 1.'); return false; }
         pfad.push(i);
+        s.fuehlen();
         sichern();
         zeichnen();
-        return;
+        return true;
       }
 
       const letzter = pfad[pfad.length - 1];
-      if (i === letzter) return;
+      if (i === letzter) return true;
 
-      // Auf das vorletzte Feld zurück heißt: einen Schritt zurücknehmen.
-      if (pfad.length > 1 && i === pfad[pfad.length - 2]) {
-        pfad.pop();
+      // Ein Feld auf dem Weg anfassen heißt: von dort aus weitermachen.
+      const platz = pfad.indexOf(i);
+      if (platz >= 0) {
+        stand.pfad = pfad.slice(0, platz + 1);
+        s.fuehlen();
         sichern();
         zeichnen();
-        return;
+        return true;
       }
 
       if (!nachbarnVon(letzter, stand.kanten, mauern).includes(i)) {
         if (nachbarnVon(letzter, stand.kanten).includes(i)) s.toast('Da ist eine Mauer dazwischen.');
-        return;
+        return false;
       }
-      if (pfad.includes(i)) return;
 
-      const zahl = stand.zahlAn[i];
-      if (zahl && zahl !== erreichteZahl(pfad) + 1) {
+      if (!darfBetreten(i)) {
         s.toast('Erst die ' + (erreichteZahl(pfad) + 1) + '.');
-        return;
+        return false;
       }
 
       pfad.push(i);
+      s.fuehlen(stand.zahlAn[i] ? 14 : 6);
       sichern();
       zeichnen();
       pruefenObFertig();
+      return true;
     }
 
     /* ------------------------------------------------------------ Hinweis */
@@ -734,7 +804,7 @@
             inhalt: 'Die ersten ' + gut + ' Felder stimmen, der Schritt auf ' + platzName(pfad[gut]) + ' nicht. '
               + grund + ' Soll ich bis dorthin zurücknehmen?',
             aktionen: [
-              { text: 'Zurücknehmen', tun: () => { stand.pfad = stand.pfad.slice(0, gut); sichern(); zeichnen(); } },
+              { text: 'Zurücknehmen', tun: () => alsGeste(() => { stand.pfad = stand.pfad.slice(0, gut); }) },
               { text: 'Selbst suchen', art: 'still' },
             ],
           });
@@ -750,7 +820,7 @@
           titel: sch.ziele.length === 1 ? 'Nur eine Richtung bleibt' : 'Nur noch zwei Nachbarn',
           inhalt: zwangText(sch),
           aktionen: [
-            { text: 'Einzeichnen', tun: () => { einzeichnen(sch.neu); sichern(); zeichnen(); pruefenObFertig(); } },
+            { text: 'Einzeichnen', tun: () => { alsGeste(() => einzeichnen(sch.neu)); pruefenObFertig(); } },
             { text: 'Selbst ziehen', art: 'still' },
           ],
         });
@@ -760,7 +830,7 @@
           inhalt: 'Die gestrichelten Linien und dein Weg ergeben zusammen schon den ganzen Weg. '
             + 'Zieh ihn entlang der Linien bis zur ' + stand.hoechste + '.',
           aktionen: [
-            { text: 'Nachziehen', tun: () => { linienFolgen(); sichern(); zeichnen(); pruefenObFertig(); } },
+            { text: 'Nachziehen', tun: () => { alsGeste(linienFolgen); pruefenObFertig(); } },
             { text: 'Selbst ziehen', art: 'still' },
           ],
         });
@@ -789,6 +859,10 @@
 
       stand.verbraucht = zeitJetzt();
       stand.fertig = true;
+      // Vor dem Notieren schauen, sonst schlägt die Partie sich selbst.
+      const frueher = s.partien().filter((p) => p.gewonnen && p.stufe === stand.stufe && p.dauer > 0);
+      neueBestzeit = frueher.length > 0 && frueher.every((p) => p.dauer > stand.verbraucht);
+      s.fuehlen(30);
       s.notieren({
         gewonnen: true,
         dauer: stand.verbraucht,
@@ -797,27 +871,71 @@
       });
       s.merken(stand);
       zeichnen();
+      // Auf einem flachen Fenster läge das Ergebnis sonst unter dem Rand.
+      endeKasten.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
 
     /* ------------------------------------------------------------ Zeichnen */
 
+    /* Die Farbe wandert über den Weg hinweg, gemessen am ganzen Brett – so sieht
+       man auch an der Farbe, wie weit es schon ist und in welche Richtung er läuft. */
+    function tonBei(platz) {
+      const anteil = stand.kanten > 1 ? Math.round((platz / (stand.kanten * stand.kanten - 1)) * 100) : 0;
+      return 'color-mix(in srgb, var(--p-nach) ' + anteil + '%, var(--p-von))';
+    }
+
     function zeichnen() {
       const k = stand.kanten;
+      const pfad = stand.pfad;
+      const kopfFeld = pfad.length ? pfad[pfad.length - 1] : -1;
+      const naechsteZahl = erreichteZahl(pfad) + 1;
+      const erlaubt = !stand.fertig && kopfFeld >= 0
+        ? nachbarnVon(kopfFeld, k, mauern).filter(darfBetreten) : [];
       for (let i = 0; i < felder.length; i += 1) {
         const f = felder[i];
         const zahl = stand.zahlAn[i];
-        f.textContent = zahl ? String(zahl) : '';
+        const platz = pfad.indexOf(i);
+        const alt = f.firstElementChild;
+        if (zahl && !alt) f.append(el('span', 'p-zahl', String(zahl)));
+        else if (zahl && alt.textContent !== String(zahl)) alt.textContent = String(zahl);
+        else if (!zahl && alt) alt.remove();
+        if (zahl) f.style.setProperty('--p-ton', tonBei(Math.max(0, platz)));
+        f.setAttribute('aria-label', zahl ? 'Zahl ' + zahl : platzName(i));
         f.dataset.zahl = zahl ? 'ja' : 'nein';
-        const platz = stand.pfad.indexOf(i);
         f.dataset.besucht = platz >= 0 ? 'ja' : 'nein';
-        if (platz === stand.pfad.length - 1 && platz >= 0) f.dataset.spitze = 'ja';
+        f.dataset.naechste = !stand.fertig && zahl === naechsteZahl ? 'ja' : 'nein';
+        f.dataset.frei = erlaubt.includes(i) ? 'ja' : 'nein';
+        if (platz === pfad.length - 1 && platz >= 0) f.dataset.spitze = 'ja';
         else delete f.dataset.spitze;
       }
+      buehne.dataset.leer = pfad.length ? 'nein' : 'ja';
+      buehne.dataset.fertig = stand.fertig ? 'ja' : 'nein';
 
-      // Der Weg als eine durchgehende Linie über dem Gitter.
       linie.replaceChildren();
 
-      // Mauern zuerst, damit der eigene Weg darüber liegt.
+      for (let n = 1; n < k; n += 1) {
+        for (const [x1, y1, x2, y2] of [[n, 0, n, k], [0, n, k, n]]) {
+          const r = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          r.setAttribute('x1', String(x1)); r.setAttribute('y1', String(y1));
+          r.setAttribute('x2', String(x2)); r.setAttribute('y2', String(y2));
+          r.setAttribute('class', 'p-raster');
+          linie.append(r);
+        }
+      }
+
+      // Die Spur auf den besuchten Feldern liegt darüber.
+      pfad.forEach((i, platz) => {
+        const r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        r.setAttribute('x', String(i % k));
+        r.setAttribute('y', String(Math.floor(i / k)));
+        r.setAttribute('width', '1');
+        r.setAttribute('height', '1');
+        r.setAttribute('class', 'p-spur');
+        r.style.fill = tonBei(platz);
+        linie.append(r);
+      });
+
+      // Mauern davor, damit der eigene Weg darüber liegt.
       for (const e of mauern) {
         const [a, b] = e.split(':').map(Number);
         const z = Math.floor(a / k);
@@ -847,17 +965,37 @@
         strich.setAttribute('stroke-linecap', 'round');
         linie.append(strich);
       }
-      if (stand.pfad.length > 1) {
-        const zug = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-        zug.setAttribute('points', stand.pfad
-          .map((i) => ((i % k) + 0.5) + ',' + (Math.floor(i / k) + 0.5)).join(' '));
-        zug.setAttribute('fill', 'none');
-        zug.setAttribute('stroke-width', '0.34');
-        zug.setAttribute('stroke-linecap', 'round');
-        zug.setAttribute('stroke-linejoin', 'round');
-        linie.append(zug);
+      /* Der Weg in einzelnen Stücken, weil eine Linie in SVG nur eine Farbe hat.
+         Die runden Enden überlappen sich und ergeben runde Ecken. */
+      const mitte = (i) => [(i % k) + 0.5, Math.floor(i / k) + 0.5];
+      for (let p = 1; p < pfad.length; p += 1) {
+        const [x1, y1] = mitte(pfad[p - 1]);
+        const [x2, y2] = mitte(pfad[p]);
+        const stueck = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        stueck.setAttribute('x1', String(x1)); stueck.setAttribute('y1', String(y1));
+        stueck.setAttribute('x2', String(x2)); stueck.setAttribute('y2', String(y2));
+        stueck.setAttribute('class', 'p-zug');
+        stueck.setAttribute('stroke-width', '0.4');
+        stueck.style.stroke = tonBei(p);
+        stueck.style.setProperty('--i', String(p));
+        linie.append(stueck);
       }
 
+      // Die Spitze ist ein Ring. Geht es von ihr nicht mehr weiter, wird er rot.
+      const sackgasse = !stand.fertig && kopfFeld >= 0 && !erlaubt.length;
+      if (kopfFeld >= 0 && !stand.fertig) {
+        const [x, y] = mitte(kopfFeld);
+        const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        ring.setAttribute('cx', String(x));
+        ring.setAttribute('cy', String(y));
+        ring.setAttribute('r', '0.42');
+        ring.setAttribute('class', 'p-ring');
+        if (sackgasse) ring.dataset.fest = 'ja';
+        linie.append(ring);
+      }
+
+      zurueckKnopf.disabled = !verlauf.length && !pfad.length;
+      leerenKnopf.disabled = !pfad.length;
       kopfZeichnen();
       endeZeichnen();
       leiste.hidden = stand.fertig;
@@ -870,7 +1008,19 @@
       zeit.append(el('b', null, s.dauerText(zeitJetzt()) === '–' ? '0 s' : s.dauerText(zeitJetzt())));
       kopf.append(zeit);
       kopf.append(el('span', null, stand.pfad.length + '/' + (stand.kanten * stand.kanten) + ' Felder'));
-      s.unter('Zahl ' + Math.max(1, erreichteZahl(stand.pfad)) + ' von ' + stand.hoechste);
+      s.unter(lageText());
+    }
+
+    /* Was gerade Sache ist. Die Sackgasse sagt die App von selbst, sonst sucht
+       man auf einem vollen Brett, warum nichts mehr passiert. */
+    function lageText() {
+      const pfad = stand.pfad;
+      const frei = stand.kanten * stand.kanten - pfad.length;
+      if (!pfad.length || stand.fertig) return 'Zahl ' + Math.max(1, erreichteZahl(pfad)) + ' von ' + stand.hoechste;
+      const kopfFeld = pfad[pfad.length - 1];
+      if (stand.zahlAn[kopfFeld] === stand.hoechste && frei) return 'Die ' + stand.hoechste + ' kommt zu früh, noch ' + frei + ' frei';
+      if (!nachbarnVon(kopfFeld, stand.kanten, mauern).some(darfBetreten)) return 'Sackgasse – tipp den Weg weiter hinten an';
+      return 'Zahl ' + Math.max(1, erreichteZahl(pfad)) + ' von ' + stand.hoechste;
     }
 
     function endeZeichnen() {
@@ -879,8 +1029,9 @@
       if (!stand.fertig) return;
       endeKasten.append(s.bildzeichen('fertig'));
       endeKasten.append(el('p', 'ende-titel', 'Weg gefunden.'));
+      if (neueBestzeit) endeKasten.append(el('span', 'ende-marke', 'Neue Bestzeit'));
       endeKasten.append(el('p', 'notiz', STUFEN[stand.stufe].name + ' · ' + s.dauerText(stand.verbraucht)
-        + (stand.hilfen ? ' · ' + stand.hilfen + ' Hinweise' : ' · ohne Hinweis')));
+        + (stand.hilfen ? ' · ' + stand.hilfen + (stand.hilfen === 1 ? ' Hinweis' : ' Hinweise') : ' · ohne Hinweis')));
       endeKasten.append(s.stufenLeiste(STUFEN, stand.stufe, neu));
     }
 
@@ -890,6 +1041,8 @@
     function neu(stufe) {
       const bauen = () => {
         stand = frisch(stufe);
+        verlauf = [];
+        neueBestzeit = false;
         mauernUebernehmen();
         gitterBauen();
         sichern();
@@ -915,13 +1068,14 @@
       const d = el('div');
       d.append(el('p', 'notiz', 'Ziehe einen Weg, der bei der 1 beginnt und die Zahlen der Reihe nach abklappert – 1, dann 2, dann 3 und so fort.'));
       d.append(el('p', 'notiz', 'Der Weg muss am Ende jedes einzelne Feld genau einmal berührt haben und bei der höchsten Zahl enden. Kein Feld bleibt frei, keines wird zweimal betreten.'));
-      d.append(el('p', 'notiz', 'Gezogen wird mit dem Finger oder der Maus über benachbarte Felder – nur waagerecht und senkrecht, nicht über Eck. Auf das vorletzte Feld zurückziehen nimmt einen Schritt zurück.'));
+      d.append(el('p', 'notiz', 'Gezogen wird mit dem Finger oder der Maus über benachbarte Felder – nur waagerecht und senkrecht, nicht über Eck. Tippen geht auch: Ein Feld in gerader Linie zur Spitze holt den Weg dorthin. Am Rechner gehen auch die Pfeiltasten.'));
+      d.append(el('p', 'notiz', 'Vertan? Tipp oder fass ein beliebiges Feld auf dem Weg an: Von dort geht es weiter, der Rest ist weg. Auch das nimmt „Rückgängig" wieder zurück, ebenso „Von vorn".'));
       d.append(el('p', 'notiz', 'Auf „schwer" stehen dicke Striche zwischen manchen Feldern: Da ist eine Mauer, dort kommt der Weg nicht durch. Sie verraten mehr, als sie verbieten – deshalb braucht die schwere Stufe weniger Zahlen als früher.'));
       d.append(el('p', 'notiz', 'Guter Anfang: Ecken und Ränder. Ein Eckfeld hat nur zwei Nachbarn, der Weg muss dort also fast zwangsläufig durch.'));
       s.blatt({ titel: 'Weg', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
 
-    function beiGroesse() { gitterBauen(); zeichnen(); }
+    function beiGroesse() { gitterBauen(); }
     window.addEventListener('resize', beiGroesse);
 
     gitterBauen();
@@ -937,6 +1091,7 @@
         window.removeEventListener('pointermove', beiBewegung);
         window.removeEventListener('pointerup', beiLoslassen);
         window.removeEventListener('pointercancel', beiLoslassen);
+        window.removeEventListener('keydown', beiTaste);
         if (!stand.fertig) sichern();
       },
     };

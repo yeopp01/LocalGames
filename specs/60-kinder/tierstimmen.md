@@ -19,20 +19,22 @@ danebensitzen. Zimmer, Klang und Aufnahmen kommen aus dem Werkzeug
   Aufnahme, sechs je Seite (AC-7): im Hochformat zwei neben-
   und drei untereinander, quer drei neben- und zwei untereinander. Die ganze
   Seite samt Pfeilen passt ins Fenster, auf einem Pixel 7 hoch und quer wie in
-  1366 × 700.
+  1366 × 700. Quer stehen die Pfeile links und rechts der Tiere, damit diese die
+  ganze Höhe bekommen.
 - **AC-2** `fertig` **Tipp lässt rufen** — Schon beim Aufsetzen des Fingers
   hüpft das Tier, ruft, und oben steht groß „Die Kuh macht Muh!". Ein Tipp auf
   ein anderes Tier unterbricht den laufenden Ruf.
-- **AC-3** `fertig` **Blättern im Kreis** — Die Pfeile unten und die
-  Pfeiltasten blättern; nach der letzten Seite kommt die erste. Punkte zwischen
-  den Pfeilen zeigen, auf welcher Seite man ist.
+- **AC-3** `fertig` **Blättern im Kreis** — Die Pfeile und die Pfeiltasten
+  blättern; nach der letzten Seite kommt die erste. Punkte zeigen, auf welcher
+  Seite man ist – hoch zwischen den Pfeilen, quer oben links.
 - **AC-4** `fertig` **Jede Taste ruft ein Tier** — Am Laptop lässt jede
   andere Taste (ohne Strg, Alt, Meta) ein zufälliges Tier der Seite hüpfen und
   rufen.
 - **AC-7** `fertig` **Seiten nach Orten** — Die Seiten folgen den Orten
   Bauernhof, Wald und Wiese, Zoo und Am Wasser. Hat ein Ort mehr als sechs
-  Tiere, bekommt er mehrere Seiten, ein Ort ohne Tier keine. Zwischen den
-  Pfeilen steht der Name des Orts über den Punkten. Anlass: Mit über dreißig
+  Tiere, bekommt er mehrere Seiten, ein Ort ohne Tier keine. Über den Punkten
+  steht der Name des Orts mit einem Bild – Trecker, Baum, Giraffe, Welle –, das
+  auch erkennt, wer nicht liest. Anlass: Mit über dreißig
   Tieren fände niemand in einer bunt gemischten Folge das Tier, das das Kind
   gerade hören will.
 - **AC-8** `fertig` **Name vor dem Ruf** — Vor dem Kinderzimmer steht der

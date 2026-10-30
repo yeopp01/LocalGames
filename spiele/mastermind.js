@@ -87,7 +87,12 @@
   function starten(wurzel, s) {
     const el = s.el;
     let stand = laden();
-    let eingabe = '';
+    let stelle = ersteLuecke();   // wohin die nächste Ziffer kommt; -1, wenn alle stehen
+    let neuGetippt = -1;          // diese Stelle landet gerade
+    let neueMarken = false;       // die Punkte des letzten Versuchs erscheinen gerade
+    let neuerBestwert = false;
+
+    function ersteLuecke() { return stand.entwurf.indexOf(''); }
 
     function frisch(stufe) {
       const stellen = STUFEN[stufe].stellen;
@@ -97,6 +102,7 @@
         stufe,
         stellen,
         code,
+        entwurf: new Array(stellen).fill(''),
         versuche: [],
         hilfen: 0,
         verbraucht: 0,
@@ -109,6 +115,8 @@
       const alt = s.erinnert();
       if (alt && alt.code && Array.isArray(alt.versuche) && !alt.fertig) {
         alt.verbraucht = alt.verbraucht || 0;
+        // Stände von früher kennen den angefangenen Versuch noch nicht.
+        if (!Array.isArray(alt.entwurf) || alt.entwurf.length !== alt.stellen) alt.entwurf = new Array(alt.stellen).fill('');
         alt.seit = Date.now();
         return alt;
       }
@@ -135,30 +143,39 @@
     const liste = el('div', 'k-liste');
     const endeKasten = el('div', 'ende-kasten');
     endeKasten.hidden = true;
+    // Steht von Anfang an da: Wer zum ersten Mal spielt, soll die Punkte nicht
+    // erst in der Anleitung nachschlagen müssen.
+    const legende = el('div', 'k-legende');
+    for (const [art, text] of [['voll', 'richtige Stelle'], ['halb', 'andere Stelle']]) {
+      const eintrag = el('span');
+      eintrag.append(el('i', 'k-marke k-marke--' + art), document.createTextNode(text));
+      legende.append(eintrag);
+    }
     const pad = el('div', 'k-pad');
     const leiste = el('div', 'leiste');
-    wurzel.append(kopf, liste, endeKasten, pad, leiste);
+    wurzel.append(kopf, liste, endeKasten, legende, pad, leiste);
 
     for (let z = 1; z <= ZIFFERN; z += 1) {
       const t = el('button', 'k-taste', String(z));
       t.type = 'button';
+      t.dataset.z = String(z);
       t.addEventListener('click', () => tippen(String(z)));
       pad.append(t);
     }
-    const wegTaste = el('button', 'k-taste', '⌫');
+    const wegTaste = el('button', 'k-taste');
     wegTaste.type = 'button';
+    wegTaste.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h10a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-6-6 6-6z"/><path d="M17 10l-4 4M13 10l4 4"/></svg>';
     wegTaste.setAttribute('aria-label', 'Letzte Ziffer löschen');
-    wegTaste.addEventListener('click', () => { eingabe = eingabe.slice(0, -1); zeichnen(); });
+    wegTaste.addEventListener('click', loeschen);
     pad.append(wegTaste);
-    const okTaste = el('button', 'k-taste k-taste--ok', '✓');
+    const okTaste = el('button', 'k-taste k-taste--ok');
     okTaste.type = 'button';
+    okTaste.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.6 4.6L19 7.5"/></svg>';
     okTaste.setAttribute('aria-label', 'Versuch abgeben');
     okTaste.addEventListener('click', pruefen);
     pad.append(okTaste);
 
-    const vorschlagKnopf = el('button', 'knopf knopf--still', 'Vorschlag');
-    vorschlagKnopf.type = 'button';
-    vorschlagKnopf.addEventListener('click', vorschlagZeigen);
+    const vorschlagKnopf = s.leistenKnopf('Vorschlag', 'hinweis', vorschlagZeigen);
     leiste.append(vorschlagKnopf);
 
     s.werkzeuge([
@@ -169,28 +186,79 @@
     /* ---------------------------------------------------------------- Zug */
 
     function tippen(z) {
-      if (vorbei() || eingabe.length >= stand.stellen) return;
-      eingabe += z;
+      if (vorbei() || stelle < 0) return;
+      stand.entwurf[stelle] = z;
+      neuGetippt = stelle;
+      // Weiter zur nächsten Lücke, erst nach rechts, dann von vorn. Wer eine Stelle
+      // gezielt korrigiert hat, landet so nicht auf einer schon besetzten.
+      const dahinter = stand.entwurf.findIndex((w, i) => i > stelle && !w);
+      stelle = dahinter >= 0 ? dahinter : ersteLuecke();
+      s.fuehlen();
+      sichern();
+      zeichnen();
+    }
+
+    /* Nimmt, was unter dem Cursor steht, sonst die letzte Ziffer davor. */
+    function loeschen() {
+      if (vorbei()) return;
+      let wo = stelle >= 0 && stand.entwurf[stelle] ? stelle : -1;
+      if (wo < 0) {
+        const bis = stelle >= 0 ? stelle : stand.stellen;
+        for (let i = bis - 1; i >= 0 && wo < 0; i -= 1) if (stand.entwurf[i]) wo = i;
+      }
+      if (wo < 0) return;
+      stand.entwurf[wo] = '';
+      stelle = wo;
+      s.fuehlen();
+      sichern();
+      zeichnen();
+    }
+
+    function stelleWaehlen(i) {
+      stelle = i;
+      zeichnen();
+    }
+
+    /* Der nächste Versuch unterscheidet sich meist nur in ein, zwei Stellen. */
+    function uebernehmen(rat) {
+      if (vorbei()) return;
+      stand.entwurf = rat.split('');
+      stelle = -1;
+      s.fuehlen();
+      sichern();
       zeichnen();
     }
 
     function pruefen() {
       if (vorbei()) return;
-      if (eingabe.length < stand.stellen) { s.toast('Noch nicht genug Ziffern.'); return; }
-      const antwort = bewerten(eingabe, stand.code);
-      stand.versuche.push({ rat: eingabe, antwort });
-      eingabe = '';
+      if (stand.entwurf.some((w) => !w)) { s.toast('Noch nicht genug Ziffern.'); return; }
+      const rat = stand.entwurf.join('');
+      // Derselbe Versuch verrät nichts Neues. Seit man alte Versuche antippen kann,
+      // gäbe man ihn sonst leicht aus Versehen noch einmal ab.
+      if (stand.versuche.some((v) => v.rat === rat)) { s.toast('Den hattest du schon.'); return; }
+      const antwort = bewerten(rat, stand.code);
+      stand.versuche.push({ rat, antwort });
+      stand.entwurf = new Array(stand.stellen).fill('');
+      stelle = 0;
+      neueMarken = true;
+      s.fuehlen(12);
 
       if (antwort === stand.stellen + ',0') abschluss('sieg');
       else if (stand.versuche.length >= maxVersuche()) abschluss('pleite');
 
       sichern();
       zeichnen();
+      // Auf einem flachen Fenster läge das Ergebnis sonst unter dem Rand.
+      if (vorbei()) endeKasten.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
 
     function abschluss(ausgang) {
       stand.verbraucht = zeitJetzt();
       stand.fertig = ausgang;
+      // Vor dem Notieren schauen, sonst schlägt die Partie sich selbst.
+      const frueher = s.partien().filter((p) => p.gewonnen && p.stufe === stand.stufe && typeof p.zuege === 'number' && p.zuege > 0);
+      neuerBestwert = ausgang === 'sieg' && frueher.length > 0 && frueher.every((p) => p.zuege > stand.versuche.length);
+      s.fuehlen(ausgang === 'sieg' ? 30 : 60);
       s.notieren({
         gewonnen: ausgang === 'sieg',
         dauer: stand.verbraucht,
@@ -207,6 +275,7 @@
 
       const moegliche = passende(alleCodes(stand.stellen), stand.versuche);
       const d = el('div');
+      let vorgeschlagen = null;
       if (!moegliche.length) {
         d.append(el('p', 'notiz', 'Zu diesen Rückmeldungen passt kein Code – da muss sich ein Tippfehler eingeschlichen haben.'));
       } else {
@@ -214,6 +283,7 @@
           ? 'Es bleibt genau ein Code übrig:'
           : 'Es passen noch ' + moegliche.length + ' Codes. Dieser Zug trennt sie am besten:'));
         const rat = vorschlag(moegliche);
+        vorgeschlagen = rat;
         const zeile = el('div', 'vorschlag');
         zeile.append(el('span', 'vorschlag-wort', rat));
         zeile.append(el('span', 'vorschlag-rest', moegliche.length === 1 ? 'das ist er' : 'informativster Zug'));
@@ -225,7 +295,9 @@
       s.blatt({
         titel: 'Wie weiter?',
         inhalt: d,
-        aktionen: [{ text: 'Verstanden' }],
+        aktionen: vorgeschlagen
+          ? [{ text: 'Eintragen', tun: () => uebernehmen(vorgeschlagen) }, { text: 'Selbst überlegen', art: 'still' }]
+          : [{ text: 'Verstanden' }],
       });
       zeichnen();
     }
@@ -234,38 +306,81 @@
 
     function zeichnen() {
       liste.replaceChildren();
+      liste.style.setProperty('--k-reihen', String(maxVersuche()));
 
-      for (const v of stand.versuche) {
-        liste.append(zeileBauen(v.rat, v.antwort));
-      }
+      stand.versuche.forEach((v, nr) => {
+        liste.append(alteZeile(v, neueMarken && nr === stand.versuche.length - 1));
+      });
       if (!vorbei()) {
-        const offen = eingabe.padEnd(stand.stellen, ' ');
-        liste.append(zeileBauen(offen, null, true));
+        liste.append(aktiveZeile());
+        // Die freien Zeilen zeigen, was noch übrig ist. Am Ende sind sie nur im Weg.
+        for (let i = stand.versuche.length + 1; i < maxVersuche(); i += 1) liste.append(freieZeile());
       }
+      neueMarken = false;
+      neuGetippt = -1;
 
+      okTaste.disabled = stand.entwurf.some((w) => !w);
+      wegTaste.disabled = stand.entwurf.every((w) => !w);
       kopfZeichnen();
       endeZeichnen();
+      legende.hidden = vorbei();
       pad.hidden = vorbei();
       leiste.hidden = vorbei();
     }
 
-    function zeileBauen(ziffern, antwort, aktiv) {
-      const zeile = el('div', 'k-zeile');
-      if (aktiv) zeile.dataset.aktiv = 'ja';
-      const felder = el('div', 'k-felder');
-      for (const c of ziffern) {
-        felder.append(el('span', 'k-feld', c === ' ' ? '' : c));
-      }
-      zeile.append(felder);
+    function kachel(z, art = 'span') {
+      const f = el(art, 'k-feld', z);
+      if (z) f.dataset.z = z;
+      return f;
+    }
 
+    function markenBauen(antwort, neu) {
       const marken = el('div', 'k-marken');
-      if (antwort) {
-        const [schwarz, weiss] = antwort.split(',').map(Number);
-        for (let i = 0; i < schwarz; i += 1) marken.append(el('span', 'k-marke k-marke--voll'));
-        for (let i = 0; i < weiss; i += 1) marken.append(el('span', 'k-marke k-marke--halb'));
-        for (let i = schwarz + weiss; i < stand.stellen; i += 1) marken.append(el('span', 'k-marke'));
+      const [schwarz, weiss] = antwort ? antwort.split(',').map(Number) : [0, 0];
+      for (let i = 0; i < stand.stellen; i += 1) {
+        const art = i < schwarz ? ' k-marke--voll' : i < schwarz + weiss ? ' k-marke--halb' : '';
+        const m = el('span', 'k-marke' + art + (neu ? ' k-marke--neu' : ''));
+        if (neu) m.style.setProperty('--i', String(i));
+        marken.append(m);
       }
-      zeile.append(marken);
+      return marken;
+    }
+
+    function alteZeile(v, neu) {
+      const zeile = el(vorbei() ? 'div' : 'button', 'k-zeile');
+      if (!vorbei()) {
+        zeile.type = 'button';
+        zeile.setAttribute('aria-label', 'Versuch ' + v.rat + ' übernehmen');
+        zeile.addEventListener('click', () => uebernehmen(v.rat));
+      }
+      const felder = el('div', 'k-felder');
+      for (const c of v.rat) felder.append(kachel(c));
+      zeile.append(felder, markenBauen(v.antwort, neu));
+      return zeile;
+    }
+
+    function aktiveZeile() {
+      const zeile = el('div', 'k-zeile');
+      zeile.dataset.aktiv = 'ja';
+      const felder = el('div', 'k-felder');
+      stand.entwurf.forEach((z, i) => {
+        const f = kachel(z, 'button');
+        f.type = 'button';
+        f.setAttribute('aria-label', 'Stelle ' + (i + 1) + (z ? ', ' + z : ', leer'));
+        if (i === stelle) f.dataset.stelle = 'ja';
+        if (i === neuGetippt) f.classList.add('k-feld--neu');
+        f.addEventListener('click', () => stelleWaehlen(i));
+        felder.append(f);
+      });
+      zeile.append(felder, markenBauen(null, false));
+      return zeile;
+    }
+
+    function freieZeile() {
+      const zeile = el('div', 'k-zeile k-zeile--frei');
+      const felder = el('div', 'k-felder');
+      for (let i = 0; i < stand.stellen; i += 1) felder.append(el('span', 'k-feld'));
+      zeile.append(felder, markenBauen(null, false));
       return zeile;
     }
 
@@ -276,7 +391,7 @@
       rest.append(el('b', null, String(maxVersuche() - stand.versuche.length)));
       rest.append(document.createTextNode(' Versuche frei'));
       kopf.append(rest);
-      s.unter(stand.stellen + ' Stellen, Ziffern 1 bis ' + ZIFFERN);
+      s.unter(stand.stellen + ' Stellen · 1–' + ZIFFERN);
     }
 
     function endeZeichnen() {
@@ -286,14 +401,20 @@
       if (stand.fertig === 'sieg') endeKasten.append(s.bildzeichen('fertig'));
       endeKasten.append(el('p', 'ende-titel',
         stand.fertig === 'sieg' ? 'Code geknackt.' : 'Nicht geknackt.'));
-      endeKasten.append(el('p', 'notiz', 'Der Code war ' + stand.code + '.'
-        + (stand.fertig === 'sieg' ? ' Gebraucht: ' + stand.versuche.length + ' Versuche.' : '')));
+      if (neuerBestwert) endeKasten.append(el('span', 'ende-marke', 'Neuer Bestwert'));
+      const code = el('div', 'k-felder k-felder--ende');
+      for (const c of stand.code) code.append(kachel(c));
+      endeKasten.append(code);
+      endeKasten.append(el('p', 'notiz', stand.fertig === 'sieg'
+        ? 'Gebraucht: ' + stand.versuche.length + (stand.versuche.length === 1 ? ' Versuch.' : ' Versuche.')
+        : 'Das war der Code.'));
       endeKasten.append(s.stufenLeiste(STUFEN, stand.stufe, neu));
     }
 
     function neu(stufe) {
       stand = frisch(stufe);
-      eingabe = '';
+      stelle = 0;
+      neuerBestwert = false;
       sichern();
       zeichnen();
     }
@@ -310,19 +431,27 @@
       const d = el('div');
       d.append(el('p', 'notiz', 'Gesucht ist ein geheimer Code aus ' + stand.stellen + ' Ziffern von 1 bis 6. Ziffern dürfen mehrfach vorkommen.'));
       d.append(el('p', 'notiz', 'Nach jedem Versuch stehen rechts Punkte:'));
-      d.append(el('p', 'notiz', '● gefüllt – eine Ziffer sitzt richtig, an der richtigen Stelle.'));
-      d.append(el('p', 'notiz', '○ offen – diese Ziffer kommt im Code vor, steht aber woanders.'));
+      d.append(el('p', 'notiz', '● gefüllt und grün – eine Ziffer sitzt richtig, an der richtigen Stelle.'));
+      d.append(el('p', 'notiz', '○ offen und gelb – diese Ziffer kommt im Code vor, steht aber woanders.'));
       d.append(el('p', 'notiz', 'Welcher Punkt zu welcher Stelle gehört, wird nicht verraten – das ist der ganze Reiz.'));
-      d.append(el('p', 'notiz', 'Der Knopf „Vorschlag" rechnet aus, welcher Versuch jetzt am meisten verrät, und sagt, wie viele Codes überhaupt noch möglich sind.'));
+      d.append(el('p', 'notiz', 'Der Knopf „Vorschlag" rechnet aus, welcher Versuch jetzt am meisten verrät, und sagt, wie viele Codes überhaupt noch möglich sind. „Eintragen" schreibt ihn gleich in die Zeile.'));
+      d.append(el('p', 'notiz', 'Tipp eine Stelle der aktiven Zeile an, um gezielt sie zu ändern. Ein früherer Versuch wird angetippt zum Ausgangspunkt für den nächsten. Am Rechner gehen Ziffern, Pfeile, Rücktaste und Enter.'));
       s.blatt({ titel: 'Zahlen-Mastermind', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
 
     function taste(e) {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (!document.getElementById('sheet-spiel').hidden) return;
+      if (vorbei()) return;
       if (e.key >= '1' && e.key <= String(ZIFFERN)) { e.preventDefault(); tippen(e.key); return; }
-      if (e.key === 'Backspace') { e.preventDefault(); eingabe = eingabe.slice(0, -1); zeichnen(); return; }
-      if (e.key === 'Enter') { e.preventDefault(); pruefen(); }
+      if (e.key === 'Backspace' || e.key === 'Delete') { e.preventDefault(); loeschen(); return; }
+      if (e.key === 'Enter') { e.preventDefault(); pruefen(); return; }
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        e.preventDefault();
+        const schritt = e.key === 'ArrowLeft' ? -1 : 1;
+        const von = stelle >= 0 ? stelle : (schritt < 0 ? stand.stellen : -1);
+        stelleWaehlen(Math.max(0, Math.min(stand.stellen - 1, von + schritt)));
+      }
     }
     window.addEventListener('keydown', taste);
 

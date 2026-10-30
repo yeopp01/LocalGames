@@ -1,7 +1,7 @@
 # 2048
 
 **Datei:** [`spiele/zweitausend.js`](../../spiele/zweitausend.js)
-**Stand:** 13/13 fertig
+**Stand:** 18/18 fertig
 
 ## Zweck
 
@@ -21,11 +21,12 @@ spielbar wie mit den Pfeiltasten am Rechner.
   Meta-Taste und bei offenem Blatt passiert nichts.
 - **AC-3** `fertig` **Wischen über das Brett** — Eine Wischgeste auf dem Brett
   schiebt in die Richtung der stärkeren Achse, sobald sie mindestens 30 Pixel
-  lang ist. Kürzere Bewegungen zählen nicht, und die Seite scrollt beim Wischen
-  nicht mit.
+  lang ist – schon während der Bewegung, nicht erst beim Loslassen, und auch wenn
+  der Finger das Brett dabei verlässt. Eine Geste ist ein Zug. Kürzere Bewegungen
+  zählen nicht, und die Seite scrollt beim Wischen nicht mit.
 - **AC-4** `fertig` **Richtungsknöpfe unter dem Brett** — Vier Knöpfe ← ↑ ↓ →
-  unter dem Brett tun dasselbe wie die Pfeiltasten. Nach dem Ende der Partie
-  sind sie ausgeblendet.
+  unter dem Brett, mindestens 44 px hoch, tun dasselbe wie die Pfeiltasten. Nach
+  dem Ende der Partie sind sie ausgeblendet.
 
 ### Spielzug
 
@@ -39,9 +40,10 @@ spielbar wie mit den Pfeiltasten am Rechner.
   Kachel an einer freien Stelle. Eine Richtung, in der nichts rutscht, ändert
   weder Brett noch Zugzähler.
 - **AC-7** `fertig` **Punkte und Bestwert** — Jede Verschmelzung bringt ihren
-  neuen Wert als Punkte (aus zwei Vieren werden 8 Punkte). Oben stehen Punkte,
-  Züge und – sobald eine beendete Partie mit Punkten in der Statistik steht –
-  der Bestwert. Die Zeile unter dem Titel nennt die höchste Kachel.
+  neuen Wert als Punkte (aus zwei Vieren werden 8 Punkte); ein kurzes „+8" zeigt
+  sie. Oben stehen Punkte, Züge und – sobald eine beendete Partie mit Punkten in
+  der Statistik steht – der Bestwert, der mitläuft, wenn die laufende Partie ihn
+  schlägt. Die Zeile unter dem Titel nennt die höchste Kachel.
 
 ### Ende der Partie
 
@@ -73,6 +75,26 @@ spielbar wie mit den Pfeiltasten am Rechner.
   Schnitt". Partien ohne `punkte` oder `hoechste` zählen dort als 0; eine leere
   Liste ergibt Nullen und keinen Fehler.
 
+### Bedienung und Bild
+
+- **AC-14** `fertig` **Kacheln gleiten** — Beim Zug rutschen die Kacheln sichtbar an
+  ihren neuen Platz (gut 100 ms), Verschmelzungen und die neue Kachel treten danach
+  auf. Der neue Stand gilt sofort: Ein schneller nächster Zug wartet nicht auf die
+  Animation. Bei „Bewegung reduzieren" springt alles sofort.
+- **AC-15** `fertig` **Ein Schritt zurück** — „Rückgängig" und die Rücktaste nehmen den
+  letzten Zug samt neuer Kachel, Punkten und Zugzähler zurück, genau einen Schritt.
+  Danach ist der Knopf gesperrt, bis wieder gezogen wurde. Der Schritt übersteht
+  Neuladen; ein gespeicherter Stand von früher läuft ohne ihn weiter. Nach dem Ende
+  der Partie gibt es kein Zurück, sie steht dann schon in der Statistik.
+- **AC-16** `fertig` **Brett nach Fenster** — Das Brett nutzt den Platz, höchstens
+  532 px; Punkte, Brett und Knöpfe passen auf dem Handy und in einem flachen Fenster
+  (1366×700, auch 1000×560) ohne Scrollen. Das Ergebnis wird von selbst ins Bild
+  geholt.
+- **AC-17** `fertig` **Enter nach dem Ende** — Nach dem Ende beginnt Enter ein neues
+  Brett.
+- **AC-18** `fertig` **Zug ohne Wirkung** — Eine Richtung, in der nichts rutscht, lässt
+  das Brett kurz in diese Richtung zucken, sonst geschieht nichts.
+
 ## Randfälle
 
 | #    | Fall                                                  | Erwartetes Verhalten                                                  |
@@ -80,7 +102,7 @@ spielbar wie mit den Pfeiltasten am Rechner.
 | RF-1 | Die 2048 entsteht mit dem letzten möglichen Zug       | Blatt „Geschafft" und Ende erscheinen zugleich; notiert mit `gewonnen: true`. |
 | RF-2 | Kacheln über 2048 (4096, 8192 …)                      | Werden normal weitergespielt und in einer gemeinsamen Farbe gezeigt.  |
 | RF-3 | Punktestand gleich dem bisherigen Bestwert            | Auch dann steht „Das ist dein Bestwert." da.                          |
-| RF-4 | Wunsch, einen Zug zurückzunehmen                      | Gibt es nicht – ein Zug ist endgültig.                                |
+| RF-4 | Mehr als einen Zug zurücknehmen                       | Geht nicht – „Rückgängig" reicht genau einen Schritt zurück (AC-15).  |
 | RF-5 | Gespeicherter Stand mit falscher Brettgröße           | Es beginnt ein frisches Brett.                                        |
 | RF-6 | Nach einer beendeten Partie das Spiel neu öffnen      | Es beginnt ein frisches Brett.                                        |
 

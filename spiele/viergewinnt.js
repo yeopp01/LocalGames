@@ -176,6 +176,8 @@
     const el = s.el;
     let stand = laden();
     let denkt = false;
+    let gefallen = -1;       // der Stein, der gerade fällt – nach dem Neuladen keiner
+    let zeigerSpalte = -1;   // über welcher Spalte die Maus steht
 
     function frisch(stufe, anfang, modus) {
       return {
@@ -279,9 +281,7 @@
     const leiste = el('div', 'leiste');
     wurzel.append(kopf, brettKasten, endeKasten, leiste);
 
-    const zurueckKnopf = el('button', 'knopf knopf--still', 'Zug zurück');
-    zurueckKnopf.type = 'button';
-    zurueckKnopf.addEventListener('click', zurueck);
+    const zurueckKnopf = s.leistenKnopf('Zug zurück', 'rueckgaengig', zurueck);
     leiste.append(zurueckKnopf);
 
     const felder = [];
@@ -290,12 +290,23 @@
         const f = el('button', 'v-feld');
         f.type = 'button';
         f.setAttribute('aria-label', 'Spalte ' + (sp + 1));
+        f.style.setProperty('--zeile', String(z));
         const spalte = sp;
         f.addEventListener('click', () => werfen(spalte));
+        // Nur die Maus: Ein Finger hat die Spalte schon gewählt, wenn er aufsetzt.
+        f.addEventListener('pointerenter', (e) => {
+          if (e.pointerType !== 'mouse') return;
+          zeigerSpalte = spalte;
+          vorschauZeichnen();
+        });
         brettKasten.append(f);
         felder.push(f);
       }
     }
+    brettKasten.addEventListener('pointerleave', () => {
+      zeigerSpalte = -1;
+      vorschauZeichnen();
+    });
 
     s.werkzeuge([
       { label: 'Anleitung', symbol: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01" stroke-linecap="round"/>', tun: anleitung },
@@ -325,6 +336,8 @@
       stand.brett[i] = wer;
       stand.verlauf.push({ i, wer });
       stand.zuege += 1;
+      gefallen = i;
+      s.fuehlen(6);
 
       const sieg = sieger(stand.brett);
       if (sieg) {
@@ -335,11 +348,17 @@
       }
       sichern();
       zeichnen();
+      if (vorbei()) {
+        if (stand.fertig !== 'remis') s.fuehlen(30);
+        // Auf einem flachen Fenster läge das Ergebnis sonst unter dem Rand.
+        endeKasten.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
     }
 
     function denkenLassen() {
       denkt = true;
       s.unter('Der Rechner überlegt …');
+      zeichnen();
       // Kurz Luft lassen, damit der eigene Stein schon liegt, wenn es rechnet.
       denkUhr = setTimeout(() => {
         denkUhr = null;
@@ -375,6 +394,8 @@
         stand.brett[letzter.i] = LEER;
         stand.zuege -= 1;
         stand.amZug = letzter.wer;
+        gefallen = -1;
+        s.fuehlen();
         sichern();
         zeichnen();
         return;
@@ -391,6 +412,8 @@
         stand.zuege -= 1;
         stand.verlauf.pop();
       }
+      gefallen = -1;
+      s.fuehlen();
       sichern();
       zeichnen();
     }
@@ -425,8 +448,18 @@
         felder[i].dataset.wer = w === MENSCH ? 'ich' : w === RECHNER ? 'er' : 'leer';
         if (stand.siegfelder && stand.siegfelder.includes(i)) felder[i].dataset.sieg = 'ja';
         else delete felder[i].dataset.sieg;
+        if (i === gefallen) felder[i].dataset.faellt = 'ja';
+        else delete felder[i].dataset.faellt;
       }
       const n = stand.verlauf.length;
+      /* Der zuletzt gelegte Stein trägt einen Punkt: Wer beim Zug des Rechners kurz
+         woanders hinschaut, sieht auch danach noch, was er gelegt hat. */
+      const letzter = n && !stand.siegfelder ? stand.verlauf[n - 1].i : -1;
+      felder.forEach((f, i) => {
+        if (i === letzter) f.dataset.letzter = 'ja';
+        else delete f.dataset.letzter;
+      });
+      brettKasten.dataset.entschieden = stand.siegfelder ? 'ja' : 'nein';
       zurueckKnopf.disabled = vorbei() || denkt || (zuZweit()
         ? n < 1
         : stand.amZug !== MENSCH || n < 2
@@ -436,29 +469,44 @@
         ? (stand.amZug === MENSCH ? 'ich' : 'er')
         : 'aus';
       leiste.hidden = vorbei();
+      vorschauZeichnen();
       kopfZeichnen();
       endeZeichnen();
+    }
+
+    /* Wo der Stein landen würde, solange man hier legen darf. */
+    function vorschauZeichnen() {
+      const darf = !vorbei() && !denkt && (zuZweit() || stand.amZug === MENSCH) && zeigerSpalte >= 0;
+      const ziel = darf ? freieZeile(stand.brett, zeigerSpalte) : -1;
+      felder.forEach((f, i) => {
+        const sp = i % SPALTEN;
+        const z = Math.floor(i / SPALTEN);
+        if (ziel >= 0 && sp === zeigerSpalte && z <= ziel) f.dataset.saeule = 'ja';
+        else delete f.dataset.saeule;
+        if (ziel >= 0 && sp === zeigerSpalte && z === ziel) f.dataset.vorschau = stand.amZug === MENSCH ? 'ich' : 'er';
+        else delete f.dataset.vorschau;
+      });
     }
 
     function kopfZeichnen() {
       kopf.replaceChildren();
       kopf.append(zuZweit() ? el('span', null, 'zu zweit') : s.stufenName(STUFEN, stand.stufe));
-      const wer = el('span', null, '');
-      if (zuZweit() && !vorbei()) {
+      // Der Punkt sagt auch gegen den Rechner, welche Farbe wem gehört.
+      if (!vorbei()) {
+        const wer = el('span', null, '');
         const punkt = el('span', 'v-punkt');
         punkt.dataset.wer = stand.amZug === MENSCH ? 'ich' : 'er';
+        if (denkt) punkt.dataset.denkt = 'ja';
         wer.append(punkt);
-      }
-      wer.append(el('b', null, vorbei() ? '–'
-        : zuZweit() ? FARBE[stand.amZug]
+        wer.append(el('b', null, zuZweit() ? FARBE[stand.amZug]
           : stand.amZug === MENSCH ? 'du' : 'Rechner'));
-      wer.append(document.createTextNode(' am Zug'));
-      kopf.append(wer);
+        wer.append(document.createTextNode(' am Zug'));
+        kopf.append(wer);
+      }
       kopf.append(el('span', null, stand.zuege + ' Steine'));
       if (!denkt) {
-        s.unter(vorbei() ? ''
-          : zuZweit() ? FARBE[stand.amZug] + ' ist dran – Spalte antippen'
-            : 'Spalte antippen');
+        // Wer dran ist, steht direkt über dem Brett; hier wurde es nur abgeschnitten.
+        s.unter(vorbei() ? '' : 'Spalte antippen');
       }
     }
 
@@ -478,27 +526,31 @@
 
       if (zuZweit()) {
         const l = el('div', 'leiste');
-        // Wer verloren hat, fängt an; nach einem Unentschieden wieder Rot.
-        const anfang = stand.fertig === 'sieg' ? RECHNER : MENSCH;
         const noch = el('button', 'knopf knopf--voll', 'Noch eine');
         noch.type = 'button';
         noch.prepend(s.bildzeichen('nochmal'));
-        noch.addEventListener('click', () => neu(stand.stufe, anfang, 'zwei'));
+        noch.addEventListener('click', () => nochmal());
         const gegen = el('button', 'knopf knopf--still', 'Gegen den Rechner');
         gegen.type = 'button';
         gegen.addEventListener('click', () => neu(stand.stufe, MENSCH, 'rechner'));
         l.append(noch, gegen);
         endeKasten.append(l);
       } else {
-        // Wer verloren hat, darf anfangen.
-        endeKasten.append(s.stufenLeiste(STUFEN, stand.stufe,
-          (stufe) => neu(stufe, stand.fertig === 'pleite' ? MENSCH : RECHNER, 'rechner')));
+        endeKasten.append(s.stufenLeiste(STUFEN, stand.stufe, nochmal));
       }
+    }
+
+    /* Wer verloren hat, darf anfangen. Zu zweit fängt nach einem Unentschieden
+       wieder Rot an, gegen den Rechner nach einem Unentschieden der Rechner. */
+    function nochmal(stufe = stand.stufe) {
+      if (zuZweit()) neu(stand.stufe, stand.fertig === 'sieg' ? RECHNER : MENSCH, 'zwei');
+      else neu(stufe, stand.fertig === 'pleite' ? MENSCH : RECHNER, 'rechner');
     }
 
     function neu(stufe, anfang, modus) {
       // Eine Rechnung für das alte Brett darf auf dem neuen keinen Stein legen.
       denkenAbbrechen();
+      gefallen = -1;
       stand = frisch(stufe, anfang, modus);
       sichern();
       zeichnen();
@@ -532,9 +584,19 @@
       d.append(el('p', 'notiz', 'Der Rechner spielt Minimax: er denkt je nach Stufe zwei bis sieben Züge voraus und unterstellt dir dabei immer die beste Antwort. Auf „leicht" greift er absichtlich manchmal daneben – einen sicheren Sieg lässt er sich aber auch dort nicht entgehen.'));
       d.append(el('p', 'notiz', 'Unter „Neue Partie“ könnt ihr statt gegen den Rechner zu zweit an einem Gerät spielen: Rot und Gelb legen abwechselnd, das Handy wandert hin und her. Wer dran ist, steht oben – mit farbigem Punkt – und färbt den Rand des Brettes. Solche Partien stehen als Runde in der Statistik, aber nicht in der Siegquote: die erzählt, wie du gegen den Rechner stehst.'));
       d.append(el('p', 'notiz', '„Zug zurück“ nimmt deinen letzten Stein samt der Antwort des Rechners wieder vom Brett; zu zweit nur den letzten Stein, dann ist wieder derselbe dran. Das geht nur, solange die Partie läuft – eine beendete steht schon in der Statistik.'));
+      d.append(el('p', 'notiz', 'Am Rechner legen die Tasten 1 bis 7 einen Stein in die Spalte, die Rücktaste nimmt zurück, und nach dem Ende bringt Enter die nächste Partie.'));
       d.append(el('p', 'notiz', 'Die Mitte ist mehr wert als der Rand: durch die mittlere Spalte laufen die meisten möglichen Viererreihen.'));
       s.blatt({ titel: 'Vier gewinnt', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
+
+    function taste(e) {
+      if (e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
+      if (!document.getElementById('sheet-spiel').hidden) return;
+      if (e.key === 'Backspace') { e.preventDefault(); zurueck(); return; }
+      if (e.key === 'Enter' && vorbei()) { e.preventDefault(); nochmal(); return; }
+      if (/^[1-7]$/.test(e.key)) { e.preventDefault(); werfen(Number(e.key) - 1); }
+    }
+    window.addEventListener('keydown', taste);
 
     sichern();
     zeichnen();
@@ -544,6 +606,7 @@
     return {
       ende: () => {
         // Sonst legt ein Nachzügler nach dem Verlassen noch einen Stein.
+        window.removeEventListener('keydown', taste);
         denkenAbbrechen();
         arbeiterWeg();
         if (!vorbei()) sichern();

@@ -1,7 +1,7 @@
 # Hochhinaus
 
 **Datei:** [`spiele/doodle.js`](../../spiele/doodle.js)
-**Stand:** 27/29 fertig · 2 in arbeit
+**Stand:** 31/33 fertig · 2 in arbeit
 
 ## Zweck
 
@@ -22,11 +22,13 @@ Löcher, Propeller und Raketen, und je Rang drei Ziele wie beim Vorbild.
 - **AC-2** `fertig` **Halten lenkt** — Ein Finger auf der unteren Hälfte des
   Feldes oder auf der Leiste darunter lenkt nach links, wenn er links der
   Mitte liegt, sonst nach rechts; wandert er über die Mitte, wechselt die
-  Richtung. Liegen mehrere Finger, gilt der zuletzt aufgesetzte. Pfeil
+  Richtung. Liegen mehrere Finger, gilt der zuletzt aufgesetzte. Die Leiste
+  sind zwei getrennte Hälften, und die lenkende leuchtet grün. Pfeil
   links/rechts und A/D tun dasselbe, Enter startet oder schaltet die Pause um,
   P und Escape halten an.
-- **AC-3** `fertig` **Neigen lenkt** — Unter dem Feld (vor dem Start) und im
-  Pausenkasten lässt sich auf „Neigen" umstellen. Dann lenkt die Neigung des
+- **AC-3** `fertig` **Neigen lenkt** — In der Karte auf dem Feld (vor dem Start
+  und in der Pause) lässt sich auf „Neigen" umstellen, nur nicht auf einem Gerät
+  mit Maus, das keine Neigung kennt. Dann lenkt die Neigung des
   Geräts: bis 3° gar nicht, ab 25° mit voller Geschwindigkeit, dazwischen
   anteilig. Die Wahl gilt auch für die nächste Partie, und die Zeile unter dem
   Titel sagt „Gesteuert mit Neigen".
@@ -57,8 +59,9 @@ Löcher, Propeller und Raketen, und je Rang drei Ziele wie beim Vorbild.
   oben, nie nach unten. Oben stehen die größte erreichte Höhe in Metern (20
   Einheiten je Meter) und der Bestwert.
 - **AC-10** `fertig` **Unten raus ist vorbei** — Fällt die Figur unten aus dem
-  Bild, endet die Partie mit „Abgestürzt.", Höhe und Spielzeit unter dem Feld,
-  bei neuem Bestwert „Das ist dein Bestwert.", darunter „Nochmal".
+  Bild, endet die Partie mit „Abgestürzt.", Höhe und Spielzeit in einer Karte
+  auf dem Feld, ohne neuen Rekord auch dem Bestwert, bei neuem Bestwert „Das ist
+  dein Bestwert.", darunter „Nochmal".
 
 ### Speicher und Statistik
 
@@ -94,6 +97,28 @@ Löcher, Propeller und Raketen, und je Rang drei Ziele wie beim Vorbild.
   und vier Kugeln zugleich; eine gehaltene Taste schießt in diesem Takt. Eine
   Kugel verschwindet am Bildrand, in einem schwarzen Loch oder im ersten
   Monster, das sie trifft.
+
+### Platz und Tempo
+
+- **AC-30** `fertig` **Das Fenster wird genutzt** — Auf dem Handy nimmt das Feld
+  fast die ganze Breite ein, und die zwei Hälften nehmen die Höhe darunter, 64
+  bis 132 px. In einem flachen Fenster fallen sie weg, die untere Feldhälfte tut
+  dasselbe, und das Feld bekommt die ganze Höhe: 389 × 583 in 1366 × 700. Die
+  Seite ist dabei nicht höher als das Fenster; erst wenn das Feld an seine
+  Mindestbreite von 220 px stößt (Handy quer), darf sie scrollen.
+- **AC-31** `fertig` **Karte auf dem Feld** — Start, Pause und Ende stehen samt
+  Knöpfen in einer Karte auf dem Feld, in der Pause der Figur ausweichend, vor
+  dem Start über ihr. Das Feld bleibt unverschleiert sichtbar, nichts rückt
+  dabei. Die Hälften bleiben in der Pause liegen: Ein Tipp darauf springt weiter
+  und lenkt zugleich. Ein Tipp auf die Knöpfe der Karte tut nur, was auf ihnen
+  steht.
+- **AC-32** `fertig` **Mit einem Griff wieder oben** — „Nochmal" und „Neu anfangen"
+  springen sofort los, ohne zweiten Tipp. Nach dem Ende geht das auch mit einem
+  Tipp auf Feld oder Hälften oder mit Enter, frühestens 0,6 s danach; der Tipp
+  aufs Feld schießt dabei nicht. Die Leertaste startet nicht neu.
+- **AC-33** `fertig` **Rekord im Sprung** — Überholt die Höhe den alten Bestwert,
+  wird ihre Zahl oben grün. Nach einem Klick auf den Pause-Knopf im Kopf gehört
+  die Leertaste wieder dem Schießen.
 
 ### Monster und schwarze Löcher
 
@@ -160,9 +185,9 @@ Löcher, Propeller und Raketen, und je Rang drei Ziele wie beim Vorbild.
   geschafften Ziele und den neuen Rang. Was im Spiel gemeldet wird, stimmt mit
   der Nachrechnung nach dem Ende überein.
 - **AC-25** `fertig` **Ziele ansehen** — Der Rang über dem Feld und „Ziele"
-  unter dem Feld (vor dem Start und nach dem Ende) öffnen ein Blatt mit dem
+  in der Karte (vor dem Start und nach dem Ende) öffnen ein Blatt mit dem
   Rang und den drei Zielen mit Haken, Stand und Balken – die laufende Partie
-  eingerechnet. Der Knopf unter dem Feld sagt, wie viele der drei geschafft
+  eingerechnet. Der Knopf in der Karte sagt, wie viele der drei geschafft
   sind. Einen eigenen Knopf im Kopf gibt es nicht: Mit ihm überdeckten die
   Knöpfe auf dem Handy den Titel.
 - **AC-26** `fertig` **Alle Ränge geschafft** — Nach dem zehnten Rang heißt es im

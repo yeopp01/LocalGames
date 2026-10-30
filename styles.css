@@ -93,6 +93,11 @@
   --lueftung: max(14px, env(safe-area-inset-left));
   --kopf-hoehe: 62px;
 
+  /* Kantenlänge eines Spielbretts: so groß, wie Breite und Höhe des Fensters
+     es erlauben. Der feste Deckel von früher ließ auf dem Laptop zwei Drittel
+     des Fensters leer. app.js rechnet dasselbe als sitzung.brettKante(). */
+  --brett: max(260px, min(100vw - 28px, 100dvh - 240px, 532px));
+
   color-scheme: light dark;
 }
 
@@ -142,7 +147,10 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
-button { font: inherit; color: inherit; }
+button { font: inherit; color: inherit; -webkit-tap-highlight-color: transparent; }
+
+/* Nur wer mit der Tastatur kommt, bekommt den Ring zu sehen. */
+:focus-visible { outline: 2px solid var(--tinte); outline-offset: 2px; }
 
 /* ------------------------------------------------------------------- Kopf */
 
@@ -195,6 +203,9 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* Ohne Unterzeile steht der Titel mittig, nicht oben in seiner Zeile. */
+.wordmark-unter:empty { display: none; }
 
 .topbar-werkzeuge { display: flex; align-items: center; gap: 4px; }
 
@@ -270,7 +281,11 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   background: transparent;
   cursor: pointer;
 }
+.icon-button { transition: background-color .12s ease; }
 .icon-button:active { background: var(--karte-rand); }
+@media (hover: hover) {
+  .icon-button:hover { background: color-mix(in srgb, var(--karte-rand) 60%, transparent); }
+}
 .icon-button svg {
   width: 22px;
   height: 22px;
@@ -292,6 +307,10 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 }
 
 /* -------------------------------------------------------- Auswahl/Kacheln */
+
+/* Auf dem Handy bleibt alles beim Alten, auf breiten Fenstern nutzt die Auswahl
+   die Fläche, statt als schmale Spalte durch die Mitte zu laufen. */
+body[data-ansicht='auswahl'] .buehne { max-width: 1120px; }
 
 /* Die Überschrift läuft als feine Linie bis zum Rand aus – beim Scrollen
    sieht man so, wo eine Art Spiel aufhört und die nächste beginnt. */
@@ -346,6 +365,17 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   transition: transform .12s ease;
 }
 .kachel:active { transform: scale(.98); }
+@media (hover: hover) {
+  .kachel { transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease; }
+  .kachel:hover {
+    transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--ton) 45%, var(--karte-rand));
+    box-shadow: 0 2px 4px rgba(30, 24, 16, .07), 0 10px 26px rgba(30, 24, 16, .1);
+  }
+}
+@media (min-width: 900px) {
+  .kacheln { grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); }
+}
 
 .kachel-marke {
   width: 38px;
@@ -364,7 +394,9 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
 }
 
 .kachel-text { display: flex; flex-direction: column; flex: 1 1 auto; }
-.kachel-name { font-size: 19px; font-weight: 700; letter-spacing: -.01em; }
+/* „Galgenmännchen" ist breiter als eine Kachel auf dem Handy; lieber trennen
+   als aus dem Rahmen laufen. */
+.kachel-name { font-size: 19px; font-weight: 700; letter-spacing: -.01em; hyphens: auto; overflow-wrap: anywhere; }
 .kachel-unter { font-size: 13.5px; color: var(--tinte-leise); line-height: 1.3; }
 .kachel-fuss {
   margin-top: 8px;
@@ -472,11 +504,16 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
+  transition: transform .1s ease, opacity .12s ease, background-color .12s ease, box-shadow .12s ease;
 }
 .knopf--voll { background: var(--tinte); color: var(--papier); }
 .knopf--still { background: var(--karte-rand); color: var(--tinte); }
 .knopf--gefahr { background: transparent; color: var(--rost); width: 100%; margin-top: 6px; }
-.knopf:active { opacity: .8; }
+.knopf:active:not(:disabled) { transform: scale(.97); opacity: .85; }
+@media (hover: hover) {
+  .knopf--voll:hover:not(:disabled) { opacity: .88; }
+  .knopf--still:hover:not(:disabled) { background: color-mix(in srgb, var(--karte-rand) 75%, var(--tinte-still)); }
+}
 /* Ein Knopf, der gerade nichts zu tun hat – etwa Rückgängig ohne Verlauf. */
 .knopf:disabled { opacity: .4; cursor: default; }
 
@@ -496,6 +533,20 @@ body[data-ansicht='spiel'] .topbar { border-bottom-color: var(--karte-rand); }
   animation: hoch .22s ease;
 }
 @keyframes hoch { from { transform: translateY(14%); } }
+.sheet-schatten { animation: blenden .18s ease; }
+@keyframes blenden { from { opacity: 0; } }
+/* Auf breiten, hohen Fenstern ist „von unten" weit weg von dem, was man gerade
+   angeschaut hat – dort steht das Blatt als Dialog in der Mitte. */
+@media (min-width: 700px) and (min-height: 480px) {
+  .sheet-huelle { align-items: center; }
+  .sheet {
+    border-radius: 20px;
+    padding: 18px 22px 20px;
+    animation: auftauchen .18s ease;
+  }
+  .sheet-griff { display: none; }
+}
+@keyframes auftauchen { from { opacity: 0; transform: translateY(8px) scale(.985); } }
 .sheet-griff { width: 38px; height: 4px; border-radius: 2px; background: var(--karte-rand); margin: 4px auto 12px; }
 .sheet-titel { margin: 0 0 10px; font-size: 22px; font-weight: 800; letter-spacing: -.02em; }
 .sheet-liste { display: grid; gap: 2px; margin: 14px 0; }
@@ -552,7 +603,9 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   font-weight: 500;
   box-shadow: var(--schatten);
   max-width: calc(100vw - 32px);
+  animation: toast-rein .16s ease;
 }
+@keyframes toast-rein { from { opacity: 0; transform: translate(-50%, 6px); } }
 
 /* ------------------------------------------------------------- Spielboden */
 
@@ -565,7 +618,24 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   justify-content: center;
   width: 100%;
 }
-.leiste .knopf { padding: 9px 12px; font-size: 13.5px; border-radius: 999px; }
+.leiste .knopf { padding: 9px 13px; font-size: 13.5px; border-radius: 999px; }
+/* Die Knöpfe unter dem Brett liegen als helle Pillen auf dem Papier; die
+   beige Füllung von früher war vom Hintergrund kaum zu unterscheiden. */
+.leiste .knopf--still {
+  background: var(--karte);
+  box-shadow: 0 0 0 1px var(--karte-rand), 0 1px 2px rgba(30, 24, 16, .05);
+}
+@media (hover: hover) {
+  .leiste .knopf--still:hover:not(:disabled) {
+    background: var(--karte);
+    box-shadow: 0 0 0 1px var(--tinte-still), 0 1px 3px rgba(30, 24, 16, .08);
+  }
+}
+.leiste .bildzeichen svg { width: 1.15em; height: 1.15em; stroke-width: 2.2; }
+
+/* Das Spielbrett soll sich unter dem Finger nicht markieren lassen. */
+.spielboden { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.spielboden input, .spielboden textarea { -webkit-user-select: text; user-select: text; }
 
 .ende-kasten {
   width: 100%;
@@ -575,7 +645,26 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   border: 1px solid var(--karte-rand);
   text-align: center;
 }
+/* Auf dem Laptop stand das Ergebnis sonst breiter als das Brett darüber. */
+.spielboden > .ende-kasten:not(.sk-ende) { max-width: var(--brett); }
 .ende-titel { font-size: 19px; font-weight: 800; margin: 0 0 4px; }
+.ende-kasten:not([hidden]) { animation: ende-rein .28s cubic-bezier(.2, .8, .3, 1.15); }
+@keyframes ende-rein { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+.ende-kasten .leiste { margin-top: 10px; }
+/* Der Haken landet: kurz groß, dann an seinem Platz. */
+.ende-kasten .bildzeichen--fertig svg { animation: haken-landet .36s cubic-bezier(.2, .8, .3, 1.4); }
+@keyframes haken-landet { from { transform: scale(.4); opacity: 0; } }
+/* Etwas Hervorgehobenes im Ergebnis, etwa eine neue Bestzeit. */
+.ende-marke {
+  display: inline-block;
+  margin: 2px 0 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--gruen) 16%, transparent);
+  color: var(--gruen);
+  font-size: 13px;
+  font-weight: 700;
+}
 
 /* Stufe als Punkte in Ampelfarbe, Kreispfeil und Haken – app.js,
    stufenZeichen und bildzeichen. Leere Punkte sind Ringe in derselben Farbe,
@@ -617,39 +706,79 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 
 /* ============================================================== 1. Wördle */
 
+/* Das Gitter rechnet sich aus dem, was übrig bleibt: Kopf, Tafel und Hilfen
+   brauchen ihren Platz immer, damit die Tafel auch im flachen Fenster nicht unter
+   den Rand rutscht. Tipp und verratene Buchstaben melden ihren Bedarf an. */
+.spielboden:has(> .w-gitter) {
+  --w-taste: clamp(42px, 7dvh, 58px);
+  --w-rest: 168px;
+}
+.spielboden:has(> .w-verraten:not(:empty)) { --w-rest: 198px; }
+.spielboden:has(> .w-tipp:not([hidden])) { --w-rest: 248px; }
+.spielboden:has(> .w-verraten:not(:empty)):has(> .w-tipp:not([hidden])) { --w-rest: 278px; }
+/* Der große Abstand unter der Bühne ist hier nur verschenkte Gitterhöhe. */
+.buehne:has(> .spielboden > .w-gitter) { padding-bottom: 14px; }
+
 .w-gitter {
+  --w-breite: max(190px, min(100vw - 28px, (100dvh - var(--w-rest) - 3 * var(--w-taste) - 30px) * 5 / 6 + 24px, 420px));
   display: grid;
   grid-template-rows: repeat(6, 1fr);
-  gap: 5px;
-  width: min(320px, 82vw);
+  gap: 6px;
+  width: var(--w-breite);
 }
-.w-zeile { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; }
+.w-zeile { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
 
 .w-feld {
   aspect-ratio: 1;
   display: grid;
   place-items: center;
-  border: 2px solid var(--karte-rand);
-  border-radius: 6px;
-  font-size: clamp(20px, 7vw, 30px);
+  border-radius: 10px;
+  font-size: calc(var(--w-breite) * .092);
   font-weight: 800;
+  line-height: 1;
   text-transform: uppercase;
-  background: transparent;
-  transition: transform .1s ease;
+  background: color-mix(in srgb, var(--karte) 60%, transparent);
+  box-shadow: 0 0 0 1px var(--karte-rand);
 }
-.w-feld[data-voll='ja'] { border-color: var(--tinte-still); transform: scale(1.04); }
-.w-feld[data-stufe='2'] { background: var(--gruen); border-color: var(--gruen); color: #fff; }
-.w-feld[data-stufe='1'] { background: var(--gelb); border-color: var(--gelb); color: #fff; }
-.w-feld[data-stufe='0'] { background: var(--grau); border-color: var(--grau); color: #fff; }
-.w-feld[data-verraten='ja'] { border-color: var(--gruen); border-style: dashed; color: var(--gruen); }
+/* Die laufende Zeile hebt sich ab: Dort spielt die Musik. */
+.w-feld[data-tippbar='ja'] {
+  cursor: pointer;
+  background: var(--karte);
+  box-shadow: 0 0 0 1px var(--tinte-still), 0 1px 3px rgba(30, 24, 16, .08);
+}
+.w-feld[data-voll='ja'] { animation: w-setzen .13s ease-out; }
+@keyframes w-setzen { 40% { transform: scale(1.08); } }
+.w-feld[data-stufe='2'] { --w-ton: var(--gruen); }
+.w-feld[data-stufe='1'] { --w-ton: var(--gelb); }
+.w-feld[data-stufe='0'] { --w-ton: var(--grau); }
+.w-feld[data-stufe] { background: var(--w-ton); color: #fff; box-shadow: none; }
+.w-feld[data-verraten='ja'] { color: var(--gruen); box-shadow: 0 0 0 1px var(--gruen); opacity: .75; }
 
 /* Der Schreibplatz: hier landet der nächste Buchstabe. Ein Tippen auf ein
    anderes Feld der laufenden Zeile setzt ihn dorthin. */
 .w-feld[data-platz='ja'] {
-  border-color: var(--tinte);
-  box-shadow: 0 0 0 2px var(--tinte) inset;
+  box-shadow: 0 0 0 2.5px var(--tinte), 0 1px 3px rgba(30, 24, 16, .08);
+  opacity: 1;
 }
-.w-feld[data-tippbar='ja'] { cursor: pointer; }
+
+/* Aufdecken: Bis zur Hälfte der Drehung ist es noch das getippte Feld, danach
+   die Farbe. Auf diesen Versatz rechnet AUFDECKEN_MS in wordle.js. */
+.w-zeile[data-neu='ja'] .w-feld {
+  animation: w-aufdecken .34s ease-in-out backwards;
+  animation-delay: calc(var(--i) * 110ms);
+}
+@keyframes w-aufdecken {
+  0%, 49.9% { background: var(--karte); color: var(--tinte); box-shadow: 0 0 0 1px var(--tinte-still); }
+  0% { transform: rotateX(0); }
+  50% { transform: rotateX(90deg); background: var(--w-ton); color: #fff; box-shadow: none; }
+  100% { transform: rotateX(0); }
+}
+/* Gelöst: Die Zeile hüpft einmal von links nach rechts. */
+.w-zeile[data-sieg='ja'] .w-feld {
+  animation: w-huepfen .36s ease-out backwards;
+  animation-delay: calc(var(--i) * 70ms);
+}
+@keyframes w-huepfen { 40% { transform: translateY(-16%); } 70% { transform: translateY(3%); } }
 
 .w-zeile[data-falsch='ja'] { animation: ruettel .4s; }
 @keyframes ruettel {
@@ -660,31 +789,43 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   80% { transform: translateX(4px); }
 }
 
+/* Elf gleiche Spalten: Vorher richtete sich jede Taste nach ihrem Buchstaben,
+   das I war schmal, und die Reihen standen nicht übereinander. */
 .w-tafel {
   display: grid;
+  grid-template-columns: repeat(11, minmax(0, 1fr));
   gap: 5px;
   width: 100%;
-  max-width: 480px;
+  max-width: 500px;
   margin-top: 4px;
 }
-.w-reihe { display: flex; gap: 4px; justify-content: center; }
+.w-reihe { display: contents; }
 .w-taste {
-  flex: 1 1 auto;
   min-width: 0;
-  height: 50px;
+  height: var(--w-taste);
+  padding: 0;
   border: 0;
-  border-radius: 7px;
-  background: var(--karte-rand);
-  font-size: 15px;
+  border-radius: 9px;
+  background: var(--karte);
+  box-shadow: 0 0 0 1px var(--karte-rand), 0 1px 2px rgba(30, 24, 16, .06);
+  font-size: 16px;
   font-weight: 700;
-  text-transform: uppercase;
   cursor: pointer;
+  /* Sonst zoomt ein schneller Doppeltipper auf dem Handy die Seite. */
+  touch-action: manipulation;
+  transition: background-color .18s ease, color .18s ease, transform .08s ease;
 }
-.w-taste--breit { flex: 1.6 1 auto; font-size: 12px; }
+.w-taste--breit { grid-column: span 2; font-size: 13px; }
+.w-taste[data-stufe] { box-shadow: none; }
 .w-taste[data-stufe='2'] { background: var(--gruen); color: #fff; }
 .w-taste[data-stufe='1'] { background: var(--gelb); color: #fff; }
 .w-taste[data-stufe='0'] { background: var(--grau); color: color-mix(in srgb, #fff 70%, transparent); }
-.w-taste:active { opacity: .7; }
+/* Die Tafel verrät das Ergebnis erst, wenn die Zeile es gezeigt hat. */
+.w-tafel[data-spaet='ja'] .w-taste { transition-delay: .62s; }
+.w-taste:active { transform: scale(.94); }
+@media (hover: hover) {
+  .w-taste:not([data-stufe]):hover { box-shadow: 0 0 0 1px var(--tinte-still), 0 1px 3px rgba(30, 24, 16, .08); }
+}
 
 .w-tipp {
   width: 100%;
@@ -700,8 +841,8 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   letter-spacing: .3em;
   font-size: 15px;
   color: var(--gruen);
-  min-height: 1.2em;
 }
+.w-verraten:empty { display: none; }
 
 .vorschlag {
   display: flex;
@@ -722,83 +863,163 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 
 /* ============================================================== 2. Sudoku */
 
+/* Die eigenen Ziffern sind blau: Rost hieß hier beides, „selbst gesetzt" und
+   „falsch", und eine richtige Ziffer sah aus wie ein halber Fehler. */
+/* Unter dem Brett liegen hier Ziffernblock und Leiste, also mehr als --brett
+   annimmt. Ohne die Korrektur stünde die Leiste auf dem Laptop am Rand. */
+.s-gitter, .s-pad { --s-kante: max(260px, min(var(--brett), 100dvh - 254px)); }
 .s-gitter {
+  --s-eigen: #2F6DB5;
+  --s-block: color-mix(in srgb, var(--tinte) 42%, var(--karte-rand));
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   /* Zeilen ausdrücklich gleich hoch: implizite auto-Zeilen bekämen sonst
      erst ihre Inhaltshöhe, und eine noch leere Zeile bliebe niedriger. */
   grid-template-rows: repeat(6, 1fr);
-  width: min(330px, 86vw);
-  aspect-ratio: 1;
-  border: 2px solid var(--tinte);
-  border-radius: 8px;
+  width: var(--s-kante);
+  height: var(--s-kante);
+  border-radius: 14px;
   overflow: hidden;
   background: var(--karte);
+  box-shadow: 0 0 0 1px var(--karte-rand), var(--schatten);
+}
+@media (prefers-color-scheme: dark) {
+  .s-gitter { --s-eigen: #8DB6EC; }
 }
 .s-feld {
   position: relative;
   display: grid;
   place-items: center;
-  border: 1px solid var(--karte-rand);
+  border: 0;
+  border-right: 1px solid var(--karte-rand);
+  border-bottom: 1px solid var(--karte-rand);
   background: transparent;
-  font-size: clamp(18px, 6.5vw, 26px);
+  font-size: calc(var(--s-kante) / 6 * .44);
   font-weight: 600;
+  color: var(--tinte);
   cursor: pointer;
   padding: 0;
+  outline-offset: -3px;
+  touch-action: manipulation;
+  transition: background-color .12s ease;
 }
-/* Blockgrenzen: Blöcke sind 3 breit und 2 hoch. */
-.s-feld[data-spalte='2'], .s-feld[data-spalte='5'] { border-right-width: 2px; border-right-color: var(--tinte); }
-.s-feld[data-zeile='1'], .s-feld[data-zeile='3'] { border-bottom-width: 2px; border-bottom-color: var(--tinte); }
+/* Blockgrenzen: Blöcke sind 3 breit und 2 hoch. Außen zieht die Karte den Rand. */
+.s-feld[data-spalte='2'] { border-right: 2px solid var(--s-block); }
+.s-feld[data-zeile='1'], .s-feld[data-zeile='3'] { border-bottom: 2px solid var(--s-block); }
+.s-feld[data-spalte='5'] { border-right: 0; }
+.s-feld[data-zeile='5'] { border-bottom: 0; }
 .s-feld[data-fest='ja'] { font-weight: 800; }
-.s-feld[data-fest='nein'] { color: var(--rost); }
-.s-feld[data-gewaehlt='ja'] { background: color-mix(in srgb, var(--gelb) 26%, transparent); }
-.s-feld[data-verwandt='ja'] { background: color-mix(in srgb, var(--tinte-still) 14%, transparent); }
+.s-feld[data-fest='nein'] { color: var(--s-eigen); }
+.s-feld[data-verwandt='ja'] { background: color-mix(in srgb, var(--tinte-still) 12%, transparent); }
 .s-feld[data-gleich='ja'] { background: color-mix(in srgb, var(--gruen) 22%, transparent); }
+.s-feld[data-gewaehlt='ja'] {
+  background: color-mix(in srgb, var(--gelb) 28%, transparent);
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--gelb) 80%, var(--tinte));
+}
 .s-feld[data-fehler='ja'] { color: #fff; background: var(--rost); }
 /* Vom Hinweis aufgedeckt: nachweislich falsch, aber (noch) nicht doppelt.
    Eigener Rahmen statt der roten Fläche, damit beides unterscheidbar bleibt. */
 .s-feld[data-falsch='ja'] { box-shadow: 0 0 0 3px var(--rost) inset; }
+.s-feld--neu { animation: s-landet .18s ease; }
+@keyframes s-landet { from { font-size: calc(var(--s-kante) / 6 * .6); } }
+@media (hover: hover) {
+  .s-gitter[data-fertig='nein'] .s-feld:not([data-gewaehlt='ja'], [data-fehler='ja']):hover {
+    background: color-mix(in srgb, var(--gelb) 12%, transparent);
+  }
+}
+/* Gelöst: Einmal läuft ein grüner Hauch von oben links über das Brett. */
+.s-gitter[data-fertig='ja'] .s-feld { cursor: default; animation: s-welle .5s ease backwards; animation-delay: calc(var(--i) * 40ms); }
+@keyframes s-welle { 40% { background: color-mix(in srgb, var(--gruen) 40%, transparent); } }
 
 .s-notizen {
   position: absolute;
-  inset: 2px;
+  inset: 3px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(2, 1fr);
-  font-size: 9px;
+  font-size: max(10px, calc(var(--s-kante) / 6 * .22));
   font-family: 'DM Mono', monospace;
   color: var(--tinte-leise);
   font-weight: 400;
   pointer-events: none;
 }
-.s-notiz { display: grid; place-items: center; }
+.s-notiz { display: grid; place-items: center; border-radius: 4px; }
+.s-notiz[data-gleich='ja']:not(:empty) { background: color-mix(in srgb, var(--gruen) 30%, transparent); color: var(--tinte); }
 
+/* Der Ziffernblock schließt bündig mit dem Brett ab; die feste Höhe statt eines
+   Quadrats hält das Brett samt Bedienung im Fenster, auch wenn es groß wird. */
 .s-pad {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 5px;
-  width: min(420px, 94vw);
-  margin-top: 6px;
+  width: var(--s-kante);
+}
+/* Auf dem schmalsten Handy bräche der dritte Knopf sonst in eine eigene Zeile. */
+@media (max-width: 360px) {
+  .leiste.s-leiste .knopf, .leiste.n-leiste .knopf { padding-inline: 7px; gap: 4px; font-size: 12.5px; }
 }
 .s-taste {
-  aspect-ratio: 1;
-  border: 1px solid var(--karte-rand);
-  border-radius: 10px;
+  height: 50px;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
   background: var(--karte);
-  font-size: 20px;
+  box-shadow: 0 0 0 1px var(--karte-rand), 0 1px 2px rgba(30, 24, 16, .05);
+  font-size: 21px;
   font-weight: 700;
   cursor: pointer;
   display: grid;
   place-items: center;
+  touch-action: manipulation;
+  transition: background-color .12s ease, color .12s ease, transform .1s ease, opacity .12s ease;
 }
 .s-taste[data-fertig='ja'] { color: var(--tinte-still); background: transparent; }
-.s-taste svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
-.s-taste:active { background: var(--karte-rand); }
-.s-taste[data-an='ja'] { background: var(--tinte); color: var(--papier); border-color: var(--tinte); }
+.s-taste svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.s-taste:active:not(:disabled) { background: var(--karte-rand); transform: scale(.95); }
+.s-taste:disabled { opacity: .4; cursor: default; }
+.s-taste[data-an='ja'] { background: var(--tinte); color: var(--papier); box-shadow: none; }
+/* Im Notiz-Modus schreiben die Tasten klein und in Notizschrift – man sieht am
+   Block selbst, was der nächste Tipp tut. */
+.s-pad[data-notiz='ja'] .s-taste:not(:last-child) { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; }
+@media (hover: hover) {
+  .s-taste:hover:not(:disabled, [data-an='ja']) { box-shadow: 0 0 0 1px var(--tinte-still), 0 1px 3px rgba(30, 24, 16, .08); }
+}
 
 /* ============================================================ 3. Minenfeld */
 
-.m-rahmen { width: min(400px, 96vw); overflow-x: auto; }
+/* Zugedeckt ist erhaben und schieferblau, offen ist flach auf der Karte. Das
+   Beige von früher lag dicht an der Papierfarbe, und zwischen zu und offen war
+   kaum ein Unterschied. */
+.m-rahmen {
+  --m-zu: color-mix(in srgb, #5B7595 30%, var(--karte));
+  --m-kante: color-mix(in srgb, #2A3A52 22%, transparent);
+  --m-1: #2F6DB5;
+  --m-2: #3E8146;
+  --m-3: #C0492B;
+  --m-4: #6A4FA3;
+  --m-5: #94591F;
+  --m-6: #1F8585;
+  padding: 7px;
+  border-radius: 14px;
+  background: var(--karte);
+  box-shadow: 0 0 0 1px var(--karte-rand), var(--schatten);
+  transition: box-shadow .15s ease;
+}
+@media (prefers-color-scheme: dark) {
+  .m-rahmen {
+    --m-zu: color-mix(in srgb, #7D94B3 34%, var(--karte));
+    --m-kante: rgba(0, 0, 0, .35);
+    --m-1: #8DB6EC;
+    --m-2: #86C48C;
+    --m-3: #EC8F73;
+    --m-4: #B9A2E8;
+    --m-5: #D9A66B;
+    --m-6: #6CC9C9;
+  }
+}
+/* Im Fahnen-Modus zeigt auch das Brett, dass ein Tipp jetzt etwas anderes tut. */
+.m-rahmen[data-fahne='ja'] { box-shadow: 0 0 0 2px var(--rost), var(--schatten); }
+.m-rahmen[data-ende='sieg'] { box-shadow: 0 0 0 2px var(--gruen), var(--schatten); }
 .m-gitter {
   display: grid;
   gap: 2px;
@@ -811,27 +1032,88 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   display: grid;
   place-items: center;
   border: 0;
-  border-radius: 4px;
-  background: var(--karte-rand);
-  font-family: 'DM Mono', monospace;
-  font-weight: 500;
-  font-size: calc(var(--kachel) * .56);
+  border-radius: 6px;
+  background: var(--m-zu);
+  box-shadow: inset 0 -2px 0 var(--m-kante);
+  color: var(--tinte);
+  font-weight: 800;
+  font-size: calc(var(--kachel) * .52);
+  line-height: 1;
   cursor: pointer;
   padding: 0;
+  outline-offset: -2px;
   user-select: none;
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: background-color .12s ease, box-shadow .12s ease, opacity .12s ease, transform .08s ease;
 }
-.m-feld[data-offen='ja'] { background: color-mix(in srgb, var(--karte-rand) 40%, transparent); cursor: default; }
-.m-feld[data-zahl='1'] { color: #4573B8; }
-.m-feld[data-zahl='2'] { color: var(--gruen); }
-.m-feld[data-zahl='3'] { color: var(--rost); }
-.m-feld[data-zahl='4'] { color: #6A4FA3; }
-.m-feld[data-zahl='5'] { color: #8A5A2B; }
-.m-feld[data-zahl='6'] { color: #2E8B8B; }
+.m-feld svg { width: 72%; height: 72%; display: block; pointer-events: none; }
+.m-feld .m-stange { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; }
+.m-feld .m-tuch { fill: var(--rost); }
+.m-feld .m-kugel { fill: currentColor; }
+.m-feld:not([data-offen='ja']):active { transform: scale(.93); }
+@media (hover: hover) {
+  .m-rahmen[data-ende='nein'] .m-feld:not([data-offen='ja']):hover { background: color-mix(in srgb, var(--m-zu) 72%, var(--tinte-still)); }
+}
+.m-feld[data-offen='ja'] { background: transparent; box-shadow: none; cursor: default; }
+.m-feld[data-zahl] { cursor: pointer; }
+.m-feld[data-zahl='1'] { color: var(--m-1); }
+.m-feld[data-zahl='2'] { color: var(--m-2); }
+.m-feld[data-zahl='3'] { color: var(--m-3); }
+.m-feld[data-zahl='4'] { color: var(--m-4); }
+.m-feld[data-zahl='5'] { color: var(--m-5); }
+.m-feld[data-zahl='6'] { color: var(--m-6); }
 .m-feld[data-zahl='7'], .m-feld[data-zahl='8'] { color: var(--tinte); }
-.m-feld[data-mine='ja'] { background: var(--rost); color: #fff; }
-.m-feld[data-fahne='ja'] { color: var(--rost); }
+/* Rundum geklärt: tritt zurück, damit die offenen Fragen hervorstehen. */
+.m-feld[data-erledigt='ja'] { opacity: .38; cursor: default; }
+.m-feld[data-zuviel='ja'] { background: color-mix(in srgb, var(--rost) 22%, transparent); }
+.m-feld[data-mine='ja'] { background: color-mix(in srgb, var(--rost) 20%, transparent); color: var(--tinte); }
+/* Die Mine, die es war. */
+.m-feld[data-gezuendet='ja'] { background: var(--rost); color: #fff; animation: m-bumm .3s cubic-bezier(.2, .8, .3, 1.4); }
+@keyframes m-bumm { from { transform: scale(.5); } }
+.m-feld[data-falsch='ja'] { color: var(--rost); font-size: calc(var(--kachel) * .7); }
+/* Eine Zahl sagt, um welche Felder es geht. */
+.m-feld--zeigt { animation: m-zeigt .5s ease; }
+@keyframes m-zeigt { 30% { background: color-mix(in srgb, var(--gelb) 70%, var(--m-zu)); transform: scale(1.07); } }
+.m-rahmen[data-ende='sieg'] .m-feld[data-fahne='ja'] { background: color-mix(in srgb, var(--gruen) 22%, transparent); box-shadow: none; }
+.m-rahmen:not([data-ende='nein']) .m-feld { cursor: default; }
+/* Am Ende gibt es nichts mehr zu klären; das Brett soll sich wieder ganz zeigen. */
+.m-rahmen:not([data-ende='nein']) .m-feld[data-erledigt='ja'] { opacity: 1; }
+
+/* Was ein Tipp tut, als zwei Hälften. Nonogramm benutzt sie auch. */
+.m-modus {
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 3px;
+  padding: 3px;
+  border-radius: 999px;
+  background: var(--karte);
+  box-shadow: 0 0 0 1px var(--karte-rand), 0 1px 2px rgba(30, 24, 16, .05);
+}
+.m-modus[hidden] { display: none; }
+.m-modus-knopf {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--tinte-leise);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color .12s ease, color .12s ease;
+}
+.m-modus-knopf svg { width: 18px; height: 18px; flex: none; }
+.m-modus-knopf .m-stange { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.m-modus-knopf .m-tuch, .m-modus-knopf .m-kugel { fill: currentColor; }
+.m-modus-knopf[aria-pressed='true'] { background: var(--tinte); color: var(--papier); }
 
 .m-kopf {
   display: flex;
@@ -852,78 +1134,187 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 
 /* ================================================================ 4. 2048 */
 
+.z-kopf { display: flex; gap: 8px; justify-content: center; width: var(--z-kante); }
+.spielboden:has(> .z-brett) { --z-kante: max(260px, min(100vw - 28px, 100dvh - 252px, 532px)); }
+.z-zahl {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 4px 10px 5px;
+  border-radius: 10px;
+  background: var(--karte);
+  box-shadow: 0 0 0 1px var(--karte-rand);
+  text-align: center;
+  line-height: 1.15;
+}
+.z-zahl-titel { display: block; font-size: 11.5px; color: var(--tinte-leise); }
+.z-zahl-wert { display: block; font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; }
+/* Was der Zug gebracht hat, steigt kurz aus dem Kästchen auf. */
+.z-dazu {
+  position: absolute;
+  top: 2px;
+  right: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--gruen);
+  pointer-events: none;
+  animation: z-dazu .6s ease-out forwards;
+}
+@keyframes z-dazu { to { transform: translateY(-14px); opacity: 0; } }
+
 .z-brett {
+  --z-luecke: 7px;
+  position: relative;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   /* Zeilen ausdrücklich gleich hoch: implizite auto-Zeilen richten sich sonst
      nach ihrem Inhalt, und eine leere Zeile bliebe niedriger als eine volle. */
   grid-template-rows: repeat(4, 1fr);
-  gap: 6px;
-  width: min(340px, 88vw);
+  gap: var(--z-luecke);
+  width: var(--z-kante);
   aspect-ratio: 1;
-  padding: 6px;
-  border-radius: 12px;
-  background: var(--karte-rand);
+  padding: var(--z-luecke);
+  border-radius: 14px;
+  background: var(--karte);
+  box-shadow: 0 0 0 1px var(--karte-rand), var(--schatten);
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
+  cursor: grab;
 }
+.z-brett[data-ende='ja'] { cursor: default; }
+.z-brett[data-ende='ja'] .z-kachel { opacity: .82; }
 .z-feld {
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--karte-rand) 55%, transparent);
+}
+/* Die Kacheln liegen in einem zweiten Gitter genau über den Feldern. */
+.z-schicht {
+  position: absolute;
+  inset: var(--z-luecke);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(4, 1fr);
+  gap: var(--z-luecke);
+  pointer-events: none;
+}
+.z-kachel {
   display: grid;
   place-items: center;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--karte) 55%, transparent);
+  border-radius: 9px;
   font-weight: 800;
-  font-size: clamp(16px, 6vw, 28px);
+  font-size: calc(var(--z-kante) * .105);
+  line-height: 1;
   letter-spacing: -.03em;
-  color: #2B2118;
-  transition: background .1s ease;
+  background: #2E6B8B;  /* alles über 2048 */
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(30, 24, 16, .12);
 }
-.z-feld[data-wert='0'] { color: transparent; }
-.z-feld[data-wert='2'] { background: #EDE4D6; }
-.z-feld[data-wert='4'] { background: #EBD9B8; }
-.z-feld[data-wert='8'] { background: #E9B77C; color: #fff; }
-.z-feld[data-wert='16'] { background: #E39B5E; color: #fff; }
-.z-feld[data-wert='32'] { background: #DE7F52; color: #fff; }
-.z-feld[data-wert='64'] { background: #D4603A; color: #fff; }
-.z-feld[data-wert='128'] { background: #D8B84A; color: #fff; font-size: clamp(14px, 5vw, 24px); }
-.z-feld[data-wert='256'] { background: #D4AE33; color: #fff; font-size: clamp(14px, 5vw, 24px); }
-.z-feld[data-wert='512'] { background: #CFA41C; color: #fff; font-size: clamp(14px, 5vw, 24px); }
-.z-feld[data-wert='1024'] { background: #4E8A54; color: #fff; font-size: clamp(12px, 4.2vw, 20px); }
-.z-feld[data-wert='2048'] { background: #3E7A46; color: #fff; font-size: clamp(12px, 4.2vw, 20px); }
-.z-feld:not([data-wert='0']):not([data-wert='2']):not([data-wert='4']):not([data-wert='8']):not([data-wert='16']):not([data-wert='32']):not([data-wert='64']):not([data-wert='128']):not([data-wert='256']):not([data-wert='512']):not([data-wert='1024']):not([data-wert='2048']) {
-  background: #2E6B8B; color: #fff; font-size: clamp(11px, 3.8vw, 18px);
+.z-geist { z-index: 0; }
+.z-kachel:not(.z-geist) { z-index: 1; }
+.z-kachel[data-stellen='3'] { font-size: calc(var(--z-kante) * .09); }
+.z-kachel[data-stellen='4'] { font-size: calc(var(--z-kante) * .072); }
+.z-kachel[data-stellen='5'] { font-size: calc(var(--z-kante) * .058); }
+.z-kachel[data-stellen='6'] { font-size: calc(var(--z-kante) * .048); }
+/* Die Reihe wandert von hellem Sand über Orange und Gold zu Grün; bis 16 und im
+   Gold dunkle Schrift, weil Weiß darauf kaum zu lesen war. Auf dunklem Grund
+   bleiben die Kacheln gleich, sie leuchten dort von selbst. */
+.z-kachel[data-wert='2'] { background: #EFE5D3; color: #3A2C1E; }
+.z-kachel[data-wert='4'] { background: #EDD8AC; color: #3A2C1E; }
+.z-kachel[data-wert='8'] { background: #F2B66C; color: #3A2410; }
+.z-kachel[data-wert='16'] { background: #EE9650; color: #33190A; }
+.z-kachel[data-wert='32'] { background: #E2703F; }
+.z-kachel[data-wert='64'] { background: #C94F2C; }
+.z-kachel[data-wert='128'] { background: #E8C75A; color: #3A2C0E; }
+.z-kachel[data-wert='256'] { background: #DDB332; color: #33260A; }
+.z-kachel[data-wert='512'] { background: #B98D14; }
+.z-kachel[data-wert='1024'] { background: #4E8A54; }
+.z-kachel[data-wert='2048'] { background: #2F7344; }
+
+.spielboden:has(> .z-brett) .leiste .z-pfeil {
+  min-width: 52px;
+  min-height: 44px;
+  padding: 0 8px;
+  font-size: 20px;
+  line-height: 1;
 }
+.spielboden:has(> .z-brett) .leiste .knopf:not(.z-pfeil) { min-height: 44px; }
 
 /* ====================================================== 5. Galgenmännchen */
 
-.g-bild { width: min(220px, 60vw); }
-.g-bild svg {
-  width: 100%;
-  height: auto;
-  fill: none;
-  stroke: var(--tinte);
-  stroke-width: 3;
-  stroke-linecap: round;
+/* Das Bild nimmt sich, was neben Wort, Tafel und Tipp übrig bleibt. */
+.spielboden:has(> .g-bild) {
+  --g-taste: clamp(42px, 7dvh, 56px);
+  --g-wort: clamp(46px, 8dvh, 62px);
+  --g-rest: 220px;
 }
-.g-wort { display: flex; gap: 6px; }
+.spielboden:has(> .g-bild):has(> .w-tipp:not([hidden])) { --g-rest: 300px; }
+.buehne:has(> .spielboden > .g-bild) { padding-bottom: 14px; }
+
+.g-bild {
+  width: 100%;
+  height: clamp(120px, 100dvh - var(--g-rest) - var(--g-wort) - 3 * var(--g-taste), 340px);
+  padding: 8px;
+  border-radius: 14px;
+  background: var(--karte);
+  box-shadow: 0 0 0 1px var(--karte-rand), var(--schatten);
+}
+.g-bild svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.g-teil {
+  stroke: var(--karte-rand);
+  stroke-width: 2.2;
+  transition: stroke .2s ease;
+}
+.g-teil[data-da='ja'] { stroke: var(--tinte); stroke-width: 2.6; }
+/* Der neue Strich wird gezogen. pathLength=1 am Teil macht die Länge für alle gleich. */
+.g-teil[data-neu='ja'] { stroke-dasharray: 1; animation: g-ziehen .3s ease-out; }
+@keyframes g-ziehen { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.g-bild[data-ausgang='pleite'] .g-mann { stroke: var(--rost); }
+
+.g-wort { display: flex; gap: 6px; justify-content: center; width: 100%; }
+/* Ein Kasten je Buchstabe. Die Striche von früher waren neben dem großen Bild
+   das Kleinste auf der Seite, obwohl sich um sie alles dreht. */
 .g-buchstabe {
-  width: clamp(32px, 11vw, 44px);
-  height: clamp(40px, 13vw, 54px);
+  width: var(--g-wort);
+  height: var(--g-wort);
   display: grid;
   place-items: center;
-  border-bottom: 3px solid var(--tinte-still);
-  font-size: clamp(20px, 7vw, 30px);
+  border-radius: 10px;
+  background: var(--karte);
+  box-shadow: 0 0 0 1px var(--karte-rand), inset 0 -3px 0 var(--tinte-still);
+  font-size: calc(var(--g-wort) * .54);
   font-weight: 800;
+  line-height: 1;
 }
-.g-buchstabe[data-verpasst='ja'] { color: var(--rost); }
+.g-buchstabe[data-voll='ja'] { box-shadow: 0 0 0 1px var(--tinte-still); }
+.g-buchstabe[data-neu='ja'] { animation: g-treffer .22s ease-out; }
+@keyframes g-treffer { from { transform: scale(.72); opacity: .3; } 60% { transform: scale(1.08); } }
+.g-buchstabe[data-verpasst='ja'] {
+  color: var(--rost);
+  background: color-mix(in srgb, var(--rost) 12%, var(--karte));
+  box-shadow: 0 0 0 1px var(--rost);
+}
+.g-wort[data-gerettet='ja'] .g-buchstabe {
+  background: var(--gruen);
+  color: #fff;
+  box-shadow: none;
+  animation: w-huepfen .36s ease-out backwards;
+  animation-delay: calc(var(--i) * 60ms);
+}
 
 .g-tafel {
   display: flex;
   flex-direction: column;
   gap: 5px;
   width: 100%;
-  max-width: 440px;
+  max-width: 500px;
 }
 .g-reihe { display: flex; gap: 5px; justify-content: center; }
 .g-taste {
@@ -931,46 +1322,113 @@ body:has(.sheet-huelle:not([hidden])) .toast {
      breit sind – auch in der kurzen dritten Reihe. */
   flex: 0 0 auto;
   width: calc((100% - 50px) / 11);
-  aspect-ratio: 1;
+  height: var(--g-taste);
+  padding: 0;
   border: 0;
-  border-radius: 8px;
-  background: var(--karte-rand);
+  border-radius: 9px;
+  background: var(--karte);
+  box-shadow: 0 0 0 1px var(--karte-rand), 0 1px 2px rgba(30, 24, 16, .06);
   font-weight: 700;
-  font-size: 15px;
+  font-size: 16px;
   cursor: pointer;
+  touch-action: manipulation;
+  transition: background-color .15s ease, color .15s ease, transform .08s ease;
 }
-.g-taste[data-stand='treffer'] { background: var(--gruen); color: #fff; }
-.g-taste[data-stand='daneben'] { background: transparent; color: var(--tinte-still); text-decoration: line-through; }
+.g-taste:active:not(:disabled) { transform: scale(.94); }
+.g-taste[data-stand='treffer'] { background: var(--gruen); color: #fff; box-shadow: none; }
+.g-taste[data-stand='daneben'] { background: transparent; box-shadow: none; color: var(--tinte-still); text-decoration: line-through; }
 .g-taste:disabled { cursor: default; }
+@media (hover: hover) {
+  .g-taste:hover:not(:disabled) { box-shadow: 0 0 0 1px var(--tinte-still), 0 1px 3px rgba(30, 24, 16, .08); }
+}
 
 /* ========================================================= 6. Vier gewinnt */
 
 .v-brett {
+  --v-rot: #C64B3A;
+  --v-gelb: #E0B33C;
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 5px;
-  width: min(360px, 94vw);
-  padding: 7px;
-  border-radius: 12px;
-  background: #4A6B9A;
+  width: max(260px, min(100vw - 28px, (100dvh - 196px) * 7 / 6, 532px));
+  padding: 6px;
+  border-radius: 16px;
+  background: #3F5F90;
+  box-shadow: var(--schatten);
+  /* Der fallende Stein kommt am oberen Rand herein, nicht aus der Kopfzeile. */
+  overflow: hidden;
 }
+/* Das Feld selbst ist die ganze Zelle ohne Lücke: Ein Tipp zwischen zwei Löcher
+   traf früher nichts. Loch und Stein liegen darin als eigene Schichten. */
 .v-feld {
   aspect-ratio: 1;
   border: 0;
-  border-radius: 50%;
-  background: var(--papier);
+  background: transparent;
   cursor: pointer;
   padding: 0;
   position: relative;
+  touch-action: manipulation;
+  outline-offset: -3px;
+  outline-color: #fff;
 }
-.v-feld[data-wer='ich'] { background: #C64B3A; }
-.v-feld[data-wer='er'] { background: #E0B33C; }
-.v-feld[data-sieg='ja'] { box-shadow: 0 0 0 3px var(--tinte) inset; }
-.v-feld[data-wer='leer']:active { background: color-mix(in srgb, var(--papier) 70%, #000); }
+.v-feld::before,
+.v-feld::after {
+  content: '';
+  position: absolute;
+  inset: 6%;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.v-feld::before {
+  background: var(--papier);
+  box-shadow: inset 0 2px 3px rgba(10, 16, 30, .32);
+  transition: background-color .12s ease;
+}
+.v-feld[data-wer='ich'] { --v-stein: var(--v-rot); }
+.v-feld[data-wer='er'] { --v-stein: var(--v-gelb); }
+.v-feld:not([data-wer='leer'])::after {
+  background: var(--v-stein);
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, .1), inset 0 -3px 4px rgba(0, 0, 0, .1);
+  transition: opacity .2s ease;
+}
+/* Der zuletzt gelegte Stein. */
+.v-feld[data-letzter='ja']::after {
+  background: radial-gradient(circle, rgba(255, 255, 255, .92) 0 13%, transparent 15%), var(--v-stein);
+}
+
+/* Fallen: von über dem Brett bis ins Feld, unten federt der Stein einmal nach.
+   113,6 % sind eine Zelle, gemessen am Stein, der 88 % davon breit ist. */
+.v-feld[data-faellt='ja'] { z-index: 1; }
+.v-feld[data-faellt='ja']::after {
+  animation: v-fallen calc(170ms + var(--zeile) * 26ms) backwards;
+}
+@keyframes v-fallen {
+  from {
+    transform: translateY(calc((var(--zeile) + 1) * -113.6%));
+    animation-timing-function: cubic-bezier(.5, 0, 1, 1);
+  }
+  72% { transform: none; animation-timing-function: ease-out; }
+  86% { transform: translateY(-7%); animation-timing-function: ease-in; }
+  100% { transform: none; }
+}
+
+/* Vier in einer Reihe: die vier leuchten auf, alles andere tritt zurück. */
+.v-feld[data-sieg='ja'] { z-index: 2; animation: v-vier .4s ease-out .26s backwards; }
+.v-feld[data-sieg='ja']::after {
+  box-shadow: inset 0 0 0 max(3px, .55vmin) #fff;
+}
+@keyframes v-vier { 45% { transform: scale(1.13); } }
+.v-brett[data-entschieden='ja'] .v-feld:not([data-sieg='ja']):not([data-wer='leer'])::after { opacity: .55; }
+.v-brett[data-entschieden='ja'] .v-feld { cursor: default; }
+
+/* Mit der Maus über einer Spalte: wo der Stein landen würde. */
+.v-feld[data-saeule='ja']::before { background: color-mix(in srgb, var(--papier) 80%, #6F93CC); }
+.v-feld[data-vorschau='ich']::after { background: var(--v-rot); opacity: .42; }
+.v-feld[data-vorschau='er']::after { background: var(--v-gelb); opacity: .55; }
+.v-feld[data-wer='leer']:active::before { background: color-mix(in srgb, var(--papier) 70%, #000); }
 
 /* Zu zweit: wer dran ist, faerbt den Rand des Brettes und den Punkt im Kopf. */
-.v-brett[data-dran='ich'] { box-shadow: 0 0 0 3px #C64B3A; }
-.v-brett[data-dran='er'] { box-shadow: 0 0 0 3px #E0B33C; }
+.v-brett[data-dran='ich'] { box-shadow: 0 0 0 3px var(--v-rot), var(--schatten); }
+.v-brett[data-dran='er'] { box-shadow: 0 0 0 3px var(--v-gelb), var(--schatten); }
 .v-punkt {
   display: inline-block;
   width: 11px;
@@ -981,6 +1439,9 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 }
 .v-punkt[data-wer='ich'] { background: #C64B3A; }
 .v-punkt[data-wer='er'] { background: #E0B33C; }
+/* Solange der Rechner rechnet, atmet sein Punkt. */
+.v-punkt[data-denkt='ja'] { animation: v-denkt 1s ease-in-out infinite; }
+@keyframes v-denkt { 50% { opacity: .35; } }
 
 /* =========================================================== 7. Nonogramm */
 
@@ -988,12 +1449,24 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   --kanten: 5;
   --zelle: 34px;
   --rand: 60px;
+  --rand-oben: 46px;
+  --n-schrift: 14px;
+  --n-voll: #1F6F78;
+  --n-linie: color-mix(in srgb, var(--karte-rand) 85%, transparent);
+  --n-mitte: var(--tinte-still);
   display: grid;
   grid-template-columns: var(--rand) calc(var(--zelle) * var(--kanten));
-  grid-template-rows: auto calc(var(--zelle) * var(--kanten));
+  grid-template-rows: var(--rand-oben) calc(var(--zelle) * var(--kanten));
+  padding: 6px 8px 8px 0;
+  border-radius: 14px;
+  background: var(--karte);
+  box-shadow: 0 0 0 1px var(--karte-rand), var(--schatten);
   touch-action: none;
   user-select: none;
   -webkit-user-select: none;
+}
+@media (prefers-color-scheme: dark) {
+  .n-rahmen { --n-voll: #5FBDBD; }
 }
 .n-ecke { grid-area: 1 / 1; }
 
@@ -1007,114 +1480,228 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   display: grid;
   grid-template-rows: repeat(var(--kanten), var(--zelle));
 }
+/* Die Linien sind der Hintergrund des Gitters statt Ränder der Felder: So trägt
+   jedes Feld gleich viel, und außen entsteht keine doppelte Kante. */
 .n-gitter {
   grid-area: 2 / 2;
   display: grid;
   grid-template-columns: repeat(var(--kanten), var(--zelle));
-  border-top: 2px solid var(--tinte);
-  border-left: 2px solid var(--tinte);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px var(--n-linie);
+  background-image:
+    linear-gradient(to right, var(--n-linie) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--n-linie) 1px, transparent 1px);
+  background-size: var(--zelle) var(--zelle);
+}
+/* Eine Mittellinie, nur leicht abgesetzt – Zählhilfe, kein gefülltes Feld. */
+.n-gitter[data-mitte='ja'] {
+  background-image:
+    linear-gradient(to right, transparent calc(50% - 1px), var(--n-mitte) calc(50% - 1px), var(--n-mitte) calc(50% + .5px), transparent calc(50% + .5px)),
+    linear-gradient(to bottom, transparent calc(50% - 1px), var(--n-mitte) calc(50% - 1px), var(--n-mitte) calc(50% + .5px), transparent calc(50% + .5px)),
+    linear-gradient(to right, var(--n-linie) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--n-linie) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, var(--zelle) var(--zelle), var(--zelle) var(--zelle);
 }
 
 .n-hinweis {
   display: flex;
   font-family: 'DM Mono', monospace;
-  font-size: clamp(10px, calc(var(--zelle) * .38), 14px);
-  color: var(--tinte-leise);
-  line-height: 1.15;
+  font-size: var(--n-schrift);
+  font-weight: 500;
+  color: var(--tinte);
+  line-height: 1.12;
+  transition: color .15s ease, background-color .1s ease, opacity .15s ease;
 }
 .n-hinweis--oben {
   flex-direction: column;
   justify-content: flex-end;
   align-items: center;
-  padding-bottom: 4px;
-  min-height: 46px;
+  padding-bottom: 5px;
+  border-radius: 6px 6px 0 0;
 }
 .n-hinweis--links {
   justify-content: flex-end;
   align-items: center;
-  gap: 5px;
-  padding-right: 6px;
+  gap: 4px;
+  padding-right: 7px;
+  border-radius: 6px 0 0 6px;
 }
+/* Die Zahlen dieser Reihe stimmen schon – was offen ist, steht hervor. */
+.n-hinweis[data-erfuellt='ja'] { color: var(--tinte-still); opacity: .65; }
+/* Wo man gerade ist: Auf einem 10er-Brett verrutscht man sonst beim Ablesen. */
+.n-hinweis[data-hervor='ja'] { background: color-mix(in srgb, var(--gelb) 24%, transparent); }
 
 .n-feld {
   width: var(--zelle);
   height: var(--zelle);
   border: 0;
-  border-right: 1px solid var(--karte-rand);
-  border-bottom: 1px solid var(--karte-rand);
-  background: var(--karte);
+  background: transparent;
   padding: 0;
   cursor: pointer;
-  font-size: calc(var(--zelle) * .5);
+  font-size: calc(var(--zelle) * .56);
+  line-height: 1;
   color: var(--tinte-still);
   display: grid;
   place-items: center;
+  outline-offset: -2px;
+  transition: background-color .08s ease;
 }
-/* Eine Mittellinie, nur leicht abgesetzt – Zählhilfe, kein gefülltes Feld. */
-.n-feld--raster-x { border-right-color: var(--tinte-still); }
-.n-feld--raster-y { border-bottom-color: var(--tinte-still); }
-.n-feld[data-stand='voll'] { background: var(--tinte); }
-.n-feld[data-stand='leer'] { background: var(--karte); }
+.n-feld[data-reihe='ja'] { background: color-mix(in srgb, var(--gelb) 10%, transparent); }
+/* Mit einem Hauch Abstand, damit man in einem langen Block die Felder noch zählt. */
+.n-feld[data-stand='voll'] {
+  background: var(--n-voll);
+  background-clip: padding-box;
+  border: 1.5px solid transparent;
+  border-radius: 5px;
+}
+.n-feld[data-tipp='ja'] { box-shadow: inset 0 0 0 3px var(--gelb); animation: n-tipp 1s ease 3; }
+@keyframes n-tipp { 50% { box-shadow: inset 0 0 0 6px color-mix(in srgb, var(--gelb) 45%, transparent); } }
+/* Fertig: Linien weg, Felder schließen sich – erst jetzt ist es ein Bild. */
+.n-gitter[data-fertig='ja'] { background-image: none; }
+.n-gitter[data-fertig='ja'] .n-feld { cursor: default; }
+/* Der Hauch Schatten schließt die Haarlinien, die sonst bei krummem Zoom bleiben. */
+.n-gitter[data-fertig='ja'] .n-feld[data-stand='voll'] { border: 0; border-radius: 0; box-shadow: 0 0 0 .5px var(--n-voll); animation: n-bild .35s ease; }
+@keyframes n-bild { from { opacity: .5; } }
 
 /* ========================================================= 8. Zahlencode */
 
-.k-liste { display: grid; gap: 5px; width: min(320px, 88vw); }
+/* Alle Versuche stehen von Anfang an da und teilen sich die Fensterhöhe. So sieht
+   man, wie viele noch frei sind, das Spiel nutzt den Platz, und der Ziffernblock
+   wandert nicht mit jedem Versuch nach unten, bis er aus dem Fenster fällt. Der
+   Abzug ist alles außer der Liste; die aktive Zeile ist etwas höher. */
+.k-liste {
+  --k-abzug: 297px;
+  --k-hoehe: clamp(20px, calc((100dvh - var(--k-abzug)) / var(--k-reihen, 10) - 5px), 50px);
+  display: grid;
+  gap: 5px;
+  width: min(100vw - 28px, 400px);
+}
 .k-zeile {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 4px 8px;
-  border-radius: 10px;
+  width: 100%;
+  height: var(--k-hoehe);
+  padding: 3px 10px 3px 3px;
+  border: 0;
+  border-radius: 11px;
   background: var(--karte);
-  border: 1px solid var(--karte-rand);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  box-shadow: 0 0 0 1px var(--karte-rand);
+  touch-action: manipulation;
+  transition: box-shadow .12s ease;
 }
-.k-zeile[data-aktiv='ja'] { border-color: var(--tinte-still); border-style: dashed; }
-.k-felder { display: flex; gap: 5px; flex: 1 1 auto; }
+button.k-zeile { cursor: pointer; }
+@media (hover: hover) {
+  button.k-zeile:hover { box-shadow: 0 0 0 1px var(--tinte-still); }
+}
+.k-zeile[data-aktiv='ja'] {
+  height: max(var(--k-hoehe), 40px);
+  box-shadow: 0 0 0 2px var(--tinte), var(--schatten);
+}
+.k-zeile--frei { background: transparent; box-shadow: 0 0 0 1px color-mix(in srgb, var(--karte-rand) 60%, transparent); }
+.k-zeile--frei .k-feld { background: color-mix(in srgb, var(--karte-rand) 28%, transparent); }
+
+.k-felder { display: flex; gap: 4px; flex: 1 1 auto; height: 100%; min-width: 0; }
+/* Jede Ziffer hat ihren Ton. Beim Vergleichen der Versuche sucht man Muster – „wo
+   stand die 3 schon?" – und das Auge findet eine Farbe schneller als eine Zahl. */
 .k-feld {
-  width: clamp(30px, 9vw, 38px);
-  height: clamp(34px, 10vw, 42px);
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
   display: grid;
   place-items: center;
+  padding: 0;
+  border: 0;
   border-radius: 8px;
-  background: var(--karte-rand);
+  background: color-mix(in srgb, var(--karte-rand) 45%, transparent);
+  color: var(--tinte);
   font-family: 'DM Mono', monospace;
-  font-size: 18px;
+  font-size: clamp(14px, calc(var(--k-hoehe) * .5), 21px);
   font-weight: 500;
+  line-height: 1;
+  touch-action: manipulation;
 }
-.k-marken {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 3px;
-  width: 26px;
-  flex: 0 0 auto;
-}
+[data-z='1'] { --k-ton: #D1495B; }
+[data-z='2'] { --k-ton: #E08E2B; }
+[data-z='3'] { --k-ton: #BFA016; }
+[data-z='4'] { --k-ton: #4E9F5B; }
+[data-z='5'] { --k-ton: #3F7CC4; }
+[data-z='6'] { --k-ton: #7C57BE; }
+.k-feld[data-z] { background: color-mix(in srgb, var(--k-ton) 26%, var(--karte)); }
+button.k-feld { cursor: pointer; }
+.k-feld--neu { animation: k-tippt .14s ease; }
+@keyframes k-tippt { from { transform: scale(.82); } }
+/* Wohin die nächste Ziffer kommt. */
+.k-feld[data-stelle='ja'] { box-shadow: inset 0 0 0 2px var(--tinte); }
+
+.k-felder--ende { justify-content: center; height: 44px; margin: 8px auto 10px; max-width: 240px; }
+
+.k-marken { display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
 .k-marke {
-  width: 10px;
-  height: 10px;
+  --k-punkt: clamp(10px, calc(var(--k-hoehe) * .3), 14px);
+  width: var(--k-punkt);
+  height: var(--k-punkt);
   border-radius: 50%;
-  border: 1.5px solid var(--karte-rand);
+  background: color-mix(in srgb, var(--karte-rand) 70%, transparent);
+  transform: scale(.6);
 }
-.k-marke--voll { background: var(--tinte); border-color: var(--tinte); }
-.k-marke--halb { background: transparent; border-color: var(--tinte); }
+.k-marke--voll { background: var(--gruen); transform: none; }
+.k-marke--halb { background: transparent; box-shadow: inset 0 0 0 2.5px var(--gelb); transform: none; }
+.k-marke--neu { animation: k-marke .24s cubic-bezier(.2, .8, .3, 1.5) backwards; animation-delay: calc(var(--i) * 70ms); }
+@keyframes k-marke { from { transform: scale(.2); opacity: 0; } }
+
+.k-legende {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: center;
+  min-height: 18px;
+  font-size: 12.5px;
+  color: var(--tinte-leise);
+}
+.k-legende span { display: inline-flex; align-items: center; gap: 5px; }
+.k-legende .k-marke { --k-punkt: 11px; }
+.k-legende[hidden] { display: none; }
 
 .k-pad {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 5px;
-  width: min(420px, 94vw);
-  margin-top: 6px;
+  grid-template-columns: repeat(6, 1fr) 1fr 1.25fr;
+  gap: 4px;
+  width: min(100vw - 28px, 400px);
 }
 .k-taste {
-  aspect-ratio: 1;
-  border: 1px solid var(--karte-rand);
-  border-radius: 10px;
+  height: 50px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 12px;
   background: var(--karte);
-  font-size: 18px;
+  box-shadow: 0 0 0 1px var(--karte-rand), 0 1px 2px rgba(30, 24, 16, .05);
+  color: var(--tinte);
+  font-size: 19px;
   font-weight: 700;
   cursor: pointer;
+  touch-action: manipulation;
+  transition: transform .1s ease, background-color .12s ease, opacity .12s ease;
 }
-.k-taste--ok { background: var(--gruen); color: #fff; border-color: var(--gruen); }
-.k-taste:active { opacity: .75; }
+.k-taste[data-z] { background: color-mix(in srgb, var(--k-ton) 22%, var(--karte)); }
+.k-taste svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.k-taste--ok { background: var(--gruen); color: #fff; box-shadow: none; }
+.k-taste--ok svg { stroke-width: 3; }
+.k-taste:active:not(:disabled) { transform: scale(.94); opacity: .8; }
+.k-taste:disabled { opacity: .4; cursor: default; }
+/* Auf flachen Fenstern weicht zuerst die Legende: Sie steht auch in der Anleitung,
+   und der Ziffernblock soll nicht unter den Rand rutschen. */
+@media (max-height: 600px) {
+  .k-liste { --k-abzug: 264px; }
+  .k-legende { display: none; }
+  .k-taste { height: 42px; }
+}
 
 /* Verteilung: gestapelt nach „ohne Hilfe" und „mit Hilfe" */
 .verteilung-balken {
@@ -1165,14 +1752,13 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   /* Zeilen ausdrücklich gleich hoch: die Marken werden in Prozent gesetzt und
      dürfen nicht davon abhängen, wie hoch der Inhalt einer Zeile gerade ist. */
   grid-template-rows: repeat(6, 1fr);
-  width: min(348px, 90vw);
+  width: var(--brett);
   aspect-ratio: 1;
   /* Der Rahmen ist ruhiger als bei den anderen Gittern: die Zeichen tragen das
      Bild, das Gitter hält sich zurück. */
-  border: 1px solid var(--karte-rand);
   border-radius: 14px;
   background: var(--karte);
-  box-shadow: var(--schatten);
+  box-shadow: 0 0 0 1px var(--karte-rand), var(--schatten);
   overflow: hidden;
 }
 .t-feld {
@@ -1186,6 +1772,7 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   background: transparent;
   cursor: pointer;
   padding: 0;
+  outline-offset: -3px;
   transition: background-color .15s ease;
 }
 .t-feld:nth-child(6n) { border-right: 0; }
@@ -1227,71 +1814,168 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 .t-feld[data-fehler='ja'][data-wert='sonne'] .t-bild-sonne,
 .t-feld[data-fehler='ja'][data-wert='mond'] .t-bild-mond { opacity: 1; }
 
+/* Wovon der Hinweis gerade spricht. */
+.t-feld[data-stelle='ja'] { box-shadow: inset 0 0 0 3px var(--tinte); }
+
+/* Gelöst: Eine Welle läuft über das Brett. */
+.t-gitter[data-fertig='ja'] .t-bild { animation: t-welle .4s ease backwards; animation-delay: calc(var(--schritt) * 34ms); }
+@keyframes t-welle { 45% { transform: scale(1.22); } }
+
+/* Die Marke sitzt auf der Linie zwischen den beiden Feldern, die Linie läuft
+   sichtbar in sie hinein – das zeigt schon, welches Paar gemeint ist. Mehr
+   braucht es nicht; Ring und Stummel von früher waren das Unruhigste am Brett. */
 .t-marken { position: absolute; inset: 0; pointer-events: none; z-index: 2; }
 .t-marke {
   position: absolute;
   transform: translate(-50%, -50%);
-  width: 19px;
-  height: 19px;
+  width: clamp(18px, calc(var(--brett) * .048), 24px);
+  height: clamp(18px, calc(var(--brett) * .048), 24px);
   display: grid;
   place-items: center;
   border-radius: 50%;
   background: var(--karte);
-  border: 1.5px solid var(--tinte-leise);
-  color: var(--tinte);
-  font-size: 12px;
-  font-weight: 700;
-  line-height: 1;
-  font-family: 'DM Mono', monospace;
-  box-shadow: 0 0 0 3px var(--karte);
+  color: var(--tinte-leise);
+  box-shadow: 0 0 0 1px var(--karte-rand);
+  transition: background-color .15s ease, color .15s ease;
 }
+.t-marke svg { width: 66%; height: 66%; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; }
+.t-marke[data-fehler='ja'] { background: var(--rost); color: #fff; box-shadow: none; }
+
+.t-lage {
+  margin: 0;
+  min-height: 1.45em;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--tinte-leise);
+  text-align: center;
+}
+.t-lage[data-fehler='ja'] { color: var(--rost); font-weight: 600; }
+.t-lage[hidden] { display: none; }
 
 /* ============================================================== 10. Damen */
+
+.q-gitter,
+.q-mini {
+  /* Sanfte Flächen statt satter: Die Dame und das Kreuz liegen tiefschwarz
+     darauf und bleiben lesbar, ohne dass sie einen eigenen Hof bräuchten. */
+  --q-g0: #F1AC9C;
+  --q-g1: #A3C2EE;
+  --q-g2: #AFD8A6;
+  --q-g3: #F3DC86;
+  --q-g4: #C7B4E8;
+  --q-g5: #93D8D0;
+  --q-g6: #F3B8D2;
+  --q-g7: #D2BEA6;
+  --q-zeichen: #1B1815;
+  --q-grenze: rgba(27, 24, 21, .68);
+  --q-linie: rgba(27, 24, 21, .1);
+  --q-schleier: rgba(255, 255, 255, .36);
+  --q-fehler: #B3261E;
+}
+/* Dunkel ist es umgekehrt: Pastell würde auf dem dunklen Grund blenden, also
+   gedeckte Flächen mit hellem Zeichen. Die Grenzen sind dunkel wie das Papier –
+   in Weiß schnitten sie das Brett in Stücke. */
+@media (prefers-color-scheme: dark) {
+  .q-gitter,
+  .q-mini {
+    --q-g0: #93493B;
+    --q-g1: #3D5F99;
+    --q-g2: #43774B;
+    --q-g3: #8C7529;
+    --q-g4: #654F94;
+    --q-g5: #2B7B76;
+    --q-g6: #94496C;
+    --q-g7: #6F5B48;
+    --q-zeichen: #FAF6F0;
+    --q-grenze: #0C0A09;
+    --q-linie: rgba(0, 0, 0, .2);
+    --q-schleier: rgba(12, 10, 9, .34);
+    --q-fehler: #FF9C8A;
+  }
+}
 
 .q-gitter {
   --kanten: 6;
   --zelle: 48px;
   display: grid;
   grid-template-columns: repeat(var(--kanten), var(--zelle));
-  border: 2px solid var(--tinte);
-  border-radius: 8px;
+  border-radius: 14px;
+  box-shadow: 0 0 0 1px var(--karte-rand), var(--schatten);
   overflow: hidden;
+  /* Beim Streichen über das Damenbrett soll die Seite nicht mitscrollen. */
+  touch-action: none;
 }
-.q-feld {
+.q-feld,
+.q-mini-feld {
   width: var(--zelle);
   height: var(--zelle);
   display: grid;
   place-items: center;
   border: 0;
-  border-right: 1px solid rgba(0, 0, 0, .18);
-  border-bottom: 1px solid rgba(0, 0, 0, .18);
+  border-right: 1px solid var(--q-linie);
+  border-bottom: 1px solid var(--q-linie);
   background: var(--gebiet);
-  color: #16120E;
-  font-size: calc(var(--zelle) * .55);
+  color: var(--q-zeichen);
   line-height: 1;
-  cursor: pointer;
   padding: 0;
 }
-.q-feld[data-grenze-rechts='ja'] { border-right: 3px solid var(--tinte); }
-.q-feld[data-grenze-unten='ja'] { border-bottom: 3px solid var(--tinte); }
-/* Blass wird nur das Zeichen, nie das Feld: opacity auf dem Knopf zieht die
-   Gebietsfarbe mit ins Helle, und dann lassen sich zwei ähnliche Farben nicht
-   mehr auseinanderhalten. Die Gebietsfarben sind alle dunkel und satt, darum
-   werden die Kreuze vor allem größer und satter gezeichnet. Ein heller
-   Hauch als Unterlage hilft dem eigenen Kreuz noch etwas nach, bleibt aber
-   knapp: er legt sich sonst als Schleier über die Zelle und dann ist die
-   Gebietsfarbe wieder nicht zu erkennen. */
-.q-feld[data-wert='kreuz'] {
-  font-size: calc(var(--zelle) * .5);
-  font-weight: 700;
-  color: #16120E;
-  text-shadow: 0 0 3px rgba(255, 255, 255, .35);
-  /* Ein Hauch Schatten als Lage über der Gebietsfarbe, nicht als opacity auf
-     dem Knopf: die Farbe wird dadurch nur eine Spur tiefer und bleibt die
-     gleiche Farbe. Sichtbar ist das Feld ohnehin am Kreuz. */
-  background: linear-gradient(rgba(0, 0, 0, .12), rgba(0, 0, 0, .12)), var(--gebiet);
+.q-feld { cursor: pointer; outline-offset: -4px; transition: background-color .12s ease; }
+.q-feld[data-grenze-rechts='ja'],
+.q-mini-feld[data-grenze-rechts='ja'] { border-right: 2px solid var(--q-grenze); }
+.q-feld[data-grenze-unten='ja'],
+.q-mini-feld[data-grenze-unten='ja'] { border-bottom: 2px solid var(--q-grenze); }
+.q-feld[data-rand-rechts='ja'],
+.q-mini-feld[data-rand-rechts='ja'] { border-right: 0; }
+.q-feld[data-rand-unten='ja'],
+.q-mini-feld[data-rand-unten='ja'] { border-bottom: 0; }
+
+.q-bild { display: block; width: 68%; height: 68%; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; animation: q-rein .12s ease; }
+.q-bild--dame { fill: currentColor; stroke-width: 1.6; animation: q-sitzt .2s cubic-bezier(.2, .8, .3, 1.5); }
+.q-bild--kreuz { fill: none; stroke-width: 3; width: 40%; height: 40%; }
+@keyframes q-rein { from { opacity: 0; } }
+@keyframes q-sitzt { from { opacity: 0; transform: scale(.5); } }
+
+/* Was ausscheidet, tritt etwas zurück – eine Lage über der Farbe, damit sie
+   dieselbe Farbe bleibt. So springt ins Auge, welche Felder noch frei sind. */
+.q-feld[data-wert='kreuz'],
+.q-feld[data-wert='auto'] { background: linear-gradient(var(--q-schleier), var(--q-schleier)), var(--gebiet); }
+/* Die abgeleiteten Kreuze liegen auf vielen Feldern gleichzeitig, sie sind
+   nur Folge der Dame; die eigenen stehen kräftiger da. */
+.q-feld[data-wert='auto'] .q-bild { opacity: .42; stroke-width: 2.4; }
+@media (hover: hover) {
+  .q-gitter[data-fertig='nein'] .q-feld:hover { background: linear-gradient(rgba(255, 255, 255, .22), rgba(255, 255, 255, .22)), var(--gebiet); }
 }
-.q-feld[data-fehler='ja'] { box-shadow: 0 0 0 3px var(--rost) inset; }
+.q-feld[data-fehler='ja'] { color: var(--q-fehler); box-shadow: 0 0 0 3px var(--q-fehler) inset; }
+
+.q-gitter[data-fertig='ja'] .q-feld { cursor: default; }
+/* Gelöst: Eine Welle läuft über die Damen. */
+.q-gitter[data-fertig='ja'] .q-bild--dame { animation: q-welle .5s ease backwards; animation-delay: calc(var(--schritt) * 40ms); }
+@keyframes q-welle { 45% { transform: scale(1.28); } }
+
+.q-lage {
+  margin: 0;
+  min-height: 1.45em;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--tinte-leise);
+  text-align: center;
+}
+.q-lage[data-fehler='ja'] { color: var(--rost); font-weight: 600; }
+.q-lage[hidden] { display: none; }
+
+/* Der Schalter zeigt seinen Stand als kleinen Kippschalter. */
+.q-schalter { display: inline-flex; gap: 8px; align-items: center; }
+.q-schalter::before {
+  content: '';
+  width: 26px;
+  height: 16px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 8px 50%, #fff 5px, transparent 5.6px), var(--tinte-still);
+  transition: background-color .15s ease;
+}
+.q-schalter[aria-pressed='true']::before {
+  background: radial-gradient(circle at 18px 50%, #fff 5px, transparent 5.6px), var(--gruen);
+}
 
 /* Das kleine Brett im Hinweisblatt. Es zeigt, von welchen Feldern die Rede
    ist – der Text allein lässt einen sonst suchen. */
@@ -1300,127 +1984,126 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   --zelle: 40px;
   display: grid;
   grid-template-columns: repeat(var(--kanten), var(--zelle));
-  border: 2px solid var(--tinte);
-  border-radius: 8px;
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px var(--karte-rand);
   overflow: hidden;
   margin: 14px auto 6px;
   width: max-content;
 }
-.q-mini-feld {
-  width: var(--zelle);
-  height: var(--zelle);
-  display: grid;
-  place-items: center;
-  border-right: 1px solid rgba(0, 0, 0, .18);
-  border-bottom: 1px solid rgba(0, 0, 0, .18);
-  background: var(--gebiet);
-  color: #16120E;
-  font-size: calc(var(--zelle) * .55);
-  line-height: 1;
-}
-.q-mini-feld[data-grenze-rechts='ja'] { border-right: 3px solid var(--tinte); }
-.q-mini-feld[data-grenze-unten='ja'] { border-bottom: 3px solid var(--tinte); }
-/* Nur das Zeichen wird blass, nicht die Gebietsfarbe darunter – und wie auf
-   dem großen Brett hilft Größe statt eines Schleiers. */
-.q-mini-feld[data-rolle='schon'] {
-  font-size: calc(var(--zelle) * .48);
-  color: color-mix(in srgb, #16120E 78%, transparent);
-}
-.q-mini-feld[data-rolle='kandidat'] { color: color-mix(in srgb, #16120E 68%, transparent); }
+.q-mini .q-bild { animation: none; }
+/* Nur das Zeichen wird blass, nicht die Gebietsfarbe darunter. */
+.q-mini-feld[data-rolle='schon'] .q-bild { opacity: .55; }
+.q-mini-feld[data-rolle='kandidat'] .q-bild { opacity: .5; }
 .q-mini-feld[data-rolle='raus'] {
   background: var(--rost);
   color: #fff;
-  font-weight: 700;
-  box-shadow: 0 0 0 2px var(--tinte) inset;
 }
-.q-mini-feld[data-rolle='ziel'] { box-shadow: 0 0 0 3px var(--tinte) inset; }
+.q-mini-feld[data-rolle='ziel'] { box-shadow: 0 0 0 3px var(--q-zeichen) inset; }
 /* Was nachweislich falsch liegt: das eigene Zeichen bleibt stehen, nur rot
    umrandet – man soll sehen, was man da gesetzt hat. */
-.q-mini-feld[data-rolle='falsch'] { box-shadow: 0 0 0 3px var(--rost) inset; }
+.q-mini-feld[data-rolle='falsch'] { box-shadow: 0 0 0 3px var(--q-fehler) inset; }
 
 /* ================================================================ 11. Weg */
 
+/* Von unten nach oben: Fläche, Linie (SVG), Felder mit den Zahlen. Die Zahlen
+   liegen über dem Weg, damit er sie nie überdeckt; die Felder sind durchsichtig
+   und fangen nur den Finger. Der Rahmen ist ein Schatten und nimmt keinen Platz –
+   als echter Rand schob er das Gitter gegen die Linie um zwei Pixel. */
 .p-buehne {
   --kanten: 5;
   --zelle: 60px;
+  --p-von: #3F7CC4;
+  --p-nach: #7C57BE;
   position: relative;
   width: calc(var(--zelle) * var(--kanten));
   height: calc(var(--zelle) * var(--kanten));
+  border-radius: 14px;
+  background: var(--karte);
+  box-shadow: 0 0 0 1px var(--karte-rand), var(--schatten);
   touch-action: none;
 }
 .p-gitter {
+  position: absolute;
+  inset: 0;
   display: grid;
   grid-template-columns: repeat(var(--kanten), var(--zelle));
-  border: 2px solid var(--tinte);
-  border-radius: 8px;
+  border-radius: 14px;
   overflow: hidden;
-  background: var(--karte);
 }
 .p-feld {
+  position: relative;
   width: var(--zelle);
   height: var(--zelle);
   display: grid;
   place-items: center;
-  border: 1px solid var(--karte-rand);
+  border: 0;
   background: transparent;
-  font-family: 'DM Mono', monospace;
-  font-size: calc(var(--zelle) * .38);
-  font-weight: 500;
   cursor: pointer;
   padding: 0;
+  outline-offset: -3px;
 }
-.p-feld[data-zahl='ja'] {
+.p-zahl {
+  position: relative;
+  width: 66%;
+  height: 66%;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
   background: var(--tinte);
   color: var(--papier);
+  font-size: calc(var(--zelle) * .3);
+  font-weight: 800;
+  line-height: 1;
+  pointer-events: none;
+  transition: background-color .15s ease, color .15s ease;
+}
+/* Abgehakte Zahlen nehmen die Farbe des Wegs an der Stelle an. */
+.p-feld[data-besucht='ja'] .p-zahl { background: var(--p-ton); color: #fff; }
+/* Die Zahl, die als Nächstes dran ist, trägt einen Ring. */
+.p-feld[data-naechste='ja'] .p-zahl { box-shadow: 0 0 0 2px var(--karte), 0 0 0 4px var(--tinte); }
+/* Am leeren Brett zeigt der Ring, wo es losgeht. */
+.p-buehne[data-leer='ja'] .p-feld[data-naechste='ja'] .p-zahl { animation: p-los 1.6s ease-in-out infinite; }
+@keyframes p-los { 50% { box-shadow: 0 0 0 3px var(--karte), 0 0 0 6px var(--p-von); } }
+
+/* Wohin es von der Spitze aus weitergehen kann: ein leiser Punkt. */
+.p-feld[data-frei='ja']::after {
+  content: '';
+  position: absolute;
+  width: 14%;
+  height: 14%;
   border-radius: 50%;
-  font-weight: 500;
+  background: var(--p-von);
+  opacity: .4;
+  pointer-events: none;
 }
-.p-feld[data-besucht='ja']:not([data-zahl='ja']) {
-  background: color-mix(in srgb, #4573B8 22%, transparent);
+.p-feld[data-frei='ja'][data-zahl='ja']::after { display: none; }
+@media (hover: hover) {
+  .p-buehne[data-fertig='nein'] .p-feld[data-frei='ja']:hover { background: color-mix(in srgb, var(--p-von) 14%, transparent); }
+  .p-buehne[data-fertig='nein'] .p-feld[data-besucht='ja']:hover { background: color-mix(in srgb, var(--tinte) 7%, transparent); }
 }
-.p-feld[data-spitze='ja'] { box-shadow: 0 0 0 2px #4573B8 inset; }
 
 .p-linie {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
   pointer-events: none;
 }
-.p-linie polyline { stroke: color-mix(in srgb, #4573B8 70%, transparent); }
+/* Das Raster liegt im SVG unter dem Weg – als Rand der Felder lief es über ihn. */
+.p-linie .p-raster { stroke: color-mix(in srgb, var(--karte-rand) 80%, transparent); stroke-width: 1px; vector-effect: non-scaling-stroke; }
+.p-linie .p-spur { opacity: .14; }
+.p-linie .p-zug { fill: none; stroke-linecap: round; }
 /* Mauern liegen zwischen zwei Feldern und sind kraeftiger als die Gitterlinien. */
 .p-linie .p-mauer { stroke: var(--tinte); }
 /* Merklinien aus dem Hinweis: dieselbe Farbe wie der Weg, aber duenn und
    gestrichelt – hergeleitet, noch nicht gezogen. */
-.p-linie .p-notiz { stroke: color-mix(in srgb, #4573B8 80%, transparent); }
-
-/* Die abgeleiteten Kreuze liegen auf vielen Feldern gleichzeitig – ein Hauch
-   unter jedem einzelnen ergäbe über das halbe Brett einen Schleier. Sie
-   bekommen darum gar keinen und werden stattdessen größer gezeichnet; eine
-   Spur zurückhaltender als die eigenen bleiben sie über die Deckung. */
-.q-feld[data-wert='auto'] {
-  font-size: calc(var(--zelle) * .44);
-  color: color-mix(in srgb, #16120E 80%, transparent);
-  background: linear-gradient(rgba(0, 0, 0, .09), rgba(0, 0, 0, .09)), var(--gebiet);
-}
-
-/* Zwei kurze Stummel links und rechts bzw. oben und unten zeigen, welches
-   Paar gemeint ist – sonst sieht ein senkrechtes Zeichen aus wie ein
-   waagerechtes. Sie liegen neben der Marke, nicht darunter: die Marke setzt
-   durch ihr transform einen eigenen Stapelkontext, gegen den kein z-index
-   von innen ankommt. */
-.t-marke::before,
-.t-marke::after {
-  content: '';
-  position: absolute;
-  background: var(--tinte-leise);
-  border-radius: 2px;
-}
-.t-marke[data-richtung='quer']::before { top: 50%; height: 2px; width: 7px; left: -9px; transform: translateY(-50%); }
-.t-marke[data-richtung='quer']::after  { top: 50%; height: 2px; width: 7px; right: -9px; transform: translateY(-50%); }
-.t-marke[data-richtung='hoch']::before { left: 50%; width: 2px; height: 7px; top: -9px; transform: translateX(-50%); }
-.t-marke[data-richtung='hoch']::after  { left: 50%; width: 2px; height: 7px; bottom: -9px; transform: translateX(-50%); }
-
-/* Beim Streichen über das Damenbrett soll die Seite nicht mitscrollen. */
-.q-gitter { touch-action: none; }
+.p-linie .p-notiz { stroke: color-mix(in srgb, var(--p-von) 80%, transparent); }
+.p-linie .p-ring { fill: none; stroke: var(--tinte); stroke-width: .05; }
+.p-linie .p-ring[data-fest='ja'] { stroke: var(--rost); stroke-width: .07; }
+/* Gelöst: Eine Welle läuft den Weg entlang. */
+.p-buehne[data-fertig='ja'] .p-zug { animation: p-welle .45s ease backwards; animation-delay: calc(var(--i) * 24ms); }
+@keyframes p-welle { 40% { stroke-width: .62; } }
 
 /* ====================================================== Runde (Bausteine) */
 /* Alles, was die Spiele zu mehreren teilen: Aufbau, Sperrschirm, Deckel,
@@ -1435,15 +2118,15 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 14px;
+  padding: 8px 10px 8px 14px;
   border-radius: var(--rund);
   background: var(--karte);
   border: 1px solid var(--karte-rand);
 }
 .r-zaehler-wort { font-size: 14px; color: var(--tinte-leise); margin-right: auto; }
 .r-stufe {
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   flex: none;
   border: 1px solid var(--karte-rand);
   border-radius: 999px;
@@ -1452,8 +2135,13 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   font-size: 20px;
   line-height: 1;
   cursor: pointer;
+  transition: transform .1s ease, border-color .12s ease;
 }
+.r-stufe:active:not(:disabled) { transform: scale(.92); }
 .r-stufe:disabled { opacity: .3; cursor: default; }
+@media (hover: hover) {
+  .r-stufe:hover:not(:disabled) { border-color: var(--tinte-still); }
+}
 .r-zahl {
   font-family: 'DM Mono', monospace;
   font-size: 19px;
@@ -1463,6 +2151,11 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 }
 
 .r-namen { display: flex; flex-direction: column; gap: 6px; }
+/* Auf breiten Fenstern stehen die Namen zu zweit nebeneinander: Zwölf Leute
+   ergäben sonst eine Spalte, die unten aus dem Laptop läuft. */
+@media (min-width: 700px) {
+  .r-namen { display: grid; grid-template-columns: 1fr 1fr; }
+}
 .r-name {
   display: flex;
   align-items: center;
@@ -1471,15 +2164,18 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   border-radius: var(--rund-klein);
   background: var(--karte);
   border: 1px solid var(--karte-rand);
+  transition: border-color .12s ease;
 }
-.r-name-nr { font-size: 12px; color: var(--tinte-still); min-width: 1.5ch; }
+.r-name:focus-within { border-color: var(--tinte-still); }
+.r-name-nr { font-size: 12.5px; color: var(--tinte-still); min-width: 1.5ch; }
+/* 16 Pixel: Bei weniger zoomt iOS beim Antippen in das Feld hinein. */
 .r-name-feld {
   flex: 1;
   border: 0;
   background: transparent;
   color: var(--tinte);
   font: inherit;
-  font-size: 15px;
+  font-size: 16px;
   padding: 8px 0;
   min-width: 0;
 }
@@ -1502,16 +2198,25 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   text-transform: uppercase;
 }
 .r-codefeld:focus { outline: 2px solid var(--tinte-still); outline-offset: -1px; }
-.r-wuerfel { flex: none; }
+.r-wuerfel { flex: none; background: var(--karte); box-shadow: 0 0 0 1px var(--karte-rand); }
 
-.r-los { width: 100%; }
+/* Der Startknopf bleibt im Bild, auch wenn zwölf Namen darüber stehen. Der Ring
+   in Papierfarbe trennt ihn von dem, was darunter durchläuft. */
+.r-los {
+  position: sticky;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+  z-index: 1;
+  width: 100%;
+  box-shadow: 0 0 0 6px var(--papier);
+}
 
 /* Weitergeben */
 
 .r-buehne { width: 100%; }
 
 /* Der Sperrschirm nimmt die ganze Hoehe: er soll nicht wie ein
-   Zwischenschritt aussehen, sondern wie eine Tuer. */
+   Zwischenschritt aussehen, sondern wie eine Tuer. Die 114 Pixel sind Kopf und
+   Luft der Buehne - so passt er genau ins Fenster, ohne zu scrollen. */
 .r-sperre,
 .r-geheim {
   display: flex;
@@ -1520,53 +2225,77 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   justify-content: center;
   gap: 14px;
   width: 100%;
-  min-height: 58dvh;
-  padding: 20px;
+  min-height: min(100dvh - 114px, 640px);
+  padding: 18px 16px;
   border-radius: var(--rund);
   background: var(--karte);
-  border: 1px solid var(--karte-rand);
+  box-shadow: 0 0 0 1px var(--karte-rand), var(--schatten);
   text-align: center;
 }
-.r-sperre-vor { margin: 0; font-size: 13.5px; color: var(--tinte-leise); }
-.r-sperre-name { margin: 0; font-size: 30px; font-weight: 800; line-height: 1.15; }
+.r-sperre { animation: blenden .18s ease; }
+/* Der Name steht in der Mitte, der Knopf unten beim Daumen. */
+.r-sperre-vor { margin: auto 0 0; font-size: 14px; color: var(--tinte-leise); }
+.r-sperre-name { margin: 0 0 auto; font-size: 34px; font-weight: 800; line-height: 1.15; overflow-wrap: anywhere; }
 .r-sperre-knopf,
-.r-weiter { width: 100%; max-width: 320px; }
-.r-geheim-name { margin: 0; font-size: 13px; color: var(--tinte-still); }
-.r-flaeche { width: 100%; }
+.r-weiter { width: 100%; max-width: 360px; padding-block: 16px; }
+.r-geheim-name { margin: 0; font-size: 16px; font-weight: 700; color: var(--tinte-leise); }
+/* Mit Eingabefeldern oben anfangen: Die Tastatur verdeckt sonst die Mitte. */
+.r-geheim:has(input, textarea) { justify-content: flex-start; }
+.r-flaeche { display: flex; flex-direction: column; gap: 12px; width: 100%; }
 
 /* Der Deckel liegt ueber dem Inhalt und weicht nur, solange der Finger liegt.
    So bleibt nichts stehen, wenn das Geraet weitergereicht wird. */
 .r-decke {
   position: relative;
+  display: flex;
+  flex: 1;
   width: 100%;
-  min-height: 160px;
+  min-height: 200px;
   border-radius: var(--rund);
   overflow: hidden;
+  cursor: pointer;
   touch-action: manipulation;
   user-select: none;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
 }
+.r-decke:focus-visible { outline-offset: 3px; }
+.r-decke .v-karte { flex: 1; }
 .r-deckel {
   position: absolute;
   inset: 0;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 12px;
   background: var(--tinte);
   color: var(--papier);
   border-radius: var(--rund);
   transition: opacity .12s ease;
 }
-.r-deckel-text { font-size: 14px; font-weight: 700; letter-spacing: .04em; }
+/* Ein Fingerabdruck in Andeutung: hier gehoert der Finger hin. */
+.r-deckel::before {
+  content: '';
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  opacity: .45;
+}
+.r-deckel-text { font-size: 15px; font-weight: 700; letter-spacing: .04em; }
 .r-decke[data-offen] .r-deckel { opacity: 0; pointer-events: none; }
 
 /* Abstimmung */
 
-.r-frage { margin: 0 0 12px; font-size: 15px; font-weight: 700; }
+.r-frage { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.35; }
 .r-wahl { display: flex; flex-direction: column; gap: 6px; }
+/* Ab sieben Namen zu zweit nebeneinander, sonst wird gescrollt, wo keiner
+   scrollen will: Der Nachbar soll nicht lange mitlesen koennen. */
+.r-wahl:has(> :nth-child(7)) { display: grid; grid-template-columns: 1fr 1fr; }
 .r-wahl-knopf {
-  padding: 14px 16px;
+  min-height: 50px;
+  padding: 12px 14px;
   border-radius: var(--rund-klein);
   border: 1px solid var(--karte-rand);
   background: var(--papier);
@@ -1574,9 +2303,15 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   font: inherit;
   font-size: 16px;
   font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
   cursor: pointer;
+  transition: transform .1s ease, border-color .12s ease;
 }
-.r-wahl-knopf:active { opacity: .8; }
+.r-wahl-knopf:active { transform: scale(.98); opacity: .8; }
+@media (hover: hover) {
+  .r-wahl-knopf:hover { border-color: var(--tinte-still); }
+}
 
 /* Uhr */
 
@@ -1601,7 +2336,7 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  padding: 12px 14px;
+  padding: 10px 14px;
   border-radius: var(--rund);
   border: 1px solid var(--karte-rand);
   background: var(--karte);
@@ -1609,6 +2344,7 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   font: inherit;
   text-align: left;
   cursor: pointer;
+  transition: background-color .12s ease, color .12s ease, border-color .12s ease;
 }
 .v-modus-knopf[data-an] { border-color: var(--tinte); background: var(--tinte); color: var(--papier); }
 .v-modus-name { font-size: 15px; font-weight: 700; }
@@ -1627,8 +2363,10 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 .v-wahl-knopf {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 1px;
   flex: 1 1 auto;
+  min-height: 42px;
   padding: 9px 13px;
   border-radius: 999px;
   border: 1px solid var(--karte-rand);
@@ -1637,13 +2375,61 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   font: inherit;
   text-align: left;
   cursor: pointer;
+  transition: background-color .12s ease, color .12s ease, border-color .12s ease;
 }
 /* Steht eine Erklaerung darunter, ist die Pille zu eng - dann eine Zeile. */
 .v-wahl-knopf:has(.v-wahl-unter) { flex-basis: 100%; border-radius: var(--rund-klein); }
+/* Ohne Erklaerung ist es eine Pille, und in der Pille gehoert der Text mittig. */
+.v-wahl-knopf:not(:has(.v-wahl-unter)) { align-items: center; text-align: center; }
 .v-wahl-knopf[data-an] { border-color: var(--tinte); background: var(--tinte); color: var(--papier); }
-.v-wahl-knopf:disabled { opacity: .35; cursor: default; }
+.v-wahl-knopf:disabled { opacity: .45; cursor: default; }
+@media (hover: hover) {
+  .v-wahl-knopf:hover:not(:disabled):not([data-an]),
+  .v-modus-knopf:hover:not([data-an]) { border-color: var(--tinte-still); }
+}
 .v-wahl-name { font-size: 14px; font-weight: 600; }
 .v-wahl-unter { font-size: 12px; opacity: .7; }
+/* „ab 5" steht nur am gesperrten Knopf: da sagt es, warum. */
+.v-wahl-ab { display: none; font-size: 12px; font-weight: 500; }
+.v-wahl-knopf:disabled .v-wahl-ab { display: inline; }
+
+/* Thema und Zeit: eine Zeile statt eines halben Bildschirms. */
+.v-klappen { display: grid; grid-template-columns: 3fr 2fr; gap: 8px; }
+.v-klapp { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.v-klapp-huelle { position: relative; display: block; }
+.v-klapp-huelle::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--tinte-leise);
+  border-bottom: 2px solid var(--tinte-leise);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+.v-klapp-liste {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 30px 9px 13px;
+  border-radius: var(--rund-klein);
+  border: 1px solid var(--karte-rand);
+  background: var(--karte);
+  color: var(--tinte);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  transition: border-color .12s ease;
+}
+@media (hover: hover) {
+  .v-klapp-liste:hover { border-color: var(--tinte-still); }
+}
 
 .v-notiz { margin: 0; font-size: 13px; line-height: 1.55; color: var(--tinte-leise); }
 
@@ -1692,12 +2478,19 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   padding: 24px 18px;
   border-radius: var(--rund);
   background: var(--karte);
-  border: 1px solid var(--karte-rand);
+  box-shadow: 0 0 0 1px var(--karte-rand), var(--schatten);
   text-align: center;
 }
-.v-beginner { margin: 0; font-size: 28px; font-weight: 800; }
+.v-beginner { margin: 0; font-size: 30px; font-weight: 800; line-height: 1.15; overflow-wrap: anywhere; }
 
 .v-breit { width: 100%; }
+/* Der zweite Knopf einer Reihe liegt als helle Flaeche auf dem Papier. */
+.v-boden > .knopf--still { background: var(--karte); box-shadow: 0 0 0 1px var(--karte-rand); }
+/* Die lange Tafel am Ende einer grossen Runde: der Knopf bleibt erreichbar. */
+.v-boden > .v-breit:last-child {
+  position: sticky;
+  bottom: calc(12px + env(safe-area-inset-bottom));
+}
 
 .v-ende {
   display: flex;
@@ -1706,10 +2499,11 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   padding: 18px;
   border-radius: var(--rund);
   background: var(--karte);
-  border: 1px solid var(--karte-rand);
+  box-shadow: 0 0 0 1px var(--karte-rand), var(--schatten);
   text-align: center;
+  animation: ende-rein .28s cubic-bezier(.2, .8, .3, 1.15);
 }
-.v-ende-titel { margin: 0; font-size: 22px; font-weight: 800; }
+.v-ende-titel { margin: 0; font-size: 26px; font-weight: 800; }
 .v-ende[data-aus='gut'] .v-ende-titel { color: var(--gruen); }
 .v-ende[data-aus='schlecht'] .v-ende-titel { color: var(--rost); }
 .v-aufloesung { display: flex; flex-direction: column; gap: 4px; }
@@ -1734,19 +2528,22 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 /* ============================================================== 13. Bombe */
 
 .b-boden { display: flex; flex-direction: column; gap: 14px; width: 100%; }
+/* Tisch und Knopf fuellen das Fenster, der Knopf liegt unten beim Daumen. */
+.b-boden:has(> .b-tisch) { min-height: min(100dvh - 114px, 680px); }
 
 .b-tisch {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  flex: 1;
   gap: 10px;
   width: 100%;
-  min-height: 46dvh;
+  min-height: 220px;
   padding: 24px 18px;
   border-radius: var(--rund);
   background: var(--karte);
-  border: 1px solid var(--karte-rand);
+  box-shadow: 0 0 0 1px var(--karte-rand), var(--schatten);
   text-align: center;
 }
 .b-silbe {
@@ -1757,7 +2554,17 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   line-height: 1;
   letter-spacing: .04em;
 }
-.b-dran { margin: 0; font-size: 20px; font-weight: 700; }
+/* Beim Weiterreichen springt der Name kurz an: Auch aus dem Augenwinkel ist zu
+   sehen, dass der Tipp angekommen ist. */
+.b-dran {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+  animation: b-dran-rein .2s ease;
+}
+@keyframes b-dran-rein { from { transform: scale(1.18); opacity: .4; } }
 
 /* Die Lunte schlaegt gleichmaessig - sie zeigt, dass es laeuft, und verraet
    nichts darueber, wie lange noch. */
@@ -1773,21 +2580,77 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   50% { opacity: .35; transform: scale(.72); }
 }
 
-.b-tisch--peng { border-color: var(--rost); }
+.b-tisch--peng {
+  background: color-mix(in srgb, var(--rost) 9%, var(--karte));
+  box-shadow: 0 0 0 2px var(--rost), var(--schatten);
+  animation: b-knall .36s ease;
+}
+@keyframes b-knall {
+  15% { transform: translateX(-6px); }
+  35% { transform: translateX(5px); }
+  55% { transform: translateX(-3px); }
+  75% { transform: translateX(2px); }
+}
 .b-peng {
   margin: 0;
-  font-size: 40px;
+  font-size: 48px;
   font-weight: 800;
   line-height: 1;
   color: var(--rost);
 }
-.b-raus { margin: 0; font-size: 19px; font-weight: 700; }
+.b-raus { margin: 0; font-size: 22px; font-weight: 700; }
 
-/* Der Weiter-Knopf ist der meistgedrueckte der App - er darf gross sein. */
+/* Der Weiter-Knopf ist der meistgedrueckte der App - er darf gross sein. Am Tisch
+   ist er so gross, dass er ohne Hinschauen zu treffen ist, und er steht beim
+   Knall an derselben Stelle wie „Naechste Silbe". */
 .b-weiter { width: 100%; padding: 20px; font-size: 18px; }
+.b-tisch ~ .b-weiter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  flex: none;
+  min-height: clamp(96px, 24dvh, 170px);
+  padding: 12px 20px;
+  border-radius: var(--rund);
+}
+.b-weiter-wort { font-size: 24px; font-weight: 800; }
+.b-weiter-an { font-size: 14px; font-weight: 600; opacity: .72; overflow-wrap: anywhere; }
 
 
 /* =================================================== 14. Zwei Wahrheiten */
+
+.w2-saetze { display: flex; flex-direction: column; gap: 8px; }
+.w2-zeile { padding: 4px 6px 4px 12px; text-align: left; }
+.w2-zeile[data-luege] { border-color: var(--rost); }
+.w2-feld {
+  display: block;
+  resize: none;
+  overflow: hidden;
+  line-height: 1.35;
+  text-align: left;
+}
+.w2-feld::placeholder { color: var(--tinte-still); }
+/* Der Schalter am Satz. 42 Pixel hoch, damit er neben dem Feld sicher zu treffen
+   ist, ohne dass der Finger im Text landet. */
+.w2-marke {
+  flex: none;
+  min-width: 54px;
+  min-height: 42px;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid var(--karte-rand);
+  background: var(--papier);
+  color: var(--tinte-leise);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color .12s ease, color .12s ease, border-color .12s ease;
+}
+.w2-marke[aria-pressed='true'] { background: var(--rost); border-color: var(--rost); color: #fff; }
+.w2-fehlt { text-align: center; min-height: 1.55em; }
 
 .w2-liste { display: flex; flex-direction: column; gap: 6px; }
 .w2-satz {
@@ -1797,12 +2660,19 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   padding: 12px 14px;
   border-radius: var(--rund-klein);
   background: var(--karte);
-  border: 1px solid var(--karte-rand);
+  box-shadow: 0 0 0 1px var(--karte-rand);
 }
-.w2-satz[data-luege] { border-color: var(--rost); }
-.w2-text { font-size: 15px; line-height: 1.4; }
-.w2-satz[data-luege] .w2-text { color: var(--rost); font-weight: 700; }
-.w2-wer { font-size: 12.5px; color: var(--tinte-still); }
+.w2-satz[data-luege] { box-shadow: 0 0 0 2px var(--rost), var(--schatten); }
+.w2-luege {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .07em;
+  text-transform: uppercase;
+  color: var(--rost);
+}
+.w2-text { font-size: 15px; line-height: 1.4; overflow-wrap: anywhere; }
+.w2-satz[data-luege] .w2-text { font-weight: 700; }
+.w2-wer { font-size: 13px; color: var(--tinte-leise); }
 
 
 /* ==================================================== 15. Wer am ehesten */
@@ -1815,7 +2685,7 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   padding: 22px 18px;
   border-radius: var(--rund);
   background: var(--karte);
-  border: 1px solid var(--karte-rand);
+  box-shadow: 0 0 0 1px var(--karte-rand), var(--schatten);
   text-align: center;
 }
 .a-frage-text { margin: 0; font-size: 23px; font-weight: 800; line-height: 1.25; }
@@ -1836,13 +2706,16 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   border: 1px solid var(--karte-rand);
   overflow: hidden;
 }
+/* Das Aufdecken ist der Witz des Spiels: die Balken wachsen einmal auf. */
 .a-zeile::before {
   content: '';
   position: absolute;
   inset: 0 auto 0 0;
   width: var(--anteil, 0%);
   background: color-mix(in srgb, var(--gruen) 20%, transparent);
+  animation: a-balken .5s cubic-bezier(.2, .8, .3, 1);
 }
+@keyframes a-balken { from { width: 0; } }
 .a-zeile[data-vorn]::before { background: color-mix(in srgb, var(--gruen) 40%, transparent); }
 .a-name { position: relative; font-size: 15px; font-weight: 600; }
 .a-zahl {
@@ -1903,12 +2776,12 @@ body:has(.sheet-huelle:not([hidden])) .toast {
      rutschten unter den Fensterrand.
 
      Deshalb deckelt die Hoehe die Kartenbreite mit. Gemessen: Von der
-     Oberkante bis unter die Knopfleiste braucht das Brett das 5,4-fache
+     Oberkante bis unter die Knopfleiste braucht das Brett das 4,2-fache
      einer Handkarte plus rund 300 Pixel fuer Kopfzeile, Dran-Zeile und
-     Abstaende. Nach der Karte aufgeloest und acht Pixel Luft gelassen,
-     bleibt 18,5vh - 58px. Die 46 Pixel darunter sind die Grenze, unter der
-     eine Karte nicht mehr lesbar ist - dann wird lieber gescrollt. */
-  --sk-hoch: max(46px, calc(18.5vh - 58px));
+     Abstaende. Nach der Karte aufgeloest und etwas Luft gelassen, bleibt
+     23vh - 70px. Die 46 Pixel darunter sind die Grenze, unter der eine
+     Karte nicht mehr lesbar ist - dann wird lieber gescrollt. */
+  --sk-hoch: max(46px, calc(23vh - 70px));
   --sk-b: min(74px, var(--sk-hoch));    /* Handkarte */
   --sk-t: calc(var(--sk-b) * .81);       /* Karte auf dem Tisch */
   --sk-breit: 420px;                     /* wie breit der Tisch werden darf */
@@ -1930,6 +2803,12 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   }
 }
 
+/* Das Spiel nutzt die Breite des Fensters; Kopf, Tisch, Ansage und Ergebnis
+   setzen sich jeweils ihre eigene Grenze. Die Hand braucht den Platz: Auf dem
+   Laptop liegen ihre acht Karten dadurch nebeneinander statt im Faecher. */
+.buehne:has(> .spielboden > .sk-tisch) { max-width: none; padding-bottom: 14px; }
+.spielboden:has(> .sk-tisch) { position: relative; }
+
 .sk-kopf {
   display: flex;
   justify-content: space-between;
@@ -1937,6 +2816,7 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   gap: 10px;
   width: 100%;
   max-width: var(--sk-breit);
+  min-height: 22px;
   font-size: 13px;
   color: var(--tinte-leise);
 }
@@ -1954,7 +2834,7 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   display: grid;
   /* Die Seitenspalten muessen die Marke unter dem Namen tragen koennen -
      "Schellen-Solo" ist das laengste, was dort je steht. */
-  grid-template-columns: minmax(84px, calc(var(--sk-t) * 1.45)) 1fr minmax(84px, calc(var(--sk-t) * 1.45));
+  grid-template-columns: minmax(84px, 1fr) minmax(0, calc(var(--sk-t) * 3.5)) minmax(84px, 1fr);
   grid-template-rows: auto 1fr;
   gap: 2px;
   padding: 8px 6px 10px;
@@ -1974,7 +2854,15 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   border-radius: var(--rund-klein);
   min-width: 0;
 }
-.sk-mitspieler--oben { grid-area: 1 / 2; }
+/* Oben sitzt der Mitspieler in einer Zeile: Name, Marke und Karten untereinander
+   kosteten die Hoehe, die der Hand fehlte. */
+.sk-mitspieler--oben {
+  grid-area: 1 / 1 / 2 / 4;
+  justify-self: center;
+  flex-direction: row;
+  gap: 8px;
+  padding: 3px 10px;
+}
 .sk-mitspieler--links { grid-area: 2 / 1; align-self: center; }
 .sk-mitspieler--rechts { grid-area: 2 / 3; align-self: center; }
 /* Wer dran ist, bekommt einen hellen Fleck im Filz - kein Rahmen, der auf
@@ -2026,7 +2914,15 @@ body:has(.sheet-huelle:not([hidden])) .toast {
    neun Pixeln Breite sind kein Kartenpaeckchen, sondern ein Strichcode - und
    abzaehlen liess sich daraus ohnehin nichts. Eine Karte in lesbarer Groesse
    und eine Ziffer sagen dasselbe schneller und sehen wie Karten aus. */
-.sk-ruecken { display: flex; align-items: center; justify-content: center; gap: 6px; }
+/* Die Mindesthoehe haelt den Platz, wenn die letzte Karte gefallen ist. Sonst wird
+   die Zeile des oberen Mitspielers flacher, und im letzten Stich ruckt alles hoch. */
+.sk-ruecken {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: clamp(29px, calc(var(--sk-t) * .52), 40px);
+}
 .sk-faecher { display: flex; align-items: center; }
 /* Gezeichnet wird nur die oberste Karte. Alle acht nebeneinander waren ein
    Strichcode, und selbst drei angedeutete Kanten sind bei siebzehn Pixeln
@@ -2068,25 +2964,47 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 
 /* Die vier Plaetze des Stichs liegen dort, wo der Spieler sitzt - so sieht
    man ohne Nachdenken, wer was gelegt hat. */
-/* Jede Zeile ist so hoch wie eine Karte, ob eine liegt oder nicht. Vorher
-   waren es drei 1fr-Zeilen ueber einer Mindesthoehe: Leer blieb der Tisch
-   bei der Mindesthoehe, mit der ersten Karte wurde jede Zeile kartenhoch -
-   und Tisch, Dran-Zeile und Hand sprangen bei jedem Stich um 55 bis 95
-   Pixel auf und ab. */
+/* Die Hoehe haengt an der Karte, ob eine liegt oder nicht. Vorher waren es drei
+   1fr-Zeilen ueber einer Mindesthoehe: Leer blieb der Tisch bei der
+   Mindesthoehe, mit der ersten Karte wurde jede Zeile kartenhoch - und Tisch,
+   Dran-Zeile und Hand sprangen bei jedem Stich um 55 bis 95 Pixel auf und ab.
+
+   Die Zeilen sind kuerzer als eine Karte, denn seitlich versetzt duerfen die
+   Karten sich in der Hoehe ueberschneiden, wie ein Kreuz auf dem Tisch. Drei
+   volle Kartenhoehen lagen ueberwiegend als leerer Filz da. */
 .sk-stich {
   grid-area: 2 / 2;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, calc(var(--sk-t) * 1.436));
+  grid-template-columns: repeat(3, minmax(0, calc(var(--sk-t) * 1.12)));
+  justify-content: center;
+  grid-template-rows: repeat(3, calc(var(--sk-t) * 1.436 * .72));
   place-items: center;
   position: relative;
 }
-.sk-karte--tisch[data-platz="unten"] { grid-area: 3 / 2; }
-.sk-karte--tisch[data-platz="links"] { grid-area: 2 / 1; }
-.sk-karte--tisch[data-platz="oben"] { grid-area: 1 / 2; }
-.sk-karte--tisch[data-platz="rechts"] { grid-area: 2 / 3; }
+.sk-karte--tisch[data-platz="unten"] { grid-area: 3 / 2; align-self: end; --sk-vy: 22px; }
+.sk-karte--tisch[data-platz="links"] { grid-area: 2 / 1; --sk-vx: -22px; }
+.sk-karte--tisch[data-platz="oben"] { grid-area: 1 / 2; align-self: start; --sk-vy: -22px; }
+.sk-karte--tisch[data-platz="rechts"] { grid-area: 2 / 3; --sk-vx: 22px; }
+/* Die neue Karte kommt von dem Platz, an dem ihr Spieler sitzt. */
+.sk-karte--tisch[data-neu="ja"] { animation: sk-landet .2s cubic-bezier(.2, .8, .3, 1); }
+@keyframes sk-landet {
+  from { opacity: 0; transform: translate(var(--sk-vx, 0), var(--sk-vy, 0)) scale(.94); }
+}
+/* Der Stich wandert zum Gewinner. Die Dauer steht als STICHFLUG in schafkopf.js. */
+.sk-stich[data-geht] .sk-karte--tisch {
+  opacity: 0;
+  box-shadow: none;
+  transition: transform .24s ease-in, opacity .24s ease-in;
+}
+.sk-stich[data-geht="links"] .sk-karte--tisch { transform: translateX(calc(var(--sk-t) * -1.7)) scale(.75); }
+.sk-stich[data-geht="rechts"] .sk-karte--tisch { transform: translateX(calc(var(--sk-t) * 1.7)) scale(.75); }
+.sk-stich[data-geht="oben"] .sk-karte--tisch { transform: translateY(calc(var(--sk-t) * -1.4)) scale(.75); }
+.sk-stich[data-geht="unten"] .sk-karte--tisch { transform: translateY(calc(var(--sk-t) * 1.4)) scale(.75); }
+/* Tippen auf den Tisch raeumt einen fertigen Stich gleich ab. */
+.sk-tisch:has(.sk-karte[data-sticht="ja"]) { cursor: pointer; }
 .sk-leer {
   grid-area: 2 / 2;
+  white-space: nowrap;
   font-size: 12px;
   color: inherit;
   opacity: .55;
@@ -2094,8 +3012,10 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 }
 /* Waehrend der Ansage liegt noch nichts auf dem Tisch - dann muss dort auch
    kein Loch von der Groesse eines Stichs klaffen. */
-.sk-tisch[data-phase="ansage"] .sk-stich,
-.sk-tisch[data-phase="weiter"] .sk-stich { grid-template-rows: repeat(3, auto); min-height: 84px; }
+@media (max-width: 1319px) {
+  .sk-tisch[data-phase="ansage"] .sk-stich,
+  .sk-tisch[data-phase="weiter"] .sk-stich { grid-template-rows: auto; min-height: 0; }
+}
 
 /* Eine Karte: Wert oben links, Farbzeichen gross darunter, unten dasselbe
    auf dem Kopf - so wie es auf einem gedruckten Blatt auch steht. Nachgemalt
@@ -2228,16 +3148,22 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 }
 
 .sk-karte--tisch { width: var(--sk-t); height: calc(var(--sk-t) * 1.436); }
-/* Wer den Stich haelt, steht ein Stueck vor - dafuer braucht es keine Farbe,
-   die mit den vier Kartenfarben um Aufmerksamkeit streitet. */
+/* Wer den Stich haelt, steht ein Stueck vor, mit hellem Rand - dafuer braucht es
+   keine Farbe, die mit den vier Kartenfarben um Aufmerksamkeit streitet. Die
+   fuenf Pixel allein sah man nur, wenn man schon hinschaute. */
 .sk-karte[data-sticht="ja"] {
-  transform: translateY(-5px);
-  box-shadow: 0 2px 3px rgba(20, 14, 8, .34), 0 10px 18px rgba(20, 14, 8, .3);
+  transform: translateY(-6px) scale(1.04);
+  z-index: 1;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, .9), 0 2px 3px rgba(20, 14, 8, .34), 0 10px 18px rgba(20, 14, 8, .3);
 }
 
-/* Deine acht Karten liegen als Faecher: leicht ueberlappend und von der
-   Mitte weg gekippt. Acht Karten nebeneinander passen sonst auf kein Handy. */
+/* Deine Karten teilen sich die ganze Breite: Sie ueberlappen genau so weit, wie
+   es das Fenster verlangt, und auf dem Laptop gar nicht. Vorher hingen feste
+   Ueberlappungen an der Kartenzahl, und am Handy blieben von jeder Karte 33
+   Pixel, obwohl links und rechts noch Platz war. --sk-luecken setzt schafkopf.js. */
 .sk-hand {
+  --sk-trenner: 0px;
+  container-type: inline-size;
   display: flex;
   justify-content: center;
   align-items: flex-end;
@@ -2245,23 +3171,31 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   min-height: calc(var(--sk-b) * 1.68);
   padding: 12px 0 2px;
 }
-.sk-hand[data-eng="viel"] .sk-karte--hand { margin-right: calc(var(--sk-b) * -.59); }
-.sk-hand[data-eng="mittel"] .sk-karte--hand { margin-right: calc(var(--sk-b) * -.385); }
-.sk-hand[data-eng="wenig"] .sk-karte--hand { margin-right: calc(var(--sk-b) * -.18); }
+.sk-hand:has([data-gruppe="farbe"]) { --sk-trenner: calc(var(--sk-b) * .19); }
+.sk-karte--hand {
+  margin-right: min(5px, calc((100cqw - var(--sk-b) - var(--sk-trenner)) / var(--sk-luecken, 7) - var(--sk-b)));
+}
 .sk-hand .sk-karte--hand:last-child { margin-right: 0; }
 /* Eine Luecke zwischen Trumpf und Farbe - genau die, die man auch mit
    echten Karten in der Hand laesst. Sie sagt mehr als jede Marke auf der
    Karte und kostet keinen Millimeter Kartenflaeche. */
-.sk-karte--hand[data-gruppe="farbe"] { margin-left: calc(var(--sk-b) * .19); }
+.sk-karte--hand[data-gruppe="farbe"] { margin-left: var(--sk-trenner); }
 .sk-karte--hand {
   transition: transform .13s ease, box-shadow .13s ease;
   transform-origin: 50% 130%;
 }
-.sk-karte--hand:not(:disabled):hover,
 .sk-karte--hand:not(:disabled):focus-visible {
   transform: translateY(-9px);
   z-index: 4;
+  outline-offset: 1px;
   box-shadow: 0 3px 4px rgba(20, 14, 8, .34), 0 12px 22px rgba(20, 14, 8, .3);
+}
+@media (hover: hover) {
+  .sk-karte--hand:not(:disabled):hover {
+    transform: translateY(-9px);
+    z-index: 4;
+    box-shadow: 0 3px 4px rgba(20, 14, 8, .34), 0 12px 22px rgba(20, 14, 8, .3);
+  }
 }
 /* Die Regelanzeige bewegt nichts. Erst hoben sich die spielbaren Karten und
    die gesperrten sanken - und weil sich mit jedem Stich aendert, was erlaubt
@@ -2287,12 +3221,20 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 /* Gesperrte Karten heben sich beim Zeigen nicht - sie liegen fest. */
 .sk-hand .sk-karte--hand[data-gesperrt="ja"]:hover { transform: none; }
 
-/* Nach den Gruppenregeln, damit Zeigen und Tipp sie ueberstimmen. */
-.sk-hand .sk-karte--hand:not(:disabled):not([data-gesperrt]):hover,
+/* Nach den Gruppenregeln, damit Zeigen und Tipp sie ueberstimmen. Auf dem Handy
+   gibt es kein Zeigen: Dort bliebe die Karte unter dem Finger nach dem Legen
+   gehoben stehen. */
 .sk-hand .sk-karte--hand:not(:disabled):not([data-gesperrt]):focus-visible {
   transform: translateY(-13px);
   z-index: 4;
   box-shadow: 0 3px 4px rgba(20, 14, 8, .34), 0 12px 22px rgba(20, 14, 8, .3);
+}
+@media (hover: hover) {
+  .sk-hand .sk-karte--hand:not(:disabled):not([data-gesperrt]):hover {
+    transform: translateY(-13px);
+    z-index: 4;
+    box-shadow: 0 3px 4px rgba(20, 14, 8, .34), 0 12px 22px rgba(20, 14, 8, .3);
+  }
 }
 .sk-hand .sk-karte--hand[data-tipp="ja"] {
   transform: translateY(-17px);
@@ -2322,6 +3264,7 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  max-width: 100%;
   padding: 6px 14px;
   border-radius: 999px;
   font-size: 13.5px;
@@ -2348,8 +3291,19 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 .sk-dran[data-wer="ich"] .sk-dran-punkt { background: var(--gruen); }
 @keyframes sk-pochen { 0%, 100% { opacity: .3; } 50% { opacity: 1; } }
 
-/* Der Zusatz in der Dran-Zeile: der Stich ist entschieden. */
-.sk-dran-zusatz { font-weight: 500; opacity: .85; }
+/* Der Zusatz in der Dran-Zeile: der Stich ist entschieden, oder was du vorgemerkt
+   hast. Die Zeile bleibt einzeilig; brach sie um, rutschte die Hand um eine
+   Textzeile nach unten, und die vorgemerkte Karte sprang unter dem Finger weg. */
+.sk-dran-text { flex: none; white-space: nowrap; }
+.sk-dran-zusatz {
+  min-width: 0;
+  font-weight: 500;
+  opacity: .85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 430px) { .sk-dran { padding-inline: 11px; gap: 6px; font-size: 12.5px; } }
 
 /* Die Wissensanzeige: je ein Satz als Zeile, Schluesse abgesetzt. */
 .sk-wissen {
@@ -2367,14 +3321,43 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 .sk-wissen-text { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--tinte-leise); }
 .sk-wissen--gut .sk-wissen-text { color: var(--tinte); }
 
-/* Der Hinweiskasten. Gruen, wenn es passt, rostrot, wenn es besser ginge. */
+/* Der Hinweiskasten. Gruen, wenn es passt, rostrot, wenn es besser ginge. Er
+   steht unter der Hand, damit die Karten beim Erscheinen liegen bleiben. */
 .sk-notiz {
   width: 100%;
+  max-width: 560px;
   padding: 11px 13px;
   border-radius: var(--rund-klein);
   background: var(--karte);
   border: 1px solid var(--karte-rand);
   border-left: 3px solid var(--tinte-still);
+  animation: sk-notiz-rein .16s ease;
+}
+@keyframes sk-notiz-rein { from { opacity: 0; transform: translateY(-4px); } }
+.sk-notiz-mehr {
+  margin: 4px 0 0 -6px;
+  padding: 7px 6px;
+  border: 0;
+  background: none;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--tinte-leise);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.sk-notiz[data-zahlen="nein"] .sk-notiz-zahl { display: none; }
+/* Neben dem Tisch ist Platz: Dort steht der Hinweis auf gleicher Hoehe wie der
+   Stich, ueber den er spricht, und muss seine Zahlen nicht verstecken. */
+@media (min-width: 1320px) {
+  .sk-notiz {
+    position: absolute;
+    top: 32px;
+    left: calc(50% + var(--sk-breit) / 2 + 14px);
+    width: min(360px, calc(50vw - var(--sk-breit) / 2 - 14px - var(--lueftung)));
+  }
+  .sk-notiz-mehr { display: none; }
+  .sk-notiz[data-zahlen="nein"] .sk-notiz-zahl { display: block; }
 }
 .sk-notiz[data-art="tipp"] { border-left-color: var(--gelb); }
 .sk-notiz[data-art="gut"] { border-left-color: var(--gruen); }
@@ -2389,13 +3372,45 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 }
 
 /* Die Ansage. */
-.sk-ansage { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.sk-ansage { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 560px; }
 .sk-frage { margin: 0; font-size: 15.5px; font-weight: 700; }
 .sk-gruppe { display: flex; flex-direction: column; gap: 4px; }
-.sk-gruppe-titel { font-size: 11.5px; color: var(--tinte-still); }
+.sk-gruppe-titel { font-size: 12px; color: var(--tinte-leise); }
 .sk-knopfreihe { display: flex; flex-wrap: wrap; gap: 6px; }
-.sk-ansageknopf { padding: 8px 12px; font-size: 14px; }
-.sk-weiter { width: 100%; }
+.sk-ansageknopf {
+  min-height: 40px;
+  padding: 8px 13px;
+  font-size: 14px;
+  border-radius: 999px;
+  background: var(--karte);
+  box-shadow: 0 0 0 1px var(--karte-rand), 0 1px 2px rgba(30, 24, 16, .05);
+}
+@media (hover: hover) {
+  .sk-ansageknopf.knopf--still:hover:not(:disabled) {
+    background: var(--karte);
+    box-shadow: 0 0 0 1px var(--tinte-still), 0 1px 3px rgba(30, 24, 16, .08);
+  }
+}
+.sk-ansage-fuss { display: flex; gap: 8px; align-items: stretch; }
+.sk-weiter { flex: 1 1 auto; }
+.sk-wasgeht {
+  flex: none;
+  padding: 9px 14px;
+  font-size: 13.5px;
+  background: var(--karte);
+  box-shadow: 0 0 0 1px var(--karte-rand), 0 1px 2px rgba(30, 24, 16, .05);
+}
+.sk-wasgeht .bildzeichen svg { width: 1.15em; height: 1.15em; stroke-width: 2.2; }
+/* Wo neben dem Tisch Platz ist, steht die Ansage dort. Der Tisch bleibt dann auch
+   vor dem ersten Stich voll hoch, und die Hand muss beim Spielbeginn nicht rutschen. */
+@media (min-width: 1320px) {
+  .sk-ansage {
+    position: absolute;
+    top: 32px;
+    left: calc(50% + var(--sk-breit) / 2 + 14px);
+    width: min(360px, calc(50vw - var(--sk-breit) / 2 - 14px - var(--lueftung)));
+  }
+}
 
 /* Das Regelwerk zum Nachlesen. Jede Regel ein Kasten: Titel, wofuer sie
    gilt, der Satz dahinter, und die gemessene Wirkung als Fussnote. */
@@ -2449,7 +3464,8 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 .sk-ratzahl { font-family: 'DM Mono', monospace; color: var(--tinte-leise); font-variant-numeric: tabular-nums; }
 
 /* Die Abrechnung am Ende. */
-.sk-rechnung { display: grid; gap: 2px; margin: 12px 0; width: 100%; max-width: 320px; }
+.sk-ende { max-width: 560px; }
+.sk-rechnung { display: grid; gap: 2px; margin: 12px auto; width: 100%; max-width: 320px; }
 .sk-rechnung-zeile {
   display: flex;
   justify-content: space-between;
@@ -2466,7 +3482,26 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   font-weight: 700;
   font-size: 15px;
 }
-.sk-rechnung-zahl { font-family: 'DM Mono', monospace; font-variant-numeric: tabular-nums; }
+/* Keine Maschinenschrift: Ihre durchgestrichene Null liest sich am Stammtisch wie
+   ein Fehler, und fett wird sie zum Klecks. */
+.sk-rechnung-zahl { font-variant-numeric: tabular-nums; }
+.sk-rechnung[data-art="gut"] .sk-rechnung-zeile:last-child .sk-rechnung-zahl { color: var(--gruen); }
+.sk-rechnung[data-art="schlecht"] .sk-rechnung-zeile:last-child .sk-rechnung-zahl { color: var(--rost); }
+
+/* Der Stand ueber den Abend: vier Spalten statt eines Satzes, der mitten im
+   Namen umbricht. */
+.sk-stand-titel { margin: 10px 0 5px; font-size: 12px; color: var(--tinte-leise); }
+.sk-stand { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; max-width: 360px; margin: 0 auto; }
+.sk-stand-zelle {
+  display: grid;
+  gap: 1px;
+  padding: 6px 2px;
+  border-radius: var(--rund-klein);
+  background: color-mix(in srgb, var(--karte-rand) 45%, transparent);
+}
+.sk-stand-zelle[data-ich="ja"] { background: color-mix(in srgb, var(--gruen) 14%, transparent); }
+.sk-stand-name { font-size: 12px; color: var(--tinte-leise); }
+.sk-stand-zahl { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
 
 /* Der letzte Stich im Blatt: vier Karten in Legereihenfolge, darunter wer sie gab. */
 .sk-letzter { display: flex; justify-content: center; gap: 8px; margin: 2px 0 10px; }
@@ -2498,17 +3533,35 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 /* Ab der Bildschirmgroesse haengt auch die Tischbreite an der Karte: werden
    die Karten wegen der Hoehe kleiner, soll der Tisch nicht als leere Wiese
    um sie herumliegen. */
+/* Unter 380 Punkten reicht die Mitte nicht fuer drei Tischkarten nebeneinander: Dort
+   werden sie etwas kleiner, damit die Karte links nicht den Wert der unteren verdeckt. */
+@media (max-width: 379px) {
+  :root { --sk-t: calc(var(--sk-b) * .74); }
+  .sk-tisch { grid-template-columns: minmax(76px, 1fr) minmax(0, calc(var(--sk-t) * 3.5)) minmax(76px, 1fr); }
+}
 @media (min-width: 380px) { :root { --sk-b: min(80px, var(--sk-hoch)); --sk-breit: 97vw; } }
 @media (min-width: 430px) { :root { --sk-b: min(86px, var(--sk-hoch)); --sk-breit: 96vw; } }
 @media (min-width: 560px) { :root { --sk-b: min(94px, var(--sk-hoch)); --sk-breit: min(96vw, 580px, max(420px, calc(var(--sk-b) * 7.2))); } }
 @media (min-width: 820px) { :root { --sk-b: min(108px, var(--sk-hoch)); --sk-breit: min(92vw, 680px, max(420px, calc(var(--sk-b) * 7.2))); } }
 @media (min-width: 1150px) { :root { --sk-b: min(122px, var(--sk-hoch)); --sk-breit: min(88vw, 780px, max(420px, calc(var(--sk-b) * 7.2))); } }
 
-/* Die Trumpfmarke und der Eckindex ruecken mit. */
+/* Die Trumpfmarke und der Eckindex ruecken mit. Der Punkt steht unter dem
+   Eckzeichen, im Streifen, den der Faecher von jeder Karte uebrig laesst. Oben
+   rechts lag er unter der Nachbarkarte und war nur auf der letzten zu sehen. */
 .sk-trumpfpunkt {
   width: calc(var(--sk-b) * .09);
   height: calc(var(--sk-b) * .09);
+  top: calc(var(--sk-b) * .51 + 11px);
+  right: auto;
+  left: calc(6px + var(--sk-b) * .075);
 }
+.sk-karte--tisch .sk-trumpfpunkt {
+  width: calc(var(--sk-t) * .09);
+  height: calc(var(--sk-t) * .09);
+  top: calc(var(--sk-t) * .51 + 11px);
+  left: calc(6px + var(--sk-t) * .075);
+}
+.sk-karte--mini .sk-trumpfpunkt { width: 5px; height: 5px; top: 21px; left: 8px; }
 .sk-karte--tisch .sk-rang { font-size: calc(var(--sk-t) * .27); }
 .sk-karte--tisch .sk-minipip svg {
   width: calc(var(--sk-t) * .24);
@@ -2521,6 +3574,8 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   .b-lunte { animation: none; }
   .sk-dran-punkt { animation: none; }
   .sk-karte--hand { transition: none; }
+  .sk-karte--tisch[data-neu="ja"], .sk-notiz { animation: none; }
+  .sk-stich[data-geht] .sk-karte--tisch { transition: none; }
 }
 
 /* ============================================ Geschick: Schlange, Sternjäger,
@@ -2572,10 +3627,37 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   pointer-events: none;
 }
 .ez-schild p { margin: 0; }
-/* Wo die Figur zu Beginn mitten im Feld steht, rückt die Schrift nach unten
-   – sonst steht „Wisch los" genau auf der Schlange, die gemeint ist. */
-.sn-kasten .ez-schild { justify-content: flex-end; padding-bottom: 18%; }
-.fl-kasten .ez-schild { justify-content: flex-end; padding-bottom: 22%; }
+/* Schlange, Flattervogel, Blasen: Das Schild ist eine kleine Karte statt eines
+   Schleiers. Unter dem Schleier wirkte das ganze Feld blass, und wer aus der
+   Pause weiterspielt, muss genau das Feld sehen. Die Karte nimmt auch die Knöpfe
+   auf – unter dem Feld rutschten sie im flachen Fenster aus dem Bild. Sie lässt
+   Tipps zum Feld durch, nur ihre Knöpfe fangen sie ab. Wohin sie gehört, sagt
+   das Spiel mit data-schild, denn sie soll der Figur ausweichen. */
+.sn-kasten .ez-schild,
+.fl-kasten .ez-schild,
+.bl-kasten .ez-schild,
+.im-kasten .ez-schild,
+.dj-kasten .ez-schild,
+.pb-kasten .ez-schild {
+  inset: auto 0;
+  width: min(88%, 330px);
+  margin: 0 auto;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--karte);
+  box-shadow: 0 0 0 1px var(--karte-rand), var(--schatten);
+  animation: ende-rein .2s ease-out;
+}
+[data-schild='unten'] > .ez-schild { bottom: 4%; }
+[data-schild='oben'] > .ez-schild { top: 4%; }
+[data-schild='mitte'] > .ez-schild { top: 32%; }
+.bl-kasten .ez-schild { bottom: 18%; }
+.ez-schild .ez-unten { width: 100%; margin-top: 6px; }
+.ez-schild .ende-kasten { padding: 0; border: 0; background: none; animation: none; }
+.ez-schild .ende-titel:empty { display: none; }
+.ez-schild .ende-kasten .leiste { margin-top: 0; }
+.ez-schild .notiz--klein { margin: 8px 0 0; }
+.ez-schild .knopf { pointer-events: auto; }
 .ez-schild-titel { font-size: 22px; font-weight: 800; letter-spacing: -.01em; }
 .ez-schild-unter { font-size: 14px; color: var(--tinte-leise); max-width: 30ch; line-height: 1.4; }
 
@@ -2595,98 +3677,347 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 
 .ez-unten { width: min(380px, 100%); }
 
-/* Schlange: quadratisches Feld, darunter das Steuerkreuz. */
-.sn-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc(100vh - 250px))); }
-@supports (height: 100dvh) {
-  .sn-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc(100dvh - 250px))); }
+/* Schlange: quadratisches Feld, darunter das Steuerkreuz. Das nimmt sich die
+   Höhe, die unter dem Feld übrig bleibt: Auf dem Handy liegt der Daumen dort.
+   Im Querformat fehlt diese Höhe, dann steht das Kreuz neben dem Feld, und das
+   Feld darf das Fenster ausfüllen. */
+.buehne:has(.sn-flaeche),
+.buehne:has(.fl-flaeche),
+.buehne:has(.bl-flaeche) { max-width: none; padding-bottom: 12px; }
+.sn-flaeche {
+  --sn-fenster: 100vh;
+  --ez-breite: min(600px, calc(100vw - 28px), max(220px, calc(var(--sn-fenster) - 250px)));
+  --sn-zeile: clamp(46px, calc((var(--sn-fenster) - var(--ez-breite) - 140px) / 2), 84px);
 }
+@supports (height: 100dvh) {
+  .sn-flaeche { --sn-fenster: 100dvh; }
+}
+.sn-kasten { box-shadow: 0 0 0 2px color-mix(in srgb, var(--tinte) 38%, var(--karte-rand)); }
 .sn-pad {
   display: grid;
-  grid-template-columns: repeat(3, 64px);
-  grid-template-rows: repeat(2, 46px);
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, var(--sn-zeile));
   grid-template-areas: ". hoch ." "links runter rechts";
   gap: 6px;
-  justify-content: center;
 }
-.sn-taste { padding: 0; font-size: 20px; border-radius: 12px; touch-action: none; }
+.sn-taste {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 14px;
+  background: var(--karte);
+  box-shadow: 0 0 0 1px var(--karte-rand), var(--schatten);
+  touch-action: none;
+  transition: background-color .08s ease, transform .08s ease;
+}
+.sn-taste:active { background: var(--karte-rand); transform: scale(.96); }
+.sn-taste svg {
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
 .sn-taste[data-ort='hoch'] { grid-area: hoch; }
 .sn-taste[data-ort='links'] { grid-area: links; }
+.sn-taste[data-ort='links'] svg { transform: rotate(-90deg); }
 .sn-taste[data-ort='runter'] { grid-area: runter; }
+.sn-taste[data-ort='runter'] svg { transform: rotate(180deg); }
 .sn-taste[data-ort='rechts'] { grid-area: rechts; }
-
-/* Sternjäger: 168 x 96 im Querformat, darunter die Leiste zum Ziehen und der
-   Knopf für die Spezialwaffe. Das flache Feld darf breiter werden als 440 px,
-   sonst bliebe es am Laptop ein schmaler Streifen. */
-.im-flaeche { --ez-breite: min(600px, 92vw, max(220px, calc((100vh - 250px) * 168 / 96))); }
-@supports (height: 100dvh) {
-  .im-flaeche { --ez-breite: min(600px, 92vw, max(220px, calc((100dvh - 250px) * 168 / 96))); }
+.sn-taste[data-ort='rechts'] svg { transform: rotate(90deg); }
+@media (min-aspect-ratio: 6/5) {
+  .sn-flaeche {
+    --ez-breite: min(720px, calc(92vw - 200px), max(220px, calc(var(--sn-fenster) - 120px)));
+    /* Drei Spalten, damit das Feld unter der Kopfzeile mittig bleibt. */
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(186px, 1fr);
+    align-items: end;
+    gap: 16px;
+  }
+  .sn-kasten { grid-column: 2; }
+  .sn-pad {
+    grid-column: 3;
+    justify-self: start;
+    width: auto;
+    grid-template-columns: repeat(3, 58px);
+    grid-template-rows: repeat(2, 58px);
+  }
 }
-.im-steuer { display: flex; gap: 8px; }
-.im-steuer .ez-steuer { flex: 1; min-width: 0; }
+
+/* Sternjäger: 168 x 96 im Querformat. Im Hochformat des Handys ist das Feld
+   durch die Breite begrenzt; alles darunter wird Zugfläche, denn dort liegt der
+   Daumen, und ohne sie läge er auf dem Feld und verdeckte die Schüsse. Am Laptop
+   wächst das Feld bis zum Fünffachen seiner Pixel, und die Leiste wird schmal.
+   Die Fläche ist breiter als die Bühne erlaubt; sie steht in der Mitte des
+   Spielbodens und ragt deshalb nach beiden Seiten gleich weit hinaus. */
+.buehne:has(.im-flaeche),
+.buehne:has(.dj-flaeche),
+.buehne:has(.pb-flaeche) { padding-bottom: 12px; }
+.im-flaeche {
+  --im-fenster: 100vh;
+  --ez-breite: min(840px, 96vw, max(220px, calc((var(--im-fenster) - 177px) * 168 / 96)));
+  width: var(--ez-breite);
+}
+@supports (height: 100dvh) {
+  .im-flaeche { --im-fenster: 100dvh; }
+}
+.im-steuer {
+  position: relative;
+  display: flex;
+  height: clamp(52px, calc(var(--im-fenster) - 125px - var(--ez-breite) * 96 / 168), 560px);
+}
+.im-steuer .ez-steuer {
+  flex: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 14px;
+  background-color: var(--karte);
+  background-image: radial-gradient(var(--karte-rand) 1.2px, transparent 1.6px);
+  background-size: 18px 18px;
+  background-position: center;
+  box-shadow: 0 0 0 1px var(--karte-rand);
+  font-size: 14px;
+  color: var(--tinte-leise);
+  transition: background-color .12s ease;
+}
+.im-steuer-pfeile { display: flex; color: var(--tinte-still); }
+.im-steuer-pfeile svg {
+  width: 34px;
+  height: 34px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+/* Das Schiff startet links und bleibt meist dort: Die Karte rückt nach rechts,
+   sonst läge sie im flachen Feld des Handys genau darauf. */
+.im-kasten .ez-schild { width: min(72%, 320px); margin: 0 8px 0 auto; }
+.im-steuer--aktiv .ez-steuer { background-color: color-mix(in srgb, var(--gruen) 12%, var(--karte)); }
+.im-steuer--aus { opacity: .4; }
 .im-spezial {
-  flex: none;
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
   width: 96px;
-  min-height: 60px;
+  height: min(96px, calc(100% - 16px));
+  min-height: 36px;
   padding: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  border-radius: 12px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--tinte);
+  color: var(--papier);
   line-height: 1.1;
   touch-action: none;
+  transition: transform .08s ease, opacity .15s ease;
 }
+.im-spezial:active { transform: scale(.94); }
 .im-spezial-name { font-size: 13px; }
-.im-spezial b { font-size: 20px; font-variant-numeric: tabular-nums; }
-.im-spezial--leer { opacity: .45; }
-
-/* Flattervogel: 180 x 250, keine Leiste – getippt wird aufs Feld. */
-.fl-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100vh - 180px) * 180 / 250))); }
-@supports (height: 100dvh) {
-  .fl-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100dvh - 180px) * 180 / 250))); }
+.im-spezial b { font-size: 22px; font-variant-numeric: tabular-nums; }
+.im-spezial--leer { opacity: .35; }
+.im-rekord, .dj-rekord, .pb-rekord { color: var(--gruen) !important; font-weight: 700 !important; }
+/* Flaches Fenster: Die Leiste ist schmal, die Schrift muss am Knopf vorbei. */
+@media (min-aspect-ratio: 5/4) {
+  .im-steuer .ez-steuer { padding: 0 116px 0 16px; }
+  .im-steuer-pfeile { display: none; }
+  .im-spezial { flex-direction: row; gap: 8px; right: 8px; bottom: 8px; width: 110px; }
+}
+/* Handy quer: Unter dem Feld ist kein Platz, die Zugfläche steht daneben. */
+@media (max-height: 520px) and (min-aspect-ratio: 3/2) {
+  .im-flaeche {
+    --ez-breite: min(62vw, max(220px, calc((var(--im-fenster) - 117px) * 168 / 96)));
+    width: 96vw;
+    flex-direction: row;
+    align-items: stretch;
+  }
+  .im-flaeche > .im-kasten { flex: none; align-self: flex-start; }
+  .im-steuer { flex: 1; width: auto; height: auto; }
+  .im-steuer .ez-steuer { padding: 0 12px; }
+  .im-spezial { flex-direction: column; width: 84px; height: 84px; }
+}
+/* Wenig Höhe im Feld: Der Hinweis unter dem Knopf müsste aus der Karte ragen,
+   und die Karte braucht die Breite, damit die Knöpfe in einer Zeile stehen. */
+@media (max-height: 620px) and (max-aspect-ratio: 1/1) {
+  .im-kasten .notiz--klein { display: none; }
+  .im-kasten .ez-schild { width: 94%; margin: 0 auto; padding: 8px 12px; }
 }
 
-/* Hochhinaus: 180 x 270, darunter die zwei Haltehaelften. */
-.dj-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100vh - 270px) * 180 / 270))); }
+/* Flattervogel: 180 x 250, keine Leiste – getippt wird aufs Feld. Die Fläche
+   reicht bis zum unteren Fensterrand: Auf dem Handy endet das Feld über dem
+   Daumen, und ein Tipp daneben darf keinen Flug kosten. Der Himmel ist der
+   Hintergrund des Kastens, die Leinwand darüber bleibt durchsichtig. */
+.fl-flaeche {
+  --fl-fenster: 100vh;
+  --ez-breite: min(560px, calc(100vw - 28px), max(180px, calc((var(--fl-fenster) - 120px) * 180 / 250)));
+  min-height: calc(var(--fl-fenster) - 120px);
+}
 @supports (height: 100dvh) {
-  .dj-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100dvh - 270px) * 180 / 270))); }
+  .fl-flaeche { --fl-fenster: 100dvh; }
+}
+.fl-kasten {
+  background: linear-gradient(
+    color-mix(in srgb, #3E9AC1 38%, var(--karte)),
+    color-mix(in srgb, #3E9AC1 10%, var(--karte)) 90%);
 }
 
-/* Blasen: 180 x 270, gezielt wird auf dem Feld selbst. Das Schild rueckt
-   nach unten, damit es die Blasen oben nicht verdeckt. */
-.bl-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100vh - 180px) * 180 / 270))); }
-@supports (height: 100dvh) {
-  .bl-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100dvh - 180px) * 180 / 270))); }
+/* Hochhinaus: 180 x 270, darunter die zwei Haltehaelften. Sie nehmen, was unter
+   dem Feld frei ist – dort liegen die Daumen. Im flachen Fenster fallen sie weg:
+   Die untere Feldhaelfte tut dasselbe, und das Feld bekommt die ganze Hoehe. */
+.dj-flaeche {
+  --dj-fenster: 100vh;
+  --ez-breite: min(440px, 96vw, max(220px, calc((var(--dj-fenster) - 189px) * 180 / 270)));
+  /* Mindestens die Bühne: Auch ein Finger neben dem Feld lenkt noch. */
+  width: max(100%, var(--ez-breite));
 }
-.bl-kasten .ez-schild { justify-content: flex-end; padding-bottom: 30%; }
+@supports (height: 100dvh) {
+  .dj-flaeche { --dj-fenster: 100dvh; }
+}
+.dj-steuer {
+  height: clamp(64px, calc(var(--dj-fenster) - 125px - var(--ez-breite) * 270 / 180), 132px);
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  gap: 8px;
+  align-items: stretch;
+}
+.dj-halte {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: 14px;
+  background: var(--karte);
+  box-shadow: 0 0 0 1px var(--karte-rand);
+  font-size: 14px;
+  color: var(--tinte-leise);
+  transition: background-color .1s ease, color .1s ease, transform .1s ease;
+}
+.dj-halte b { font-size: 22px; font-weight: 400; color: var(--tinte); transition: color .1s ease; }
+.dj-halte--an {
+  background: color-mix(in srgb, var(--gruen) 22%, var(--karte));
+  color: var(--tinte);
+  transform: scale(.98);
+}
+.dj-halte--an b { color: var(--gruen); }
+.dj-steuer--aus { opacity: .4; }
+@media (min-aspect-ratio: 5/4) {
+  .dj-flaeche { --ez-breite: min(560px, 96vw, max(220px, calc((var(--dj-fenster) - 117px) * 180 / 270))); }
+  .dj-steuer { display: none; }
+}
+
+/* Blasen: 180 x 270, gezielt wird auf dem Feld selbst. Die Karte (siehe Schild
+   oben) steht über der Kanone, damit sie die Blasen oben nicht verdeckt. */
+.bl-flaeche {
+  --bl-fenster: 100vh;
+  /* Beim Antippen braucht der Knopf darunter seine Höhe. */
+  --bl-unten: 120px;
+  --ez-breite: min(560px, calc(100vw - 28px), max(180px, calc((var(--bl-fenster) - var(--bl-unten)) * 180 / 270)));
+}
+@supports (height: 100dvh) {
+  .bl-flaeche { --bl-fenster: 100dvh; }
+}
+.bl-flaeche[data-antippen='ja'] { --bl-unten: 188px; }
+.bl-los {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  min-height: 60px;
+  font-size: 19px;
+  border-radius: 16px;
+}
+.bl-los-punkt {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--papier) 70%, transparent);
+}
+.bl-hilfe { display: grid; gap: 8px; }
+.bl-schalter {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 14px;
+  background: var(--karte);
+  box-shadow: 0 0 0 1px var(--karte-rand);
+  text-align: left;
+  cursor: pointer;
+}
+.bl-schalter-worte { display: grid; gap: 2px; flex: 1 1 auto; }
+.bl-schalter-titel { font-size: 15.5px; font-weight: 700; }
+.bl-schalter-text { font-size: 13px; line-height: 1.35; color: var(--tinte-leise); }
+.bl-schalter-knopf {
+  position: relative;
+  flex: none;
+  width: 44px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--karte-rand);
+  transition: background-color .15s ease;
+}
+.bl-schalter-knopf::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(30, 24, 16, .25);
+  transition: transform .15s ease;
+}
+.bl-schalter[aria-checked='true'] .bl-schalter-knopf { background: var(--gruen); }
+.bl-schalter[aria-checked='true'] .bl-schalter-knopf::after { transform: translateX(18px); }
 
 /* Flipper: 200 x 360, der Tisch mit der Anzeige darunter. Gespielt wird mit
-   den beiden Haelften des Feldes, deshalb keine Leiste. Der Tisch ist immer
-   Weltraum, auch in der hellen Fassung – das Schild bekommt deshalb einen
-   dunklen Schleier statt des Papiertons. */
-.pb-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100vh - 180px) * 200 / 360))); }
+   den beiden Haelften des Feldes, deshalb keine Leiste, und der Tisch nimmt die
+   ganze Hoehe. Der Tisch ist immer Weltraum, auch in der hellen Fassung. */
+.pb-flaeche {
+  --ez-breite: min(480px, 96vw, max(220px, calc((100vh - 117px) * 200 / 360)));
+  /* Mindestens die Bühne: Auch ein Finger neben dem Tisch bedient die Flipper. */
+  width: max(100%, var(--ez-breite));
+}
 @supports (height: 100dvh) {
-  .pb-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100dvh - 180px) * 200 / 360))); }
+  .pb-flaeche { --ez-breite: min(480px, 96vw, max(220px, calc((100dvh - 117px) * 200 / 360))); }
 }
 .pb-kasten { background: #070918; }
-.pb-kasten .ez-schild { background: rgba(7, 9, 24, .62); color: #F2F4FF; }
-.pb-kasten .ez-schild-unter { color: rgba(226, 232, 255, .82); }
 
 /* ================================================================ Riegel
 
    Ein Raetsel, das sich Leinwand und Schleife der Geschicklichkeitsspiele
    borgt: 180 x 288. Darueber der Auftrag, darunter „Von vorn" und „Hinweis". */
 
-.ri-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100vh - 290px) * 180 / 288))); }
+/* --ri-seiten ist Breite durch Hoehe des Streifens, den das Level zeigt: Hoehe
+   frei, also waechst die Breite mit, bis das Fenster an der Seite aufhoert. */
+.ri-flaeche { --ez-breite: min(532px, 100vw - 28px, max(220px, calc((100vh - 250px) * var(--ri-seiten, .625)))); }
 @supports (height: 100dvh) {
-  .ri-flaeche { --ez-breite: min(440px, 92vw, max(220px, calc((100dvh - 290px) * 180 / 288))); }
+  .ri-flaeche { --ez-breite: min(532px, 100vw - 28px, max(220px, calc((100dvh - 250px) * var(--ri-seiten, .625)))); }
 }
-/* Zwei Zeilen Platz, damit das Feld nicht springt, wenn der Satz kuerzer wird. */
+.ri-kasten {
+  border-radius: 14px;
+  box-shadow: 0 0 0 1px var(--karte-rand), var(--schatten);
+}
 .ri-auftrag {
   margin: -4px 0 0;
-  max-width: 40ch;
-  min-height: 2.9em;
+  max-width: 56ch;
   font-size: 13.5px;
   line-height: 1.45;
   text-align: center;
@@ -2770,33 +4101,74 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   }
 }
 
+/* Der Vorhang füllt das Fenster: Was das Kind braucht, steht in der Mitte, was
+   nur die Eltern brauchen, unten abseits. */
 .kz-vorhang {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 22px;
   width: 100%;
-  padding-top: 18px;
+  min-height: calc(100dvh - var(--kopf-hoehe) - 60px);
+  padding-top: 8px;
   text-align: center;
 }
-.kz-vorhang-bilder { display: flex; gap: 8px; font-family: var(--kz-emoji); font-size: 44px; line-height: 1.1; }
-.kz-vorhang-bilder span { display: inline-block; animation: kz-wippen 3s ease-in-out infinite; }
-.kz-vorhang-satz { margin: 0; font-size: 19px; font-weight: 700; line-height: 1.35; max-width: 26ch; }
-.kz-wahl { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
-.kz-wahl-knopf {
-  padding: 9px 15px;
-  border: 1.5px solid var(--karte-rand);
-  border-radius: 999px;
-  background: var(--karte);
-  font-size: 14.5px;
-  font-weight: 600;
-  cursor: pointer;
+.kz-vorhang-kopf { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: auto; }
+.kz-vorhang-tun { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; margin-bottom: auto; }
+.kz-vorhang-bilder {
+  display: flex;
+  gap: 6px;
+  font-family: var(--kz-emoji);
+  font-size: min(calc((100vw - 64px) / var(--anzahl, 5) / 1.3), 66px);
+  line-height: 1.1;
+  touch-action: manipulation;
 }
-.kz-wahl-knopf[aria-checked='true'] { background: var(--tinte); border-color: var(--tinte); color: var(--papier); }
+.kz-vorhang-bilder span { display: inline-block; cursor: pointer; animation: kz-wippen 3s ease-in-out infinite; }
+.kz-vorhang-bilder span.kz-hops { animation: kz-hops .6s ease; }
+.kz-vorhang-satz { margin: 0; font-size: 17px; font-weight: 600; line-height: 1.35; max-width: 32ch; }
+/* Die Stufe sieht man: So viele Bilder, wie nachher im Spiel stehen. Die Worte
+   darunter sind für die, die lesen. */
+.kz-wahl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; width: 100%; max-width: 420px; }
+.kz-wahl-knopf {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 92px;
+  padding: 12px 4px 9px;
+  border: 0;
+  border-radius: 18px;
+  background: var(--karte);
+  box-shadow: 0 0 0 1px var(--karte-rand), var(--schatten);
+  cursor: pointer;
+  transition: box-shadow .15s ease, background-color .15s ease, transform .1s ease;
+}
+.kz-wahl-knopf:active { transform: scale(.97); }
+.kz-wahl-knopf[aria-checked='true'] {
+  background: color-mix(in srgb, var(--gruen) 14%, var(--karte));
+  box-shadow: 0 0 0 3px var(--gruen), var(--schatten);
+}
+.kz-wahl-bilder {
+  display: flex;
+  flex-wrap: wrap;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 1px 2px;
+  font-family: var(--kz-emoji);
+  font-size: clamp(24px, 7vw, 30px);
+  line-height: 1.1;
+}
+/* Vier stehen wie im Spiel als zwei mal zwei und bleiben damit so groß wie zwei. */
+.kz-wahl-bilder[data-anzahl='4'] { display: grid; grid-template-columns: repeat(2, auto); font-size: clamp(20px, 5.6vw, 26px); }
+.kz-wahl-text { font-size: 13.5px; font-weight: 600; line-height: 1.2; color: var(--tinte-leise); }
+.kz-wahl-knopf[aria-checked='true'] .kz-wahl-text { color: var(--tinte); }
 .kz-schalter {
   display: inline-flex;
   align-items: center;
   gap: 12px;
+  min-height: 48px;
   padding: 8px 10px 8px 16px;
   border: 1.5px solid var(--karte-rand);
   border-radius: 999px;
@@ -2827,8 +4199,62 @@ body:has(.sheet-huelle:not([hidden])) .toast {
 }
 .kz-schalter[aria-checked='true'] .kz-schalter-knopf { background: var(--gruen); }
 .kz-schalter[aria-checked='true'] .kz-schalter-knopf::after { transform: translateX(16px); }
-.kz-los { min-width: 210px; padding: 16px 28px; border-radius: 999px; font-size: 19px; }
+/* Der größte Knopf auf dem Vorhang, mit dem Dreieck, das Kinder vom Abspielen
+   kennen. */
+.kz-los {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 320px;
+  min-height: 76px;
+  padding: 14px 28px;
+  border-radius: 999px;
+  background: var(--gruen);
+  font-size: 22px;
+  box-shadow: 0 5px 0 color-mix(in srgb, var(--gruen) 72%, #000), var(--schatten);
+}
+.kz-los-zeichen { display: inline-flex; }
+.kz-los-zeichen svg { width: 30px; height: 30px; fill: currentColor; }
 .kz-vorhang-notiz { max-width: 40ch; margin: 0; }
+/* Für die Großen: leise, aber zu lesen. */
+.kz-eltern {
+  width: 100%;
+  max-width: 420px;
+  padding: 11px 14px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--karte) 55%, transparent);
+  box-shadow: 0 0 0 1px var(--karte-rand);
+  color: var(--tinte-leise);
+  font-size: 13.5px;
+  line-height: 1.4;
+  text-align: left;
+}
+.kz-eltern-titel { margin: 0 0 3px; font-weight: 700; color: var(--tinte); }
+.kz-eltern-zeile { margin: 0; }
+.kz-eltern-zeile + .kz-eltern-zeile { margin-top: 3px; }
+
+/* Flach (Handy quer): Zwei Spalten, damit Stufe und Los ohne Scrollen da sind. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .buehne:has(> .spielboden > .kz-vorhang) { max-width: 860px; padding-bottom: 14px; }
+  .kz-vorhang {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-items: center;
+    gap: 12px 22px;
+    min-height: 0;
+    padding-top: 0;
+  }
+  .kz-vorhang-kopf { grid-column: 1; grid-row: 1; margin: 0; gap: 6px; }
+  .kz-eltern { grid-column: 1; grid-row: 2; max-width: none; font-size: 12.5px; padding: 8px 12px; }
+  .kz-vorhang-tun { grid-column: 2; grid-row: 1 / span 2; margin: 0; gap: 12px; }
+  .kz-vorhang-bilder { font-size: min(calc((50vw - 64px) / var(--anzahl, 5) / 1.3), 50px); }
+  .kz-vorhang-satz { font-size: 15.5px; }
+  .kz-wahl-knopf { min-height: 84px; }
+  .kz-los { min-height: 68px; }
+}
 
 .kz-zimmer {
   position: fixed;
@@ -2871,34 +4297,38 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   padding: 0;
   border: 0;
   border-radius: 50%;
-  background: color-mix(in srgb, var(--karte) 55%, transparent);
-  color: var(--tinte-leise);
+  background: transparent;
+  color: color-mix(in srgb, var(--tinte-leise) 70%, transparent);
   cursor: pointer;
   touch-action: none;
 }
-.kz-raus svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.2; }
+.kz-raus svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; }
+/* Der Ring steht beim Halten weiter außen: Der Daumen deckt sonst alles zu. */
 .kz-raus::before {
   content: '';
   position: absolute;
   inset: -3px;
   border-radius: 50%;
   background: conic-gradient(var(--tinte) calc(var(--halten, 0) * 360deg), transparent 0);
-  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3.5px));
-  mask: radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3.5px));
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4.5px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 5px), #000 calc(100% - 4.5px));
 }
 .kz-raus--haelt { background: var(--karte); color: var(--tinte); }
+.kz-raus--haelt::before { inset: -10px; }
 .kz-raus-tipp {
   position: absolute;
-  top: calc(env(safe-area-inset-top) + 64px);
+  top: calc(env(safe-area-inset-top) + 66px);
   right: calc(env(safe-area-inset-right) + 10px);
   z-index: 5;
   margin: 0;
-  padding: 7px 13px;
+  padding: 6px 12px;
   border-radius: 999px;
-  background: var(--tinte);
-  color: var(--papier);
+  background: var(--karte);
+  box-shadow: var(--schatten);
+  color: var(--tinte-leise);
   font-size: 13.5px;
   font-weight: 600;
+  pointer-events: none;
 }
 
 .kz-blase {
@@ -2934,10 +4364,13 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   border: 0;
   border-radius: 30%;
   background: color-mix(in srgb, var(--ton, #C9C2B8) 55%, var(--karte));
-  box-shadow: 0 5px 0 color-mix(in srgb, var(--ton, #C9C2B8) 75%, #000 25%), 0 10px 22px rgba(30, 24, 16, .14);
+  /* Der helle Saum hebt auch den Frosch von der Wiese ab. */
+  box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--karte) 55%, transparent),
+    0 5px 0 color-mix(in srgb, var(--ton, #C9C2B8) 75%, #000 25%), 0 10px 22px rgba(30, 24, 16, .14);
   cursor: pointer;
   touch-action: none;
 }
+.kz-tier:active { translate: 0 3px; }
 .kz-bild {
   display: block;
   font-family: var(--kz-emoji);
@@ -3010,6 +4443,35 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   to { opacity: 0; transform: translate(calc(var(--x) + var(--dx)), calc(var(--y) + var(--dy))) rotate(var(--dreh)) scale(.5); }
 }
 
+/* Wer schon satt ist oder erkannt wurde, sitzt hier. Hoch unten mittig, quer
+   links unten, damit die Kacheln die ganze Höhe behalten. */
+.kz-reihe {
+  --platz: min(12cqw, 44px);
+  position: absolute;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 5px;
+  pointer-events: none;
+}
+.kz-platz {
+  width: var(--platz);
+  height: var(--platz);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--karte) 42%, transparent);
+  font-family: var(--kz-emoji);
+  font-size: calc(var(--platz) * .68);
+  line-height: 1;
+}
+.kz-platz--voll { background: var(--karte); box-shadow: var(--schatten); animation: kz-platz .4s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes kz-platz { from { transform: scale(.3); } }
+@container (orientation: landscape) {
+  .kz-reihe { --platz: min(4.3cqw, 38px); left: 12px; bottom: 12px; transform: none; gap: 4px; }
+}
+
 .kz-fest {
   position: absolute;
   inset: 0;
@@ -3048,12 +4510,6 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   gap: min(5cqw, 24px);
   padding: 62px 12px 4px;
 }
-@container (orientation: landscape) {
-  .ts-gitter {
-    --kachel: min(26cqw, calc((100cqh - 180px) / 2), 230px);
-    grid-template-columns: repeat(3, var(--kachel));
-  }
-}
 .ts-leiste { display: flex; align-items: center; justify-content: center; gap: 22px; padding: 6px 12px 16px; }
 .ts-pfeil {
   width: 62px;
@@ -3068,43 +4524,76 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   color: var(--tinte);
   cursor: pointer;
   touch-action: none;
+  transition: scale .1s ease;
 }
+.ts-pfeil:active { scale: .9; }
 .ts-pfeil svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 2.6; }
 .ts-punkte { display: flex; gap: 8px; }
 .ts-punkt { width: 10px; height: 10px; border-radius: 50%; background: color-mix(in srgb, var(--tinte) 22%, transparent); }
 .ts-punkt--an { background: var(--tinte); }
 .ts-mitte { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 110px; }
-.ts-ort { font-size: 14px; font-weight: 700; color: var(--tinte-leise); white-space: nowrap; }
-
-/* Futterzeit: oben die Teller, unten das Tier, dazwischen der Weg. */
-.fu-ziele {
-  --kachel: min(27cqw, 25cqh, 160px);
-  display: flex;
-  justify-content: center;
-  gap: min(5cqw, 28px);
-  padding: 66px 12px 0;
+.ts-ort { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; color: var(--tinte-leise); white-space: nowrap; }
+.ts-ort-bild { font-family: var(--kz-emoji); font-size: 22px; line-height: 1; }
+/* Quer nehmen die Pfeile die Seiten: Das ist dort der freie Platz, und die Tiere
+   bekommen die ganze Höhe – auf dem quer gehaltenen Handy gut ein Drittel mehr. */
+@container (orientation: landscape) {
+  .ts-gitter {
+    --kachel: min(23cqw, calc((100cqh - 100px) / 2), 250px);
+    grid-template-columns: repeat(3, var(--kachel));
+    padding: 62px 12px 14px;
+  }
+  .ts-leiste { padding: 0; }
+  .ts-pfeil { position: absolute; top: calc(50% + 24px); margin-top: -31px; }
+  .ts-pfeil:first-child { left: 12px; }
+  .ts-pfeil:last-child { right: 12px; }
+  .ts-mitte { position: absolute; left: 14px; top: 14px; align-items: flex-start; min-width: 0; }
 }
-.fu-mitte { flex: 1 1 auto; min-height: 0; display: grid; place-items: center; color: var(--tinte-leise); }
-.fu-mitte svg { width: 44px; height: 44px; fill: none; stroke: currentColor; stroke-width: 2.4; opacity: 0; }
+
+/* Futterzeit: oben die Teller, unten das Tier, dazwischen der Weg. Beide rücken
+   zur Mitte und werden größer: Bis ganz nach oben reicht kein Kinderarm. */
+.fu-spiel {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 62px 12px 66px;
+}
+.fu-ziele { --kachel: min(46cqw, 28cqh, 200px); display: flex; justify-content: center; gap: min(4cqw, 28px); }
+.fu-ziele[data-anzahl='2'] { --kachel: min(40cqw, 26cqh, 190px); }
+.fu-ziele[data-anzahl='3'] { --kachel: min(28cqw, 25cqh, 170px); }
+.fu-mitte { flex: 0 1 min(18cqh, 150px); min-height: 28px; display: grid; place-items: center; color: var(--tinte-leise); }
+/* Die Pfeile stehen immer leise da: Der Weg nach oben soll man auch sehen, bevor
+   der Wink kommt. */
+.fu-mitte svg { width: 52px; height: 52px; fill: none; stroke: currentColor; stroke-width: 2.4; opacity: .22; }
 .fu-mitte--zeigt svg { animation: fu-hoch 1.4s ease; }
 @keyframes fu-hoch {
-  0% { opacity: 0; transform: translateY(30px); }
-  40% { opacity: .9; }
-  100% { opacity: 0; transform: translateY(-30px); }
+  15% { opacity: 0; transform: translateY(30px); }
+  50% { opacity: .9; }
+  85% { opacity: 0; transform: translateY(-30px); }
 }
-.fu-start { --kachel: min(36cqw, 30cqh, 190px); display: flex; justify-content: center; padding: 0 12px 28px; }
+.fu-start { --kachel: min(38cqw, 24cqh, 190px); display: flex; justify-content: center; }
+@container (orientation: landscape) {
+  .fu-spiel { padding-bottom: 12px; }
+  .fu-ziele, .fu-ziele[data-anzahl='2'], .fu-ziele[data-anzahl='3'] { --kachel: min(20cqw, 30cqh, 190px); }
+  .fu-start { --kachel: min(20cqw, 30cqh, 190px); }
+}
 .fu-tier { z-index: 2; }
 .fu-tier--gezogen {
   z-index: 4;
-  box-shadow: 0 5px 0 color-mix(in srgb, var(--ton) 75%, #000 25%), 0 22px 36px rgba(30, 24, 16, .28);
+  box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--karte) 55%, transparent),
+    0 5px 0 color-mix(in srgb, var(--ton) 75%, #000 25%), 0 22px 36px rgba(30, 24, 16, .28);
 }
 
-/* Horch mal: oben der Lautsprecher, darunter die Tiere zur Wahl. */
+/* Horch mal: oben der Lautsprecher, darunter die Tiere zur Wahl. Quer steht der
+   Lautsprecher links, damit die Tiere die ganze Höhe bekommen. */
+.ho-spiel { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
 .ho-ohr {
+  --ohr: min(24cqw, 17cqh, 116px);
   flex: none;
   align-self: center;
-  width: min(24cqw, 17cqh, 116px);
-  height: min(24cqw, 17cqh, 116px);
+  width: var(--ohr);
+  height: var(--ohr);
   margin-top: 60px;
   display: grid;
   place-items: center;
@@ -3116,12 +4605,14 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   color: var(--tinte);
   cursor: pointer;
   touch-action: none;
+  transition: scale .1s ease;
 }
+.ho-ohr:active { scale: .92; }
 .ho-ohr svg { width: 56%; height: 56%; fill: none; stroke: currentColor; stroke-width: 2; }
 .ho-ohr--spielt { animation: ho-pochen .45s ease-in-out infinite alternate; }
 @keyframes ho-pochen { to { transform: scale(1.1); box-shadow: 0 0 0 12px color-mix(in srgb, var(--gelb) 40%, transparent); } }
 .ho-feld {
-  --kachel: min(40cqw, 32cqh, 210px);
+  --kachel: min(44cqw, 32cqh, 230px);
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
@@ -3129,17 +4620,25 @@ body:has(.sheet-huelle:not([hidden])) .toast {
   align-content: center;
   justify-content: center;
   gap: min(4cqw, 26px);
-  padding: 12px;
+  padding: 12px 12px 66px;
 }
-.ho-feld[data-anzahl='3'] { --kachel: min(28cqw, 30cqh, 190px); }
-.ho-feld[data-anzahl='4'] { --kachel: min(40cqw, 26cqh, 180px); }
+/* Hoch stehen drei als zwei plus eins: So bleiben sie so groß wie vier. */
+.ho-feld[data-anzahl='3'],
+.ho-feld[data-anzahl='4'] { --kachel: min(41cqw, 25cqh, 190px); }
 @container (orientation: landscape) {
-  .ho-feld[data-anzahl='4'] { --kachel: min(21cqw, 50cqh, 180px); }
+  /* Beide zusammen in die Mitte: Auf breiten Fenstern lagen Lautsprecher und
+     Tiere sonst an entgegengesetzten Enden. */
+  .ho-spiel { flex-direction: row; justify-content: center; }
+  .ho-ohr { --ohr: min(17cqw, 40cqh, 150px); margin: 24px calc((min(30cqw, 280px) - var(--ohr)) / 2) 0; }
+  .ho-feld { --kachel: min(30cqw, 60cqh, 250px); flex: 0 1 auto; padding: 62px 12px 12px 0; }
+  .ho-feld[data-anzahl='3'] { --kachel: min(20cqw, 60cqh, 220px); }
+  .ho-feld[data-anzahl='4'] { --kachel: min(20cqw, calc((100cqh - 96px) / 2), 200px); max-width: calc(var(--kachel) * 2 + 40px); }
 }
 .ho-weg { opacity: .3; transform: scale(.88); transition: opacity .3s ease, transform .3s ease; }
 
 @media (prefers-reduced-motion: reduce) {
   .kz-vorhang-bilder span,
   .kz-fest-bilder span,
+  .kz-platz--voll,
   .ho-ohr--spielt { animation: none; }
 }

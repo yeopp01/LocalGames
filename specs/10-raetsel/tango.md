@@ -1,7 +1,7 @@
 # Tango
 
 **Datei:** [`spiele/tango.js`](../../spiele/tango.js)
-**Stand:** 15/15 fertig
+**Stand:** 21/21 fertig
 
 ## Zweck
 
@@ -35,6 +35,22 @@ für Schritt herleiten, und der Hinweis sagt, worauf der nächste Schritt beruht
 - **AC-5** `fertig` **Tippen schaltet weiter** — Ein Tipp schaltet ein Feld
   weiter: leer → Sonne → Mond → leer. Vorgegebene Felder sind als fest erkennbar
   und reagieren nicht.
+- **AC-16** `fertig` **Rückgängig nimmt das Feld zurück** — „Rückgängig" holt den
+  Stand vor dem letzten Zug zurück. Mehrere Tipps nacheinander auf dasselbe Feld
+  sind ein Zug; wer einmal ganz herum tippt, hat gar keinen gemacht. Auch „Eintragen"
+  aus dem Hinweis und „Von vorn" lassen sich so zurücknehmen. Bis zu 80 Züge bleiben
+  erhalten, auch über ein Neuladen. Ohne Verlauf ist der Knopf gesperrt.
+- **AC-17** `fertig` **Von vorn ohne Rückfrage** — „Von vorn" räumt alle eigenen
+  Zeichen ab, die Vorgaben bleiben; Zeit und Hinweise laufen weiter. Es fragt nicht
+  nach, weil „Rückgängig" alles wiederholt. Ist nichts Eigenes gesetzt, ist der Knopf
+  gesperrt.
+- **AC-18** `fertig` **Am Rechner per Tastatur** — Die Pfeile wandern von Feld zu
+  Feld und halten am Rand, Enter und Leertaste schalten weiter wie ein Tipp, S oder 1
+  setzt die Sonne, M oder 2 den Mond, Entf oder 0 leert das Feld. Rücktaste und Strg+Z
+  sind „Rückgängig". Bei offenem Blatt bleiben die Tasten beim Blatt.
+- **AC-19** `fertig` **Brett nutzt das Fenster** — Das Brett ist so groß, wie Breite
+  und Höhe des Fensters es erlauben, und passt samt Knöpfen ohne Scrollen hinein:
+  auf dem Handy (360 und 412 Punkte) wie in 1366 × 700 und 1000 × 560.
 
 ### Fehler und Hinweise
 
@@ -42,6 +58,14 @@ für Schritt herleiten, und der Hinweis sagt, worauf der nächste Schritt beruht
   einer Sorte in einer Reihe, sobald es mehr als drei sind; drei gleiche am
   Stück; beide Felder an einem verletzten „=" oder „×". Eine Figur, die gegen
   keine Regel verstößt, aber nicht zur Lösung passt, bleibt ungefärbt.
+- **AC-20** `fertig` **Der Verstoß wird genannt** — Unter dem Brett steht in einem
+  Satz, was gerade nicht stimmt („In Zeile 2 stehen drei Sonnen am Stück."), ein
+  verletztes „=" oder „×" färbt sich selbst mit. Solange kein eigenes Zeichen steht,
+  sagt dieselbe Zeile, was ein Tipp tut. Die Zeile hält ihren Platz, die Knöpfe
+  springen nicht.
+- **AC-21** `fertig` **Der Hinweis zeigt die Stelle** — Die Felder, von denen ein
+  Schluss spricht, tragen einen Ring. Er bleibt nach „Selbst machen" stehen, bis der
+  nächste Zug kommt, damit niemand „Zeile 4, Spalte 5" abzählen muss.
 - **AC-7** `fertig` **Hinweis warnt vor Falschem** — Passt irgendeine gesetzte
   Figur nicht zur Lösung, sagt der Hinweis nur „Da steht etwas Falsches", ohne
   das Feld zu nennen, und zählt nicht als Hinweis.
@@ -59,10 +83,12 @@ für Schritt herleiten, und der Hinweis sagt, worauf der nächste Schritt beruht
 ### Ende, Speicher und Statistik
 
 - **AC-10** `fertig` **Gelöst beendet die Partie** — Steht die Lösung vollständig,
-  erscheint „Gelöst." mit Stufe, Zeit und Zahl der Hinweise („ohne Hinweis", wenn
-  keiner). Der Hinweisknopf verschwindet, das Feld nimmt keine Züge mehr an.
+  läuft eine Welle über das Brett und erscheint „Gelöst." mit Stufe, Zeit und Zahl
+  der Hinweise („ohne Hinweis", wenn keiner), bei einem neuen Rekord dieser Stufe dazu
+  „Neue Bestzeit". Das Ergebnis rückt von selbst ins Bild. Die Knöpfe unter dem Brett
+  verschwinden, das Feld nimmt keine Züge mehr an.
 - **AC-11** `fertig` **Rätsel überlebt Schließen** — Ein laufendes Rätsel steht
-  nach Zurück, Neuladen oder Neustart der App mit Stufe, Zeichen, Figuren,
+  nach Zurück, Neuladen oder Neustart der App mit Stufe, Zeichen, Figuren, Verlauf,
   Hinweiszahl und verbrauchter Zeit wieder da; die Zeit dazwischen zählt nicht.
   Nach einem gelösten Rätsel beginnt beim nächsten Öffnen ein neues auf leicht.
 - **AC-12** `fertig` **Gelöstes in der Statistik** — Jedes gelöste Rätsel wird
@@ -91,6 +117,7 @@ für Schritt herleiten, und der Hinweis sagt, worauf der nächste Schritt beruht
 | RF-3 | Feld voll, aber mit Regelbruch                              | Kein Sieg; die betroffenen Felder sind rot.                                       |
 | RF-4 | Hinweis findet bei richtigem Stand keinen Schluss           | Kommt nicht vor (AC-9); falls doch: „Hier sehe ich nichts Zwingendes", zählt nicht. |
 | RF-5 | Neues Rätsel mitten in einer Partie                         | Das alte wird ohne Rückfrage verworfen und nicht notiert.                         |
+| RF-6 | Gespeicherter Stand aus einer Fassung ohne Verlauf          | Das Rätsel lädt, Rückgängig beginnt mit leerem Verlauf.                           |
 
 ## Hintergrund
 

@@ -56,6 +56,7 @@
     wurzel.append(boden);
 
     let uhr = null;
+    let beiTaste = null;
 
     const alt = s.erinnert() || {};
     const einst = {
@@ -68,6 +69,7 @@
 
     function aufraeumen() {
       if (uhr) { uhr.stopp(); uhr = null; }
+      if (beiTaste) { window.removeEventListener('keydown', beiTaste); beiTaste = null; }
       boden.replaceChildren();
     }
 
@@ -99,6 +101,9 @@
         min: 2,
         max: 12,
         knopfText: 'Zünden',
+        /* Sofort gemerkt: Die Wahl der Stufe baut den Schirm neu, und dabei gingen
+           frisch getippte Namen sonst verloren. */
+        aendern(namen) { einst.namen = namen; merken(); },
         weiter(namen) {
           einst.namen = namen;
           merken();
@@ -137,7 +142,7 @@
       const kasten = el('div', 'b-tisch');
       kasten.append(el('p', 'v-karte-vor', 'Sag ein Wort mit'));
       kasten.append(el('p', 'b-silbe', partie.silbe));
-      const dran = el('p', 'b-dran', partie.namen[partie.lebende[partie.amZug]]);
+      let dran = el('p', 'b-dran', partie.namen[partie.lebende[partie.amZug]]);
       kasten.append(dran);
 
       /* Die Lunte flackert gleichmäßig – sie zeigt, dass es läuft, und verrät
@@ -145,15 +150,45 @@
       kasten.append(el('div', 'b-lunte'));
       boden.append(kasten);
 
-      const weiter = el('button', 'knopf knopf--voll b-weiter', 'Weiter');
+      /* Der Knopf sagt, an wen es geht: Wer in Eile ist, soll nicht erst
+         überlegen, wer neben ihm sitzt. */
+      const naechsterName = () => partie.namen[partie.lebende[(partie.amZug + 1) % partie.lebende.length]];
+      const weiter = el('button', 'knopf knopf--voll b-weiter', null);
       weiter.type = 'button';
-      weiter.addEventListener('click', () => {
+      const an = el('span', 'b-weiter-an', 'an ' + naechsterName());
+      weiter.append(el('span', 'b-weiter-wort', 'Weiter'), an);
+
+      /* In der Hektik trifft ein Finger gern zweimal. Das soll die Bombe nicht
+         am Nachbarn vorbei reichen. */
+      let zuletzt = 0;
+      const reichen = () => {
+        const jetzt = Date.now();
+        if (jetzt - zuletzt < 220) return;
+        zuletzt = jetzt;
         partie.amZug = (partie.amZug + 1) % partie.lebende.length;
         /* Nur den Namen tauschen, nicht neu aufbauen: die Uhr läuft weiter und
-           darf beim Weiterreichen nicht von vorn beginnen. */
-        dran.textContent = partie.namen[partie.lebende[partie.amZug]];
-      });
+           darf beim Weiterreichen nicht von vorn beginnen. Das neue Element ist
+           es, das die kleine Bewegung beim Erscheinen auslöst. */
+        const neu = el('p', 'b-dran', partie.namen[partie.lebende[partie.amZug]]);
+        dran.replaceWith(neu);
+        dran = neu;
+        an.textContent = 'an ' + naechsterName();
+        s.fuehlen(12);
+      };
+      weiter.addEventListener('click', reichen);
       boden.append(weiter);
+      Runde.vorn(weiter);
+
+      /* Auf dem Laptop reicht Leertaste oder Enter, solange kein Blatt offen ist
+         und kein anderer Knopf den Fokus hat. */
+      beiTaste = (e) => {
+        if ((e.key !== ' ' && e.key !== 'Enter') || e.repeat) return;
+        if (!document.getElementById('sheet-spiel').hidden) return;
+        if (e.target !== weiter && e.target.closest && e.target.closest('button, a, input, select, textarea')) return;
+        e.preventDefault();
+        reichen();
+      };
+      window.addEventListener('keydown', beiTaste);
 
       uhr = Runde.uhr(kasten, {
         sekunden: st.sekunden,
@@ -185,6 +220,18 @@
       weiter.type = 'button';
       weiter.addEventListener('click', neueSilbe);
       boden.append(weiter);
+      kurzGesperrt(weiter);
+    }
+
+    /* Der Knall kommt, während jemand auf „Weiter" hämmert – und genau dort
+       erscheint dieser Knopf. Ohne die Sperre wäre weg, wer gerade raus ist, bevor
+       es jemand gelesen hat. */
+    function kurzGesperrt(knopf) {
+      knopf.disabled = true;
+      setTimeout(() => {
+        knopf.disabled = false;
+        Runde.vorn(knopf);
+      }, 900);
     }
 
     function zeigeEnde(raus) {
@@ -206,6 +253,7 @@
       nochmal.type = 'button';
       nochmal.addEventListener('click', neu);
       boden.append(nochmal);
+      kurzGesperrt(nochmal);
     }
 
     let notiert = false;
@@ -229,7 +277,7 @@
     function anleitung() {
       const inhalt = document.createElement('div');
       inhalt.innerHTML = [
-        '<p>Auf dem Schirm steht eine Silbe. Wer das Gerät hält, sagt laut ein Wort, in dem sie vorkommt – irgendwo, nicht nur am Anfang – und tippt auf <b>Weiter</b>.</p>',
+        '<p>Auf dem Schirm steht eine Silbe. Wer das Gerät hält, sagt laut ein Wort, in dem sie vorkommt – irgendwo, nicht nur am Anfang – und tippt auf <b>Weiter</b>. Der Knopf sagt, an wen es geht. Auf dem Laptop reicht die Leertaste.</p>',
         '<p>Wann die Bombe platzt, weiß niemand: die Uhr läuft verdeckt und endet nicht auf die Sekunde genau dort, wo die Stufe es sagt. Wer sie in der Hand hat, wenn es knallt, ist raus.</p>',
         '<p>Danach gibt es eine neue Silbe und es geht weiter, bis einer übrig ist.</p>',
         '<p>Ein Wort zählt nur einmal je Runde – wer sich wiederholt, muss ein neues finden. Darüber wacht die Gruppe, nicht das Gerät.</p>',

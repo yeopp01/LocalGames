@@ -1,7 +1,7 @@
 # Weg
 
 **Datei:** [`spiele/zip.js`](../../spiele/zip.js)
-**Stand:** 21/21 fertig
+**Stand:** 27/27 fertig
 
 ## Zweck
 
@@ -33,17 +33,41 @@ mit dem Finger oder der Maus, auf „schwer" stehen Mauern im Weg.
   abgewiesen.
 - **AC-5** `fertig` **Ziehen über Nachbarn** — Der Weg wächst beim Ziehen oder
   Tippen um waagerecht oder senkrecht benachbarte Felder, nie über Eck.
-  Überspringt ein schneller Wisch genau ein Feld in gerader Linie, wird es
+  Überspringt ein schneller Wisch Felder in gerader Linie, werden sie
   nachgeholt.
 - **AC-6** `fertig` **Schritte zurücknehmen** — Zurückziehen auf das vorletzte
-  Feld nimmt einen Schritt zurück, „Ein Feld zurück" ebenso; „Von vorn" leert
-  den Weg.
+  Feld nimmt einen Schritt zurück; „Von vorn" leert den Weg.
+- **AC-22** `fertig` **Weg anfassen** — Tippen oder Ziehen auf ein beliebiges
+  Feld des Wegs kürzt ihn bis dorthin, auch weit hinten und auch mitten im
+  Ziehen. Von dort geht es im selben Zug weiter.
+- **AC-23** `fertig` **Rückgängig** — „Rückgängig" macht die letzte Geste
+  ungeschehen (Aufsetzen bis Loslassen, Knopf, Taste oder Hinweis), holt also
+  auch einen abgeschnittenen Weg und „Von vorn" zurück. Der Verlauf lebt nur im
+  Speicher; nach dem Neuladen nimmt der Knopf das letzte Feld zurück. Ohne Weg
+  und Verlauf ist er gesperrt, „Von vorn" ohne Weg ebenso.
+- **AC-24** `fertig` **Tippen in gerader Linie** — Ein angetipptes Feld in
+  derselben Zeile oder Spalte wie die Spitze holt den Weg Feld für Feld dorthin.
+  Er hält an einer Mauer, einem besuchten Feld oder einer Zahl außer der Reihe.
+- **AC-25** `fertig` **Tastatur** — Die Pfeiltasten führen die Spitze, ein Pfeil
+  auf das vorletzte Feld nimmt einen Schritt zurück, weiter hinten schneidet ein
+  Pfeil nichts ab. Am leeren Brett setzt ein Pfeil auf die 1. Rücktaste heißt
+  „Rückgängig".
+- **AC-26** `fertig` **Das Brett zeigt die Lage** — Felder, auf die es von der
+  Spitze aus gehen kann, tragen einen leisen Punkt; die nächste Zahl einen Ring,
+  am leeren Brett pulsierend. Geht es nicht weiter, wird der Ring der Spitze rot
+  und die Kopfzeile sagt „Sackgasse"; steht die Spitze auf der höchsten Zahl und
+  es sind noch Felder frei, sagt sie, dass die Zahl zu früh kommt.
+- **AC-27** `fertig` **Brett nach Fenster** — Das Brett nutzt Breite und Höhe des
+  Fensters (`brettKante`, Schnittstelle AC-16) und läuft nie aus dem Fenster; bei
+  einer neuen Fenstergröße bleiben die Felder stehen, nur ihr Maß ändert sich.
 - **AC-7** `fertig` **Unerlaubtes wird abgewiesen** — Durch eine Mauer geht es
   nicht („Da ist eine Mauer dazwischen."), eine Zahl außer der Reihe auch nicht
   („Erst die n."). Schon besuchte oder nicht benachbarte Felder werden still
   übergangen.
 - **AC-8** `fertig` **Weg als Linie** — Der Weg liegt als durchgehende Linie
-  über dem Gitter, besuchte Felder sind gefärbt, das letzte Feld ist umrandet.
+  auf dem Brett und ändert über seine Länge die Farbe, die Zahlen liegen darüber
+  und nehmen abgehakt seine Farbe an. Besuchte Felder sind getönt, die Spitze
+  trägt einen Ring.
 
 ### Hinweise und Erzeugung
 
@@ -94,8 +118,9 @@ mit dem Finger oder der Maus, auf „schwer" stehen Mauern im Weg.
 
 - **AC-14** `fertig` **Sieg am letzten Feld** — Berührt der Weg alle Felder und
   endet auf der höchsten Zahl, erscheint „Weg gefunden." mit Stufe, Zeit und
-  Zahl der Hinweise („ohne Hinweis", wenn keiner). Danach nimmt das Brett
-  keine Züge mehr an.
+  Zahl der Hinweise („ohne Hinweis", wenn keiner). Eine Welle läuft den Weg
+  entlang, eine geschlagene Bestzeit der Stufe steht als „Neue Bestzeit" dabei.
+  Danach nimmt das Brett keine Züge mehr an.
 - **AC-15** `fertig` **Partie überlebt Schließen** — Ein laufendes Rätsel steht
   nach Zurück, Neuladen oder Neustart samt Weg, Mauern, Hinweiszahl und
   verbrauchter Zeit wieder da; die Zeit mit geschlossener App zählt nicht mit.
@@ -123,7 +148,7 @@ mit dem Finger oder der Maus, auf „schwer" stehen Mauern im Weg.
 | RF-3 | Gespeichertes Rätsel aus einer Fassung ohne Mauern     | Es lädt und wird ohne Mauern gespielt.                                      |
 | RF-4 | Die Schlüsse bleiben beim Erzeugen stecken             | Eine weitere Zahl kommt dazu; mit allen Feldern nummeriert geht es immer.   |
 | RF-5 | Hinweis bei noch leerem Weg                            | Er nennt einen Schluss wie sonst; hängt der an der 1, beginnt dort der Weg. |
-| RF-6 | Fenster wird während der Partie schmaler               | Das Gitter wird neu gebaut, der Weg bleibt.                                 |
+| RF-6 | Fenster wird während der Partie schmaler               | Das Gitter schrumpft mit, der Weg bleibt.                                   |
 | RF-7 | Alle Verbindungen stehen als Linie, der Weg noch nicht | „Alles hergeleitet" mit „Nachziehen", das den Weg die Linien entlangzieht.  |
 | RF-8 | Zufallssuche findet keinen Weg über das Brett          | Ein Schlangenweg Zeile für Zeile springt ein; die Schlüsse gelten wie sonst. |
 

@@ -33,6 +33,12 @@
     + '<path class="t-bild-mond" d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/>'
     + '</svg>';
 
+  // Auch die Marken zwischen den Feldern: × und = stehen sonst je nach Schrift verschieden hoch.
+  const MARKE = (art) => '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="'
+    + (art === '=' ? 'M5.5 9h13M5.5 15h13' : 'M6.5 6.5l11 11M17.5 6.5l-11 11') + '"/></svg>';
+
+  const ZAHLWORT = { 4: 'vier', 5: 'fünf', 6: 'sechs' };
+
   const zeileVon = (i) => Math.floor(i / N);
   const spalteVon = (i) => i % N;
 
@@ -325,6 +331,7 @@
     const el = s.el;
     let stand = laden();
     let uhr = null;
+    let neueBestzeit = false;
 
     function frisch(stufe) {
       let r = null;
@@ -341,6 +348,7 @@
         verbraucht: 0,
         seit: Date.now(),
         hilfen: 0,
+        verlauf: [],
         fertig: false,
       };
     }
@@ -349,6 +357,8 @@
       const alt = s.erinnert();
       if (alt && Array.isArray(alt.feld) && alt.feld.length === N * N && !alt.fertig) {
         alt.seit = Date.now();
+        // Ein Stand aus einer älteren Fassung kennt den Verlauf noch nicht.
+        if (!Array.isArray(alt.verlauf)) alt.verlauf = [];
         return alt;
       }
       return frisch('leicht');
@@ -368,15 +378,19 @@
 
     const kopf = el('div', 'm-kopf');
     const gitter = el('div', 't-gitter');
+    // Die Zeile unter dem Brett sagt, warum etwas rot ist. Sie hält ihren Platz
+    // frei, sonst springen die Knöpfe beim ersten Patzer nach unten.
+    const lage = el('p', 't-lage');
+    lage.setAttribute('aria-live', 'polite');
     const endeKasten = el('div', 'ende-kasten');
     endeKasten.hidden = true;
     const leiste = el('div', 'leiste');
-    wurzel.append(kopf, gitter, endeKasten, leiste);
+    wurzel.append(kopf, gitter, lage, endeKasten, leiste);
 
-    const hinweisKnopf = el('button', 'knopf knopf--still', 'Hinweis');
-    hinweisKnopf.type = 'button';
-    hinweisKnopf.addEventListener('click', hinweis);
-    leiste.append(hinweisKnopf);
+    const zurueckKnopf = s.leistenKnopf('Rückgängig', 'rueckgaengig', zurueckNehmen);
+    const leerenKnopf = s.leistenKnopf('Von vorn', 'leeren', vonVorn);
+    const hinweisKnopf = s.leistenKnopf('Hinweis', 'hinweis', hinweis);
+    leiste.append(zurueckKnopf, leerenKnopf, hinweisKnopf);
 
     s.werkzeuge([
       { label: 'Anleitung', symbol: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01" stroke-linecap="round"/>', tun: anleitung },
@@ -388,6 +402,8 @@
       const f = el('button', 't-feld');
       f.type = 'button';
       f.innerHTML = ZEICHNUNG;
+      // Im Sieg läuft eine Welle von oben links über das Brett.
+      f.style.setProperty('--schritt', String(zeileVon(i) + spalteVon(i)));
       const nr = i;
       f.addEventListener('click', () => weiterschalten(nr));
       gitter.append(f);
@@ -398,29 +414,115 @@
     const marken = el('div', 't-marken');
     gitter.append(marken);
 
+    const zeichenVerletzt = (c) => {
+      const a = stand.feld[c.a];
+      const b = stand.feld[c.b];
+      return !!a && !!b && (c.art === '=' ? a !== b : a === b);
+    };
+
     function markenZeichnen() {
       marken.replaceChildren();
       for (const c of stand.zeichen) {
-        const m = el('span', 't-marke', c.art === '=' ? '=' : '✕');
+        const m = el('span', 't-marke');
+        m.innerHTML = MARKE(c.art);
         const z = zeileVon(c.a);
         const s2 = spalteVon(c.a);
         const waagerecht = c.b === c.a + 1;
-        m.dataset.richtung = waagerecht ? 'quer' : 'hoch';
         m.style.left = ((s2 + (waagerecht ? 1 : 0.5)) / N * 100) + '%';
         m.style.top = ((z + (waagerecht ? 0.5 : 1)) / N * 100) + '%';
+        if (zeichenVerletzt(c)) m.dataset.fehler = 'ja';
         marken.append(m);
       }
     }
 
     /* ---------------------------------------------------------------- Zug */
 
-    function weiterschalten(i) {
-      if (stand.fertig || stand.vorgabe[i]) return;
-      stand.feld[i] = stand.feld[i] === 0 ? SONNE : stand.feld[i] === SONNE ? MOND : 0;
+    /* Wer ein Feld antippt, bis das richtige Zeichen steht, hat einen Zug
+       gemacht, nicht zwei – „Rückgängig" nimmt das Feld ganz zurück. Der
+       Verlauf liegt im Stand und übersteht ein Neuladen wie bei Damen. */
+    const VERLAUF_TIEFE = 80;
+    let letztesFeld = -1;
+    let stelle = new Set();     // Felder, von denen der Hinweis gerade spricht
+
+    function zugMerken(i = -1) {
+      stelle = new Set();
+      if (i >= 0 && i === letztesFeld) return;
+      stand.verlauf.push(stand.feld.slice());
+      if (stand.verlauf.length > VERLAUF_TIEFE) stand.verlauf.shift();
+      letztesFeld = i;
+    }
+
+    function setzen(i, wert) {
+      if (stand.fertig || stand.vorgabe[i] || stand.feld[i] === wert) return;
+      zugMerken(i);
+      stand.feld[i] = wert;
+      // Einmal ganz herum getippt: Dann war es gar kein Zug.
+      const vorher = stand.verlauf[stand.verlauf.length - 1];
+      if (vorher && vorher.every((w, k) => w === stand.feld[k])) {
+        stand.verlauf.pop();
+        letztesFeld = -1;
+      }
+      s.fuehlen();
       sichern();
       zeichnen();
       pruefenObFertig();
     }
+
+    function weiterschalten(i) {
+      setzen(i, stand.feld[i] === 0 ? SONNE : stand.feld[i] === SONNE ? MOND : 0);
+    }
+
+    function zurueckNehmen() {
+      if (stand.fertig || !stand.verlauf.length) return;
+      stand.feld = stand.verlauf.pop();
+      letztesFeld = -1;
+      stelle = new Set();
+      s.fuehlen();
+      sichern();
+      zeichnen();
+    }
+
+    /* Keine Rückfrage: „Rückgängig" holt alles wieder. */
+    function vonVorn() {
+      if (stand.fertig || !hatEigenes()) return;
+      zugMerken();
+      stand.feld = stand.vorgabe.slice();
+      sichern();
+      zeichnen();
+    }
+
+    const hatEigenes = () => stand.feld.some((w, i) => w && !stand.vorgabe[i]);
+
+    /* Pfeile wandern von Feld zu Feld, die Felder sind ja Knöpfe: Enter und
+       Leertaste schalten weiter wie ein Tipp. Dazu die Abkürzungen, damit der
+       Mond nicht zwei Anschläge kostet. */
+    const PFEILE = { ArrowUp: -N, ArrowDown: N, ArrowLeft: -1, ArrowRight: 1 };
+    const beiTaste = (e) => {
+      if (stand.fertig || Echtzeit.blattOffen() || e.altKey) return;
+      if (e.target && e.target.closest && e.target.closest('input, textarea, select')) return;
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'z') { e.preventDefault(); zurueckNehmen(); }
+        return;
+      }
+      const hier = felder.indexOf(document.activeElement);
+      if (PFEILE[e.key]) {
+        e.preventDefault();
+        if (hier < 0) { felder[0].focus(); return; }
+        const schritt = PFEILE[e.key];
+        const ziel = hier + schritt;
+        // Nicht von der rechten Kante in die nächste Zeile rutschen.
+        if (ziel < 0 || ziel >= N * N || (Math.abs(schritt) === 1 && zeileVon(ziel) !== zeileVon(hier))) return;
+        felder[ziel].focus();
+        return;
+      }
+      if (e.key === 'Backspace') { e.preventDefault(); zurueckNehmen(); return; }
+      if (hier < 0) return;
+      const taste = e.key.toLowerCase();
+      if (taste === 's' || taste === '1') setzen(hier, SONNE);
+      else if (taste === 'm' || taste === '2') setzen(hier, MOND);
+      else if (taste === '0' || taste === 'delete') setzen(hier, 0);
+    };
+    window.addEventListener('keydown', beiTaste);
 
     /* Was ist an diesem Feld falsch? Für die rote Markierung. */
     function fehlerhaft() {
@@ -462,6 +564,30 @@
       return raus;
     }
 
+    /* Rot allein sagt nicht, was nicht stimmt. Genannt wird der erste Verstoß,
+       in derselben Sprache wie die Anleitung. */
+    function verstossText() {
+      for (const linie of LINIEN) {
+        for (const wert of [SONNE, MOND]) {
+          const zahl = linie.felder.filter((i) => stand.feld[i] === wert).length;
+          if (zahl > HALB) return 'In ' + linie.name + ' stehen ' + ZAHLWORT[zahl] + ' ' + mehrzahl(wert) + ' – höchstens drei.';
+        }
+      }
+      for (const linie of LINIEN) {
+        const f = linie.felder;
+        for (let p = 0; p + 2 < N; p += 1) {
+          const w = stand.feld[f[p]];
+          if (w && w === stand.feld[f[p + 1]] && w === stand.feld[f[p + 2]]) {
+            return 'In ' + linie.name + ' stehen drei ' + mehrzahl(w) + ' am Stück.';
+          }
+        }
+      }
+      for (const c of stand.zeichen) {
+        if (zeichenVerletzt(c)) return c.art === '=' ? 'Am = müssen beide Felder gleich sein.' : 'Am × müssen die beiden Felder verschieden sein.';
+      }
+      return null;
+    }
+
     /* Der Hinweis schaut nicht in die Lösung, sondern sucht einen Schluss,
        den man auch selbst ziehen könnte – und nennt ihn. Es ist derselbe
        Schluss, an dem sich beim Bauen entscheidet, ob ein Rätsel überhaupt
@@ -492,6 +618,10 @@
 
       stand.hilfen += 1;
       sichern();
+      /* „Zeile 4, Spalte 5" muss man sonst abzählen. Der Ring bleibt nach
+         „Selbst machen" stehen, bis der nächste Zug kommt. */
+      stelle = new Set(schluss.zuege.map((z) => z.i));
+      zeichnen();
       s.blatt({
         titel: schluss.titel,
         inhalt: schluss.text,
@@ -499,6 +629,7 @@
           {
             text: schluss.zuege.length === 1 ? 'Eintragen' : 'Alle eintragen',
             tun: () => {
+              zugMerken();
               for (const zug of schluss.zuege) if (!stand.feld[zug.i]) stand.feld[zug.i] = zug.wert;
               sichern();
               zeichnen();
@@ -515,6 +646,10 @@
       for (let i = 0; i < N * N; i += 1) if (stand.feld[i] !== stand.loesung[i]) return;
       stand.verbraucht = zeitJetzt();
       stand.fertig = true;
+      // Vor dem Notieren schauen, sonst schlägt die Partie sich selbst.
+      const frueher = s.partien().filter((p) => p.gewonnen && p.stufe === stand.stufe && p.dauer > 0);
+      neueBestzeit = frueher.length > 0 && frueher.every((p) => p.dauer > stand.verbraucht);
+      s.fuehlen(30);
       s.notieren({
         gewonnen: true,
         dauer: stand.verbraucht,
@@ -523,6 +658,8 @@
       });
       s.merken(stand);
       zeichnen();
+      // Auf einem flachen Fenster läge das Ergebnis sonst unter dem Rand.
+      endeKasten.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
 
     /* ------------------------------------------------------------ Zeichnen */
@@ -535,13 +672,25 @@
         f.dataset.wert = w === SONNE ? 'sonne' : w === MOND ? 'mond' : 'leer';
         f.dataset.fest = stand.vorgabe[i] ? 'ja' : 'nein';
         if (fehler.has(i)) f.dataset.fehler = 'ja'; else delete f.dataset.fehler;
+        if (stelle.has(i)) f.dataset.stelle = 'ja'; else delete f.dataset.stelle;
         f.setAttribute('aria-label', 'Zeile ' + (zeileVon(i) + 1) + ', Spalte ' + (spalteVon(i) + 1)
           + ': ' + (w === SONNE ? 'Sonne' : w === MOND ? 'Mond' : 'leer'));
       }
+      gitter.dataset.fertig = stand.fertig ? 'ja' : 'nein';
       markenZeichnen();
+      lageZeichnen();
       kopfZeichnen();
       endeZeichnen();
       leiste.hidden = stand.fertig;
+      zurueckKnopf.disabled = !stand.verlauf.length;
+      leerenKnopf.disabled = !hatEigenes();
+    }
+
+    function lageZeichnen() {
+      const verstoss = stand.fertig ? null : verstossText();
+      lage.hidden = stand.fertig;
+      lage.dataset.fehler = verstoss ? 'ja' : 'nein';
+      lage.textContent = verstoss || (hatEigenes() ? '' : 'Tippen setzt die Sonne, nochmal tippen den Mond.');
     }
 
     function kopfZeichnen() {
@@ -560,13 +709,17 @@
       if (!stand.fertig) return;
       endeKasten.append(s.bildzeichen('fertig'));
       endeKasten.append(el('p', 'ende-titel', 'Gelöst.'));
+      if (neueBestzeit) endeKasten.append(el('span', 'ende-marke', 'Neue Bestzeit'));
       endeKasten.append(el('p', 'notiz', STUFEN[stand.stufe].name + ' · ' + s.dauerText(stand.verbraucht)
-        + (stand.hilfen ? ' · ' + stand.hilfen + ' Hinweise' : ' · ohne Hinweis')));
+        + (stand.hilfen ? ' · ' + stand.hilfen + (stand.hilfen === 1 ? ' Hinweis' : ' Hinweise') : ' · ohne Hinweis')));
       endeKasten.append(s.stufenLeiste(STUFEN, stand.stufe, neu));
     }
 
     function neu(stufe) {
       stand = frisch(stufe);
+      neueBestzeit = false;
+      letztesFeld = -1;
+      stelle = new Set();
       sichern();
       zeichnen();
     }
@@ -581,11 +734,11 @@
 
     function anleitung() {
       const d = el('div');
-      d.append(el('p', 'notiz', 'Fülle das Feld mit Sonne und Mond. Tippen schaltet weiter: leer → Sonne → Mond → leer.'));
+      d.append(el('p', 'notiz', 'Fülle das Feld mit Sonne und Mond. Tippen schaltet weiter: leer → Sonne → Mond → leer. Am Rechner wandern die Pfeile von Feld zu Feld, S und M setzen das Zeichen.'));
       d.append(el('p', 'notiz', 'Regel 1: In jeder Zeile und jeder Spalte stehen genau drei Sonnen und drei Monde.'));
       d.append(el('p', 'notiz', 'Regel 2: Nie drei gleiche direkt nebeneinander oder untereinander.'));
       d.append(el('p', 'notiz', 'Regel 3: Steht zwischen zwei Feldern ein =, tragen beide dasselbe Zeichen. Steht dort ein ×, tragen sie verschiedene.'));
-      d.append(el('p', 'notiz', 'Was gegen eine Regel verstößt, färbt sich sofort rot. Geraten werden muss nie: Jedes Rätsel lässt sich Schritt für Schritt herleiten, sonst kommt es gar nicht erst vor.'));
+      d.append(el('p', 'notiz', 'Was gegen eine Regel verstößt, färbt sich sofort rot, und unter dem Brett steht, warum. „Rückgängig" nimmt das zuletzt angefasste Feld zurück, auch nach „Von vorn". Geraten werden muss nie: Jedes Rätsel lässt sich Schritt für Schritt herleiten, sonst kommt es gar nicht erst vor.'));
       d.append(el('p', 'notiz', 'Der Hinweis schaut dafür nie in die Lösung. Er sucht den nächsten Schluss, den du auch selbst ziehen könntest, und sagt dir, worauf er beruht.'));
       d.append(el('p', 'notiz', 'Guter Anfang: Stehen zwei gleiche nebeneinander, muss links und rechts davon das andere Zeichen stehen.'));
       s.blatt({ titel: 'Tango', inhalt: d, aktionen: [{ text: 'Los' }] });
@@ -598,6 +751,7 @@
     return {
       ende: () => {
         clearInterval(uhr);
+        window.removeEventListener('keydown', beiTaste);
         if (!stand.fertig) sichern();
       },
     };

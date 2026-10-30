@@ -1157,6 +1157,29 @@
     let todZeit = new Map();      // Figur → Zeitpunkt ihres Todes, fürs Bild
     let gangZeit = new Map();     // Figur → { gang, t } für die Laufbeine
     let muenzTakt = 0;
+    let zeigerAuf = null;         // Riegel unter der Maus
+    let oben = 0;                 // erste sichtbare Zeile des Felds, logisch
+    let kastenFuer = null;        // das Urteil, zu dem der Kasten unter dem Feld gehört
+
+    /* Jedes Level nutzt die volle Breite, aber nur einen Streifen der Höhe; der
+       Rest der Karte ist Fels. Gezeigt wird darum nur der Streifen samt einer
+       Kachel Rand, in der die Griffe noch Platz haben. So wird die Szene auf dem
+       Laptop doppelt so groß, und auf dem Handy steht sie nicht verloren in einer
+       Mauer. Gerechnet wird weiter auf der ganzen Karte – das ist nur das Bild. */
+    function ausschnittSetzen() {
+      const karte = LEVEL[stand.level].karte;
+      let von = ZEILEN;
+      let bis = -1;
+      karte.forEach((zeile, y) => {
+        if (/[^#]/.test(zeile)) { von = Math.min(von, y); bis = Math.max(bis, y); }
+      });
+      von = Math.max(0, von - 1);
+      bis = Math.min(ZEILEN - 1, bis + 1);
+      oben = von * K * Z;
+      const hoehe = (bis - von + 1) * K * Z;
+      feld.style.aspectRatio = B + ' / ' + hoehe;
+      flaeche.style.setProperty('--ri-seiten', String(B / hoehe));
+    }
 
     function laden() {
       const alt = s.erinnert();
@@ -1205,6 +1228,7 @@
       teilchen = [];
       todZeit = new Map();
       gangZeit = new Map();
+      ausschnittSetzen();
     }
 
     /* ------------------------------------------------------------- Aufbau */
@@ -1218,16 +1242,14 @@
     flaeche.append(feld);
     wurzel.append(kopf, auftrag, flaeche, leiste, unten);
 
-    const vonVorn = el('button', 'knopf knopf--still', 'Von vorn');
-    vonVorn.type = 'button';
-    vonVorn.addEventListener('click', () => neu(stand.level));
-    const hinweisKnopf = el('button', 'knopf knopf--still', 'Hinweis');
-    hinweisKnopf.type = 'button';
-    hinweisKnopf.addEventListener('click', hinweis);
+    const vonVorn = s.leistenKnopf('Von vorn', 'leeren', () => neu(stand.level));
+    const hinweisKnopf = s.leistenKnopf('Hinweis', 'hinweis', hinweis);
     leiste.append(vonVorn, hinweisKnopf);
 
     aufbauen();
     const b = Echtzeit.buehne(feld, { breite: B, hoehe: H, schritt, zeichnen, beiHalt, takt: 1 / 90 });
+    // Die Bühne setzt beim Anlegen das Seitenverhältnis der ganzen Karte.
+    ausschnittSetzen();
 
     s.werkzeuge([
       { label: 'Anleitung', symbol: Echtzeit.SYMBOL.anleitung, tun: anleitung },
@@ -1257,6 +1279,7 @@
       vorgemerkt = null;
       zug = { nr, t: 0 };
       angehalten = false;
+      s.fuehlen(12);
       sichern();
       anzeigen();
       b.los();
@@ -1313,7 +1336,10 @@
       s.merken({ satz: SATZ, level: naechstes, gezogen: [], hilfen: 0, verbraucht: 0 });
       stand.zeige = null;
       vorgemerkt = null;
+      s.fuehlen(30);
       anzeigen();
+      // Auf einem flachen Fenster läge das Urteil sonst unter dem Rand.
+      unten.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
 
     function neu(level) {
@@ -1427,10 +1453,18 @@
 
     function anzeigen() {
       kopfZeichnen();
-      unten.replaceChildren();
       leiste.hidden = !!ende;
       hinweisKnopf.disabled = !!ende;
-      if (ende) {
+      vonVorn.disabled = !stand.gezogen.length;
+      if (kastenFuer !== ende) { unten.replaceChildren(); kastenFuer = null; }
+      /* Nach dem Urteil fließt die Lava noch aus, und wenn dann die Schleife
+         steht, kommt man noch einmal hier vorbei. Der Kasten bleibt dann, wie er
+         ist: Neu gebaut landete er ein zweites Mal, und wer gerade auf „Nochmal"
+         zielt, griffe ins Leere. */
+      if (ende && kastenFuer === ende) {
+        b.schildWeg();
+      } else if (ende) {
+        kastenFuer = ende;
         const sieg = ende.art === 'sieg';
         const titel = sieg ? 'Geschafft. ' + sternText(ende.sterne) : TITEL[ende.wie] || 'Verloren.';
         // Kein Schild übers Feld: Es verschleierte genau das, was man sehen
@@ -1570,6 +1604,9 @@
     function zeichnen(ctx, f) {
       const w = welt;
       const z = w.zellen;
+      // Die Bühne streckt auf die ganze Karte; gezeigt wird nur der Streifen des Levels.
+      const m = ctx.canvas.width / B;
+      ctx.setTransform(m, 0, 0, m, 0, -oben * m);
       // Der Fels ist Mauerwerk, darüber werden die Kammern ausgespart.
       ctx.fillStyle = f.karteRand;
       ctx.fillRect(0, 0, B, H);
@@ -1724,19 +1761,21 @@
         ctx.lineWidth = 1.4;
         ctx.globalAlpha = 0.5 + 0.5 * Math.abs(Math.sin(puls * 4));
         ctx.beginPath();
-        ctx.arc(gx, gy, 8.5, 0, Math.PI * 2);
+        ctx.arc(gx, gy, 9, 0, Math.PI * 2);
         ctx.stroke();
         ctx.globalAlpha = 1 - versatz * 0.8;
       }
-      ctx.fillStyle = f.karte;
-      ctx.strokeStyle = f.tinteLeise;
-      ctx.lineWidth = 1.6;
+      // Unter der Maus kippt der Griff: Das hier lässt sich ziehen.
+      const gezeigt = zeigerAuf === r.nr && !r.gezogen;
+      ctx.fillStyle = gezeigt ? f.tinte : f.karte;
+      ctx.strokeStyle = gezeigt ? f.tinte : f.tinteLeise;
+      ctx.lineWidth = 1.4;
       ctx.beginPath();
-      ctx.arc(gx, gy, 5, 0, Math.PI * 2);
+      ctx.arc(gx, gy, 6, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
-      ctx.fillStyle = f.tinte;
-      ctx.font = '700 6px "DM Mono", ui-monospace, monospace';
+      ctx.fillStyle = gezeigt ? f.karte : f.tinte;
+      ctx.font = '700 7px "DM Mono", ui-monospace, monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(String(r.nr), gx, gy + 0.4);
@@ -1873,7 +1912,7 @@
       d.append(el('p', 'notiz', 'Lava verbrennt jeden, der sie berührt, und schmilzt Gold. Wasser löscht Lava zu Stein. Fallende Steine erschlagen jeden, auf den sie fallen, Held wie Ungeheuer; liegende Steine sind nur Boden. Gold fällt harmlos.'));
       d.append(el('p', 'notiz', 'Das Ungeheuer läuft auf den Helden zu und frisst ihn, wenn es ihn erreicht. Töten muss man es nur, wenn es sonst an ihn herankommt. Eine Kachel hoch steigen beide, höhere Wände nicht, und losen Schutt schieben sie beiseite.'));
       d.append(el('p', 'notiz', 'Sterne: einer für die Truhe, einer, wenn der Held unterwegs die Hälfte des Goldes einsammelt, und einer ab neun Zehnteln.'));
-      d.append(el('p', 'notiz', 'Solange sich etwas bewegt, wartet der nächste Riegel: Wer vorher tippt, merkt ihn vor. Der Hinweis rechnet von der aktuellen Lage aus durch, was jeder Riegel anrichten würde. Am Rechner ziehen die Zifferntasten.'));
+      d.append(el('p', 'notiz', 'Solange sich etwas bewegt, wartet der nächste Riegel: Wer vorher tippt, merkt ihn vor. Der Hinweis rechnet von der aktuellen Lage aus durch, was jeder Riegel anrichten würde. Am Rechner ziehen die Zifferntasten, R beginnt von vorn, und nach dem Urteil geht es mit Enter weiter.'));
       s.blatt({ titel: 'Riegel', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
 
@@ -1903,6 +1942,9 @@
 
     function riegelBei(px, py) {
       let best = null;
+      // Mindestens 22 Pixel um den Riegel herum, auch wenn das Feld klein gerät:
+      // Der Griff ist ein Ziel für den Finger, nicht für die Pinzette.
+      const reichweite = Math.max(9, 22 / b.masstab);
       for (const r of welt.riegel) {
         if (r.gezogen) continue;
         let d;
@@ -1917,24 +1959,43 @@
           const y1 = (r.ty1 + 1) * K * Z + (r.griff > 0 ? 10 : 0);
           d = Math.hypot(px - x, Math.max(y0 - py, 0, py - y1));
         }
-        if (d < 9 && (!best || d < best.d)) best = { nr: r.nr, d };
+        if (d < reichweite && (!best || d < best.d)) best = { nr: r.nr, d };
       }
       return best && best.nr;
     }
 
+    const riegelUnter = (e) => {
+      const rect = b.canvas.getBoundingClientRect();
+      return riegelBei((e.clientX - rect.left) / b.masstab, (e.clientY - rect.top) / b.masstab + oben);
+    };
+
     b.an(flaeche, 'pointerdown', (e) => {
       if (ende) return;
       e.preventDefault();
-      const rect = b.canvas.getBoundingClientRect();
-      const nr = riegelBei((e.clientX - rect.left) / b.masstab, (e.clientY - rect.top) / b.masstab);
+      const nr = riegelUnter(e);
       if (nr) { tippen(nr); return; }
       if (angehalten) { angehalten = false; anzeigen(); b.los(); }
     });
+
+    const zeigerSetzen = (nr) => {
+      if (nr === zeigerAuf) return;
+      zeigerAuf = nr;
+      flaeche.style.cursor = nr ? 'pointer' : '';
+      if (!b.laeuft) b.malen();
+    };
+    b.an(flaeche, 'pointermove', (e) => {
+      if (e.pointerType === 'mouse') zeigerSetzen(ende ? null : riegelUnter(e));
+    });
+    b.an(flaeche, 'pointerleave', () => zeigerSetzen(null));
 
     b.an(window, 'keydown', (e) => {
       if (!Echtzeit.tasteZaehlt(e)) return;
       if (/^[1-9]$/.test(e.key)) { e.preventDefault(); tippen(Number(e.key)); }
       else if (e.key === 'r' || e.key === 'R') neu(stand.level);
+      else if (e.key === 'Enter' && ende && !Echtzeit.knopfHatFokus(e)) {
+        const knopf = unten.querySelector('button');
+        if (knopf) { e.preventDefault(); knopf.click(); }
+      }
     });
     b.an(document, 'visibilitychange', () => {
       if (!document.hidden) seit = Date.now();

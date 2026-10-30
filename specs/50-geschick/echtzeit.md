@@ -16,11 +16,10 @@ einzelnes Spiel.
 ### Leinwand
 
 - **AC-1** `fertig` **Feld passt ins Fenster** — Das Spielfeld behält das
-  Seitenverhältnis seines Spiels, ist höchstens 440 px (ein Feld im Querformat
-  600 px) und höchstens 92 % der Fensterbreite breit, und in einem flachen
-  Fenster richtet sich seine Breite
-  nach der Höhe. Auf einem Pixel 7 und in 1366 × 700 ragt keines der
-  Spiele seitlich heraus, und die Seite ist nicht höher als das Fenster.
+  Seitenverhältnis seines Spiels und richtet seine Breite nach Breite und Höhe des
+  Fensters; den Deckel setzt jedes Spiel selbst, zwischen 480 und 840 px. Auf einem
+  Pixel 7 und in 1366 × 700 ragt keines der Spiele seitlich heraus, und die Seite
+  ist nicht höher als das Fenster.
 - **AC-2** `fertig` **Scharf auf jeder Pixeldichte** — Die Leinwand hat so viele
   Bildpunkte wie ihr Platz auf dem Gerät (CSS-Größe mal `devicePixelRatio`)
   und stellt sich bei jeder Größenänderung neu ein. Das Spiel rechnet
@@ -50,10 +49,10 @@ einzelnes Spiel.
   nicht, wenn Strg, Alt oder Meta gedrückt sind oder ein Blatt offen ist.
   Leertaste und Enter gehören einem Knopf, der gerade den Fokus hat – sie
   schalten dann nicht zusätzlich die Pause um.
-- **AC-8** `fertig` **Schild und Kasten** — Über dem Feld steht bei Start,
-  Pause und Ende ein Schild mit Titel und Satz; es lässt Berührungen zum Feld
-  durch. Unter dem Feld steht bei Pause und Ende ein Kasten mit Titel, Satz und
-  Knöpfen.
+- **AC-8** `fertig` **Schild und Kasten** — Auf dem Feld steht bei Start,
+  Pause und Ende eine kleine Karte mit Titel und Satz, bei Pause und Ende auch
+  mit den Knöpfen. Das Feld darum bleibt in voller Farbe, und die Karte lässt
+  Berührungen zum Feld durch; nur ihre Knöpfe fangen sie ab.
 
 ### Gemeinsamer Vertrag der Geschicklichkeitsspiele
 
@@ -68,9 +67,9 @@ einzelnes Spiel.
 - **AC-11** `fertig` **Partien ohne Urteil** — Alle sechs melden sich mit
   `ohneSiege: true` an und notieren kein `gewonnen`. Die Kachel zählt Runden,
   und keine Siegquote rechnet mit ihnen.
-- **AC-12** `fertig` **Neu anfangen verwirft** — „Neu anfangen" im Pausenkasten
-  beginnt sofort ein frisches Feld; die verworfene Partie landet nicht in der
-  Statistik.
+- **AC-12** `fertig` **Neu anfangen verwirft** — „Neu anfangen" in der Pausenkarte
+  beginnt ein frisches Feld und spielt sofort los; die verworfene Partie landet
+  nicht in der Statistik.
 
 ## Randfälle
 
@@ -79,7 +78,7 @@ einzelnes Spiel.
 | RF-1 | Anleitung öffnen, während das Spiel läuft             | Das nächste Bild hält an; nach dem Schließen steht die Pause da.        |
 | RF-2 | App wird mitten im Lauf vom System beendet            | `visibilitychange` kommt vorher; der Stand ist gesichert.               |
 | RF-3 | Fenster wird während der Pause breiter oder schmaler  | Leinwand stellt sich neu ein und malt die Pause scharf nach.            |
-| RF-4 | Sehr kleines Querformat                               | Das Feld wird nicht schmaler als 220 px; dann darf die Seite scrollen.  |
+| RF-4 | Sehr kleines Querformat                               | Das Feld wird nicht schmaler als 180 bis 220 px; dann darf die Seite scrollen. |
 
 ## Hintergrund
 

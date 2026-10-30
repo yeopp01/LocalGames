@@ -21,6 +21,9 @@
     ['ENTER', ...'YXCVBNM', 'WEG'],
   ];
 
+  // Passt zu w-aufdecken in styles.css: vier Versätze von 110 ms plus eine Drehung.
+  const AUFDECKEN_MS = 4 * 110 + 340;
+
   const zufallsWort = () => LOESUNGEN[Math.floor(Math.random() * LOESUNGEN.length)][0];
 
   function starten(wurzel, s) {
@@ -33,6 +36,10 @@
     let eingabe = new Array(LAENGE).fill('');
     let platz = 0;
     let ruettelt = false;
+    /* Solange die Felder sich aufdecken, steht das Ergebnis noch nicht da – sonst
+       läse man unter dem Gitter die Lösung, bevor sie sich gezeigt hat. */
+    let aufdeckt = false;
+    let aufdeckUhr = null;
 
     /* --------------------------------------------------------- Spielstand */
 
@@ -90,6 +97,7 @@
       const reihe = [];
       for (let i = 0; i < LAENGE; i += 1) {
         const f = el('div', 'w-feld');
+        f.style.setProperty('--i', String(i));
         const stelle = i;
         f.addEventListener('click', () => {
           if (vorbei() || z !== stand.versuche.length) return;
@@ -117,16 +125,10 @@
       tafel.append(r);
     }
 
-    const hilfeKnopf = (text, tun) => {
-      const b = el('button', 'knopf knopf--still', text);
-      b.type = 'button';
-      b.addEventListener('click', tun);
-      hilfeLeiste.append(b);
-      return b;
-    };
-    const knopfBeschreibung = hilfeKnopf('Tipp', beschreibungZeigen);
-    const knopfBuchstabe = hilfeKnopf('Buchstabe', buchstabeVerraten);
-    const knopfVorschlag = hilfeKnopf('Vorschlag', vorschlagZeigen);
+    const knopfBeschreibung = s.leistenKnopf('Tipp', 'hinweis', beschreibungZeigen);
+    const knopfBuchstabe = s.leistenKnopf('Buchstabe', null, buchstabeVerraten);
+    const knopfVorschlag = s.leistenKnopf('Vorschlag', null, vorschlagZeigen);
+    hilfeLeiste.append(knopfBeschreibung, knopfBuchstabe, knopfVorschlag);
 
     s.werkzeuge([
       { label: 'Regeln', symbol: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01" stroke-linecap="round"/>', tun: regelnZeigen },
@@ -182,7 +184,7 @@
         else delete t.dataset.stufe;
       }
 
-      verratenZeile.textContent = stand.verraten
+      verratenZeile.textContent = stand.verraten && !vorbei()
         ? [...stand.wort].map((c, i) => (i < stand.verraten ? c : '·')).join(' ')
         : '';
 
@@ -196,27 +198,31 @@
       knopfBuchstabe.disabled = stand.verraten >= LAENGE - 1 || vorbei();
       knopfVorschlag.disabled = vorbei();
 
-      s.unter(LAENGE + ' Buchstaben · ' + ZEILEN + ' Versuche');
+      // Die feste Zeile „5 Buchstaben · 6 Versuche" sagte nichts Neues und passte
+      // auf dem Handy nicht in den Kopf. Der Zähler sagt, wie weit es ist.
+      s.unter(vorbei() ? '' : 'Versuch ' + (stand.versuche.length + 1) + ' von ' + ZEILEN);
 
-      tafel.hidden = vorbei();
-      hilfeLeiste.hidden = vorbei();
-      endeZeichnen();
+      const endeDa = vorbei() && !aufdeckt;
+      tafel.hidden = endeDa;
+      hilfeLeiste.hidden = endeDa;
+      endeZeichnen(endeDa);
     }
 
-    function endeZeichnen() {
+    function endeZeichnen(endeDa) {
       endeKasten.replaceChildren();
-      endeKasten.hidden = !vorbei();
-      if (!vorbei()) return;
+      endeKasten.hidden = !endeDa;
+      if (!endeDa) return;
 
       endeKasten.append(el('p', 'ende-titel',
         stand.fertig === 'sieg' ? lobText(stand.versuche.length) : 'Diesmal nicht.'));
       endeKasten.append(el('p', 'notiz',
-        'Das Wort war ' + stand.wort + ' – ' + TIPP_ZU[stand.wort]));
+        'Das Wort war ' + stand.wort + (TIPP_ZU[stand.wort] ? ' – ' + TIPP_ZU[stand.wort] : '.')));
 
       const leiste = el('div', 'leiste');
       const nochmal = el('button', 'knopf knopf--voll', 'Noch ein Wort');
       nochmal.type = 'button';
-      nochmal.addEventListener('click', () => { stand = frisch(); sichern(); zeichnen(); });
+      nochmal.prepend(s.bildzeichen('nochmal'));
+      nochmal.addEventListener('click', neuesWort);
       leiste.append(nochmal);
 
       const zurueck = el('button', 'knopf knopf--still', 'Zur Auswahl');
@@ -276,7 +282,36 @@
       else if (stand.versuche.length >= ZEILEN) abschluss('pleite');
       else sichern();
 
+      aufdecken(gitter.children[stand.versuche.length - 1]);
+    }
+
+    /* Die Zeile dreht sich Feld für Feld um, erst danach färbt sich die Tafel
+       und erscheint ein Ergebnis. Weiterschreiben geht schon währenddessen: Wer
+       das nächste Wort im Kopf hat, soll nicht warten müssen. */
+    function aufdecken(zeile) {
+      const ruhig = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      clearTimeout(aufdeckUhr);
+      s.fuehlen(10);
+      aufdeckt = !ruhig;
+      if (!ruhig) {
+        zeile.dataset.neu = 'ja';
+        tafel.dataset.spaet = 'ja';
+      }
       zeichnen();
+      const fertig = () => {
+        aufdeckt = false;
+        delete zeile.dataset.neu;
+        delete tafel.dataset.spaet;
+        if (stand.fertig === 'sieg') {
+          if (!ruhig) zeile.dataset.sieg = 'ja';
+          s.fuehlen(30);
+        }
+        zeichnen();
+        // Auf einem flachen Fenster läge das Ergebnis sonst unter dem Rand.
+        if (vorbei()) endeKasten.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      };
+      if (ruhig) fertig();
+      else aufdeckUhr = setTimeout(fertig, AUFDECKEN_MS);
     }
 
     function melden(text) {
@@ -374,12 +409,26 @@
           titel: 'Neues Wort',
           inhalt: 'Der angefangene Versuch geht dabei verloren.',
           aktionen: [
-            { text: 'Neues Wort', tun: () => { stand = frisch(); sichern(); zeichnen(); } },
+            { text: 'Neues Wort', tun: neuesWort },
             { text: 'Weiterspielen', art: 'still' },
           ],
         });
         return;
       }
+      neuesWort();
+    }
+
+    function neuesWort() {
+      clearTimeout(aufdeckUhr);
+      aufdeckt = false;
+      delete tafel.dataset.spaet;
+      for (const zeile of gitter.children) {
+        delete zeile.dataset.neu;
+        delete zeile.dataset.sieg;
+      }
+      // Halb Getipptes gehört zum alten Wort.
+      eingabe = new Array(LAENGE).fill('');
+      platz = 0;
       stand = frisch();
       sichern();
       zeichnen();
@@ -390,7 +439,7 @@
       d.append(el('p', 'notiz', 'Rate ein Wort mit fünf Buchstaben. Nach jedem Versuch färben sich die Felder:'));
       d.append(el('p', 'notiz', 'Grün – der Buchstabe steht an der richtigen Stelle. Gelb – er kommt vor, aber woanders. Grau – er kommt nicht vor.'));
       d.append(el('p', 'notiz', 'Ä, Ö und Ü haben eigene Tasten. Sechs Versuche.'));
-      d.append(el('p', 'notiz', 'Getippt wird dort, wo der dunkle Rahmen steht. Wer schon weiß, dass hinten ein E gehört, tippt das Feld an und schreibt es gleich dorthin – der Rahmen springt danach auf die nächste Lücke. Am PC gehen auch die Pfeiltasten.'));
+      d.append(el('p', 'notiz', 'Getippt wird dort, wo der dunkle Rahmen steht. Wer schon weiß, dass hinten ein E gehört, tippt das Feld an und schreibt es gleich dorthin – der Rahmen springt danach auf die nächste Lücke. Am PC gehen auch die Pfeiltasten, und nach dem Ende bringt Enter das nächste Wort.'));
       d.append(el('p', 'notiz', 'Tipp zeigt eine Umschreibung, Buchstabe deckt den nächsten verdeckten Buchstaben auf, Vorschlag rechnet den besten nächsten Zug aus.'));
       s.blatt({ titel: 'Wördle', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
@@ -401,6 +450,13 @@
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (!document.getElementById('sheet-spiel').hidden) return;
       const k = e.key;
+      if (k === 'Enter' && vorbei()) {
+        // Erst, wenn das Ergebnis dasteht: Das Enter, das das Wort geprüft hat,
+        // darf bei gedrückter Taste nicht gleich das nächste holen.
+        e.preventDefault();
+        if (!aufdeckt && !e.repeat) neuesWort();
+        return;
+      }
       if (k === 'Enter') { e.preventDefault(); tippen('ENTER'); return; }
       if (k === 'Backspace') { e.preventDefault(); tippen('WEG'); return; }
       if (k === 'ArrowLeft') { e.preventDefault(); platz = (platz + LAENGE - 1) % LAENGE; zeichnen(); return; }
@@ -416,6 +472,7 @@
     return {
       ende: () => {
         window.removeEventListener('keydown', taste);
+        clearTimeout(aufdeckUhr);
         if (!vorbei()) sichern();
       },
     };

@@ -19,7 +19,8 @@ ganzen Abend lang.
 - **AC-2** `fertig` **Harmlos, frech oder gemischt** — Es liegen 45 Fragen
   bereit, 25 harmlose und 20 freche, keine doppelt. Man wählt „gemischt"
   (vorgewählt), „harmlos" oder „frech"; die Wahl und die Namen bleiben fürs
-  nächste Öffnen.
+  nächste Öffnen, die Namen schon beim Tippen: Auch die Wahl der Fragen lässt sie
+  stehen.
 
 ### Frage und Abstimmung
 
@@ -34,7 +35,9 @@ ganzen Abend lang.
   der Schirm die Frage und alle Namen nach Stimmen geordnet, mit Zahl und einem
   Balken im Verhältnis zur Spitze; wer vorn liegt, ist hervorgehoben. Bei
   Gleichstand steht „Gleichstand – ihr seid euch nicht einig.". Einen Sieger
-  gibt es nicht.
+  gibt es nicht. Die Balken wachsen beim Aufdecken einmal auf; die Knöpfe darunter
+  nehmen in den ersten 450 ms nichts an, sonst wischt der Doppeltipp auf die letzte
+  Stimme das Ergebnis weg.
 - **AC-6** `fertig` **Keine Frage zweimal** — Innerhalb eines Abends kommt
   keine Frage zweimal, auch keine übersprungene, bis der gewählte Vorrat
   aufgebraucht ist (45, 25 oder 20 Fragen). Dann füllt er sich neu. Gemessen:

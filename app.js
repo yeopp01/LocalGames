@@ -236,6 +236,10 @@ const Rahmen = (() => {
   const BILDZEICHEN = {
     nochmal: '<path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/>',
     fertig: '<circle class="bildzeichen-grund" cx="12" cy="12" r="11"/><path d="M6.8 12.4l3.4 3.4 7-7.2"/>',
+    rueckgaengig: '<path d="M9 7L4.5 11.5 9 16"/><path d="M5 11.5h9.5a4.5 4.5 0 0 1 0 9H11"/>',
+    leeren: '<path d="M5 5v14"/><path d="M19 6l-8 6 8 6z"/>',
+    hinweis: '<path d="M9.5 18h5M10.5 21h3"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.2h5c0-.9.4-1.7 1.1-2.2A6 6 0 0 0 12 3z"/>',
+    notiz: '<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/>',
   };
 
   function bildzeichen(name) {
@@ -244,6 +248,26 @@ const Rahmen = (() => {
     z.innerHTML = '<svg viewBox="0 0 24 24" focusable="false">' + BILDZEICHEN[name] + '</svg>';
     return z;
   }
+
+  /* Ein Knopf für die Leiste unter dem Brett. Das Zeichen trägt das Wiedererkennen,
+     der Text bleibt der Name des Knopfs. */
+  function leistenKnopf(text, zeichen, tun) {
+    const b = el('button', 'knopf knopf--still', text);
+    b.type = 'button';
+    if (zeichen) b.prepend(bildzeichen(zeichen));
+    b.addEventListener('click', tun);
+    return b;
+  }
+
+  /* Wie groß darf ein Brett werden, wenn darüber und darunter noch `reserve`
+     Pixel gebraucht werden? Für Spiele, die in Pixeln rechnen; dasselbe wie
+     --brett in styles.css. */
+  const brettKante = (reserve = 240) => Math.max(260, Math.min(window.innerWidth - 28, window.innerHeight - reserve, 532));
+
+  /* Ein kurzes Antippen in der Hand. Wo das Gerät es nicht kann, passiert nichts. */
+  const fuehlen = (ms = 8) => {
+    if (typeof navigator.vibrate === 'function') navigator.vibrate(ms);
+  };
 
   /* Die Knöpfe unter einer beendeten Partie, in der Reihenfolge der Stufen,
      damit jede immer an derselben Stelle steht. Die gerade gespielte heißt
@@ -617,6 +641,9 @@ const Rahmen = (() => {
       stufenAktionen,
       stufenLeiste,
       bildzeichen,
+      leistenKnopf,
+      brettKante,
+      fuehlen,
     };
 
     const boden = el('div', 'spielboden');

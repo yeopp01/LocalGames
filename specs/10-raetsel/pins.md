@@ -1,7 +1,7 @@
 # Riegel
 
 **Datei:** [`spiele/pins.js`](../../spiele/pins.js)
-**Stand:** 27/27 fertig
+**Stand:** 30/30 fertig
 
 ## Zweck
 
@@ -35,6 +35,11 @@ fünf Riegel voneinander ab.
 - **AC-25** `fertig` **Neuer Levelsatz zählt neu** — Siege und Spielstände
   tragen `satz: 2`. Siege und Stände aus dem ersten Satz, dessen Karten anders
   aussahen, schalten nichts frei, laden nicht und zählen in der Statistik nicht.
+- **AC-28** `fertig` **Feld zeigt nur das Level** — Gezeigt wird
+  nur der Streifen der Karte, den das Level benutzt, samt einer Kachel Rand für die
+  Griffe. Die Fläche ist so groß, wie Breite und Höhe des Fensters es erlauben, und
+  passt samt Knöpfen ohne Scrollen hinein (Handy, 1366 × 700, 1000 × 560). Gerechnet
+  wird weiter auf der ganzen Karte, an den Regeln ändert das nichts.
 
 ### Riegel
 
@@ -42,7 +47,11 @@ fünf Riegel voneinander ab.
   nummerierten Griff zieht ihn heraus; er ruckt kurz und gleitet zur Seite des
   Griffs weg. Die Zifferntasten ziehen den Riegel mit der Nummer. Gezogen ist
   gezogen: Zurück geht es nur mit „Von vorn" (oder R), das das Level neu
-  aufbaut.
+  aufbaut. Solange nichts gezogen ist, ist der Knopf gesperrt.
+- **AC-29** `fertig` **Griff trifft man** — Ein Riegel nimmt einen Tipp bis
+  mindestens 22 Pixel neben sich an, auch wenn das Feld klein gerät; liegen zwei nah
+  beieinander, gilt der nähere. Unter der Maus kippt der Griff in die Gegenfarbe, und
+  der Zeiger wird zur Hand.
 - **AC-5** `fertig` **Gezogen wird in Ruhe** — Bewegt sich noch etwas, merkt ein
   Tipp den Riegel nur vor (sein Griff pulsiert); gezogen wird, sobald alles
   ruht. Ein zweiter Tipp nimmt die Vormerkung zurück. So entscheidet nie die
@@ -97,6 +106,10 @@ fünf Riegel voneinander ab.
   dabei zu Ende. Sind alle Riegel gezogen, ruht die Welt und steht der Held
   nicht an der Truhe, heißt es „Kein Weg zur Truhe.". Darunter steht der Grund
   als Satz und „Nochmal versuchen".
+- **AC-30** `fertig` **Urteil bleibt stehen** — Das Urteil rückt von selbst ins Bild
+  und bleibt derselbe Kasten, auch wenn die Welt danach zur Ruhe kommt. Enter drückt
+  seinen ersten Knopf („Weiter zu Level n+1" oder „Nochmal versuchen"). Vorher wurde
+  er nach zwei Sekunden neu gebaut, und ein Griff nach dem Knopf konnte ins Leere gehen.
 - **AC-22** `fertig` **Sterne fürs Gold** — Ein Stern für die Truhe, einer ab der
   Hälfte des Goldes im Level, einer ab neun Zehnteln; ein Level ohne Gold gibt
   drei.

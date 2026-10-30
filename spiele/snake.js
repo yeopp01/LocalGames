@@ -18,6 +18,10 @@
   const GEGEN = { hoch: 'runter', runter: 'hoch', links: 'rechts', rechts: 'links' };
   const WISCHEN = 22;
   const WARTEN_MAX = 3;
+  /* So lange nach dem Ende zählt kein Tipp und keine Taste als Neustart: Wer
+     gerade noch hektisch lenkt, soll nicht versehentlich neu anfangen. */
+  const SPERRE_MS = 500;
+  const PFEIL = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 19V5M5.5 11.5L12 5l6.5 6.5"/></svg>';
 
   /* Sekunden je Feld: am Anfang gemächlich, mit jedem Apfel etwas schneller,
      ab 27 Äpfeln gleichbleibend. */
@@ -81,6 +85,7 @@
     const el = s.el;
     let stand = laden();
     const wunsch = [];
+    let endeUm = 0;
 
     function laden() {
       const alt = s.erinnert();
@@ -102,12 +107,15 @@
     const pad = el('div', 'sn-pad');
     const unten = el('div', 'ez-unten');
     flaeche.append(feld, pad);
-    wurzel.append(kopf, flaeche, unten);
+    wurzel.append(kopf, flaeche);
 
     const b = Echtzeit.buehne(feld, { breite: N, hoehe: N, schritt, zeichnen, beiHalt });
+    // Die Knöpfe liegen auf dem Feld, ihr Tipp ist aber keine Eingabe fürs Spiel.
+    b.an(unten, 'pointerdown', (e) => e.stopPropagation());
 
-    for (const [text, richtung, ort] of [['↑', 'hoch', 'hoch'], ['←', 'links', 'links'], ['↓', 'runter', 'runter'], ['→', 'rechts', 'rechts']]) {
-      const k = el('button', 'knopf knopf--still sn-taste', text);
+    for (const [richtung, ort] of [['hoch', 'hoch'], ['links', 'links'], ['runter', 'runter'], ['rechts', 'rechts']]) {
+      const k = el('button', 'knopf knopf--still sn-taste');
+      k.innerHTML = PFEIL;
       k.type = 'button';
       k.tabIndex = -1;
       k.dataset.ort = ort;
@@ -125,8 +133,15 @@
 
     /* ------------------------------------------------------------ Ablauf */
 
+    const neustartFrei = () => stand.zustand === 'vorbei' && performance.now() - endeUm >= SPERRE_MS;
+
+    /* Nach dem Ende zählt der nächste Wisch oder Pfeil schon für die nächste
+       Partie: Am schnellsten ist man wieder drin, wenn man einfach weiterspielt. */
     function lenken(richtung) {
-      if (stand.zustand === 'vorbei') return;
+      if (stand.zustand === 'vorbei') {
+        if (!neustartFrei()) return;
+        neu();
+      }
       const letzte = wunsch.length ? wunsch[wunsch.length - 1] : stand.richtung;
       if (richtung !== letzte && richtung !== GEGEN[letzte] && wunsch.length < WARTEN_MAX) wunsch.push(richtung);
       weiter();
@@ -135,8 +150,21 @@
     function weiter() {
       if (stand.zustand !== 'bereit' && stand.zustand !== 'pause') return;
       stand.zustand = 'laeuft';
+      // Der Pause-Knopf behielte sonst den Fokus, und die nächste Leertaste
+      // ginge an ihn statt ans Spiel.
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
       anzeigen();
       b.los();
+    }
+
+    function nochmal() {
+      neu();
+      weiter();
+    }
+
+    /** Tipp oder Leertaste nach dem Ende. */
+    function nochmalNachSperre() {
+      if (neustartFrei()) nochmal();
     }
 
     function pauseUmschalten() {
@@ -166,12 +194,17 @@
       const vorher = stand.aepfel;
       const ende = vorwaerts(stand);
       if (ende) { vorbei(ende); return; }
-      if (stand.aepfel !== vorher) kopfZeichnen();
+      if (stand.aepfel !== vorher) {
+        kopfZeichnen();
+        s.fuehlen(8);
+      }
     }
 
     function vorbei(ursache) {
       stand.zustand = 'vorbei';
       stand.ursache = ursache;
+      endeUm = performance.now();
+      s.fuehlen(30);
       s.notieren({
         aepfel: stand.aepfel,
         laenge: stand.schlange.length,
@@ -205,35 +238,40 @@
     function anzeigen() {
       kopfZeichnen();
       const z = stand.zustand;
-      pad.hidden = z === 'pause' || z === 'vorbei';
       unten.replaceChildren();
+      // Die Karte weicht dem Kopf aus: Wer weiterspielt, muss ihn sehen, und
+      // wer verloren hat, will sehen, woran.
+      feld.dataset.schild = z === 'bereit' || stand.schlange[0][1] < N / 2 ? 'unten' : 'oben';
       if (z === 'bereit') {
         b.schild('Wisch los', 'Über das Feld wischen, die Pfeile tippen oder die Pfeiltasten nehmen.');
       } else if (z === 'pause') {
-        b.schild('Pause', 'Tippen oder wischen, um weiterzuspielen.');
-        unten.append(Echtzeit.kasten('Pause', apfelText(stand.aepfel) + ' bisher.', [
+        b.schild('Pause', apfelText(stand.aepfel) + ' bisher. Tippen oder wischen, um weiterzuspielen.');
+        unten.append(Echtzeit.kasten('', null, [
           { text: 'Weiter', tun: weiter },
-          { text: 'Neu anfangen', art: 'still', tun: neu },
+          { text: 'Neu anfangen', art: 'still', tun: nochmal },
         ]));
       } else if (z === 'vorbei') {
         const titel = { wand: 'An die Wand.', selbst: 'In den eigenen Schwanz.', voll: 'Das Feld ist voll.' }[stand.ursache] || 'Vorbei.';
-        b.schild(titel);
-        const best = bestwert();
-        unten.append(Echtzeit.kasten(titel,
-          apfelText(stand.aepfel) + ', Länge ' + stand.schlange.length + ', ' + s.dauerText(Math.round(stand.zeit * 1000)) + '.' +
-          (stand.aepfel > 0 && stand.aepfel >= best ? ' Das ist dein Bestwert.' : ''),
-          [{ text: 'Nochmal', tun: neu }]));
+        b.schild(titel, apfelText(stand.aepfel) + ', Länge ' + stand.schlange.length + ', ' + s.dauerText(Math.round(stand.zeit * 1000)) + '.');
+        const k = Echtzeit.kasten('', null, [{ text: 'Nochmal', tun: nochmal }]);
+        k.querySelector('.knopf').prepend(s.bildzeichen('nochmal'));
+        if (stand.aepfel > 0 && stand.aepfel >= bestwert()) k.prepend(el('span', 'ende-marke', 'Das ist dein Bestwert.'));
+        k.append(el('p', 'notiz notiz--klein', 'Ein Tipp aufs Feld, ein Wisch oder eine Taste geht auch.'));
+        unten.append(k);
       } else {
         b.schildWeg();
       }
       unten.hidden = !unten.childElementCount;
+      // In die Karte auf dem Feld: So bleibt „Nochmal" auch im flachen Fenster
+      // im Bild, und die Seite springt nicht.
+      if (!unten.hidden) feld.querySelector('.ez-schild').append(unten);
     }
 
     function zeichnen(ctx, f) {
       ctx.fillStyle = f.karte;
       ctx.fillRect(0, 0, N, N);
       ctx.fillStyle = f.karteRand;
-      ctx.globalAlpha = 0.35;
+      ctx.globalAlpha = 0.45;
       for (let y = 0; y < N; y += 1) {
         for (let x = (y % 2); x < N; x += 2) ctx.fillRect(x, y, 1, 1);
       }
@@ -258,18 +296,19 @@
         Echtzeit.rund(ctx, x + 0.1, y + 0.1, 0.8, 0.8, 0.26);
         ctx.fill();
         if (i > 0) {
-          // Brücke zum Vorgänger, damit die Schlange ein Körper ist und keine Perlenkette.
+          // Brücke von Mitte zu Mitte, damit die Schlange ein Körper ist und keine
+          // Perlenkette – und Kopf und Schwanz ihre runden Ecken behalten.
           const [vx, vy] = glied[i - 1];
-          ctx.fillRect(Math.min(x, vx) + 0.1, Math.min(y, vy) + 0.1, Math.abs(x - vx) + 0.8, Math.abs(y - vy) + 0.8);
+          if (x === vx) ctx.fillRect(x + 0.1, Math.min(y, vy) + 0.5, 0.8, 1);
+          else ctx.fillRect(Math.min(x, vx) + 0.5, y + 0.1, 1, 0.8);
         }
       }
 
       const [kx, ky] = glied[0];
-      if (stand.zustand === 'vorbei' && stand.ursache !== 'voll') {
-        ctx.fillStyle = f.rost;
-        Echtzeit.rund(ctx, kx + 0.1, ky + 0.1, 0.8, 0.8, 0.26);
-        ctx.fill();
-      }
+      // Der Kopf hebt sich ab: Bei einer langen Schlange sucht man ihn sonst.
+      ctx.fillStyle = stand.zustand === 'vorbei' && stand.ursache !== 'voll' ? f.rost : 'rgba(0, 0, 0, .24)';
+      Echtzeit.rund(ctx, kx + 0.1, ky + 0.1, 0.8, 0.8, 0.26);
+      ctx.fill();
       const [dx, dy] = RICHTUNG[stand.richtung];
       for (const seite of [-1, 1]) {
         const ex = kx + 0.5 + dx * 0.14 - dy * 0.2 * seite;
@@ -287,10 +326,10 @@
 
     function anleitung() {
       const d = el('div');
-      d.append(el('p', 'notiz', 'Die Schlange fährt von selbst. Du bestimmst nur die Richtung: wischen über das Feld, die Pfeile darunter tippen oder die Pfeiltasten (auch W A S D) drücken.'));
+      d.append(el('p', 'notiz', 'Die Schlange fährt von selbst. Du bestimmst nur die Richtung: wischen über das Feld, die Pfeile tippen oder die Pfeiltasten (auch W A S D) drücken.'));
       d.append(el('p', 'notiz', 'Jeder Apfel macht sie ein Glied länger und ein wenig schneller. Vorbei ist es an der Wand oder am eigenen Körper.'));
       d.append(el('p', 'notiz', 'Du kannst schneller lenken, als sie fährt – bis zu drei Richtungen merkt sie sich und fährt sie der Reihe nach. Eine Kehre ist also „hoch, links" in einem Wisch.'));
-      d.append(el('p', 'notiz', 'Leertaste oder der Pause-Knopf oben halten an. Wechselst du die App, hält sie von selbst.'));
+      d.append(el('p', 'notiz', 'Leertaste oder der Pause-Knopf oben halten an. Wechselst du die App, hält sie von selbst. Nach dem Ende beginnt ein Tipp, ein Wisch oder eine Taste gleich die nächste Partie.'));
       s.blatt({ titel: 'Schlange', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
 
@@ -312,7 +351,10 @@
       griff.gewischt = true;
     });
     b.an(feld, 'pointerup', (e) => {
-      if (griff && e.pointerId === griff.id && !griff.gewischt) weiter();
+      if (griff && e.pointerId === griff.id && !griff.gewischt) {
+        if (stand.zustand === 'vorbei') nochmalNachSperre();
+        else weiter();
+      }
       griff = null;
     });
     b.an(feld, 'pointercancel', () => { griff = null; });
@@ -323,10 +365,13 @@
         ArrowUp: 'hoch', ArrowDown: 'runter', ArrowLeft: 'links', ArrowRight: 'rechts',
         w: 'hoch', s: 'runter', a: 'links', d: 'rechts',
       }[e.key.length === 1 ? e.key.toLowerCase() : e.key];
+      // Eine gehaltene Taste, die in die Wand führte, beginnt nichts Neues.
+      if (e.repeat && stand.zustand === 'vorbei') return;
       if (r) { e.preventDefault(); lenken(r); return; }
       if ((e.key === ' ' || e.key === 'Enter') && !Echtzeit.knopfHatFokus(e)) {
         e.preventDefault();
         if (stand.zustand === 'bereit') weiter();
+        else if (stand.zustand === 'vorbei') nochmalNachSperre();
         else pauseUmschalten();
       } else if (e.key === 'p' || e.key === 'Escape') {
         pauseUmschalten();

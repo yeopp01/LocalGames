@@ -12,6 +12,9 @@
 */
 
 (() => {
+  const ZEICHEN_FUELLEN = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect class="m-kugel" x="4.5" y="4.5" width="15" height="15" rx="3"/></svg>';
+  const ZEICHEN_KREUZ = '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="m-stange" d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>';
+
   const STUFEN = {
     klein:  { name: 'klein',  kanten: 5,  dichte: 0.60 },
     mittel: { name: 'mittel', kanten: 8,  dichte: 0.55 },
@@ -152,8 +155,16 @@
     let stand = laden();
     let markierModus = false;
     let uhr = null;
-    let ziehen = null;          // beim Wischen über mehrere Felder
+    let zug = null;             // die laufende Wischbewegung
     let druckUhr = null;        // langes Drücken setzt ein Kreuz
+    let cursor = 0;             // das Feld, auf dem die Pfeiltasten stehen
+    let hervor = -1;            // dessen Zeile und Spalte sind hervorgehoben
+    let tipp = -1;              // das Feld, von dem der Hinweis gerade spricht
+    let neueBestzeit = false;
+    /* Das Feld vor jeder Geste; eine Geste geht von Aufsetzen bis Loslassen. Der
+       Verlauf lebt nur im Speicher, nach dem Neuladen ist der Knopf gesperrt. */
+    let verlauf = [];
+    let vorGeste = null;
 
     function frisch(stufe) {
       const r = raetselBauen(stufe) || raetselBauen('klein');
@@ -201,16 +212,32 @@
     rahmen.append(ecke, obenKasten, linksKasten, gitter);
     const endeKasten = el('div', 'ende-kasten');
     endeKasten.hidden = true;
-    const leiste = el('div', 'leiste');
-    wurzel.append(kopf, rahmen, endeKasten, leiste);
+    /* Zwei Hälften statt eines Schalters: Man sieht jederzeit, was der nächste
+       Tipp tut. Dieselbe Bedienung wie „Aufdecken/Fahne" beim Minenfeld. */
+    const modus = el('div', 'm-modus');
+    modus.setAttribute('role', 'group');
+    modus.setAttribute('aria-label', 'Was ein Tipp tut');
+    const modusKnopf = (text, zeichen, kreuz) => {
+      const b = el('button', 'm-modus-knopf');
+      b.type = 'button';
+      b.innerHTML = zeichen;
+      b.append(document.createTextNode(text));
+      b.addEventListener('click', () => { markierModus = kreuz; s.fuehlen(); zeichnen(); });
+      return b;
+    };
+    const fuellKnopf = modusKnopf('Füllen', ZEICHEN_FUELLEN, false);
+    const kreuzKnopf = modusKnopf('Kreuz', ZEICHEN_KREUZ, true);
+    modus.append(fuellKnopf, kreuzKnopf);
+    const leiste = el('div', 'leiste n-leiste');
+    wurzel.append(kopf, rahmen, endeKasten, modus, leiste);
 
-    const markierKnopf = el('button', 'knopf knopf--still', 'Kreuze setzen');
-    markierKnopf.type = 'button';
-    markierKnopf.addEventListener('click', () => { markierModus = !markierModus; zeichnen(); });
-    const hinweisKnopf = el('button', 'knopf knopf--still', 'Hinweis');
-    hinweisKnopf.type = 'button';
-    hinweisKnopf.addEventListener('click', () => hinweis(false));
-    leiste.append(markierKnopf, hinweisKnopf);
+    const zurueckKnopf = s.leistenKnopf('Rückgängig', 'rueckgaengig', rueckgaengig);
+    const leerenKnopf = s.leistenKnopf('Von vorn', 'leeren', () => {
+      if (stand.fertig) return;
+      alsGeste(() => { stand.feld = stand.feld.map(() => UNKLAR); });
+    });
+    const hinweisKnopf = s.leistenKnopf('Hinweis', 'hinweis', () => hinweis(false));
+    leiste.append(zurueckKnopf, leerenKnopf, hinweisKnopf);
 
     s.werkzeuge([
       { label: 'Anleitung', symbol: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01" stroke-linecap="round"/>', tun: anleitung },
@@ -218,81 +245,88 @@
     ]);
 
     let felder = [];
+    let zeilenRand = [];
+    let spaltenRand = [];
+
+    /* Die größte Zelle, bei der Zahlenrand und Gitter in Breite und Höhe passen.
+       Der Rand richtet sich nach den längsten Zahlenreihen dieses Rätsels und
+       ist darum nicht fest: Zahlen sollen so groß sein, wie der Platz es zulässt.
+       Die Abzüge sind Kopfzeile, Zählerzeile, Moduswahl, Leiste und die Karte. */
+    function masseRechnen() {
+      const k = stand.kanten;
+      const breit = Math.min(window.innerWidth - 28, 532) - 16;
+      const hoch = window.innerHeight - 272;
+      const links = Math.max(...stand.zeilen.map((h) => h.length));
+      const oben = Math.max(...stand.spalten.map((h) => h.length));
+      let zelle = 64;
+      let schrift = 18;
+      let randLinks = 0;
+      let randOben = 0;
+      for (; zelle >= 20; zelle -= 1) {
+        schrift = Math.max(12, Math.min(19, Math.round(zelle * 0.5)));
+        randLinks = Math.ceil(Math.max(links * (schrift * 0.66 + 4), schrift * 1.3) + 8);
+        randOben = Math.ceil(oben * schrift * 1.12 + 6);
+        if (zelle * k + randLinks <= breit && zelle * k + randOben <= hoch) break;
+      }
+      rahmen.style.setProperty('--kanten', String(k));
+      rahmen.style.setProperty('--zelle', zelle + 'px');
+      rahmen.style.setProperty('--rand', randLinks + 'px');
+      rahmen.style.setProperty('--rand-oben', randOben + 'px');
+      rahmen.style.setProperty('--n-schrift', schrift + 'px');
+    }
 
     function gitterBauen() {
       const k = stand.kanten;
-      rahmen.style.setProperty('--kanten', String(k));
-
-      const platz = Math.min(360, window.innerWidth - 30);
-      const hinweisBreite = Math.max(34, Math.round(platz * 0.22));
-      const zelle = Math.max(18, Math.floor((platz - hinweisBreite) / k));
-      rahmen.style.setProperty('--zelle', zelle + 'px');
-      rahmen.style.setProperty('--rand', hinweisBreite + 'px');
+      masseRechnen();
 
       obenKasten.replaceChildren();
+      spaltenRand = [];
       for (let sp = 0; sp < k; sp += 1) {
         const spalte = el('div', 'n-hinweis n-hinweis--oben');
         for (const zahl of stand.spalten[sp]) spalte.append(el('span', null, String(zahl)));
         obenKasten.append(spalte);
+        spaltenRand.push(spalte);
       }
 
       linksKasten.replaceChildren();
+      zeilenRand = [];
       for (let z = 0; z < k; z += 1) {
         const zeile = el('div', 'n-hinweis n-hinweis--links');
         for (const zahl of stand.zeilen[z]) zeile.append(el('span', null, String(zahl)));
         linksKasten.append(zeile);
+        zeilenRand.push(zeile);
       }
 
       gitter.replaceChildren();
       felder = [];
-      const mitte = Math.floor(k / 2) - 1;
+      // Eine einzige Zählhilfe in der Mitte – halbiert die Reihe beim Abzählen.
+      // Bei ungerader Kante läge sie neben der Mitte und zählte falsch vor.
+      gitter.dataset.mitte = k % 2 === 0 ? 'ja' : 'nein';
       for (let i = 0; i < k * k; i += 1) {
         const f = el('button', 'n-feld');
         f.type = 'button';
-        const zeile = Math.floor(i / k);
-        const spalte = i % k;
-        f.dataset.zeile = String(zeile);
-        f.dataset.spalte = String(spalte);
-        // Eine einzige Zählhilfe in der Mitte – halbiert die Reihe beim Abzählen.
-        if (spalte === mitte) f.classList.add('n-feld--raster-x');
-        if (zeile === mitte) f.classList.add('n-feld--raster-y');
+        f.dataset.zeile = String(Math.floor(i / k));
+        f.dataset.spalte = String(i % k);
+        f.tabIndex = i === cursor ? 0 : -1;
         const nr = i;
-        f.addEventListener('pointerdown', (e) => {
-          e.preventDefault();
-          // Sonst fängt der Browser den Zeiger beim Startfeld ab, und die
-          // Nachbarn bekommen beim Wischen kein pointerenter mehr.
-          if (e.pointerId !== undefined && f.hasPointerCapture(e.pointerId)) {
-            f.releasePointerCapture(e.pointerId);
-          }
-          const vorher = stand.feld[nr];
-          const neuerWert = naechsterWert(vorher);
-          ziehen = neuerWert;
-          setzen(nr, neuerWert);
-          // Lange drücken heißt „das hier bleibt leer" – ohne den Modus zu
-          // wechseln. Entscheidend ist das Feld vor dem Tippen: Der Tipp hat es
-          // schon verändert, und aus einem Kreuz wurde sonst erst ein volles
-          // Feld und dann wieder ein Kreuz.
-          clearTimeout(druckUhr);
-          druckUhr = setTimeout(() => {
-            ziehen = null;
-            setzen(nr, vorher === LEER ? UNKLAR : LEER);
-          }, 400);
-        });
-        f.addEventListener('pointerenter', () => {
-          clearTimeout(druckUhr);
-          if (ziehen !== null) setzen(nr, ziehen);
-        });
+        f.addEventListener('pointerdown', (e) => zugBeginnen(f, nr, e));
+        f.addEventListener('pointerenter', () => hervorheben(nr));
         for (const art of ['pointerup', 'pointerleave', 'pointercancel']) {
-          f.addEventListener(art, () => clearTimeout(druckUhr));
+          f.addEventListener(art, () => { if (!zug || zug.letzte !== nr) clearTimeout(druckUhr); });
         }
-        // Am Rechner setzt die rechte Maustaste das Kreuz.
-        f.addEventListener('contextmenu', (e) => {
-          e.preventDefault();
-          setzen(nr, stand.feld[nr] === LEER ? UNKLAR : LEER);
+        // Das Kreuz der rechten Maustaste entsteht schon beim Drücken. Hier wird nur
+        // noch das Menü unterdrückt – sonst schaltete Android, das auch einen langen
+        // Druck so meldet, das eben gesetzte Kreuz gleich wieder weg.
+        f.addEventListener('contextmenu', (e) => e.preventDefault());
+        // Enter und Leertaste kommen als Klick ohne Zeiger an.
+        f.addEventListener('click', (e) => {
+          if (e.detail !== 0) return;
+          alsGeste(() => setzen(nr, naechsterWert(stand.feld[nr])));
         });
         gitter.append(f);
         felder.push(f);
       }
+      gitter.onpointerleave = (e) => { if (e.pointerType === 'mouse' && !zug) hervorheben(-1); };
     }
 
     const naechsterWert = (jetzt) => {
@@ -300,8 +334,172 @@
       return jetzt === ziel ? UNKLAR : ziel;
     };
 
-    const loslassen = () => { ziehen = null; };
+    /* ------------------------------------------------------------- Wischen */
+
+    function zugBeginnen(f, nr, e) {
+      e.preventDefault();
+      if (stand.fertig) return;
+      // Sonst fängt der Browser den Zeiger beim Startfeld ab, und die Bewegung
+      // käme nur noch dort an.
+      if (e.pointerId !== undefined && f.hasPointerCapture(e.pointerId)) {
+        f.releasePointerCapture(e.pointerId);
+      }
+      const vorher = stand.feld[nr];
+      const kreuz = e.button === 2 || e.ctrlKey;
+      const wert = kreuz ? (vorher === LEER ? UNKLAR : LEER) : naechsterWert(vorher);
+      zug = { zeiger: e.pointerId, wert, von: vorher, start: nr, letzte: nr, achse: null };
+      vorGeste = stand.feld.slice();
+      tipp = -1;
+      cursorSetzen(nr);
+      hervor = nr;
+      s.fuehlen(6);
+      setzen(nr, wert);
+      clearTimeout(druckUhr);
+      if (kreuz || e.button) return;
+      // Lange drücken heißt „das hier bleibt leer" – ohne den Modus zu wechseln.
+      // Entscheidend ist das Feld vor dem Tippen: Der Tipp hat es schon verändert,
+      // und aus einem Kreuz wurde sonst erst ein volles Feld und dann wieder ein
+      // Kreuz. Zieht der Finger danach weiter, zieht er Kreuze.
+      druckUhr = setTimeout(() => {
+        const dorthin = vorher === LEER ? UNKLAR : LEER;
+        s.fuehlen(20);
+        setzen(nr, dorthin);
+        if (zug) { zug.wert = dorthin; zug.von = vorher; }
+      }, 400);
+    }
+
+    /* Beim Wischen zählt nur die Reihe, in der es losging: Der Finger trifft nie
+       genau die Linie, und ein Feld in der Nachbarreihe wäre sofort falsch. Aus
+       den Koordinaten statt aus dem Element darunter gerechnet, damit auch ein
+       Finger über dem Rand die Reihe noch zu Ende führt. */
+    function feldUnter(p) {
+      const k = stand.kanten;
+      const r = gitter.getBoundingClientRect();
+      const grenze = (w) => Math.max(0, Math.min(k - 1, Math.floor(w)));
+      return grenze((p.clientY - r.top) / (r.height / k)) * k + grenze((p.clientX - r.left) / (r.width / k));
+    }
+
+    function weiterZiehen(i) {
+      // Ein Finger zittert auch im Startfeld. Das darf die Richtung noch nicht festlegen.
+      if (i === zug.letzte) return;
+      const k = stand.kanten;
+      const z1 = Math.floor(zug.start / k);
+      const s1 = zug.start % k;
+      if (!zug.achse) zug.achse = Math.abs((i % k) - s1) >= Math.abs(Math.floor(i / k) - z1) ? 'zeile' : 'spalte';
+      const ziel = zug.achse === 'zeile' ? z1 * k + (i % k) : Math.floor(i / k) * k + s1;
+      if (ziel === zug.letzte) return;
+      clearTimeout(druckUhr);
+      // Wer schnell wischt, überspringt Felder; sie werden nachgeholt.
+      const schritt = zug.achse === 'zeile' ? Math.sign(ziel - zug.letzte) : Math.sign(ziel - zug.letzte) * k;
+      for (let j = zug.letzte + schritt; ; j += schritt) {
+        ueberstreichen(j);
+        if (j === ziel) break;
+      }
+      zug.letzte = ziel;
+      hervorheben(ziel);
+    }
+
+    /* Wischen füllt nur, was noch frei ist, und räumt nur, was so aussah wie das
+       erste Feld. So schluckt ein Strich keine Kreuze, die man sich erarbeitet hat. */
+    function ueberstreichen(j) {
+      const jetzt = stand.feld[j];
+      if (zug.wert === UNKLAR ? jetzt === zug.von : jetzt === UNKLAR) {
+        s.fuehlen(4);
+        setzen(j, zug.wert);
+      }
+    }
+
+    const beiBewegung = (e) => {
+      if (!zug || e.pointerId !== zug.zeiger) return;
+      // Der Browser fasst schnelle Bewegungen zu einer Meldung zusammen.
+      const punkte = e.getCoalescedEvents ? e.getCoalescedEvents() : [];
+      for (const p of punkte.length ? punkte : [e]) {
+        if (!zug) return;
+        weiterZiehen(feldUnter(p));
+      }
+    };
+
+    const loslassen = () => {
+      clearTimeout(druckUhr);
+      if (!zug && !vorGeste) return;
+      zug = null;
+      gesteEnde();
+      zeichnen();
+    };
+    window.addEventListener('pointermove', beiBewegung);
     window.addEventListener('pointerup', loslassen);
+    window.addEventListener('pointercancel', loslassen);
+
+    /* ------------------------------------------------------------ Verlauf */
+
+    const gleichesFeld = (a, b) => a.every((w, i) => w === b[i]);
+
+    function gesteEnde() {
+      if (vorGeste && !gleichesFeld(vorGeste, stand.feld)) {
+        verlauf.push(vorGeste);
+        if (verlauf.length > 200) verlauf.shift();
+      }
+      vorGeste = null;
+    }
+
+    function alsGeste(tun) {
+      vorGeste = stand.feld.slice();
+      tipp = -1;
+      tun();
+      gesteEnde();
+      sichern();
+      zeichnen();
+      pruefenObFertig();
+    }
+
+    function rueckgaengig() {
+      if (stand.fertig || !verlauf.length) return;
+      stand.feld = verlauf.pop();
+      tipp = -1;
+      s.fuehlen();
+      sichern();
+      zeichnen();
+    }
+
+    function hervorheben(i) {
+      if (hervor === i) return;
+      hervor = i;
+      reihenZeichnen();
+    }
+
+    /* Nur ein Feld steht in der Tab-Reihenfolge, sonst bräuchte man bis zu 100
+       Tabs, um an dem Brett vorbeizukommen. */
+    function cursorSetzen(i) {
+      if (felder[cursor]) felder[cursor].tabIndex = -1;
+      cursor = i;
+      if (felder[cursor]) felder[cursor].tabIndex = 0;
+    }
+
+    const PFEILE = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] };
+    function beiTaste(e) {
+      if (!document.getElementById('sheet-spiel').hidden || stand.fertig) return;
+      if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === 'z') { e.preventDefault(); rueckgaengig(); return; }
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (e.key === 'Backspace') { e.preventDefault(); rueckgaengig(); return; }
+      const aufBrett = felder.includes(document.activeElement);
+      const pfeil = PFEILE[e.key];
+      if (pfeil) {
+        e.preventDefault();
+        const k = stand.kanten;
+        if (aufBrett) {
+          const z = Math.floor(cursor / k) + pfeil[0];
+          const sp = (cursor % k) + pfeil[1];
+          if (z >= 0 && sp >= 0 && z < k && sp < k) cursorSetzen(z * k + sp);
+        }
+        felder[cursor].focus();
+        hervorheben(cursor);
+      } else if (e.key === 'x' || e.key === 'X') {
+        e.preventDefault();
+        if (aufBrett) alsGeste(() => setzen(cursor, stand.feld[cursor] === LEER ? UNKLAR : LEER));
+        else { markierModus = !markierModus; zeichnen(); }
+      }
+    }
+    window.addEventListener('keydown', beiTaste);
 
     /* ---------------------------------------------------------------- Zug */
 
@@ -367,6 +565,10 @@
 
     function hinweisZeigen(i, wert, woher) {
       stand.hilfen += 1;
+      // Im Gitter zeigen, wovon die Rede ist: Zeile 7, Spalte 4 müsste man sonst abzählen.
+      tipp = i;
+      hervor = i;
+      zeichnen();
       const z = Math.floor(i / stand.kanten) + 1;
       const sp = (i % stand.kanten) + 1;
       s.blatt({
@@ -375,7 +577,7 @@
           + (wert === VOLL ? 'gefüllt' : 'leer') + ' sein. Alle Anordnungen, die zu den Zahlen '
           + 'dieser Reihe passen, sind sich an dieser Stelle einig.',
         aktionen: [
-          { text: 'Eintragen', tun: () => setzen(i, wert) },
+          { text: 'Eintragen', tun: () => alsGeste(() => setzen(i, wert)) },
           { text: 'Selbst machen', art: 'still' },
         ],
       });
@@ -391,6 +593,10 @@
       }
       stand.verbraucht = zeitJetzt();
       stand.fertig = true;
+      // Vor dem Notieren schauen, sonst schlägt die Partie sich selbst.
+      const frueher = s.partien().filter((p) => p.gewonnen && p.stufe === stand.stufe && p.dauer > 0);
+      neueBestzeit = frueher.length > 0 && frueher.every((p) => p.dauer > stand.verbraucht);
+      s.fuehlen(30);
       s.notieren({
         gewonnen: true,
         dauer: stand.verbraucht,
@@ -399,20 +605,58 @@
       });
       s.merken(stand);
       zeichnen();
+      // Auf einem flachen Fenster läge das Ergebnis sonst unter dem Rand.
+      endeKasten.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
 
     /* ------------------------------------------------------------ Zeichnen */
 
+    /* Stimmen die Blöcke einer Reihe mit ihren Zahlen überein? Gezählt, nicht
+       nachgeschlagen: Auch ein Block an der falschen Stelle erfüllt die Zahl, so
+       wie man es selbst auf dem Papier sähe. */
+    function reiheErfuellt(werte, hinweise) {
+      const ist = hinweiseVon(werte);
+      return ist.length === hinweise.length && ist.every((w, i) => w === hinweise[i]);
+    }
+
+    /* Trennt das Hervorheben vom Zeichnen, weil es bei jeder Mausbewegung kommt. */
+    function reihenZeichnen() {
+      const k = stand.kanten;
+      const hz = hervor >= 0 && !stand.fertig ? Math.floor(hervor / k) : -1;
+      const hs = hervor >= 0 && !stand.fertig ? hervor % k : -1;
+      zeilenRand.forEach((r, z) => { r.dataset.hervor = z === hz ? 'ja' : 'nein'; });
+      spaltenRand.forEach((r, sp) => { r.dataset.hervor = sp === hs ? 'ja' : 'nein'; });
+      for (let i = 0; i < felder.length; i += 1) {
+        felder[i].dataset.reihe = Math.floor(i / k) === hz || i % k === hs ? 'ja' : 'nein';
+      }
+    }
+
     function zeichnen() {
+      const k = stand.kanten;
       for (let i = 0; i < felder.length; i += 1) {
         const w = stand.fertig ? stand.bild[i] : stand.feld[i];
         felder[i].dataset.stand = w === VOLL ? 'voll' : w === LEER ? 'leer' : 'offen';
         felder[i].textContent = !stand.fertig && w === LEER ? '×' : '';
+        felder[i].dataset.tipp = i === tipp ? 'ja' : 'nein';
       }
-      markierKnopf.className = 'knopf ' + (markierModus ? 'knopf--voll' : 'knopf--still');
+      for (let z = 0; z < k; z += 1) {
+        const werte = stand.feld.slice(z * k, z * k + k);
+        zeilenRand[z].dataset.erfuellt = reiheErfuellt(werte, stand.zeilen[z]) ? 'ja' : 'nein';
+      }
+      for (let sp = 0; sp < k; sp += 1) {
+        const werte = stand.feld.filter((_, i) => i % k === sp);
+        spaltenRand[sp].dataset.erfuellt = reiheErfuellt(werte, stand.spalten[sp]) ? 'ja' : 'nein';
+      }
+      reihenZeichnen();
+      fuellKnopf.setAttribute('aria-pressed', markierModus ? 'false' : 'true');
+      kreuzKnopf.setAttribute('aria-pressed', markierModus ? 'true' : 'false');
+      gitter.dataset.fertig = stand.fertig ? 'ja' : 'nein';
       hinweisKnopf.disabled = stand.fertig;
+      zurueckKnopf.disabled = !verlauf.length;
+      leerenKnopf.disabled = stand.feld.every((w) => w === UNKLAR);
       kopfZeichnen();
       endeZeichnen();
+      modus.hidden = stand.fertig;
       leiste.hidden = stand.fertig;
     }
 
@@ -434,14 +678,20 @@
       if (!stand.fertig) return;
       endeKasten.append(s.bildzeichen('fertig'));
       endeKasten.append(el('p', 'ende-titel', 'Bild fertig.'));
+      if (neueBestzeit) endeKasten.append(el('span', 'ende-marke', 'Neue Bestzeit'));
       endeKasten.append(el('p', 'notiz',
         STUFEN[stand.stufe].name + ' · ' + s.dauerText(stand.verbraucht)
-        + (stand.hilfen ? ' · ' + stand.hilfen + ' Hinweise' : ' · ohne Hinweis')));
+        + (stand.hilfen ? ' · ' + stand.hilfen + (stand.hilfen === 1 ? ' Hinweis' : ' Hinweise') : ' · ohne Hinweis')));
       endeKasten.append(s.stufenLeiste(STUFEN, stand.stufe, neu));
     }
 
     function neu(stufe) {
       stand = frisch(stufe);
+      verlauf = [];
+      neueBestzeit = false;
+      tipp = -1;
+      hervor = -1;
+      cursor = 0;
       gitterBauen();
       sichern();
       zeichnen();
@@ -459,14 +709,16 @@
       const d = el('div');
       d.append(el('p', 'notiz', 'Die Zahlen am Rand sagen, wie viele Felder in dieser Zeile oder Spalte am Stück gefüllt sind – in genau dieser Reihenfolge, mit mindestens einer Lücke dazwischen.'));
       d.append(el('p', 'notiz', '„3 1" in einer Zeile mit acht Feldern heißt also: erst drei gefüllte am Stück, dann irgendwo danach noch ein einzelnes. Eine 0 bedeutet: diese Reihe bleibt ganz leer.'));
-      d.append(el('p', 'notiz', 'Tippen füllt ein Feld, nochmal tippen macht es wieder frei. Über mehrere Felder zu wischen füllt sie alle.'));
-      d.append(el('p', 'notiz', 'Für „das bleibt bestimmt leer" gibt es drei Wege: den Knopf „Kreuze setzen" einschalten, lange auf ein Feld drücken, oder am Rechner rechts klicken. Nochmal dasselbe nimmt das Kreuz wieder weg.'));
+      d.append(el('p', 'notiz', 'Tippen füllt ein Feld, nochmal tippen macht es wieder frei. Wischen füllt eine ganze Strecke in der Reihe, in der es losging, und lässt dabei gesetzte Kreuze stehen.'));
+      d.append(el('p', 'notiz', 'Für „das bleibt bestimmt leer" gibt es drei Wege: unter dem Brett auf „Kreuz" umschalten, lange auf ein Feld drücken, oder am Rechner rechts klicken. Nochmal dasselbe nimmt das Kreuz wieder weg. Lange drücken und weiterziehen zieht Kreuze.'));
+      d.append(el('p', 'notiz', 'Passen die Blöcke einer Reihe zu ihren Zahlen, werden die Zahlen blass. Das heißt nur: Sie sind gezählt. Ob sie an der richtigen Stelle stehen, sagt erst das fertige Bild. „Rückgängig" nimmt die letzte Bewegung zurück, auch „Von vorn".'));
+      d.append(el('p', 'notiz', 'Am Rechner: Pfeile wandern übers Brett, Enter füllt, X setzt ein Kreuz, Rücktaste nimmt zurück.'));
       d.append(el('p', 'notiz', 'Die Kreuze sind der eigentliche Trick – erst sie machen sichtbar, wo die vollen Felder liegen müssen.'));
       d.append(el('p', 'notiz', 'Anfangen lohnt sich bei den größten Zahlen – bei einer 8 in einer 10er-Zeile liegen die mittleren sechs Felder in jedem Fall fest, egal wie weit der Block rutscht.'));
       s.blatt({ titel: 'Nonogramm', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
 
-    function beiGroesse() { gitterBauen(); zeichnen(); }
+    function beiGroesse() { masseRechnen(); }
     window.addEventListener('resize', beiGroesse);
 
     gitterBauen();
@@ -479,7 +731,10 @@
         clearInterval(uhr);
         clearTimeout(druckUhr);
         window.removeEventListener('resize', beiGroesse);
+        window.removeEventListener('pointermove', beiBewegung);
         window.removeEventListener('pointerup', loslassen);
+        window.removeEventListener('pointercancel', loslassen);
+        window.removeEventListener('keydown', beiTaste);
         if (!stand.fertig) sichern();
       },
     };

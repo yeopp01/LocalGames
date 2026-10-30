@@ -231,6 +231,10 @@
        und soll nicht dauerhaft mitlaufen, sonst tippt man blind und wartet
        auf die Farbe. Sie verschwindet, sobald das Feld angefasst wird. */
     let markiert = new Set();
+    /* Der Stand vor jedem Zug. Er lebt nur im Speicher: Nach dem Neuladen ist
+       nichts mehr zurückzunehmen, der Knopf ist dann gesperrt. */
+    let verlauf = [];
+    let neueBestzeit = false;
 
     function frisch(stufe) {
       const { raetsel, loesung } = raetselBauen(stufe);
@@ -269,7 +273,7 @@
     const kopf = el('div', 'm-kopf');
     const gitter = el('div', 's-gitter');
     const pad = el('div', 's-pad');
-    const leiste = el('div', 'leiste');
+    const leiste = el('div', 'leiste s-leiste');
     const endeKasten = el('div', 'ende-kasten');
     endeKasten.hidden = true;
 
@@ -281,6 +285,7 @@
       f.type = 'button';
       f.dataset.zeile = String(zeileVon(i));
       f.dataset.spalte = String(spalteVon(i));
+      f.style.setProperty('--i', String(zeileVon(i) + spalteVon(i)));
       f.addEventListener('click', () => { gewaehlt = i; zeichnen(); });
       gitter.append(f);
       felder.push(f);
@@ -301,13 +306,10 @@
     loeschTaste.addEventListener('click', () => setzen(0));
     pad.append(loeschTaste);
 
-    const notizKnopf = el('button', 'knopf knopf--still', 'Notizen');
-    notizKnopf.type = 'button';
-    notizKnopf.addEventListener('click', () => { notizModus = !notizModus; zeichnen(); });
-    const hinweisKnopf = el('button', 'knopf knopf--still', 'Hinweis');
-    hinweisKnopf.type = 'button';
-    hinweisKnopf.addEventListener('click', hinweis);
-    leiste.append(notizKnopf, hinweisKnopf);
+    const zurueckKnopf = s.leistenKnopf('Rückgängig', 'rueckgaengig', rueckgaengig);
+    const notizKnopf = s.leistenKnopf('Notizen', 'notiz', () => { notizModus = !notizModus; zeichnen(); });
+    const hinweisKnopf = s.leistenKnopf('Hinweis', 'hinweis', hinweis);
+    leiste.append(zurueckKnopf, notizKnopf, hinweisKnopf);
 
     s.werkzeuge([
       { label: 'Regeln', symbol: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01" stroke-linecap="round"/>', tun: regelnZeigen },
@@ -353,6 +355,7 @@
         f.replaceChildren();
         f.textContent = wert ? String(wert) : '';
         f.dataset.fest = fest ? 'ja' : 'nein';
+        f.setAttribute('aria-label', platzName(i) + (wert ? ', ' + wert : ', leer'));
 
         for (const merkmal of ['gewaehlt', 'verwandt', 'gleich', 'fehler', 'falsch']) delete f.dataset[merkmal];
         if (i === gewaehlt) f.dataset.gewaehlt = 'ja';
@@ -364,21 +367,32 @@
         if (!wert && stand.notizen[i] && stand.notizen[i].length) {
           const kasten = el('span', 's-notizen');
           for (let w = 1; w <= N; w += 1) {
-            kasten.append(el('span', 's-notiz', stand.notizen[i].includes(w) ? String(w) : ''));
+            const notiz = el('span', 's-notiz', stand.notizen[i].includes(w) ? String(w) : '');
+            // Dieselbe Ziffer wie im gewählten Feld: So sieht man, wo sie noch in Frage kam.
+            if (w === gewaehltWert) notiz.dataset.gleich = 'ja';
+            kasten.append(notiz);
           }
           f.append(kasten);
         }
       }
 
       // Ziffern, die schon sechsmal stehen, treten in den Hintergrund.
+      // Die Taste zeigt auch, was im gewählten Feld schon steht – Ziffer oder Notiz.
+      const imFeld = gewaehlt >= 0 && !stand.raetsel[gewaehlt] ? gewaehlt : -1;
       for (let w = 1; w <= N; w += 1) {
         const zahl = stand.eingabe.filter((x) => x === w).length;
         padTasten[w - 1].dataset.fertig = zahl >= N ? 'ja' : 'nein';
+        padTasten[w - 1].dataset.an = imFeld >= 0
+          && (stand.eingabe[imFeld] === w || (notizModus && (stand.notizen[imFeld] || []).includes(w))) ? 'ja' : 'nein';
       }
+      pad.dataset.notiz = notizModus ? 'ja' : 'nein';
+      loeschTaste.disabled = imFeld < 0 || (!stand.eingabe[imFeld] && !(stand.notizen[imFeld] || []).length);
 
-      notizKnopf.dataset.an = notizModus ? 'ja' : 'nein';
       notizKnopf.className = 'knopf ' + (notizModus ? 'knopf--voll' : 'knopf--still');
+      notizKnopf.setAttribute('aria-pressed', notizModus ? 'true' : 'false');
       hinweisKnopf.disabled = stand.fertig;
+      zurueckKnopf.disabled = !verlauf.length;
+      gitter.dataset.fertig = stand.fertig ? 'ja' : 'nein';
 
       kopfZeichnen();
       endeZeichnen();
@@ -403,17 +417,46 @@
       if (!stand.fertig) return;
       endeKasten.append(s.bildzeichen('fertig'));
       endeKasten.append(el('p', 'ende-titel', 'Gelöst.'));
+      if (neueBestzeit) endeKasten.append(el('span', 'ende-marke', 'Neue Bestzeit'));
       endeKasten.append(el('p', 'notiz',
         STUFEN[stand.stufe].name + ' · ' + s.dauerText(stand.verbraucht) +
-        (stand.hilfen ? ' · ' + stand.hilfen + ' Hinweise' : ' · ohne Hinweis')));
+        (stand.hilfen ? ' · ' + stand.hilfen + (stand.hilfen === 1 ? ' Hinweis' : ' Hinweise') : ' · ohne Hinweis')));
       endeKasten.append(s.stufenLeiste(STUFEN, stand.stufe, neu));
     }
 
     /* -------------------------------------------------------------- Züge */
 
+    const abbild = () => ({
+      eingabe: stand.eingabe.slice(),
+      notizen: stand.notizen.map((n) => (n || []).slice()),
+    });
+    const gleich = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+
+    function vormerken(vorher) {
+      if (gleich(vorher, abbild())) return;
+      verlauf.push(vorher);
+      if (verlauf.length > 200) verlauf.shift();
+    }
+
+    function rueckgaengig() {
+      if (stand.fertig || !verlauf.length) return;
+      const alt = verlauf.pop();
+      // Die Auswahl springt dorthin, wo sich etwas tut – sonst sucht man, was zurückging.
+      const wo = [...Array(N * N).keys()].find((i) => alt.eingabe[i] !== stand.eingabe[i]
+        || !gleich(alt.notizen[i], stand.notizen[i] || []));
+      stand.eingabe = alt.eingabe;
+      stand.notizen = alt.notizen;
+      if (wo !== undefined) gewaehlt = wo;
+      markiert = new Set();
+      s.fuehlen();
+      sichern();
+      zeichnen();
+    }
+
     function setzen(wert) {
       if (stand.fertig || gewaehlt < 0) { if (!stand.fertig) s.toast('Erst ein Feld antippen.'); return; }
       if (stand.raetsel[gewaehlt]) { s.toast('Das Feld war vorgegeben.'); return; }
+      const vorher = abbild();
       markiert.delete(gewaehlt);
 
       if (wert === 0) {
@@ -437,14 +480,27 @@
         }
       }
 
+      vormerken(vorher);
+      s.fuehlen();
       sichern();
       zeichnen();
+      if (stand.eingabe[gewaehlt]) landet(gewaehlt);
       pruefenObFertig();
     }
 
-    const platzName = (i) => 'Zeile ' + (zeileVon(i) + 1) + ', Spalte ' + (spalteVon(i) + 1);
+    /* Die Ziffer landet kurz sichtbar. Neu starten geht nur, wenn die Klasse
+       einmal weg war und der Browser das gemerkt hat. */
+    function landet(i) {
+      const f = felder[i];
+      f.classList.remove('s-feld--neu');
+      void f.offsetWidth;
+      f.classList.add('s-feld--neu');
+    }
+
+    function platzName(i) { return 'Zeile ' + (zeileVon(i) + 1) + ', Spalte ' + (spalteVon(i) + 1); }
 
     function eintragen(i, wert) {
+      const vorher = abbild();
       stand.eingabe[i] = wert;
       stand.notizen[i] = [];
       markiert.delete(i);
@@ -454,8 +510,11 @@
         if (pos >= 0) n.splice(pos, 1);
       }
       gewaehlt = i;
+      vormerken(vorher);
+      s.fuehlen();
       sichern();
       zeichnen();
+      landet(i);
       pruefenObFertig();
     }
 
@@ -479,8 +538,10 @@
           inhalt: (falsch.length === 1
             ? 'Eine Ziffer stand auf einem Feld, auf dem sie in der Lösung nicht vorkommt'
             : falsch.length + ' Ziffern standen auf Feldern, auf denen sie in der Lösung nicht vorkommen')
-            + ' – mit ihnen ließ sich das Rätsel nicht mehr vervollständigen. Die geleerten Felder '
-            + 'sind umrandet. Welche Ziffer dort richtig wäre, verrate ich nicht.',
+            + (falsch.length === 1
+              ? ' – mit ihr ließ sich das Rätsel nicht mehr vervollständigen. Das geleerte Feld ist umrandet. '
+              : ' – mit ihnen ließ sich das Rätsel nicht mehr vervollständigen. Die geleerten Felder sind umrandet. ')
+            + 'Welche Ziffer dort richtig wäre, verrate ich nicht.',
           aktionen: [
             { text: 'Nächster Hinweis', tun: hinweis },
             { text: 'Weiter', art: 'still' },
@@ -539,11 +600,13 @@
     }
 
     function wegnehmen(felderListe) {
+      const vorher = abbild();
       for (const i of felderListe) {
         stand.eingabe[i] = 0;
         stand.notizen[i] = [];
         markiert.delete(i);
       }
+      vormerken(vorher);
       sichern();
       zeichnen();
     }
@@ -554,6 +617,10 @@
       stand.verbraucht = zeitJetzt();
       stand.fertig = true;
       gewaehlt = -1;
+      // Vor dem Notieren schauen, sonst schlägt die Partie sich selbst.
+      const frueher = s.partien().filter((p) => p.gewonnen && p.stufe === stand.stufe && p.dauer > 0);
+      neueBestzeit = frueher.length > 0 && frueher.every((p) => p.dauer > stand.verbraucht);
+      s.fuehlen(30);
       s.notieren({
         gewonnen: true,
         dauer: stand.verbraucht,
@@ -562,12 +629,16 @@
       });
       s.merken(stand);
       zeichnen();
+      // Auf einem flachen Fenster läge das Ergebnis sonst unter dem Rand.
+      endeKasten.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
 
     function neu(stufe) {
       stand = frisch(stufe);
       gewaehlt = -1;
       markiert = new Set();
+      verlauf = [];
+      neueBestzeit = false;
       sichern();
       zeichnen();
     }
@@ -583,8 +654,9 @@
     function regelnZeigen() {
       const d = el('div');
       d.append(el('p', 'notiz', 'In jede Zeile, jede Spalte und jeden der sechs Blöcke gehört jede Ziffer von 1 bis 6 genau einmal.'));
-      d.append(el('p', 'notiz', 'Ein Feld antippen, dann eine Ziffer wählen. Nochmal dieselbe Ziffer nimmt sie wieder weg.'));
+      d.append(el('p', 'notiz', 'Ein Feld antippen, dann eine Ziffer wählen. Nochmal dieselbe Ziffer nimmt sie wieder weg. „Rückgängig" holt jeden Zug zurück, auch was der Hinweis geändert hat.'));
       d.append(el('p', 'notiz', 'Notizen merken sich Kandidaten in kleiner Schrift. Doppelte Ziffern werden sofort rot.'));
+      d.append(el('p', 'notiz', 'Am Rechner: Pfeile wählen das Feld, 1 bis 6 setzt, 0 oder Rücktaste leert, n schaltet die Notizen um, Strg+Z nimmt zurück.'));
       d.append(el('p', 'notiz', 'Der Hinweis sucht einen Schluss, der sich aus Zeile, Spalte und Block begründen lässt. Steht aber schon eine Ziffer nachweislich falsch, nimmt er zuerst alle diese Ziffern weg und umrandet die Felder – sonst führt jede weitere Überlegung in die Irre. Welche Ziffer richtig wäre, sagt er dabei nicht.'));
       s.blatt({ titel: 'Mini-Sudoku', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
@@ -592,8 +664,9 @@
     /* ---------------------------------------------------------- Tastatur */
 
     function taste(e) {
+      if (!document.getElementById('sheet-spiel').hidden || stand.fertig) return;
+      if ((e.metaKey || e.ctrlKey) && !e.altKey && e.key.toLowerCase() === 'z') { e.preventDefault(); rueckgaengig(); return; }
       if (e.metaKey || e.ctrlKey || e.altKey) return;
-      if (!document.getElementById('sheet-spiel').hidden) return;
       if (e.key >= '1' && e.key <= '6') { e.preventDefault(); setzen(Number(e.key)); return; }
       if (e.key === 'Backspace' || e.key === 'Delete' || e.key === '0') { e.preventDefault(); setzen(0); return; }
       if (e.key === 'n') { notizModus = !notizModus; zeichnen(); return; }

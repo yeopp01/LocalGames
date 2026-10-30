@@ -1,7 +1,7 @@
 # Minenfeld
 
 **Datei:** [`spiele/minen.js`](../../spiele/minen.js)
-**Stand:** 13/13 fertig
+**Stand:** 15/15 fertig
 
 ## Zweck
 
@@ -19,9 +19,11 @@ Maus am Rechner.
 - **AC-2** `fertig` **Neues Feld wählbar** — Das Werkzeug „Neues Feld" bietet
   alle drei Stufen an; nach einer beendeten Partie stehen sie als Knöpfe
   unter dem Ergebnis, die gespielte als „Nochmal".
-- **AC-3** `fertig` **Passt aufs Handy** — Die Kachelgröße richtet sich nach der
-  Fensterbreite (höchstens 400 Pixel Feld, mindestens 20 Pixel je Kachel) und
-  wird beim Ändern der Fenstergröße neu berechnet.
+- **AC-3** `fertig` **Brett nach Fenster** — Die Kachelgröße richtet sich nach Breite
+  und Höhe des Fensters (22 bis 54 Pixel je Kachel) und wird beim Ändern der
+  Fenstergröße neu berechnet, ohne dass ein laufender Druck abbricht. Brett und
+  Moduswahl passen ohne Scrollen ins Fenster; einzig „groß" braucht auf 320 × 568 und
+  1000 × 560 etwas Scrollen, weil die Kacheln sonst zu klein würden.
 
 ### Spielzug
 
@@ -31,12 +33,25 @@ Maus am Rechner.
 - **AC-5** `fertig` **Leere Felder öffnen mit** — Ein Feld ohne Minen in der
   Nachbarschaft deckt seine Nachbarn mit auf, bis an die Zahlen heran.
 - **AC-6** `fertig` **Fahne auf drei Wegen** — Eine Fahne setzt und entfernt man
-  mit der rechten Maustaste, mit langem Drücken (420 ms) oder im eingeschalteten
-  Fahnen-Modus mit einfachem Tippen. Ein beflaggtes Feld lässt sich nicht
-  aufdecken, ein offenes nicht beflaggen.
+  mit der rechten Maustaste, mit langem Drücken (420 ms) oder im Modus „Fahne" mit
+  einfachem Tippen. Unter dem Brett steht dafür die Wahl „Aufdecken" oder „Fahne",
+  die immer zeigt, was der nächste Tipp tut; im Fahnen-Modus trägt auch das Brett
+  einen roten Rand. Ein beflaggtes Feld lässt sich nicht aufdecken, ein offenes nicht
+  beflaggen. Meldet das Gerät den langen Druck zusätzlich als Kontextmenü (Android),
+  wechselt die Fahne trotzdem nur einmal; zieht der Finger danach vom Feld, geht der
+  nächste Tipp nicht verloren.
 - **AC-7** `fertig` **Zahl öffnet Umgebung** — Ein Tipp auf eine offene Zahl
   deckt die übrigen Nachbarn auf, wenn genau so viele Fahnen daneben stehen, wie
-  die Zahl sagt. Liegt eine Fahne falsch, geht dabei eine Mine hoch.
+  die Zahl sagt, in beiden Modi. Liegt eine Fahne falsch, geht dabei eine Mine hoch.
+- **AC-14** `fertig` **Zahl sagt, was fehlt** — Stimmt die Zahl der Fahnen nicht,
+  leuchten die fraglichen Felder kurz auf, und die Unterzeile sagt „Noch 1 Fahne" oder
+  „3 statt 2 Fahnen". Eine Zahl, um die herum alles offen oder beflaggt ist und deren
+  Fahnen stimmen, wird blass; stehen zu viele Fahnen daneben, wird sie rot hinterlegt.
+  Gezählt wird nur, was der Spieler sieht – auch falsche Fahnen zählen mit.
+- **AC-15** `fertig` **Tastatur** — Die Pfeile wandern übers Feld (der erste setzt
+  den Fokus aufs Brett), Enter oder Leertaste decken auf, F setzt die Fahne, ohne
+  Fokus aufs Brett schaltet F den Modus. Nur ein Feld steht in der Tab-Reihenfolge.
+  Solange ein Blatt offen ist oder Strg, Alt oder Cmd gedrückt sind, zählt keine Taste.
 - **AC-8** `fertig` **Uhr ab erstem Zug** — Die Zeit läuft erst ab dem ersten
   Aufdecken und steht still, solange das Spiel nicht offen ist.
 
@@ -44,10 +59,11 @@ Maus am Rechner.
 
 - **AC-9** `fertig` **Sieg räumt das Feld** — Sind alle minenfreien Felder offen,
   ist die Partie gewonnen: alle Minen bekommen eine Fahne, es erscheint „Feld
-  geräumt." mit Stufe und Zeit.
+  geräumt." mit Stufe und Zeit, das Ergebnis scrollt ins Bild. War die Zeit besser als
+  alle früheren dieser Stufe, steht dort „Neue Bestzeit".
 - **AC-10** `fertig` **Verlust zeigt alles** — Wer eine Mine aufdeckt, verliert:
-  „Bumm.", alle Minen liegen offen, falsch gesetzte Fahnen sind mit × markiert.
-  Danach nimmt das Feld keine Züge mehr an.
+  „Bumm.", alle Minen liegen offen, die getroffene ist kräftig rot, falsch gesetzte
+  Fahnen sind mit × markiert. Danach nimmt das Feld keine Züge mehr an.
 
 ### Speicher und Statistik
 
@@ -84,7 +100,8 @@ Zwei Zugeständnisse an das Spielgefühl:
   Maustaste, auf dem Handy zusätzlich langes Drücken.
 
 Auf eine bereits offene Zahl zu tippen deckt die restlichen Nachbarn auf,
-sobald genug Fahnen daneben stehen.
+sobald genug Fahnen daneben stehen. Die Meldung, was dafür fehlt, steht in der
+Unterzeile statt in einem Toast: Der läge auf flachen Fenstern über der Moduswahl.
 
 | Größe | Feld | Minen |
 | --- | --- | --- |

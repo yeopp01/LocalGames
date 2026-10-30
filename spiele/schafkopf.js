@@ -26,6 +26,7 @@
 
   const DENKZEIT = 620;      // wie lang ein Rechner "überlegt"
   const STICHZEIT = 1250;    // wie lang ein voller Stich liegen bleibt
+  const STICHFLUG = 240;     // wie lang er danach zum Gewinner wandert (styles.css, data-geht)
   const VORWAHLZEIT = 350;   // wie lang eine vorgewählte Karte nach dem Dranwerden noch wartet
   const KLICKSPERRE = 300;   // so kurz nach einem Klick zählt der nächste nicht (Doppelklick)
 
@@ -541,6 +542,10 @@
        wie der Tipp: nach dem Neuladen ist sie weg, das ist verschmerzbar. */
     let vorwahl = null;
     let sperreBis = 0;       // bis wann Klicks auf die Hand nicht zählen
+    let tischGezeigt = -1;   // wie viele Karten beim letzten Zeichnen lagen; so landet nur die neue
+    let zahlenOffen = false; // „Die Zahlen" unter dem Tipp, gilt bis zum Schließen
+    let zeigerKarte = null;  // die Karte, auf der die Pfeiltasten stehen; ohne Tastatur nie gesetzt
+    let zeigerPlatz = 0;     // ihr Platz in der Hand, damit der Zeiger nach dem Legen dort bleibt
 
     const spaeter = (tun, ms) => { uhren.push(setTimeout(tun, ms)); };
     const uhrenAus = () => { for (const u of uhren) clearTimeout(u); uhren = []; };
@@ -676,6 +681,8 @@
     }
     const stichKasten = el('div', 'sk-stich');
     tisch.append(stichKasten);
+    // Wer den Stich gesehen hat, muss nicht warten, bis er von selbst geht.
+    tisch.addEventListener('click', stichGleichWeg);
 
     /* Wer dran ist, stand bisher nur in der Kopfzeile und als heller Fleck
        unter dem Namen des Mitspielers. Beides half genau dann nicht, wenn man
@@ -690,25 +697,22 @@
     const handKasten = el('div', 'sk-hand');
     const ansageKasten = el('div', 'sk-ansage');
     ansageKasten.hidden = true;
-    const endeKasten = el('div', 'ende-kasten');
+    const endeKasten = el('div', 'ende-kasten sk-ende');
     endeKasten.hidden = true;
     const leiste = el('div', 'leiste');
 
-    wurzel.append(kopf, tisch, dranKasten, notizKasten, ansageKasten, handKasten, leiste, endeKasten);
+    /* Hinweis und Ansage stehen unter der Hand, nicht darüber: Stand der Tipp
+       über den Karten, schob er genau die Karte aus dem Fenster, auf die er
+       zeigt, und beim Mitlesen sprang die Hand nach jedem Zug. */
+    wurzel.append(kopf, tisch, dranKasten, handKasten, leiste, notizKasten, ansageKasten, endeKasten);
 
-    const tippKnopf = el('button', 'knopf knopf--still', 'Tipp');
-    tippKnopf.type = 'button';
-    tippKnopf.addEventListener('click', tippGeben);
-    const zurueckKnopf = el('button', 'knopf knopf--still', 'Zug zurück');
-    zurueckKnopf.type = 'button';
-    zurueckKnopf.addEventListener('click', zurueckNehmen);
+    const tippKnopf = s.leistenKnopf('Tipp', 'hinweis', tippGeben);
+    const zurueckKnopf = s.leistenKnopf('Zug zurück', 'rueckgaengig', zurueckNehmen);
     /* Der letzte Stich liegt gut eine Sekunde da, dann ist er weg – und wer
        gerade auf die eigene Hand geschaut hat, weiß nicht, wer ihn gemacht
        hat. Am echten Tisch darf man den letzten Stich noch einmal ansehen,
        hier auch. */
-    const stichKnopf = el('button', 'knopf knopf--still', 'Letzter Stich');
-    stichKnopf.type = 'button';
-    stichKnopf.addEventListener('click', letztenStichZeigen);
+    const stichKnopf = s.leistenKnopf('Letzter Stich', null, letztenStichZeigen);
     leiste.append(tippKnopf, zurueckKnopf, stichKnopf);
 
     s.werkzeuge([
@@ -812,7 +816,7 @@
 
     function zugWeiter() {
       if (stand.phase !== 'spiel') return;
-      if (stand.stichFertig) { spaeter(stichAbraeumen, STICHZEIT); return; }
+      if (stand.stichFertig) { spaeter(stichWegtragen, STICHZEIT); return; }
       if (stand.amZug === ICH) {
         tipp = null;
         // Beim Mitlesen wird schon gerechnet, während du noch überlegst –
@@ -899,6 +903,23 @@
       zugWeiter();
     }
 
+    const stichSieger = () => (stand.aktuell.start + K.stichPlatz(stand.aktuell.karten, ord())) % 4;
+
+    /* Der Stich wandert zu dem, der ihn gemacht hat. So bekommt man auch aus dem
+       Augenwinkel mit, wohin er ging, ohne die Zeile darunter zu lesen. */
+    function stichWegtragen() {
+      if (!stand.stichFertig || stichKasten.dataset.geht) return;
+      stichKasten.dataset.geht = PLATZ[stichSieger()];
+      spaeter(stichAbraeumen, STICHFLUG);
+    }
+
+    function stichGleichWeg() {
+      if (stand.phase !== 'spiel' || !stand.stichFertig || stichKasten.dataset.geht) return;
+      // Die Uhr des Stichs läuft noch und darf ihn nicht ein zweites Mal abräumen.
+      uhrenAus();
+      stichWegtragen();
+    }
+
     function stichAbraeumen() {
       const st = stand.aktuell;
       const platz = K.stichPlatz(st.karten, ord());
@@ -928,7 +949,10 @@
        würfeln ja neu. Wer oft genug zurücknimmt, spielt sich also auch eine
        günstige Antwort herbei. Für einen Lehrer ist das kein Schaden, aber
        ehrlich soll es bleiben: Die Zahl der zurückgenommenen Züge steht in
-       der Statistik. */
+       der Statistik.
+
+       Das geht auch, während die drei noch legen. Wer sich vertippt hat, merkt
+       es sofort und soll nicht erst die Runde abwarten müssen. */
     function merkeStand() {
       stand.rueckstand = JSON.stringify({
         haende: stand.haende, stiche: stand.stiche, aktuell: stand.aktuell,
@@ -938,8 +962,7 @@
       });
     }
 
-    const kannZurueck = () => !!stand.rueckstand && stand.phase === 'spiel'
-      && stand.amZug === ICH && !denkt && !stand.stichFertig;
+    const kannZurueck = () => !!stand.rueckstand && stand.phase === 'spiel';
 
     function zurueckNehmen() {
       if (!kannZurueck()) return;
@@ -990,7 +1013,14 @@
       if (stand.lehre === 'mit') urteilen(karte, erlaubt);
       else stand.notiz = null;
       tipp = null;
+      s.fuehlen();
       legen(karte);
+      if (stand.notiz) notizInsBild();
+    }
+
+    // Unter der Hand kann der Hinweis auf kleinen Fenstern knapp außerhalb liegen.
+    function notizInsBild() {
+      if (!notizKasten.hidden) notizKasten.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
 
     /* ------------------------------------------------------------ Hinweise */
@@ -1000,27 +1030,42 @@
     }
 
     function tippGeben() {
-      if (stand.phase === 'ansage' && (vorhand() + stand.zeiger) % 4 === ICH) {
-        ansageTipp();
-        return;
-      }
+      if (stand.lehre === 'aus') return;
       if (stand.phase !== 'spiel' || stand.amZug !== ICH || stand.stichFertig) {
         s.toast('Gerade bist du nicht dran.');
         return;
       }
-      const rat = vorabRat || rechnen(700);
-      const beste = rat.werte[0];
-      stand.hilfen += 1;
-      tipp = {
-        karte: beste.karte,
-        text: rat.einzig
-          ? 'Du hast gar keine Wahl – nur diese eine Karte ist erlaubt.'
-          : K.begruenden(K.sichtVon(zustand(), ICH), beste.karte, meineSeite(),
-            rat.werte.map((e) => e.karte), rat.sitte),
-        zahl: rat.einzig ? '' : zahlSatz(rat, beste) + ' ' + herkunftSatz(rat),
-      };
-      sichern();
-      zeichnen();
+      // Noch einmal gedrückt, geht er wieder weg – neu gerechnet wird nichts.
+      if (tipp) {
+        tipp = null;
+        zeichnen();
+        return;
+      }
+      /* Die Rechnung hält die Seite bis zu 0,7 Sekunden an. Erst der gesperrte
+         Knopf, dann die Rechnung – sonst sieht das Antippen wie ein Fehlschlag aus. */
+      tippKnopf.disabled = true;
+      const merker = stand.stiche.length * 4 + stand.aktuell.karten.length;
+      spaeter(() => {
+        if (stand.phase !== 'spiel' || stand.amZug !== ICH || stand.stichFertig
+            || stand.stiche.length * 4 + stand.aktuell.karten.length !== merker) {
+          zeichnen();
+          return;
+        }
+        const rat = vorabRat || rechnen(700);
+        const beste = rat.werte[0];
+        stand.hilfen += 1;
+        tipp = {
+          karte: beste.karte,
+          text: rat.einzig
+            ? 'Du hast gar keine Wahl – nur diese eine Karte ist erlaubt.'
+            : K.begruenden(K.sichtVon(zustand(), ICH), beste.karte, meineSeite(),
+              rat.werte.map((e) => e.karte), rat.sitte),
+          zahl: rat.einzig ? '' : zahlSatz(rat, beste) + ' ' + herkunftSatz(rat),
+        };
+        sichern();
+        zeichnen();
+        notizInsBild();
+      }, 40);
     }
 
     const prozentText = (q) => Math.round(q * 100) + ' %';
@@ -1308,6 +1353,7 @@
       for (let p = 0; p < 4; p += 1) stand.konto[p] += ab.konto[p];
 
       const meins = seite[ICH] === 1;
+      s.fuehlen(30);
       s.notieren({
         gewonnen: meins ? ab.gewonnen : !ab.gewonnen,
         dauer: Date.now() - stand.begonnen,
@@ -1322,7 +1368,83 @@
       });
       sichern();
       zeichnen();
+      // Auf einem flachen Fenster lägen „Nächste Gabe" und der Stand sonst unter dem Rand.
+      endeKasten.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
+
+    /* ------------------------------------------------------------ Tastatur */
+
+    /* Die Karten tragen die Ziffer ihres Platzes: 1 ist die linke. Pfeile wandern
+       über die Karten, die erlaubt sind; Enter drückt dann den Knopf, auf dem sie
+       stehen. Solange ein Blatt oder das Werkzeugmenü offen ist, gehören die
+       Tasten denen. */
+    function zeigerSetzen(richtung) {
+      const hand = K.sortieren(stand.haende[ICH], stand.spielart);
+      const frei = hand.filter((_, i) => !handKasten.children[i].dataset.gesperrt);
+      if (!frei.length) return;
+      const jetzt = frei.indexOf(zeigerKarte);
+      const neu = jetzt < 0 ? (richtung > 0 ? 0 : frei.length - 1)
+        : (jetzt + richtung + frei.length) % frei.length;
+      zeigerKarte = frei[neu];
+      zeigerPlatz = hand.indexOf(zeigerKarte);
+      handKasten.children[zeigerPlatz].focus({ preventScroll: true });
+    }
+
+    function beiTaste(e) {
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      if (!document.getElementById('sheet-spiel').hidden) return;
+      if (document.querySelector('.kopf-mehr-menue:not([hidden])')) return;
+      const aufKnopf = e.target instanceof Element && !!e.target.closest('button, a, input, textarea');
+      const pfeil = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+
+      if (stand.phase === 'ansage') {
+        if ((vorhand() + stand.zeiger) % 4 !== ICH) return;
+        if (pfeil) {
+          e.preventDefault();
+          const knoepfe = [...ansageKasten.querySelectorAll('button')];
+          const jetzt = knoepfe.indexOf(document.activeElement);
+          // Der erste Druck landet auf „Weiter": Das ist die häufigste Antwort.
+          const start = knoepfe.findIndex((b) => b.classList.contains('sk-weiter'));
+          const neu = jetzt < 0 ? start : (jetzt + pfeil + knoepfe.length) % knoepfe.length;
+          knoepfe[neu].focus({ preventScroll: true });
+        } else if (e.key.toLowerCase() === 't' && stand.lehre !== 'aus') {
+          e.preventDefault();
+          wasGeht();
+        }
+        return;
+      }
+
+      if (stand.phase === 'ende') {
+        if (e.key === 'Enter' && !aufKnopf) { e.preventDefault(); geben(); }
+        return;
+      }
+      if (stand.phase !== 'spiel') return;
+
+      if (/^[1-8]$/.test(e.key)) {
+        const hand = K.sortieren(stand.haende[ICH], stand.spielart);
+        const k = hand[Number(e.key) - 1];
+        if (k === undefined) return;
+        e.preventDefault();
+        karteGeklickt(k);
+      } else if (pfeil) {
+        e.preventDefault();
+        zeigerSetzen(pfeil);
+      } else if (e.key === 'Enter' || e.key === ' ') {
+        if (aufKnopf) return;
+        e.preventDefault();
+        stichGleichWeg();
+      } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        zurueckNehmen();
+      } else if (e.key.toLowerCase() === 't') {
+        e.preventDefault();
+        tippGeben();
+      } else if (e.key.toLowerCase() === 'l') {
+        e.preventDefault();
+        letztenStichZeigen();
+      }
+    }
+    window.addEventListener('keydown', beiTaste);
 
     /* ------------------------------------------------------------ Zeichnen */
 
@@ -1373,11 +1495,10 @@
       ansageZeichnen();
       notizZeichnen();
       endeZeichnen();
-      tippKnopf.hidden = stand.lehre === 'aus' || stand.phase === 'ende' || stand.phase === 'weiter';
-      tippKnopf.disabled = denkt || stand.stichFertig
-        || !(stand.phase === 'spiel' ? stand.amZug === ICH
-          : stand.phase === 'ansage' && (vorhand() + stand.zeiger) % 4 === ICH);
-      tippKnopf.textContent = stand.phase === 'ansage' ? 'Was geht?' : 'Tipp';
+      // Am Ende steht die Rechnung, und ein leerer Tisch schöbe sie nur aus dem Bild.
+      tisch.hidden = stand.phase === 'ende';
+      tippKnopf.hidden = stand.lehre === 'aus' || stand.phase !== 'spiel';
+      tippKnopf.disabled = denkt || stand.stichFertig || stand.amZug !== ICH;
       zurueckKnopf.hidden = stand.phase !== 'spiel';
       zurueckKnopf.disabled = !kannZurueck();
       stichKnopf.hidden = stand.phase !== 'spiel';
@@ -1403,12 +1524,13 @@
     function kopfZeichnen() {
       kopf.replaceChildren();
       if (stand.phase === 'ansage' || stand.phase === 'weiter') {
-        kopf.append(el('span', null, 'Gabe ' + (stand.gaben + 1)));
+        /* Die Vorhand steht hier und nicht in der Zeile unter dem Titel: Dort
+           kürzt das Handy sie neben den Werkzeugen zu „Vorhand ist …". */
+        kopf.append(el('span', null, 'Gabe ' + (stand.gaben + 1) + ' · Vorhand '
+          + (vorhand() === ICH ? 'du' : NAMEN[vorhand()])));
         kopf.append(el('b', null, stand.phase === 'weiter' ? 'zusammengeworfen' : 'wer spielt?'));
-        kopf.append(el('span', null, kontoText()));
-        s.unter(stand.phase === 'weiter'
-          ? 'Keiner mag – neu geben.'
-          : 'Vorhand ist ' + NAMEN[vorhand()] + '.');
+        kopf.append(el('span', null, 'Stand ' + kontoText()));
+        s.unter('');
         return;
       }
       kopf.append(el('span', 'sk-kopf-spiel', spielZeile()));
@@ -1450,14 +1572,32 @@
 
     function dranZeichnen() {
       dranKasten.replaceChildren();
-      if (stand.phase !== 'spiel') { dranKasten.hidden = true; return; }
+      if (stand.phase === 'ende') { dranKasten.hidden = true; return; }
       dranKasten.hidden = false;
+
+      if (stand.phase === 'weiter') {
+        dranKasten.dataset.wer = 'stich';
+        dranKasten.append(el('span', 'sk-dran-text', 'Keiner mag – es wird neu gegeben'));
+        return;
+      }
+      if (stand.phase === 'ansage') {
+        const p = (vorhand() + stand.zeiger) % 4;
+        dranKasten.dataset.wer = p === ICH ? 'ich' : 'andere';
+        dranKasten.append(el('span', 'sk-dran-punkt'));
+        dranKasten.append(el('span', 'sk-dran-text', p === ICH ? 'Du bist dran' : NAMEN[p] + ' überlegt …'));
+        // Am Tisch steht unter jedem Namen, was er gesagt hat – nur deins fehlte.
+        const mein = stand.gebote.find((g) => g.p === ICH);
+        if (mein) {
+          dranKasten.append(el('span', 'sk-dran-zusatz',
+            mein.spiel ? '· du spielst ' + K.spielKurz(mein.spiel) : '· du hast weiter gesagt'));
+        }
+        return;
+      }
 
       /* Liegt der Stich voll da, ist die Frage nach dem Zug uninteressant –
          dann will man wissen, wer ihn bekommt und was er wert war. */
       if (stand.stichFertig) {
-        const platz = K.stichPlatz(stand.aktuell.karten, ord());
-        const sieger = (stand.aktuell.start + platz) % 4;
+        const sieger = stichSieger();
         const a = K.augenSumme(stand.aktuell.karten);
         dranKasten.dataset.wer = sieger === ICH ? 'ich' : 'stich';
         dranKasten.append(el('span', 'sk-dran-text',
@@ -1496,9 +1636,13 @@
     }
 
     function tischZeichnen() {
+      delete stichKasten.dataset.geht;
+      const stichVon = stand.phase === 'spiel' && stand.stichFertig ? stichSieger() : -1;
       for (const i of [1, 2, 3]) {
         const m = mitspieler[i];
-        m.dataset.dran = stand.phase === 'spiel' && stand.amZug === i && !stand.stichFertig ? 'ja' : 'nein';
+        m.dataset.dran = (stand.phase === 'spiel' && stand.amZug === i && !stand.stichFertig)
+          || (stand.phase === 'ansage' && (vorhand() + stand.zeiger) % 4 === i)
+          || stichVon === i ? 'ja' : 'nein';
         const rolle = rolleVon(i);
         const rolleEl = m.querySelector('.sk-rolle');
         rolleEl.textContent = rolle.text;
@@ -1516,19 +1660,21 @@
       }
       stichKasten.replaceChildren();
       const st = stand.aktuell;
+      // Nur die Karte, die gerade dazukam, kommt angeflogen – nicht auch beim Neuladen.
+      const neue = tischGezeigt >= 0 && st.karten.length > tischGezeigt;
+      tischGezeigt = st.karten.length;
       for (let i = 0; i < st.karten.length; i += 1) {
         const p = (st.start + i) % 4;
         const k = karteBauen(st.karten[i], 'sk-karte--tisch');
         k.disabled = true;
         k.dataset.platz = PLATZ[p];
-        if (stand.stichFertig) {
-          const sieger = (st.start + K.stichPlatz(st.karten, ord())) % 4;
-          if (p === sieger) k.dataset.sticht = 'ja';
-        }
+        if (neue && i === st.karten.length - 1) k.dataset.neu = 'ja';
+        if (p === stichVon) k.dataset.sticht = 'ja';
         stichKasten.append(k);
       }
       if (!st.karten.length && stand.phase === 'spiel') {
-        stichKasten.append(el('span', 'sk-leer', NAMEN[stand.amZug] + ' spielt aus'));
+        stichKasten.append(el('span', 'sk-leer',
+          stand.amZug === ICH ? 'Du spielst aus' : NAMEN[stand.amZug] + ' spielt aus'));
       }
     }
 
@@ -1553,16 +1699,11 @@
       const hand = K.sortieren(stand.haende[ICH], stand.spielart || { art: 'sau', farbe: 0 });
       const erlaubt = stand.phase === 'spiel' && stand.amZug === ICH && !stand.stichFertig
         ? erlaubteJetzt(ICH) : null;
-      /* Wie stark der Faecher ueberlappt, haengt an der Kartenzahl: acht
-         Karten muessen sich schieben, drei duerfen nebeneinanderliegen.
-         Am Ende steht immer ungefaehr dieselbe Gesamtbreite - sonst
-         laeuft die Hand mit sechs Karten aus dem schmalen Bild heraus. */
       /* Steht die Wahl an, heben sich die spielbaren Karten ab. Ausserhalb
          des eigenen Zuges bleibt die Hand ruhig liegen. */
       handKasten.dataset.wahl = erlaubt ? 'ja' : 'nein';
-      handKasten.dataset.eng = hand.length > 6 ? 'viel'
-        : hand.length > 4 ? 'mittel'
-          : hand.length > 3 ? 'wenig' : 'nein';
+      // Der Fächer teilt die ganze Breite unter den Karten auf – siehe .sk-hand.
+      handKasten.style.setProperty('--sk-luecken', String(Math.max(1, hand.length - 1)));
       /* Die Lücke zwischen Trumpf und Farbe – dieselbe, die man mit echten
          Karten in der Hand lässt. Sie sagt mehr als jede Marke auf der Karte
          und kostet keinen Millimeter Kartenfläche. */
@@ -1575,11 +1716,36 @@
         if (erlaubt && erlaubt.indexOf(k) < 0) b.dataset.gesperrt = 'ja';
         if (tipp && tipp.karte === k) b.dataset.tipp = 'ja';
         if (vorwahl === k) b.dataset.vorgewaehlt = 'ja';
-        b.addEventListener('click', () => karteGeklickt(k));
+        b.addEventListener('click', (e) => {
+          // Enter meldet einen Klick ohne Zählung; nur die Maus lässt den Pfeilzeiger los.
+          if (e.detail > 0) zeigerKarte = null;
+          karteGeklickt(k);
+        });
         if (!erlaubt) b.disabled = stand.phase !== 'spiel';
         handKasten.append(b);
       }
       handKasten.hidden = !hand.length;
+      // Das Neuzeichnen nimmt den Fokus mit; der Tastatur gibt er ihn zurück.
+      if (zeigerKarte !== null && document.getElementById('sheet-spiel').hidden) {
+        let i = hand.indexOf(zeigerKarte);
+        if (i < 0) {
+          i = Math.min(zeigerPlatz, hand.length - 1);
+          zeigerKarte = i >= 0 ? hand[i] : null;
+        }
+        zeigerPlatz = i;
+        if (i >= 0) handKasten.children[i].focus({ preventScroll: true });
+      }
+    }
+
+    /* „Was geht?" spielt jedes mögliche Spiel 1200-mal durch und hält die Seite
+       dabei an: erst der gesperrte Knopf, dann die Rechnung. */
+    function wasGeht() {
+      const b = ansageKasten.querySelector('.sk-wasgeht');
+      if (b) b.disabled = true;
+      spaeter(() => {
+        if (b) b.disabled = false;
+        if (stand.phase === 'ansage' && (vorhand() + stand.zeiger) % 4 === ICH) ansageTipp();
+      }, 40);
     }
 
     function ansageZeichnen() {
@@ -1602,8 +1768,10 @@
         g.append(el('span', 'sk-gruppe-titel', titel));
         const reihe = el('div', 'sk-knopfreihe');
         for (const sp of liste) {
+          /* „Die Blaue" sagt nur dem etwas, der schon am Tisch gesessen hat – die
+             Farbe steht deshalb daneben, so wie sie auch unter dem Namen steht. */
           const b = el('button', 'knopf knopf--still sk-ansageknopf',
-            sp.art === 'sau' ? K.SAUNAME[sp.farbe] : K.spielName(sp));
+            sp.art === 'sau' ? K.FARBEN[sp.farbe] + ' · ' + K.SAUNAME[sp.farbe] : K.spielName(sp));
           b.type = 'button';
           b.addEventListener('click', () => ansagen(sp));
           reihe.append(b);
@@ -1615,10 +1783,20 @@
       gruppe('Allein', moeglich.filter((sp) => sp.art === 'wenz' || sp.art === 'geier'));
       gruppe('Solo', moeglich.filter((sp) => sp.art === 'solo'));
 
+      const fuss = el('div', 'sk-ansage-fuss');
       const weiter = el('button', 'knopf knopf--voll sk-weiter', 'Weiter');
       weiter.type = 'button';
       weiter.addEventListener('click', () => ansagen(null));
-      ansageKasten.append(weiter);
+      // Die Frage „Was geht?" stellt sich genau hier – nicht in einer Leiste woanders.
+      if (stand.lehre !== 'aus') {
+        const rat = s.leistenKnopf('Was geht?', 'hinweis', wasGeht);
+        rat.classList.add('sk-wasgeht');
+        fuss.append(rat);
+      }
+      fuss.append(weiter);
+      ansageKasten.append(fuss);
+      // Auf einem flachen Fenster lägen die Knöpfe sonst unter dem Rand.
+      ansageKasten.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
 
     function notizZeichnen() {
@@ -1627,7 +1805,21 @@
         notizKasten.dataset.art = 'tipp';
         notizKasten.append(el('p', 'sk-notiz-titel', K.kartenName(tipp.karte)));
         notizKasten.append(el('p', 'sk-notiz-text', tipp.text));
-        if (tipp.zahl) notizKasten.append(el('p', 'sk-notiz-zahl', tipp.zahl));
+        /* Der Grund steht immer da, die Zahlen fragt man ab: Auf dem Handy nähmen
+           sie sonst mehr Platz als der Grund selbst. Neben dem Tisch ist genug
+           Platz, dort blendet styles.css den Knopf aus und zeigt sie einfach. */
+        if (tipp.zahl) {
+          notizKasten.dataset.zahlen = zahlenOffen ? 'ja' : 'nein';
+          const mehr = el('button', 'sk-notiz-mehr', 'Die Zahlen');
+          mehr.type = 'button';
+          mehr.setAttribute('aria-expanded', String(zahlenOffen));
+          mehr.addEventListener('click', () => {
+            zahlenOffen = !zahlenOffen;
+            notizZeichnen();
+            notizInsBild();
+          });
+          notizKasten.append(mehr, el('p', 'sk-notiz-zahl', tipp.zahl));
+        }
         notizKasten.hidden = false;
         return;
       }
@@ -1650,10 +1842,10 @@
       const gewonnen = meins ? ab.gewonnen : !ab.gewonnen;
 
       endeKasten.append(el('p', 'ende-titel', gewonnen ? 'Gewonnen.' : 'Verloren.'));
+      const mitWem = stand.partner < 0 ? '' : ' mit ' + (stand.partner === ICH ? 'dir' : NAMEN[stand.partner]);
       endeKasten.append(el('p', 'notiz',
-        K.spielName(stand.spielart) + ', ' + NAMEN[stand.spieler] + ' spielt'
-        + (stand.partner >= 0 ? ' mit ' + NAMEN[stand.partner] : '') + '. '
-        + ab.augenSpieler + ' zu ' + ab.augenGegner + ' Augen.'));
+        K.spielName(stand.spielart) + ', ' + (stand.spieler === ICH ? 'du spielst' : NAMEN[stand.spieler] + ' spielt')
+        + mitWem + '. ' + ab.augenSpieler + ' zu ' + ab.augenGegner + ' Augen.'));
 
       const zeilen = [];
       zeilen.push(['Grundwert', String(K.GRUNDWERT[stand.spielart.art])]);
@@ -1666,8 +1858,11 @@
         zeilen.push([ab.laufendeRoh + ' Laufende – zählen erst ab '
           + K.LAUF_AB[stand.spielart.art], '0']);
       }
+      // Ohne diese Zeile geht die Summe nicht auf: 50 + 10 + 40, und am Ende steht 300.
+      if (stand.spieler === ICH && stand.spielart.art !== 'sau') zeilen.push(['Allein gegen drei', '× 3']);
       zeilen.push(['Für dich', (ab.konto[ICH] > 0 ? '+' : '') + ab.konto[ICH]]);
       const tafel = el('div', 'sk-rechnung');
+      tafel.dataset.art = gewonnen ? 'gut' : 'schlecht';
       for (const [wort, zahl] of zeilen) {
         const z = el('div', 'sk-rechnung-zeile');
         z.append(el('span', null, wort));
@@ -1681,9 +1876,18 @@
           + ' Karten, bei denen du wirklich die Wahl hattest, lagst du auf der besten – '
           + 'oder so nah dran, dass es keinen Unterschied macht.'));
       }
-      endeKasten.append(el('p', 'notiz notiz--klein',
-        'Stand über ' + stand.gaben + (stand.gaben === 1 ? ' Gabe: ' : ' Gaben: ')
-        + NAMEN.map((n, p) => n + ' ' + (stand.konto[p] > 0 ? '+' : '') + stand.konto[p]).join(' · ')));
+      const vorzeichen = (n) => (n > 0 ? '+' : '') + n;
+      endeKasten.append(el('p', 'sk-stand-titel',
+        'Stand über ' + stand.gaben + (stand.gaben === 1 ? ' Gabe' : ' Gaben')));
+      const standTafel = el('div', 'sk-stand');
+      NAMEN.forEach((n, p) => {
+        const zelle = el('div', 'sk-stand-zelle');
+        if (p === ICH) zelle.dataset.ich = 'ja';
+        zelle.append(el('span', 'sk-stand-name', n),
+          el('span', 'sk-stand-zahl', vorzeichen(stand.konto[p])));
+        standTafel.append(zelle);
+      });
+      endeKasten.append(standTafel);
 
       const l = el('div', 'leiste');
       const noch = el('button', 'knopf knopf--voll', 'Nächste Gabe');
@@ -1945,6 +2149,10 @@
         + 'ist das die eigentliche Übung: legen, das Urteil lesen, zurücknehmen, es besser '
         + 'machen. Die Rechner würfeln danach neu und antworten deshalb anders als vorher; '
         + 'wie oft du zurückgenommen hast, steht in der Statistik.'));
+      d.append(el('p', 'notiz', 'Ein fertiger Stich geht von selbst zum Gewinner; wer ihn gesehen '
+        + 'hat, tippt auf den Tisch, dann geht er gleich. Am Rechner legen die Ziffern 1 bis 8 die '
+        + 'Karte an dieser Stelle der Hand, die Pfeile wandern über die erlaubten Karten, und Enter '
+        + 'legt. T zeigt den Tipp, L den letzten Stich, die Rücktaste nimmt den Zug zurück.'));
       d.append(el('p', 'notiz', 'Wichtig zum Verständnis der Hinweise: Die drei Mitspieler '
         + 'spielen nicht nach Merksätzen, sondern rechnen – und der Tipp benutzt genau '
         + 'dieselbe Rechnung, nur aus deiner Sicht. Merksätze stecken an zwei Stellen darin: '
@@ -1976,7 +2184,13 @@
       else if (stand.phase === 'weiter') spaeter(geben, 1200);
     }
 
-    return { ende: () => { uhrenAus(); sichern(); } };
+    return {
+      ende: () => {
+        uhrenAus();
+        window.removeEventListener('keydown', beiTaste);
+        sichern();
+      },
+    };
   }
 
   /* ------------------------------------------------------------- Statistik */

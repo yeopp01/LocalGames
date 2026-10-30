@@ -1,7 +1,7 @@
 # Flattervogel
 
 **Datei:** [`spiele/flappy.js`](../../spiele/flappy.js)
-**Stand:** 8/8 fertig
+**Stand:** 11/11 fertig
 
 ## Zweck
 
@@ -13,11 +13,13 @@ Vorbild, damit es schwer bleibt, aber nicht unfair wird.
 
 ### Steuerung
 
-- **AC-1** `fertig` **Tippen ist Flattern** — Ein Tipp irgendwo auf das Feld gibt
-  beim Aufsetzen des Fingers einen Flügelschlag. Der erste Tipp startet die
-  Partie; bis dahin steht „Tippen zum Flattern" da. Leertaste, Pfeil hoch und W
-  tun dasselbe; eine gehaltene Taste flattert nicht wiederholt. P und Escape
-  schalten die Pause um.
+- **AC-1** `fertig` **Tippen ist Flattern** — Ein Tipp irgendwo auf das Feld oder
+  auf die freie Fläche darunter gibt beim Aufsetzen des Fingers einen
+  Flügelschlag. Der erste Tipp startet die Partie; bis dahin steht „Tippen zum
+  Flattern" da. Leertaste, Enter, Pfeil hoch und W tun dasselbe; eine gehaltene
+  Taste flattert nicht wiederholt. P und Escape schalten die Pause um. Setzt das
+  Spiel fort, verliert ein fokussierter Knopf den Fokus: Die nächste Leertaste
+  flattert, statt noch einmal den Pause-Knopf zu drücken.
 
 ### Flug
 
@@ -36,26 +38,41 @@ Vorbild, damit es schwer bleibt, aber nicht unfair wird.
   Boden – ob nach einer Röhre oder direkt – endet die Partie mit
   „Abgestürzt.".
 - **AC-6** `fertig` **Ende mit Bilanz** — Nach dem Ende stehen Röhren und
-  Flugzeit unter dem Feld, bei neuem Bestwert „Das ist dein Bestwert.",
-  darunter „Nochmal". Tipps aufs Feld starten keine neue Partie – ein Tipp zu
-  viel im Absturz soll nicht gleich den nächsten Flug beginnen.
+  Flugzeit in der Karte auf dem Feld, bei neuem Bestwert die Marke „Das ist dein
+  Bestwert.", darunter „Nochmal", das gleich mit einem Flügelschlag losfliegt.
+  Im Absturz und in den ersten 600 ms nach dem Aufschlag zählt kein Tipp – ein
+  Tipp zu viel soll nicht gleich den nächsten Flug beginnen. Danach beginnt ein
+  Tipp oder eine Flatter-Taste sofort den nächsten Flug.
 
 ### Speicher und Statistik
 
 - **AC-7** `fertig` **Partie in der Statistik** — Jede beendete Partie wird mit
-  `punkte` und `dauer` notiert, ohne `gewonnen`. Oben stehen die Röhren und
-  der Bestwert.
+  `punkte` und `dauer` notiert, ohne `gewonnen`. Oben stehen die Röhren, unter
+  dem Titel der Bestwert oder „Noch kein Bestwert".
 - **AC-8** `fertig` **Auswertung verträgt Lücken** — Die Statistik zeigt
   Bestwert, Röhren im Schnitt (eine Nachkommastelle) und den längsten Flug;
   fehlende Felder zählen als 0.
+
+### Ansicht
+
+- **AC-9** `fertig` **Karte statt Schleier** — Schild, Pausen- und Endknöpfe stehen
+  in einer Karte auf dem Feld, das darum herum in voller Farbe sichtbar bleibt. In
+  der Pause steht sie in der Hälfte, in der der Vogel nicht ist; nach dem Absturz
+  in der Mitte. Auf einem Pixel 7, in 1366 × 700 und in 839 × 412 passt alles ohne
+  Scrollen.
+- **AC-10** `fertig` **Zahl im Feld** — Sobald der Flug läuft, steht die Zahl der
+  Röhren groß oben im Feld, gut lesbar über Himmel und Röhre, hell wie dunkel.
+- **AC-11** `fertig` **Himmel und Boden** — Das Feld hat einen getönten Himmel und
+  einen deutlich sichtbaren Boden, aus den Tokens der App, hell wie dunkel.
 
 ## Randfälle
 
 | #    | Fall                                     | Erwartetes Verhalten                                         |
 | ---- | ---------------------------------------- | ------------------------------------------------------------ |
 | RF-1 | Nach dem Start kein weiterer Tipp        | Nach knapp einer Sekunde am Boden, 0 Röhren.                 |
-| RF-2 | App wird im Absturz geschlossen          | Nach dem Neuladen Pause; nach „Weiter" fällt er zu Ende.     |
+| RF-2 | App wird im Absturz geschlossen          | Nach dem Neuladen Pause; nach „Weiter" oder einem Tipp fällt er zu Ende. |
 | RF-3 | Tipp in der Pause                        | Die Partie läuft weiter, und der Tipp ist gleich ein Flügelschlag. |
+| RF-4 | „Weiter" in der Karte                    | Die Partie läuft weiter, aber ohne Flügelschlag.             |
 
 ## Hintergrund
 

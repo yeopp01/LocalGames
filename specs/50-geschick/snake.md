@@ -1,7 +1,7 @@
 # Schlange
 
 **Datei:** [`spiele/snake.js`](../../spiele/snake.js)
-**Stand:** 12/12 fertig
+**Stand:** 16/16 fertig
 
 ## Zweck
 
@@ -22,9 +22,12 @@ sie frisst Äpfel, wird länger und schneller. Gebaut für den Finger – wische
   beginnt die Messung am aktuellen Punkt neu, so dass ein Strich mehrere
   Richtungen geben kann. Ein Tipp ohne Wischen setzt eine Pause fort. Die Seite
   scrollt dabei nicht.
-- **AC-3** `fertig` **Steuerkreuz unter dem Feld** — Vier Knöpfe ↑ ← ↓ → lenken
-  beim Aufsetzen des Fingers, nicht erst beim Loslassen. In Pause und nach dem
-  Ende sind sie ausgeblendet.
+- **AC-3** `fertig` **Steuerkreuz beim Daumen** — Vier Knöpfe ↑ ← ↓ → lenken
+  beim Aufsetzen des Fingers, nicht erst beim Loslassen. Im Hochformat stehen sie
+  unter dem Feld, so breit wie das Feld und bis 84 px hoch; im Querformat neben
+  dem Feld, das dann die ganze Höhe bekommt. Sie bleiben in Pause und nach dem
+  Ende stehen, damit nichts springt: In der Pause setzt ein Pfeil fort und lenkt,
+  nach dem Ende beginnt er die nächste Partie (AC-13).
 - **AC-4** `fertig` **Tasten** — Pfeiltasten und W/A/S/D lenken, Leertaste und
   Enter starten oder schalten die Pause um, P und Escape halten an.
 - **AC-5** `fertig` **Schnelle Kehren** — Bis zu drei Richtungen werden gemerkt
@@ -46,9 +49,25 @@ sie frisst Äpfel, wird länger und schneller. Gebaut für den Finger – wische
   den eigenen Schwanz.". Auf das Feld des Schwanzendes darf er, weil das im
   selben Takt weiterrückt – außer die Schlange wächst gerade. Bleibt nach
   einem Apfel kein freies Feld, endet sie mit „Das Feld ist voll.".
-- **AC-9** `fertig` **Ende mit Bilanz** — Nach dem Ende stehen unter dem Feld
-  Äpfel, Länge und Spielzeit, bei neuem oder eingestelltem Bestwert „Das ist
-  dein Bestwert.", darunter „Nochmal".
+- **AC-9** `fertig` **Ende mit Bilanz** — Nach dem Ende stehen in der Karte auf
+  dem Feld Äpfel, Länge und Spielzeit, bei neuem oder eingestelltem Bestwert die
+  Marke „Das ist dein Bestwert.", darunter „Nochmal", das gleich losfährt.
+- **AC-13** `fertig` **Neustart mit einem Tipp** — Nach dem Ende beginnt ein Tipp
+  aufs Feld, ein Wisch, ein Pfeil am Kreuz, eine Pfeil- oder WASD-Taste, Leertaste
+  oder Enter sofort die nächste Partie; eine Richtung zählt dabei schon. In den
+  ersten 500 ms nach dem Ende zählt nichts davon, und auch eine gehaltene Taste
+  nicht – wer noch lenkt, fängt nicht aus Versehen neu an.
+- **AC-14** `fertig` **Karte statt Schleier** — Schild, Pausen- und Endknöpfe
+  stehen in einer Karte auf dem Feld, das darum herum in voller Farbe sichtbar
+  bleibt. Die Karte steht in der Hälfte, in der der Kopf nicht ist. Tipps neben
+  ihre Knöpfe gehen ans Feld. Die Seite wird dadurch nicht höher: Auf einem
+  Pixel 7, in 1366 × 700 und in 839 × 412 passt alles ohne Scrollen.
+- **AC-15** `fertig` **Wand und Kopf sichtbar** — Der Feldrand ist deutlich dunkler
+  als das Gitter, weil er tödlich ist. Der Kopf ist dunkler als der Körper, und
+  Kopf und Schwanzende sind rund.
+- **AC-16** `fertig` **Leertaste nach dem Pause-Knopf** — Setzt das Spiel fort,
+  verliert ein fokussierter Knopf den Fokus: Die nächste Leertaste schaltet die
+  Pause, statt noch einmal den Knopf zu drücken.
 
 ### Speicher und Statistik
 
@@ -79,6 +98,9 @@ Die Warteschlange gibt es, weil schnelle Finger schneller sind als die
 Schlange. Ohne sie gewinnt die letzte Eingabe eines Takts: Aus „hoch, links"
 würde „links", und das ist bei einer Schlange, die nach rechts fährt, der Biss
 in den eigenen Hals.
+
+Die Sperre nach dem Ende ist kürzer als beim Flattervogel: Die Schlange endet
+sofort, ohne Fall, und ein Lenkender hat die Finger längst woanders.
 
 Nachgeprüft mit einem Gerüst, das die Spieldatei in Node lädt: Wand nach 1,35 s
 (9 Felder zu 0,15 s), Gegenrichtung, Kehre, Biss, Schwanzende, volles Feld aus

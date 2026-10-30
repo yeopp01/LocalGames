@@ -26,11 +26,16 @@
     '<path d="M62 60 72 76" />',                               // rechtes Bein
   ];
 
+  // Ab diesem Teil ist es das Männchen selbst, nicht mehr der Galgen.
+  const ERSTER_TEIL_MANN = 5;
+
   const zufallsWort = () => LOESUNGEN[Math.floor(Math.random() * LOESUNGEN.length)][0];
 
   function starten(wurzel, s) {
     const el = s.el;
     let stand = laden();
+    let frischGeraten = null;   // der Buchstabe, der eben dazukam – nur er bewegt sich
+    let gerade = false;         // die Runde ging eben zu Ende, sie kam nicht aus dem Speicher
 
     function frisch() {
       return {
@@ -71,7 +76,17 @@
 
     /* ------------------------------------------------------------- Aufbau */
 
+    /* Das ganze Bild steht von Anfang an blass da: So sieht man, wie viel noch
+       geht, und die Bühne ist vor dem ersten Fehler nicht leer. Ein Fehlgriff
+       zieht das nächste Teil nach. */
     const bild = el('div', 'g-bild');
+    bild.innerHTML = '<svg viewBox="0 0 90 100" aria-hidden="true">' + TEILE.join('') + '</svg>';
+    const teile = [...bild.querySelector('svg').children];
+    teile.forEach((t, i) => {
+      t.setAttribute('pathLength', '1');
+      t.classList.add('g-teil');
+      if (i >= ERSTER_TEIL_MANN) t.classList.add('g-mann');
+    });
     const wortZeile = el('div', 'g-wort');
     const tippKasten = el('div', 'w-tipp');
     tippKasten.hidden = true;
@@ -94,9 +109,7 @@
       tafel.append(r);
     }
 
-    const tippKnopf = el('button', 'knopf knopf--still', 'Tipp');
-    tippKnopf.type = 'button';
-    tippKnopf.addEventListener('click', () => {
+    const tippKnopf = s.leistenKnopf('Tipp', 'hinweis', () => {
       stand.beschreibung = true;
       sichern();
       zeichnen();
@@ -105,7 +118,7 @@
 
     s.werkzeuge([
       { label: 'Anleitung', symbol: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01" stroke-linecap="round"/>', tun: anleitung },
-      { label: 'Neues Wort', symbol: '<path d="M4 12a8 8 0 0 1 13.7-5.6L20 8M20 12a8 8 0 0 1-13.7 5.6L4 16" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 4v4h-4M4 20v-4h4" stroke-linecap="round" stroke-linejoin="round"/>', tun: neu },
+      { label: 'Neues Wort', symbol: '<path d="M4 12a8 8 0 0 1 13.7-5.6L20 8M20 12a8 8 0 0 1-13.7 5.6L4 16" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 4v4h-4M4 20v-4h4" stroke-linecap="round" stroke-linejoin="round"/>', tun: neuFragen },
     ]);
 
     /* ---------------------------------------------------------------- Zug */
@@ -113,17 +126,23 @@
     function raten(c) {
       if (vorbei() || stand.geraten.includes(c)) return;
       stand.geraten.push(c);
+      frischGeraten = c;
+      s.fuehlen(buchstaben().includes(c) ? 8 : 16);
 
       if (!offen().length) abschluss('sieg');
       else if (fehler().length >= TEILE.length) abschluss('pleite');
 
       sichern();
       zeichnen();
+      // Auf einem flachen Fenster läge das Ergebnis sonst unter dem Rand.
+      if (vorbei()) endeKasten.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     }
 
     function abschluss(ausgang) {
       stand.verbraucht = zeitJetzt();
       stand.fertig = ausgang;
+      gerade = true;
+      if (ausgang === 'sieg') s.fuehlen(30);
       s.notieren({
         gewonnen: ausgang === 'sieg',
         dauer: stand.verbraucht,
@@ -140,16 +159,28 @@
     function zeichnen() {
       const daneben = fehler().length;
 
-      bild.innerHTML = '<svg viewBox="0 0 90 100" aria-hidden="true">'
-        + TEILE.slice(0, daneben).join('') + '</svg>';
+      teile.forEach((t, i) => {
+        const war = t.dataset.da === 'ja';
+        t.dataset.da = i < daneben ? 'ja' : 'nein';
+        // Nur das Teil, das dieser Fehlgriff brachte, nicht alle nach dem Neuladen.
+        if (i < daneben && !war && frischGeraten) t.dataset.neu = 'ja';
+        else delete t.dataset.neu;
+      });
+      bild.dataset.ausgang = stand.fertig || '';
 
+      wortZeile.dataset.gerettet = gerade && stand.fertig === 'sieg' ? 'ja' : 'nein';
       wortZeile.replaceChildren();
-      for (const c of buchstaben()) {
+      buchstaben().forEach((c, i) => {
         const zeigen = stand.geraten.includes(c) || vorbei();
         const kasten = el('span', 'g-buchstabe', zeigen ? c : '');
+        kasten.style.setProperty('--i', String(i));
+        kasten.dataset.voll = zeigen ? 'ja' : 'nein';
+        if (c === frischGeraten) kasten.dataset.neu = 'ja';
         if (vorbei() && !stand.geraten.includes(c)) kasten.dataset.verpasst = 'ja';
         wortZeile.append(kasten);
-      }
+      });
+      frischGeraten = null;
+      gerade = false;
 
       for (const [c, t] of tasten) {
         const benutzt = stand.geraten.includes(c);
@@ -157,7 +188,8 @@
         t.dataset.stand = !benutzt ? 'offen' : buchstaben().includes(c) ? 'treffer' : 'daneben';
       }
 
-      tippKasten.hidden = !stand.beschreibung;
+      // Am Ende steht die Umschreibung im Ergebnis, zweimal braucht sie keiner.
+      tippKasten.hidden = !stand.beschreibung || vorbei();
       if (stand.beschreibung) tippKasten.textContent = TIPP_ZU[stand.wort] || '';
       tippKnopf.disabled = stand.beschreibung || vorbei();
 
@@ -174,10 +206,11 @@
       endeKasten.append(el('p', 'ende-titel',
         stand.fertig === 'sieg' ? 'Gerettet.' : 'Aufgeknüpft.'));
       endeKasten.append(el('p', 'notiz',
-        'Das Wort war ' + stand.wort + ' – ' + TIPP_ZU[stand.wort]));
+        'Das Wort war ' + stand.wort + (TIPP_ZU[stand.wort] ? ' – ' + TIPP_ZU[stand.wort] : '.')));
       const l = el('div', 'leiste');
       const b = el('button', 'knopf knopf--voll', 'Noch ein Wort');
       b.type = 'button';
+      b.prepend(s.bildzeichen('nochmal'));
       b.addEventListener('click', neu);
       l.append(b);
       const z = el('button', 'knopf knopf--still', 'Zur Auswahl');
@@ -193,11 +226,25 @@
       zeichnen();
     }
 
+    /* Elf Fehler sind schnell beisammen, und das Werkzeug liegt gleich neben der
+       Statistik: Eine angefangene Runde geht nicht durch einen Fehlgriff verloren. */
+    function neuFragen() {
+      if (vorbei() || !stand.geraten.length) { neu(); return; }
+      s.blatt({
+        titel: 'Neues Wort',
+        inhalt: 'Die angefangene Runde geht dabei verloren.',
+        aktionen: [
+          { text: 'Neues Wort', tun: neu },
+          { text: 'Weiterspielen', art: 'still' },
+        ],
+      });
+    }
+
     function anleitung() {
       const d = el('div');
       d.append(el('p', 'notiz', 'Gesucht ist ein Wort mit fünf Buchstaben. Tippe Buchstaben an – steckt einer im Wort, erscheint er an allen passenden Stellen.'));
-      d.append(el('p', 'notiz', 'Jeder Fehlgriff zeichnet einen Strich am Galgen. Nach ' + TEILE.length + ' Fehlern ist das Männchen fertig und die Runde verloren.'));
-      d.append(el('p', 'notiz', 'Am Rechner geht auch die Tastatur, Ä, Ö und Ü eingeschlossen.'));
+      d.append(el('p', 'notiz', 'Jeder Fehlgriff zieht einen Strich des blassen Bildes nach. Nach ' + TEILE.length + ' Fehlern ist das Männchen fertig und die Runde verloren.'));
+      d.append(el('p', 'notiz', 'Am Rechner geht auch die Tastatur, Ä, Ö und Ü eingeschlossen; nach dem Ende bringt Enter das nächste Wort.'));
       d.append(el('p', 'notiz', 'Der Knopf „Tipp" zeigt eine Umschreibung des Wortes. Er kostet keinen Fehler, wird aber in der Statistik vermerkt.'));
       s.blatt({ titel: 'Galgenmännchen', inhalt: d, aktionen: [{ text: 'Los' }] });
     }
@@ -205,6 +252,11 @@
     function taste(e) {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
       if (!document.getElementById('sheet-spiel').hidden) return;
+      if (e.key === 'Enter' && vorbei()) {
+        e.preventDefault();
+        if (!e.repeat) neu();
+        return;
+      }
       const c = e.key.toUpperCase();
       if (c.length === 1 && ALPHABET.includes(c)) { e.preventDefault(); raten(c); }
     }

@@ -1,7 +1,7 @@
 # Bombe
 
 **Datei:** [`spiele/bombe.js`](../../spiele/bombe.js)
-**Stand:** 12/12 fertig
+**Stand:** 16/16 fertig
 
 ## Zweck
 
@@ -35,11 +35,23 @@ Knall hält, ist raus, bis einer übrig bleibt.
 - **AC-5** `fertig` **Weitergeben stellt Uhr nicht zurück** — „Weiter" reicht
   reihum an den nächsten der Übrigen weiter und wechselt nur den Namen; die Uhr
   läuft unverändert weiter.
+- **AC-13** `fertig` **Ohne Hinschauen zu treffen** — Tisch und „Weiter" füllen das
+  Fenster, der Knopf liegt unten und ist mindestens 96 px hoch (auf dem Handy etwa
+  ein Viertel des Fensters). Er nennt, an wen es geht („an ‹Name›"). Der neue Name
+  am Tisch springt kurz an, wo das Gerät es kann, gibt es ein Antippen in der Hand.
+- **AC-14** `fertig` **Doppeltipp reicht einmal** — Zwei Tipps binnen 220 ms zählen
+  als einer, damit die Bombe in der Hektik nicht am Nachbarn vorbeigeht.
+- **AC-15** `fertig` **Leertaste reicht weiter** — Auf dem Laptop reichen Leertaste
+  und Enter weiter, nicht aber bei offenem Blatt oder wenn ein anderer Knopf den
+  Fokus hat. Die Taste wird beim Knall und beim Verlassen abgeräumt.
 - **AC-6** `fertig` **Knall wirft raus** — Wer beim Ablauf der Uhr dran ist,
   ist raus: „Peng.", „‹Name› ist raus.", „n machen weiter.". Wo das Gerät es
   kann, rüttelt es kurz; wo nicht, passiert nichts und nichts bricht. Weiter
   geht es erst mit „Nächste Silbe"; dann läuft eine neue Uhr, und dran ist der
-  Nächste nach dem Ausgeschiedenen.
+  Nächste nach dem Ausgeschiedenen. Der Tisch rüttelt einmal kurz und färbt sich.
+- **AC-16** `fertig` **Knall nicht wegtippen** — „Nächste Silbe" und „Noch eine
+  Runde" sind nach dem Knall 900 ms gesperrt: Sie erscheinen dort, wo gerade noch
+  auf „Weiter" gehämmert wurde, und niemand soll verpassen, wer raus ist.
 - **AC-7** `fertig` **Nie dieselbe Silbe zweimal** — Nach jedem Knall kommt
   eine neue Silbe, nie dieselbe wie direkt davor (geprüft an 1500 Wechseln).
 - **AC-8** `fertig` **Der Letzte gewinnt** — Bleibt einer übrig, zeigt das Ende
@@ -49,9 +61,10 @@ Knall hält, ist raus, bis einer übrig bleibt.
 ### Speicher und Statistik
 
 - **AC-9** `fertig` **Einstellungen bleiben, Runde nicht** — Gemerkt werden
-  Stufe und Namen; eine unbekannte gemerkte Stufe wird zu mittel. Eine laufende
-  Runde wird nicht wiederhergestellt, und beim Verlassen des Spiels steht die
-  Uhr sofort still.
+  Stufe und Namen, die Namen schon beim Tippen: Auch die Wahl der Stufe lässt sie
+  stehen. Eine unbekannte gemerkte Stufe wird zu mittel. Eine laufende Runde wird
+  nicht wiederhergestellt, und beim Verlassen des Spiels steht die Uhr sofort
+  still.
 - **AC-10** `fertig` **Runde ohne Urteil notiert** — Am Ende wird die Runde
   genau einmal notiert mit `dauer`, `spieler`, `runden` (Zahl der Silben) und
   `stufe` – ohne `gewonnen`, denn der Sieger ist niemand, den das Gerät kennt.

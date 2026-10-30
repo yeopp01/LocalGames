@@ -1,7 +1,7 @@
 # Wördle
 
 **Datei:** [`spiele/wordle.js`](../../spiele/wordle.js) · [`spiele/woerter.js`](../../spiele/woerter.js) · [`spiele/loeser.js`](../../spiele/loeser.js)
-**Stand:** 24/24 fertig
+**Stand:** 28/28 fertig
 
 ## Zweck
 
@@ -16,7 +16,8 @@ verrät. Der Wortschatz ist selbst geschrieben und liegt auf dem Gerät.
 
 - **AC-1** `fertig` **Fünf Buchstaben, sechs Versuche** — Gesucht ist ein
   zufällig gezogenes Lösungswort mit fünf Buchstaben; das Gitter hat sechs
-  Zeilen. Unter dem Titel steht „5 Buchstaben · 6 Versuche".
+  Zeilen. Unter dem Titel steht „Versuch 3 von 6" und zählt mit; nach dem Ende
+  bleibt die Zeile leer.
 - **AC-2** `fertig` **Bildschirmtastatur mit Umlauten** — Die Tafel folgt in drei
   Reihen dem QWERTZ-Muster, mit eigenen Tasten für Ä, Ö und Ü sowie „Prüfen" und
   „Löschen". Nach dem Ende der Partie ist sie ausgeblendet.
@@ -55,9 +56,9 @@ verrät. Der Wortschatz ist selbst geschrieben und liegt auf dem Gerät.
   steht dann im Ergebnis.
 - **AC-10** `fertig` **Buchstabe deckt der Reihe nach** — „Buchstabe" deckt beim
   ersten Mal den ersten Buchstaben auf, dann den zweiten und so fort, höchstens
-  vier; danach ist der Knopf gesperrt. Es erscheint „Buchstabe n ist X.", eine
-  Zeile wie `A B · · ·`, und im Eingabefeld steht der Buchstabe als blasse
-  Vorgabe – getippt werden muss er trotzdem.
+  vier; danach ist der Knopf gesperrt. Es erscheint „Buchstabe n ist X.", solange
+  die Partie läuft eine Zeile wie `A B · · ·`, und im Eingabefeld steht der
+  Buchstabe als blasse Vorgabe – getippt werden muss er trotzdem.
 - **AC-11** `fertig` **Vorschlag aus den Rückmeldungen** — „Vorschlag" öffnet
   „Wie weiter?" mit der Zahl der Lösungswörter, die zu allen bisherigen
   Rückmeldungen und verratenen Buchstaben passen, und bis zu drei Zügen aus allen
@@ -97,7 +98,7 @@ verrät. Der Wortschatz ist selbst geschrieben und liegt auf dem Gerät.
 - **AC-18** `fertig` **Neues Wort mit Rückfrage** — Das Werkzeug „Neues Wort"
   fragt nach, wenn das laufende Wort schon einen Versuch hat („Der angefangene
   Versuch geht dabei verloren."), sonst beginnt es sofort. Ein abgebrochenes Wort
-  landet nicht in der Statistik.
+  landet nicht in der Statistik, halb getippte Buchstaben gehen mit ihm.
 
 ### Speicher und Statistik
 
@@ -124,6 +125,23 @@ verrät. Der Wortschatz ist selbst geschrieben und liegt auf dem Gerät.
   der das Spiel offen war. Eine über Nacht geschlossene Partie bringt die Nacht
   nicht in die Spielzeit; bis Version 59 war es die Uhrzeit seit dem Ziehen des
   Wortes.
+
+### Bedienung und Bild
+
+- **AC-25** `fertig` **Aufdecken Feld für Feld** — Nach dem Prüfen dreht sich die
+  Zeile von links nach rechts um, die Farbe erscheint in der Drehung. Erst danach
+  färbt sich die Tafel und erscheint das Ergebnis, damit darunter nichts vorab zu
+  lesen ist; weiterschreiben geht schon währenddessen. Bei „Bewegung reduzieren"
+  steht alles sofort da.
+- **AC-26** `fertig` **Passt ins Fenster** — Gitter, Tafel und Hilfen passen auf dem
+  Handy und in einem flachen Fenster (1366×700, auch 1000×560) ohne Scrollen, auch
+  mit eingeblendetem Tipp und verratenen Buchstaben: Das Gitter nimmt sich, was
+  übrig bleibt, bis zu 420 px breit. Das Ergebnis wird von selbst ins Bild geholt.
+- **AC-27** `fertig` **Gleich breite Tasten** — Die Tafel hat elf gleiche Spalten,
+  „Prüfen" und „Löschen" sind je zwei breit. Tasten sind mindestens 42 px hoch.
+- **AC-28** `fertig` **Enter holt das nächste Wort** — Steht das Ergebnis da, beginnt
+  Enter ein neues Wort. Während des Aufdeckens und bei gedrückt gehaltener Taste
+  passiert nichts, damit das Enter fürs Prüfen nicht gleich weiterblättert.
 
 ## Randfälle
 

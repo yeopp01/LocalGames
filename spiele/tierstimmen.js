@@ -59,7 +59,7 @@
 
         function zeigen() {
           gitter.replaceChildren(...seiten[seite].tiere.map((t) => Tiere.kachel(h.el, t)));
-          ortName.textContent = seiten[seite].ort.name;
+          ortName.replaceChildren(h.el('span', 'ts-ort-bild', seiten[seite].ort.bild), seiten[seite].ort.name);
           [...punkte.children].forEach((p, i) => p.classList.toggle('ts-punkt--an', i === seite));
           Tiere.anstossen(gitter, 'kz-auftritt');
         }

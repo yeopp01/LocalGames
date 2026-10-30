@@ -120,15 +120,32 @@
       else aufbauCode();
     }
 
+    /* Das Wichtigste – wie viele, wer, los – steht ohne Scrollen im Bild: Die
+       Fassung erklärt nur die gewählte, Thema und Zeit sind je eine Klappliste. */
     function aufbauHandy() {
+      /* Ist die gemerkte Fassung für die Gruppe zu groß, gilt beim Verteilen
+         Doppelgänger. Das steht hier schon so da, statt erst beim Verteilen still
+         zu passieren; wächst die Gruppe wieder, kommt die alte Wahl zurück. */
+      const wirksam = (zahl) => (zahl < fassungVon(einst.fassung).ab ? 'doppel' : einst.fassung);
+      const zahlJetzt = einst.namen ? einst.namen.length : 3;
+
       const fassungBlock = wahlBlock('Fassung', FASSUNGEN.map((f) => ({
-        id: f.id, name: f.name, unter: f.unter,
-        gesperrt: (einst.namen ? einst.namen.length : 3) < f.ab,
-      })), einst.fassung, (id) => { einst.fassung = id; merken(); zeigeAufbau(); });
+        id: f.id, name: f.name, ab: f.ab > 3 ? f.ab : 0,
+        gesperrt: zahlJetzt < f.ab,
+      })), wirksam(zahlJetzt), (id) => {
+        einst.fassung = id;
+        merken();
+        zeigeAufbau();
+        const knopf = boden.querySelector('.v-wahl-knopf[data-id="' + id + '"]');
+        if (knopf) Runde.vorn(knopf);
+      });
+      const erklaerung = el('p', 'v-notiz', fassungVon(wirksam(zahlJetzt)).unter);
+      fassungBlock.append(erklaerung);
       boden.append(fassungBlock);
 
-      boden.append(themaBlock());
-      boden.append(zeitBlock());
+      const felder = el('div', 'v-klappen');
+      felder.append(themaFeld(), zeitFeld());
+      boden.append(felder);
 
       Runde.aufbau(boden, {
         namen: einst.namen,
@@ -147,7 +164,10 @@
             if (!b) continue;
             b.disabled = namen.length < f.ab;
             b.title = b.disabled ? 'Dafür seid ihr zu wenige.' : '';
+            if (f.id === wirksam(namen.length)) b.dataset.an = 'ja';
+            else delete b.dataset.an;
           }
+          erklaerung.textContent = fassungVon(wirksam(namen.length)).unter;
         },
         weiter(namen) {
           einst.namen = namen;
@@ -170,7 +190,7 @@
 
     function aufbauCode() {
       const notiz = el('p', 'v-notiz',
-        'Alle brauchen die App. Einer würfelt einen Code und sagt ihn samt Spielerzahl an, dann tippt ihn jeder ein und wählt seine Nummer. Danach spricht kein Gerät mehr mit einem anderen – jedes rechnet die Runde für sich aus.');
+        'Alle brauchen die App. Einer würfelt und sagt Code und Spielerzahl an, jeder tippt beides ein und nimmt seine Nummer. Jedes Gerät rechnet die Runde dann für sich aus.');
       boden.append(notiz);
 
       Runde.codeAufbau(boden, {
@@ -197,7 +217,7 @@
       });
     }
 
-    /* Ein Block aus Knöpfen, von denen einer an ist – dreimal gebraucht. */
+    /* Ein Block aus Knöpfen, von denen einer an ist. */
     function wahlBlock(titel, punkte, gewaehlt, tun) {
       const kasten = el('div', 'v-wahlblock');
       kasten.append(el('h3', 'v-wahl-titel', titel));
@@ -206,7 +226,10 @@
         const b = el('button', 'v-wahl-knopf', null);
         b.type = 'button';
         b.dataset.id = p.id;
-        b.append(el('span', 'v-wahl-name', p.name));
+        const name = el('span', 'v-wahl-name', p.name);
+        /* Warum es gesperrt ist, steht am Knopf selbst – nur solange es gilt. */
+        if (p.ab) name.append(el('span', 'v-wahl-ab', ' ab ' + p.ab));
+        b.append(name);
         if (p.unter) b.append(el('span', 'v-wahl-unter', p.unter));
         if (p.id === gewaehlt) b.dataset.an = 'ja';
         if (p.gesperrt) {
@@ -220,17 +243,35 @@
       return kasten;
     }
 
-    function themaBlock() {
-      const punkte = [{ id: '', name: 'Bunt gemischt' }]
-        .concat(Begriffe.THEMEN.map((t) => ({ id: t.id, name: t.name })));
-      return wahlBlock('Thema', punkte, einst.thema, (id) => {
-        einst.thema = id; merken(); zeigeAufbau();
-      });
+    /* Eine Klappliste: Elf Themen als Knöpfe füllten allein ein halbes Handy. */
+    function klappFeld(titel, punkte, gewaehlt, tun) {
+      const feld = el('label', 'v-klapp');
+      feld.append(el('span', 'v-wahl-titel', titel));
+      const huelle = el('span', 'v-klapp-huelle');
+      const liste = el('select', 'v-klapp-liste');
+      for (const p of punkte) {
+        const o = el('option', null, p.name);
+        o.value = p.id;
+        liste.append(o);
+      }
+      liste.value = gewaehlt;
+      /* Eine alte Sicherung kann ein Thema nennen, das es nicht mehr gibt. */
+      if (liste.selectedIndex < 0) liste.selectedIndex = 0;
+      liste.addEventListener('change', () => tun(liste.value));
+      huelle.append(liste);
+      feld.append(huelle);
+      return feld;
     }
 
-    function zeitBlock() {
-      return wahlBlock('Zeit zum Reden', ZEITEN.map((z) => ({ id: z.id, name: z.name })),
-        einst.zeit, (id) => { einst.zeit = id; merken(); zeigeAufbau(); });
+    function themaFeld() {
+      const punkte = [{ id: '', name: 'Bunt gemischt' }]
+        .concat(Begriffe.THEMEN.map((t) => ({ id: t.id, name: t.name })));
+      return klappFeld('Thema', punkte, einst.thema, (id) => { einst.thema = id; merken(); });
+    }
+
+    function zeitFeld() {
+      return klappFeld('Zeit zum Reden', ZEITEN.map((z) => ({ id: z.id, name: z.name })),
+        einst.zeit, (id) => { einst.zeit = id; merken(); });
     }
 
     /* --------------------------------------------------- Rollen: ein Handy */
@@ -295,25 +336,16 @@
       boden.append(el('p', 'v-notiz',
         'Diese drei Angaben müssen bei allen gleich sein. Stimmt eine nicht, hat sich jemand vertippt – dann nochmal von vorn, sonst geht die Runde schief.'));
 
-      const geheim = el('div', 'r-decke');
       const flaeche = el('div', 'r-flaeche');
       flaeche.append(rollenKarte(partie.ich));
-      const deckel = el('div', 'r-deckel');
-      deckel.append(el('span', 'r-deckel-text', 'Gedrückt halten'));
-      geheim.append(flaeche, deckel);
-      const auf = (e) => { e.preventDefault(); geheim.dataset.offen = 'ja'; };
-      const zu = () => { delete geheim.dataset.offen; };
-      geheim.addEventListener('pointerdown', auf);
-      geheim.addEventListener('pointerup', zu);
-      geheim.addEventListener('pointercancel', zu);
-      geheim.addEventListener('pointerleave', zu);
-      geheim.addEventListener('contextmenu', (e) => e.preventDefault());
-      boden.append(geheim);
-
       const weiter = el('button', 'knopf knopf--voll v-breit', 'Weiter');
       weiter.type = 'button';
+      /* Wie „Gesehen" beim Weitergeben: Erst die Rolle anschauen. */
+      weiter.disabled = true;
       weiter.addEventListener('click', zeigeReden);
-      boden.append(weiter);
+      const geheim = Runde.decke(flaeche, () => { weiter.disabled = false; });
+      boden.append(geheim, weiter);
+      Runde.vorn(geheim);
     }
 
     /* --------------------------------------------------------------- Reden */
@@ -333,7 +365,7 @@
       if (zeit.sekunden) {
         laufendeUhr = Runde.uhr(kasten, {
           sekunden: zeit.sekunden,
-          ende: () => s.toast('Zeit vorbei.'),
+          ende: () => { s.toast('Zeit vorbei.'); s.fuehlen(120); },
         });
       }
 
@@ -346,6 +378,7 @@
         else zeigeStimmen();
       });
       boden.append(weiter);
+      Runde.vorn(weiter);
     }
 
     /* ---------------------------------------------------------- Abstimmung */
@@ -403,7 +436,8 @@
     function zeigeCodeEnde() {
       aufraeumen();
       const kasten = el('div', 'v-ende');
-      kasten.append(el('p', 'v-ende-titel', 'Auflösung'));
+      const titel = el('p', 'v-ende-titel', 'Auflösung');
+      kasten.append(titel);
       kasten.append(aufloesung());
       boden.append(kasten);
 
@@ -417,7 +451,10 @@
         b.addEventListener('click', () => {
           abschluss(gut);
           leiste.remove();
-          frage.textContent = gut ? 'Erwischt.' : 'Entkommen.';
+          frage.remove();
+          /* Die Antwort wird zur Überschrift, wie beim Ende mit Abstimmung. */
+          titel.textContent = gut ? 'Erwischt.' : 'Entkommen.';
+          kasten.dataset.aus = gut ? 'gut' : 'schlecht';
           nochmalKnopf();
         });
         leiste.append(b);
@@ -458,7 +495,7 @@
       const b = el('button', 'knopf knopf--voll v-breit', 'Noch eine Runde');
       b.type = 'button';
       b.addEventListener('click', neu);
-      boden.append(b);
+      boden.append(Runde.frisch(b, 450, () => Runde.vorn(b)));
     }
 
     function neu() {

@@ -28,10 +28,10 @@
 var Tiere = (() => {
   /* Die Orte, nach denen Tierstimmen blättert, in dieser Reihenfolge. */
   const ORTE = [
-    { id: 'hof', name: 'Bauernhof' },
-    { id: 'wald', name: 'Wald und Wiese' },
-    { id: 'zoo', name: 'Zoo' },
-    { id: 'wasser', name: 'Am Wasser' },
+    { id: 'hof', name: 'Bauernhof', bild: '🚜' },
+    { id: 'wald', name: 'Wald und Wiese', bild: '🌳' },
+    { id: 'zoo', name: 'Zoo', bild: '🦒' },
+    { id: 'wasser', name: 'Am Wasser', bild: '🌊' },
   ];
 
   /* futter: [Name, Bild] – jedes Futter gehört genau einem Tier, sonst hätte
@@ -139,9 +139,14 @@ var Tiere = (() => {
   /** Zahl aus einer Partie – eine eingelesene Sicherung kann alles enthalten. */
   const zahl = (w) => (typeof w === 'number' && Number.isFinite(w) ? w : 0);
 
+  /* Eine Klasse von früher muss mit weg: Sie bliebe am Bild hängen, und die im
+     CSS spätere gewinnt. Das Kärtchen, das einmal aufgetreten war, hüpfte,
+     wackelte und kaute deshalb nie. */
+  const BEWEGUNGEN = ['kz-hops', 'kz-wackel', 'kz-winken', 'kz-mampf', 'kz-auftritt'];
+
   /** Startet eine CSS-Animation neu, auch wenn sie gerade noch läuft. */
   function anstossen(knoten, klasse) {
-    knoten.classList.remove(klasse);
+    knoten.classList.remove(klasse, ...BEWEGUNGEN);
     void knoten.offsetWidth;
     knoten.classList.add(klasse);
   }
@@ -371,6 +376,7 @@ var Tiere = (() => {
   }
 
   const X = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 7l10 10M17 7L7 17" stroke-linecap="round"/></svg>';
+  const LOS = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5.2v13.6a1 1 0 0 0 1.5.86l11-6.8a1 1 0 0 0 0-1.72l-11-6.8A1 1 0 0 0 8 5.2z"/></svg>';
   const HALTEN = 1500;
   const FARBEN = ['#F2B84B', '#E8735A', '#6DBE7A', '#5AA7E0', '#B78AE0', '#F28DB2'];
 
@@ -379,7 +385,8 @@ var Tiere = (() => {
    *
    * opt.bilder             ein paar Emoji für den Vorhang
    * opt.satz               ein Satz, was im Spiel passiert
-   * opt.stufen             optional [{ wert, text }] – die Eltern wählen vorher
+   * opt.stufen             optional [{ wert, text, bilder }] – gewählt wird vorher;
+   *                        bilder zeigen die Stufe ohne Lesen, so viele wie im Spiel
    * opt.stufe              Vorgabe, wenn nichts gemerkt ist
    * opt.schalter           optional [{ id, text, an }] – Ein/Aus auf dem Vorhang,
    *                        gemerkt; das Spiel liest h.schalter[id]
@@ -390,7 +397,8 @@ var Tiere = (() => {
    *                        die Zeit im Hintergrund
    *
    * h: { klang, stufe, uhr(), spaeter(fn, ms), abbestellen(id), an(ziel, typ,
-   *      fn, opt), el, blase(text), konfetti(x, y), fest(titel, bilder, weiter) }
+   *      fn, opt), el, fuehlen(ms), blase(text), konfetti(x, y), reihe(anzahl),
+   *      fest(titel, bilder, weiter) }
    */
   function kinderzimmer(boden, s, opt) {
     const el = s.el;
@@ -412,35 +420,56 @@ var Tiere = (() => {
 
     /* ------------------------------------------------------------ Vorhang */
 
+    /* Drei Teile, weil zwei Leser davorsitzen: Das Bild und der Satz sagen, was
+       kommt; darunter tippt das Kind – Stufe und Los, beides ohne Lesen. Was nur
+       die Erwachsenen brauchen, liegt abseits in einem eigenen Kasten. */
     const vorhang = el('div', 'kz-vorhang');
+    const kopf = el('div', 'kz-vorhang-kopf');
+    const tun = el('div', 'kz-vorhang-tun');
+
     const bilder = el('div', 'kz-vorhang-bilder');
     bilder.setAttribute('aria-hidden', 'true');
+    bilder.style.setProperty('--anzahl', String(opt.bilder.length));
     opt.bilder.forEach((b, i) => {
       const x = el('span', null, b);
       x.style.animationDelay = (i * 0.35) + 's';
+      x.addEventListener('animationend', () => x.classList.remove('kz-hops'));
       bilder.append(x);
     });
-    vorhang.append(bilder, el('p', 'kz-vorhang-satz', opt.satz));
+    // Kinder tippen zuerst auf die Tiere. Es führt nirgends hin, antwortet aber.
+    bilder.addEventListener('pointerdown', (e) => {
+      const x = e.target.closest('span');
+      if (!x) return;
+      x.style.animationDelay = '0s';
+      anstossen(x, 'kz-hops');
+    });
+    kopf.append(bilder, el('p', 'kz-vorhang-satz', opt.satz));
 
     if (opt.stufen) {
       const wahl = el('div', 'kz-wahl');
       wahl.setAttribute('role', 'radiogroup');
       wahl.setAttribute('aria-label', 'Wie schwer');
       const knoepfe = opt.stufen.map((o) => {
-        const b = el('button', 'kz-wahl-knopf', o.text);
+        const b = el('button', 'kz-wahl-knopf');
         b.type = 'button';
         b.setAttribute('role', 'radio');
+        const mini = el('span', 'kz-wahl-bilder');
+        mini.setAttribute('aria-hidden', 'true');
+        mini.dataset.anzahl = String(o.bilder.length);
+        for (const x of o.bilder) mini.append(el('span', null, x));
+        b.append(mini, el('span', 'kz-wahl-text', o.text));
         b.addEventListener('click', () => {
           stufe = o.wert;
           merken();
           markieren();
+          anstossen(mini, 'kz-hops');
         });
         wahl.append(b);
         return b;
       });
       const markieren = () => knoepfe.forEach((b, i) => b.setAttribute('aria-checked', String(opt.stufen[i].wert === stufe)));
       markieren();
-      vorhang.append(wahl);
+      tun.append(wahl);
     }
 
     for (const sch of opt.schalter || []) {
@@ -456,20 +485,29 @@ var Tiere = (() => {
         zeigen();
       });
       zeigen();
-      vorhang.append(b);
+      tun.append(b);
     }
 
     const los = el('button', 'knopf knopf--voll kz-los', 'Los geht’s');
     los.type = 'button';
+    const dreieck = el('span', 'kz-los-zeichen');
+    dreieck.innerHTML = LOS;
+    los.prepend(dreieck);
     los.addEventListener('click', oeffnen);
-    vorhang.append(los);
+    tun.append(los);
     if (opt.brauchtTon && !AUDIO) {
       los.disabled = true;
-      vorhang.append(el('p', 'notiz kz-vorhang-notiz', 'Dieser Browser spielt keine Töne ab – ohne Ton geht dieses Spiel nicht.'));
+      tun.append(el('p', 'notiz kz-vorhang-notiz', 'Dieser Browser spielt keine Töne ab – ohne Ton geht dieses Spiel nicht.'));
     }
-    vorhang.append(el('p', 'notiz kz-vorhang-notiz',
-      'Für Eltern: Zum Beenden das × oben rechts gedrückt halten. Damit das Kind nicht aus der App wischt, '
-      + 'das Handy festsetzen – unter Android „App anheften", am iPhone „Geführter Zugriff".'));
+
+    const eltern = el('div', 'kz-eltern');
+    eltern.append(
+      el('p', 'kz-eltern-titel', 'Für Eltern'),
+      el('p', 'kz-eltern-zeile', 'Zum Beenden das × oben rechts gedrückt halten.'),
+      el('p', 'kz-eltern-zeile', 'Damit das Kind nicht aus der App wischt, das Handy festsetzen: '
+        + 'unter Android „App anheften", am iPhone „Geführter Zugriff".'),
+    );
+    vorhang.append(kopf, tun, eltern);
     boden.append(vorhang);
     klang.vorladen(opt.toene || []);
 
@@ -604,6 +642,7 @@ var Tiere = (() => {
         abbestellen,
         an,
         el,
+        fuehlen: s.fuehlen,
         blase(text, ms = 2200) {
           blase.textContent = text;
           blase.hidden = false;
@@ -626,6 +665,29 @@ var Tiere = (() => {
             flaeche.append(k);
             spaeter(() => k.remove(), 1000);
           }
+        },
+        /** Leere Plätze, die sich mit den geschafften Tieren füllen: So sieht das
+            Kind ohne Zahl, wie weit die Runde ist. Es zählt nichts und vergleicht
+            nichts – am Ende sind immer alle da. */
+        reihe(anzahl) {
+          const knoten = el('div', 'kz-reihe');
+          knoten.setAttribute('aria-hidden', 'true');
+          const plaetze = Array.from({ length: anzahl }, () => el('span', 'kz-platz'));
+          knoten.append(...plaetze);
+          return {
+            knoten,
+            fuellen(i, bild) {
+              if (!plaetze[i]) return;
+              plaetze[i].textContent = bild;
+              plaetze[i].classList.add('kz-platz--voll');
+            },
+            leeren() {
+              for (const p of plaetze) {
+                p.textContent = '';
+                p.classList.remove('kz-platz--voll');
+              }
+            },
+          };
         },
         /** Großes Festbild über dem Spiel; weiter kommt von selbst oder auf einen Tipp. */
         fest(titel, liste, weiter) {
@@ -720,7 +782,10 @@ var Tiere = (() => {
       if (wer !== null || (id !== 'taste' && !allein())) return;
       wer = id;
       beginn = performance.now();
-      tipp.hidden = true;
+      // Der Finger liegt auf dem Ring. Der Satz sagt den Erwachsenen, dass es zählt.
+      clearTimeout(tippUhr);
+      tipp.textContent = 'Weiter halten …';
+      tipp.hidden = false;
       knopf.classList.add('kz-raus--haelt');
       rahmen = requestAnimationFrame(zeichnen);
     }
@@ -729,6 +794,7 @@ var Tiere = (() => {
       if (rahmen) cancelAnimationFrame(rahmen);
       rahmen = 0;
       wer = null;
+      tipp.hidden = true;
       knopf.classList.remove('kz-raus--haelt');
       knopf.style.setProperty('--halten', '0');
     }
@@ -736,6 +802,7 @@ var Tiere = (() => {
     function loslassen(id) {
       if (wer === null || wer !== id) return;
       abbrechen();
+      tipp.textContent = 'Zum Beenden gedrückt halten';
       tipp.hidden = false;
       clearTimeout(tippUhr);
       tippUhr = setTimeout(() => { tipp.hidden = true; }, 2400);

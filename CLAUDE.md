@@ -60,7 +60,10 @@ Die `sitzung` ist die einzige Verbindung zum Rahmen: `unter`, `werkzeuge`,
 Spielstand), `notieren`/`partien` (Statistik), `zurueck`, `el`, `dauerText`,
 dazu `stufenZeichen`/`stufenName`/`stufenAktionen`/`stufenLeiste` und
 `bildzeichen` – Stufen, „Nochmal" und „Fertig" so, dass ein Kind sie ohne
-Lesen erkennt. Ein Spiel mit Stufen nimmt diese statt eigener Knöpfe.
+Lesen erkennt. Ein Spiel mit Stufen nimmt diese statt eigener Knöpfe. Für
+gutes Handling: `brettKante` (Brett nach Fenster, in CSS `--brett`),
+`leistenKnopf` (Knopf mit Zeichen unter dem Brett), `fuehlen` (kurzes Antippen
+in der Hand).
 
 ## Verträge, die leicht kaputtgehen
 

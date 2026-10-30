@@ -1788,7 +1788,7 @@ const Karten = (() => {
       /* Die teure Karte ist gewollt. Dann muss auch dastehen, warum – und was
          sie kostet, wenn es schiefgeht. */
       const teuer = billiger.map((c) => kartenName(c)).join(' oder ');
-      let satz = 'Den ' + kartenName(k) + ' anbringen, obwohl ' + teuer
+      let satz = kartenName(k) + ' anbringen, obwohl ' + teuer
         + ' auch reichen würde. ';
       if (partnerHinten) {
         satz += 'Dein Partner legt nach dir: Kommt jemand mit einer höheren Karte '

@@ -7,12 +7,12 @@ müssen mithalten. Dazu das Werkzeug, das sie sich teilen.
 
 | Spezifikation             | Stand                      |
 | ------------------------- | -------------------------- |
-| [Blasen](bubbles.md)      | 12/12 fertig               |
-| [Hochhinaus](doodle.md)   | 27/29 fertig · 2 in arbeit |
+| [Blasen](bubbles.md)      | 16/16 fertig               |
+| [Hochhinaus](doodle.md)   | 31/33 fertig · 2 in arbeit |
 | [Echtzeit](echtzeit.md)   | 12/12 fertig               |
-| [Flattervogel](flappy.md) | 8/8 fertig                 |
-| [Sternjäger](impact.md)   | 18/18 fertig               |
-| [Flipper](pinball.md)     | 22/22 fertig               |
-| [Schlange](snake.md)      | 12/12 fertig               |
+| [Flattervogel](flappy.md) | 11/11 fertig               |
+| [Sternjäger](impact.md)   | 22/22 fertig               |
+| [Flipper](pinball.md)     | 24/24 fertig               |
+| [Schlange](snake.md)      | 16/16 fertig               |
 
 <!-- board:end -->

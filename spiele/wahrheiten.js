@@ -15,8 +15,6 @@
 */
 
 (() => {
-  const STELLE = ['Der erste', 'Der zweite', 'Der dritte'];
-
   function starten(wurzel, s) {
     const el = s.el;
     const boden = el('div', 'v-boden');
@@ -51,6 +49,7 @@
         min: 3,
         max: 10,
         knopfText: 'Losschreiben',
+        aendern(namen) { einst.namen = namen; merken(); },
         weiter(namen) {
           einst.namen = namen;
           if (einst.dran >= namen.length) einst.dran = 0;
@@ -83,51 +82,69 @@
         zeigen(i, flaeche, weiter) {
           flaeche.append(el('p', 'r-frage', 'Drei Sätze über dich – einer davon gelogen.'));
 
+          /* Die Wahl der Lüge sitzt direkt am Satz: Mit offener Tastatur liegt alles
+             darunter im Dunkeln, und man müsste „der zweite" erst abzählen. */
           const felder = [];
-          const eingaben = el('div', 'r-namen');
+          const marken = [];
+          let gewaehlt = -1;
+          const eingaben = el('div', 'w2-saetze');
           for (let n = 0; n < 3; n += 1) {
-            const zeile = el('label', 'r-name');
+            const zeile = el('div', 'r-name w2-zeile');
             zeile.append(el('span', 'r-name-nr', String(n + 1)));
-            const feld = el('input', 'r-name-feld');
-            feld.type = 'text';
-            feld.value = '';
+            /* Ein Textfeld statt einer Eingabezeile: Neunzig Zeichen passen in keine
+               Zeile, und einen Satz, dessen Anfang hinten hinausgeschoben ist, kann
+               man nicht mehr lesen. */
+            const feld = el('textarea', 'r-name-feld w2-feld');
+            feld.rows = 1;
             feld.maxLength = 90;
             feld.autocomplete = 'off';
+            feld.autocapitalize = 'sentences';
+            feld.enterKeyHint = n < 2 ? 'next' : 'done';
+            feld.placeholder = 'Satz ' + (n + 1);
             feld.setAttribute('aria-label', 'Satz ' + (n + 1));
-            feld.addEventListener('input', pruefen);
+            feld.addEventListener('input', () => {
+              feld.style.height = 'auto';
+              feld.style.height = feld.scrollHeight + 'px';
+              pruefen();
+            });
+            feld.addEventListener('keydown', (e) => {
+              if (e.key !== 'Enter' || e.isComposing) return;
+              e.preventDefault();
+              if (felder[n + 1]) felder[n + 1].focus();
+              else if (!fertig.disabled) fertig.focus();
+              else feld.blur();
+            });
             zeile.append(feld);
+
+            const marke = el('button', 'w2-marke', 'Lüge');
+            marke.type = 'button';
+            marke.setAttribute('aria-label', 'Satz ' + (n + 1) + ' ist die Lüge');
+            marke.setAttribute('aria-pressed', 'false');
+            marke.addEventListener('click', () => {
+              gewaehlt = n;
+              marken.forEach((m, k) => {
+                m.setAttribute('aria-pressed', String(k === n));
+                m.parentElement.toggleAttribute('data-luege', k === n);
+              });
+              s.fuehlen();
+              pruefen();
+            });
+            zeile.append(marke);
             eingaben.append(zeile);
             felder.push(feld);
+            marken.push(marke);
           }
           flaeche.append(eingaben);
 
-          flaeche.append(el('p', 'v-wahl-titel', 'Welcher ist gelogen?'));
-          let gewaehlt = -1;
-          const reihe = el('div', 'v-wahl-reihe');
-          const marken = [];
-          for (let n = 0; n < 3; n += 1) {
-            const b = el('button', 'v-wahl-knopf', null);
-            b.type = 'button';
-            b.append(el('span', 'v-wahl-name', STELLE[n]));
-            b.addEventListener('click', () => {
-              gewaehlt = n;
-              marken.forEach((m, k) => {
-                if (k === n) m.dataset.an = 'ja';
-                else delete m.dataset.an;
-              });
-              pruefen();
-            });
-            reihe.append(b);
-            marken.push(b);
-          }
-          flaeche.append(reihe);
+          const fehlt = el('p', 'v-notiz w2-fehlt');
+          flaeche.append(fehlt);
 
           const fertig = el('button', 'knopf knopf--voll v-breit', 'Fertig – weitergeben');
           fertig.type = 'button';
           fertig.disabled = true;
           fertig.addEventListener('click', () => {
             /* Gemischt, damit die Lüge nicht immer hinten steht. */
-            const roh = felder.map((f, n) => ({ text: f.value.trim(), luege: n === gewaehlt }));
+            const roh = felder.map((f, n) => ({ text: f.value.replace(/\s+/g, ' ').trim(), luege: n === gewaehlt }));
             const gemischt = Runde.mischenMit(Math.random, roh);
             partie.saetze = gemischt.map((x) => x.text);
             partie.luege = gemischt.findIndex((x) => x.luege);
@@ -135,9 +152,16 @@
           });
           flaeche.append(fertig);
 
+          /* Der Knopf sagt nicht, warum er gesperrt ist – die Zeile darüber schon. */
           function pruefen() {
-            fertig.disabled = gewaehlt < 0 || felder.some((f) => !f.value.trim());
+            const leer = felder.filter((f) => !f.value.trim()).length;
+            fertig.disabled = gewaehlt < 0 || leer > 0;
+            if (leer) fehlt.textContent = leer === 1 ? 'Noch ein Satz.' : 'Noch ' + leer + ' Sätze.';
+            else if (gewaehlt < 0) fehlt.textContent = 'Tippe beim erfundenen Satz auf „Lüge".';
+            else fehlt.textContent = 'Alles da.';
           }
+          pruefen();
+          felder[0].focus();
         },
         fertig: zeigeRaten,
       });
@@ -148,6 +172,8 @@
     function zeigeRaten() {
       aufraeumen();
       partie.andere = partie.namen.filter((_, i) => i !== partie.dran);
+      const schreiber = partie.namen[partie.dran];
+      s.unter('Von ' + schreiber);
       const tipps = new Array(partie.andere.length).fill(-1);
 
       gabe = Runde.weitergabe(boden, {
@@ -155,14 +181,14 @@
         knopf: null,
         uebergabe: 'Raten darf',
         zeigen(i, flaeche, weiter) {
-          flaeche.append(el('p', 'r-frage', 'Welcher Satz ist gelogen?'));
+          flaeche.append(el('p', 'r-frage', 'Welcher Satz von ' + schreiber + ' ist gelogen?'));
           const liste = el('div', 'r-wahl');
           partie.saetze.forEach((text, n) => {
             const b = el('button', 'r-wahl-knopf', text);
             b.addEventListener('click', () => { tipps[i] = n; weiter(); });
             liste.append(b);
           });
-          flaeche.append(liste);
+          flaeche.append(Runde.frisch(liste));
         },
         fertig() {
           partie.tipps = tipps;
@@ -188,14 +214,17 @@
       const liste = el('div', 'w2-liste');
       partie.saetze.forEach((text, n) => {
         const zeile = el('div', 'w2-satz');
-        if (n === partie.luege) zeile.dataset.luege = 'ja';
+        /* Die Lüge steht auch in Worten da, nicht nur in Farbe. */
+        if (n === partie.luege) {
+          zeile.dataset.luege = 'ja';
+          zeile.append(el('span', 'w2-luege', 'Die Lüge'));
+        }
         zeile.append(el('span', 'w2-text', text));
         const wer = partie.andere.filter((_, k) => partie.tipps[k] === n);
-        zeile.append(el('span', 'w2-wer', wer.length ? wer.join(', ') : '–'));
+        zeile.append(el('span', 'w2-wer', wer.length ? 'Getippt von ' + wer.join(', ') : 'Von niemandem getippt'));
         liste.append(zeile);
       });
       boden.append(liste);
-      boden.append(el('p', 'v-notiz', 'Unter jedem Satz steht, wer ihn für die Lüge hielt.'));
 
       abschluss(gefunden);
 
@@ -214,7 +243,7 @@
         };
         zeigeSchreiben();
       });
-      boden.append(weiter);
+      boden.append(Runde.frisch(weiter, 450, () => Runde.vorn(weiter)));
     }
 
     let notiert = false;

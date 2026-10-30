@@ -9,9 +9,9 @@ nur Erwachsene wieder herausfinden.
 
 | Spezifikation                 | Stand        |
 | ----------------------------- | ------------ |
-| [Futterzeit](futter.md)       | 9/9 fertig   |
-| [Horch mal](horch.md)         | 9/9 fertig   |
-| [Tiere](tiere.md)             | 20/20 fertig |
+| [Futterzeit](futter.md)       | 16/16 fertig |
+| [Horch mal](horch.md)         | 11/11 fertig |
+| [Tiere](tiere.md)             | 23/23 fertig |
 | [Tierstimmen](tierstimmen.md) | 8/8 fertig   |
 
 <!-- board:end -->

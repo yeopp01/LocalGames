@@ -29,7 +29,8 @@ import { fileURLToPath } from 'node:url';
 
 const HIER = dirname(fileURLToPath(import.meta.url));
 const args = process.argv.slice(2);
-const weg = args[0] && !args[0].startsWith('--') ? args.shift() : '#/';
+// Git Bash biegt "#/spiel/x" still zu "#C:/Program Files/Git/spiel/x" um.
+const weg = (args[0] && !args[0].startsWith('--') ? args.shift() : '#/').replace(/^#[A-Za-z]:\/.*?\/Git\//, '#/');
 const schritte = [];
 const opt = { geraet: 'handy', warte: 400, dunkel: false, datei: null, bestand: null };
 for (let i = 0; i < args.length; i += 1) {
@@ -40,7 +41,8 @@ for (let i = 0; i < args.length; i += 1) {
   else if (a.startsWith('--')) opt[a.slice(2)] = args[++i];
 }
 
-const PORT = 4391;
+// Zufällig, damit mehrere Aufrufe nebeneinander sich nicht den Server teilen.
+const PORT = 4400 + Math.floor(Math.random() * 2000);
 const server = spawn(process.execPath, [join(HIER, 'server.mjs'), String(PORT)], { stdio: 'ignore' });
 const basis = `http://127.0.0.1:${PORT}/`;
 for (let i = 0; i < 50; i += 1) {

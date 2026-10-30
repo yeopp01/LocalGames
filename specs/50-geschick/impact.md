@@ -1,7 +1,7 @@
 # Sternjäger
 
 **Datei:** [`spiele/impact.js`](../../spiele/impact.js)
-**Stand:** 18/18 fertig
+**Stand:** 22/22 fertig
 
 ## Zweck
 
@@ -23,11 +23,14 @@ Fingers, und solange er aufliegt, schießt es. Ersetzt die früheren Invasoren.
   oder der Leiste darunter bewegt das Schiff um genau so viel, wie er selbst
   zieht, waagerecht wie senkrecht, egal wo er liegt. Solange er aufliegt,
   schießt es: höchstens fünf Schüsse je Sekunde und vier zugleich. Ein zweiter
-  Finger lenkt nicht, und die Seite scrollt nicht.
+  Finger lenkt nicht, und die Seite scrollt nicht. Solange ein Finger lenkt,
+  ist die Leiste leicht grün getönt.
 - **AC-3** `fertig` **Tasten** — Pfeiltasten und WASD lenken, die Leertaste
-  schießt, solange sie gedrückt ist, X und K zünden die Spezialwaffe, P und
-  Escape schalten die Pause um.
-- **AC-4** `fertig` **Knopf für die Spezialwaffe** — Rechts neben der Leiste
+  schießt, solange sie gedrückt ist, X und K zünden die Spezialwaffe, P,
+  Escape und Enter schalten die Pause um; Enter startet auch. Die Leiste sagt am
+  Rechner die Tasten an, auf dem Handy den Finger. Nach einem Klick auf den
+  Pause-Knopf im Kopf gehört die Leertaste wieder dem Schiff.
+- **AC-4** `fertig` **Knopf für die Spezialwaffe** — Unten rechts auf der Leiste
   steht die Spezialwaffe mit ihrem Namen und der Zahl, die noch übrig ist. Ein
   Tipp darauf zündet sie, auch mit einem zweiten Finger, während der erste
   lenkt; das Lenken läuft danach ungestört weiter. Bei 0 ist der Knopf blass
@@ -87,8 +90,9 @@ Fingers, und solange er aufliegt, schießt es. Ersetzt die früheren Invasoren.
   Ein Gegner, der das Schiff rammt, ist ebenfalls hin, bringt aber keine
   Punkte.
 - **AC-14** `fertig` **Ende mit Bilanz** — Nach dem letzten Leben steht der Knall
-  noch 1,2 s, dann „Abgeschossen." mit Punkten, Level und Spielzeit unter dem
-  Feld, bei neuem Bestwert „Das ist dein Bestwert.", darunter „Nochmal".
+  noch 1,2 s, dann in einer Karte auf dem Feld „Abgeschossen." mit Punkten,
+  Level und Spielzeit, ohne neuen Rekord auch dem Bestwert, bei neuem Bestwert
+  „Das ist dein Bestwert.", darunter „Nochmal".
 
 ### Speicher und Statistik
 
@@ -107,6 +111,27 @@ Fingers, und solange er aufliegt, schießt es. Ersetzt die früheren Invasoren.
   in einer Partie verlässt, findet sie beim nächsten Öffnen als Pause wieder,
   in jedem Level und jeder Welt; ein Tipp oder „Weiter" fliegt dort weiter.
 
+### Platz und Tempo
+
+- **AC-19** `fertig` **Das Fenster wird genutzt** — Auf dem Handy im Hochformat
+  ist das Feld fast so breit wie das Fenster, und die Leiste nimmt die ganze
+  Höhe darunter als Zugfläche ein. In 1366 × 700 ist das Feld 840 × 480 groß –
+  das Fünffache seiner Pixel – mit schmaler Leiste. Auf dem Handy im Querformat
+  steht die Zugfläche neben dem Feld. Die Seite ist dabei nie höher als das
+  Fenster.
+- **AC-20** `fertig` **Karte auf dem Feld** — Pause und Ende stehen samt Knöpfen
+  in einer Karte auf dem Feld, rechts und dem Schiff ausweichend, nichts rückt
+  dabei. Das Feld bleibt unverschleiert sichtbar, und die Leiste bleibt liegen:
+  Ein Tipp auf Feld oder Leiste fliegt weiter. Ein Tipp auf die Knöpfe der Karte
+  tut nur, was auf ihnen steht.
+- **AC-21** `fertig` **Schnell wieder im Flug** — „Nochmal" und „Neu
+  anfangen" fliegen sofort los, ohne zweiten Tipp. Nach dem Ende geht das auch
+  mit einem Tipp auf Feld oder Leiste oder mit Enter, frühestens 0,6 s danach:
+  Wer eben noch wild getippt hat, soll das Ergebnis erst sehen. Die Leertaste
+  startet nicht neu, sie ist beim Tod meist noch gedrückt.
+- **AC-22** `fertig` **Rekord im Flug** — Überholen die Punkte den alten Bestwert,
+  wird ihre Zahl oben grün.
+
 ## Randfälle
 
 | #    | Fall                                                   | Erwartetes Verhalten                                                 |
@@ -116,6 +141,7 @@ Fingers, und solange er aufliegt, schießt es. Ersetzt die früheren Invasoren.
 | RF-3 | Spezialknopf bei 0 oder während der Endgegner zerfällt | Nichts passiert, die Zahl bleibt.                                    |
 | RF-4 | Finger zieht über das Feld hinaus                      | Das Schiff folgt weiter, bis der Finger abhebt; es bleibt im Feld.   |
 | RF-5 | Tipp in der Pause                                      | Die Partie läuft weiter, und das Schiff schießt gleich.              |
+| RF-7 | Sehr kleines Handy (320 × 568)                         | Die Karte wird breiter und lässt den Hinweissatz weg; sie bleibt im Feld. |
 | RF-6 | Gespeicherter Stand eines älteren Spiels unter `impact` | Unlesbares ergibt ein frisches Feld (Echtzeit AC-9).                |
 
 ## Hintergrund
@@ -136,6 +162,12 @@ nächsten Mal, was kommt.
 
 Gelände schiebt, statt zu töten. Auf einem Feld von 380 px Breite unter dem
 Daumen wäre eine Bodenwelle, die unter dem Finger auftaucht, kein fairer Tod.
+
+Das Feld darf breiter sein als die 532 px der Bühne, denn es ragt aus ihrer Mitte
+nach beiden Seiten gleich weit hinaus; 96 % der Fensterbreite sind die Grenze.
+Bis Version 86 stand es am Laptop bei 532 × 304 und auf dem Pixel 7 stand unter
+379 × 217 px eine halbe leere Seite, während sich die 60 px hohe Leiste kaum
+treffen ließ.
 
 Nachgeprüft mit einem Wegwerf-Gerüst, das die Spieldatei in Node lädt und von
 Hand taktet:

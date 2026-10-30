@@ -1,7 +1,7 @@
 # Bausteine für Runden
 
 **Datei:** [`spiele/runde.js`](../../spiele/runde.js)
-**Stand:** 12/12 fertig
+**Stand:** 16/16 fertig
 
 ## Zweck
 
@@ -38,13 +38,24 @@ Abstimmung und eine Uhr. Es kennt kein einzelnes Spiel.
   Mindestzahl – beginnt er mit „Spieler 1" bis „Spieler 3". Ein leer gelassenes
   Feld wird wieder zu „Spieler n", Namen kommen ohne Rand-Leerzeichen beim
   Spiel an. Jede Änderung an Zahl oder Namen meldet `aendern(namen)` sofort,
-  damit ein Spiel Einstellungen daneben an die Spielerzahl anpassen kann.
+  damit ein Spiel Einstellungen daneben an die Spielerzahl anpassen kann – auch,
+  wenn ein geleertes Feld beim Verlassen zu „Spieler n" wird. Ein gemerkter Name,
+  der leer ist, erscheint als „Spieler n".
 - **AC-5** `fertig` **Code-Aufbau auf einem Schirm** — `codeAufbau` bündelt
   Codefeld mit „Würfeln", die Spielerzahl und „Ich bin Nummer" auf einem
   Schirm. Die eigene Nummer geht nie über die Spielerzahl und rutscht mit, wenn
   die Spielerzahl kleiner wird. Der Startknopf bleibt gesperrt, bis der Code
   mindestens drei Zeichen hat. Ein Hinweis sagt, dass eine doppelt gewählte
-  Nummer dieselbe Rolle bekommt.
+  Nummer dieselbe Rolle bekommt. Enter im Codefeld startet, sobald es erlaubt ist.
+- **AC-13** `fertig` **Namen flott eintippen** — Enter springt von Namensfeld zu
+  Namensfeld und vom letzten auf den Startknopf, die Bildschirmtastatur zeigt
+  „Weiter" und auf dem letzten Feld „Fertig". Ein Vorgabename ist beim Antippen
+  markiert, der erste Buchstabe ersetzt ihn. Ein mit „−" weggenommener Name kommt
+  mit „+" zurück, solange der Schirm steht.
+- **AC-14** `fertig` **Passt auch mit zwölf** — Der Startknopf bleibt am unteren
+  Fensterrand im Bild, wenn die Namen länger sind als das Fenster. Ab 700 px
+  Breite stehen die Namen zu zweit nebeneinander. Die Abstimmung zeigt ab sieben
+  Namen zwei Spalten und passt auch mit elf Namen ohne Scrollen auf ein Handy.
 
 ### Weitergabe
 
@@ -61,6 +72,16 @@ Abstimmung und eine Uhr. Es kennt kein einzelnes Spiel.
   Inhalt liegt schon fertig darunter, beim Aufdecken springt nichts.
 - **AC-8** `fertig` **Abbruch hält Weitergabe an** — Nach `ende()` führt kein
   Knopf mehr zum nächsten Spieler, und `fertig` wird nicht mehr aufgerufen.
+- **AC-15** `fertig` **Doppeltipp fällt nicht durch** — Ein neuer Sperrschirm und
+  eine neue Liste zum Abstimmen oder Raten nehmen in den ersten 350 ms nichts an.
+  Der zweite Tipp eines Doppeltipps auf „Gesehen" oder eine Stimme öffnet also
+  nicht den Schirm des Nächsten, und der zweite Tipp auf „Ich bin ‹Name›" gibt
+  keine Stimme ab. `Runde.frisch` stellt das auch den Spielen bereit.
+- **AC-16** `fertig` **Erst aufdecken, dann weiter** — Mit `halten` bleibt der
+  Knopf darunter („Gesehen") gesperrt, bis der Deckel einmal offen war. So kann
+  niemand eine Rolle überspringen, die danach keiner mehr sieht. Der Deckel öffnet
+  auch, solange Leertaste oder Enter gehalten wird; ein noch liegendes Enter vom
+  Sperrschirm öffnet ihn nicht.
 
 ### Abstimmung
 

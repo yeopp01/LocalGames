@@ -501,6 +501,8 @@
     let neigung = 0;
     let neigungGemeldet = false;
     let pruefUhr = 0;
+    let sperreBis = 0;
+    const NOCHMAL_SPERRE = 600;
 
     const klang = klangwerk(() => stand.ton);
 
@@ -516,16 +518,25 @@
 
     /* ------------------------------------------------------------- Aufbau */
 
+    // Am Rechner lenken die Tasten, und kein Laptop meldet eine Neigung.
+    const amRechner = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
     const kopf = el('div', 'm-kopf');
     const flaeche = el('div', 'ez-flaeche dj-flaeche');
     const feld = el('div', 'dj-kasten');
-    const steuer = el('div', 'ez-steuer ez-steuer--zwei');
-    steuer.append(el('span', null, '◀ halten'), el('span', null, 'halten ▶'));
+    const steuer = el('div', 'ez-steuer dj-steuer');
+    const halteL = el('span', 'dj-halte');
+    const halteR = el('span', 'dj-halte');
+    halteL.append(el('b', null, '◀'), document.createTextNode(' halten'));
+    halteR.append(document.createTextNode('halten '), el('b', null, '▶'));
+    steuer.append(halteL, halteR);
     const unten = el('div', 'ez-unten');
     flaeche.append(feld, steuer);
     wurzel.append(kopf, flaeche, unten);
 
     const b = Echtzeit.buehne(feld, { breite: B, hoehe: H, schritt, zeichnen, beiHalt });
+    // Die Knöpfe liegen auf dem Feld; ihr Tipp darf nicht zugleich weiterspringen.
+    b.an(unten, 'pointerdown', (e) => e.stopPropagation());
 
     function werkzeugeSetzen() {
       // Kein eigener Ziele-Knopf: Mit sechs Knöpfen überdeckt der Kopf auf dem
@@ -545,9 +556,18 @@
       if (stand.zustand === 'bereit') stand.figur.vy = SPRUNG;
       stand.zustand = 'laeuft';
       klang.wecken();
+      // Der angeklickte Pause-Knopf darf den Fokus nicht behalten: Sonst löst
+      // die Leertaste ihn aus, statt zu schießen.
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
       anzeigen();
       b.los();
       if (stand.steuerung === 'neigen') neigungPruefen();
+    }
+
+    /** Ein Tipp genügt: Wer nochmal will, soll nicht noch einmal aufs Feld müssen. */
+    function nochmal() {
+      neu();
+      weiter();
     }
 
     function pauseUmschalten() {
@@ -559,6 +579,7 @@
       if (stand.zustand === 'laeuft') stand.zustand = 'pause';
       halten.clear();
       tasteL = tasteR = false;
+      halteZeigen();
       if (stand.zustand === 'pause') klang.schlafen();
       else if (klang.kontext) klang.still();
       anzeigen();
@@ -578,6 +599,13 @@
       if (tasteL !== tasteR) return tasteL ? -1 : 1;
       if (halten.size) return [...halten.values()].pop();
       return stand.steuerung === 'neigen' ? neigung : 0;
+    }
+
+    /** Die Hälfte, die gerade lenkt, leuchtet – beim Neigen bleiben beide still. */
+    function halteZeigen() {
+      const a = tasteL !== tasteR ? (tasteL ? -1 : 1) : halten.size ? [...halten.values()].pop() : 0;
+      halteL.classList.toggle('dj-halte--an', a === -1);
+      halteR.classList.toggle('dj-halte--an', a === 1);
     }
 
     function schritt(dt) {
@@ -883,9 +911,13 @@
       });
     }
 
+    const neustartFrei = () => stand.zustand === 'vorbei' && performance.now() >= sperreBis;
+
     function vorbei() {
       const st = stand;
       st.zustand = 'vorbei';
+      // Kurz gesperrt: Der Daumen, der eben noch lenkte, soll das Ergebnis nicht wegtippen.
+      sperreBis = performance.now() + NOCHMAL_SPERRE;
       const vorher = zielstand;
       s.notieren(Object.assign(
         { meter: meterVon(st), dauer: Math.round(st.zeit * 1000), ursache: st.figur.tot || 'absturz' },
@@ -899,6 +931,7 @@
         rang: zielstand.stufe > vorher.stufe,
       };
       if (!st.figur.tot) klang.absturz();
+      s.fuehlen(40);
       b.halt();
     }
 
@@ -964,10 +997,12 @@
 
     function kopfZeichnen() {
       kopf.replaceChildren();
-      const p = el('span');
-      p.append(el('b', null, String(meterVon(stand))), document.createTextNode(' m'));
-      kopf.append(p);
       const best = bestwert();
+      const m = meterVon(stand);
+      const p = el('span');
+      // Grün, sobald der alte Bestwert überholt ist: Das sieht man im Sprung.
+      p.append(el('b', best && m > best ? 'dj-rekord' : null, String(m)), document.createTextNode(' m'));
+      kopf.append(p);
       if (best) kopf.append(el('span', null, 'Bestwert ' + best + ' m'));
       const rang = el('button', 'dj-rang', rangText(zielstand));
       rang.type = 'button';
@@ -989,14 +1024,19 @@
     function anzeigen() {
       kopfZeichnen();
       const z = stand.zustand;
-      steuer.hidden = z === 'pause' || z === 'vorbei';
+      // Die Hälften bleiben in der Pause liegen: Der Daumen, der dort wartet,
+      // springt mit einem Tipp weiter.
+      steuer.classList.toggle('dj-steuer--aus', z === 'vorbei');
       unten.replaceChildren();
       if (z === 'bereit') {
         b.schild('Tippen zum Springen', stand.steuerung === 'neigen'
           ? 'Neig das Handy, um zu lenken. Ein Tipp aufs Feld schießt.'
-          : 'Unten halten lenkt, oben tippen schießt. Am Rechner: Pfeile lenken, Leertaste schießt.');
+          : amRechner
+            ? 'Pfeile lenken, Leertaste schießt.'
+            : 'Unten halten lenkt, oben tippen schießt.');
         const l = el('div', 'leiste');
-        for (const kn of [steuerKnopf(), zieleKnopf()]) {
+        const knoepfe = amRechner ? [zieleKnopf()] : [steuerKnopf(), zieleKnopf()];
+        for (const kn of knoepfe) {
           const k = el('button', 'knopf knopf--still', kn.text);
           k.type = 'button';
           k.addEventListener('click', kn.tun);
@@ -1004,31 +1044,41 @@
         }
         unten.append(l);
       } else if (z === 'pause') {
-        b.schild('Pause', 'Tippen, um weiterzuspringen.');
         const zs = zieleJetzt();
         const ziele = zs.stufe < ZIELE.length ? ' ' + rangText(zs) + ': ' + zs.erreicht.filter(Boolean).length + ' von 3 Zielen.' : '';
-        unten.append(Echtzeit.kasten('Pause', meterVon(stand) + ' m bisher.' + ziele, [
+        b.schild('Pause', meterVon(stand) + ' m bisher.' + ziele + ' ' + (amRechner ? 'Enter springt weiter.' : 'Tippen, um weiterzuspringen.'));
+        unten.append(Echtzeit.kasten('', null, [
           { text: 'Weiter', tun: weiter },
-          { text: 'Neu anfangen', art: 'still', tun: neu },
-          steuerKnopf(),
+          { text: 'Neu anfangen', art: 'still', tun: nochmal },
+          ...(amRechner ? [] : [steuerKnopf()]),
         ]));
       } else if (z === 'vorbei') {
         const titel = stand.figur.tot === 'monster' ? 'Vom Monster erwischt.'
           : stand.figur.tot === 'loch' ? 'Ins schwarze Loch gefallen.' : 'Abgestürzt.';
-        b.schild(titel);
         const best = bestwert();
         const m = meterVon(stand);
-        let text = m + ' m hoch in ' + s.dauerText(Math.round(stand.zeit * 1000)) + '.' +
-          (m > 0 && m >= best ? ' Das ist dein Bestwert.' : '');
+        const istBest = m > 0 && m >= best;
+        let text = m + ' m hoch in ' + s.dauerText(Math.round(stand.zeit * 1000)) + '.' + (!istBest && best ? ' Bestwert ' + best + ' m.' : '');
         if (bilanz && bilanz.ziele.length) {
           text += ' Geschafft: ' + bilanz.ziele.map((x) => x.text).join(', ') + '.';
         }
         if (bilanz && bilanz.rang) text += ' ' + (zielstand.stufe >= ZIELE.length ? 'Alle Ränge geschafft!' : rangText(zielstand) + ' erreicht!');
-        unten.append(Echtzeit.kasten(titel, text, [{ text: 'Nochmal', tun: neu }, zieleKnopf()]));
+        b.schild(titel, text);
+        const k = Echtzeit.kasten('', null, [{ text: 'Nochmal', tun: nochmal }, zieleKnopf()]);
+        k.querySelector('.knopf').prepend(s.bildzeichen('nochmal'));
+        if (istBest) k.prepend(el('span', 'ende-marke', 'Das ist dein Bestwert.'));
+        k.append(el('p', 'notiz notiz--klein', amRechner ? 'Enter geht auch.' : 'Ein Tipp aufs Feld geht auch.'));
+        unten.append(k);
       } else {
         b.schildWeg();
       }
       unten.hidden = !unten.childElementCount;
+      // In die Karte auf dem Feld: So bleibt „Nochmal" auch im flachen Fenster
+      // im Bild. Vor dem Start steht die Figur unten, danach weicht die Karte
+      // ihr aus; nach dem Absturz ist sie ohnehin aus dem Bild.
+      const figurOben = stand.figur.y - stand.kamera < H / 2;
+      feld.dataset.schild = z === 'bereit' ? 'oben' : z === 'vorbei' ? 'mitte' : figurOben ? 'unten' : 'oben';
+      if (!unten.hidden) feld.querySelector('.ez-schild').append(unten);
     }
 
     function zieleZeigen() {
@@ -1448,7 +1498,7 @@
 
     function anleitung() {
       const d = el('div');
-      d.append(el('p', 'notiz', 'Die Figur springt von allein. Du lenkst nur: halte unten links, um nach links zu laufen, rechts für rechts. Tippst du in die obere Hälfte des Feldes, schießt sie in diese Richtung. Am Rechner lenken die Pfeiltasten oder A und D, Leertaste, W oder Pfeil hoch schießen gerade nach oben.'));
+      d.append(el('p', 'notiz', 'Die Figur springt von allein. Du lenkst nur: halte unten links, um nach links zu laufen, rechts für rechts. Tippst du in die obere Hälfte des Feldes, schießt sie in diese Richtung. Am Rechner lenken die Pfeiltasten oder A und D, Leertaste, W oder Pfeil hoch schießen gerade nach oben, Enter hält an und springt weiter.'));
       d.append(el('p', 'notiz', 'Wer lieber das Handy neigt, stellt das unter dem Feld oder in der Pause um. Dann schießt ein Tipp irgendwo aufs Feld. Auf dem iPhone fragt der Browser einmal um Erlaubnis.'));
       d.append(el('p', 'notiz', 'Grüne Plattformen tragen, blaue wandern hin und her, rostrote brechen beim ersten Tritt. Eine Feder schießt dich weit nach oben, ein Propeller trägt dich ein Stück, eine Rakete noch viel weiter – im Flug kann dir nichts passieren.'));
       d.append(el('p', 'notiz', 'Monster summen, wenn sie kommen. Berührst du eins, stürzt du ab – außer du springst von oben drauf. Die kleinen fallen nach einem Treffer, der große Rote braucht drei. Schwarze Löcher schlucken dich und jeden Schuss.'));
@@ -1474,11 +1524,16 @@
     };
 
     b.an(flaeche, 'pointerdown', (e) => {
-      if (stand.zustand === 'vorbei') return;
       e.preventDefault();
+      const neustart = stand.zustand === 'vorbei';
+      if (neustart) {
+        if (!neustartFrei()) return;
+        nochmal();
+      }
       const ziel = schusspunkt(e);
       if (ziel) {
-        if (stand.zustand === 'laeuft') schiessen(ziel.x, ziel.y);
+        // Dieser Tipp beginnt die Partie, er schießt nicht.
+        if (stand.zustand === 'laeuft' && !neustart) schiessen(ziel.x, ziel.y);
         else weiter();
         return;
       }
@@ -1486,11 +1541,12 @@
       halten.delete(e.pointerId);
       halten.set(e.pointerId, seiteVon(e));
       weiter();
+      halteZeigen();
     });
     b.an(flaeche, 'pointermove', (e) => {
-      if (halten.has(e.pointerId)) halten.set(e.pointerId, seiteVon(e));
+      if (halten.has(e.pointerId)) { halten.set(e.pointerId, seiteVon(e)); halteZeigen(); }
     });
-    const loslassen = (e) => { halten.delete(e.pointerId); };
+    const loslassen = (e) => { halten.delete(e.pointerId); halteZeigen(); };
     b.an(flaeche, 'pointerup', loslassen);
     b.an(flaeche, 'pointercancel', loslassen);
 
@@ -1498,15 +1554,17 @@
     b.an(window, 'keydown', (e) => {
       if (!Echtzeit.tasteZaehlt(e)) return;
       const k = tasteVon(e);
-      if (k === 'ArrowLeft' || k === 'a') { e.preventDefault(); tasteL = true; weiter(); }
-      else if (k === 'ArrowRight' || k === 'd') { e.preventDefault(); tasteR = true; weiter(); }
+      if (k === 'ArrowLeft' || k === 'a') { e.preventDefault(); tasteL = true; weiter(); halteZeigen(); }
+      else if (k === 'ArrowRight' || k === 'd') { e.preventDefault(); tasteR = true; weiter(); halteZeigen(); }
       else if (k === 'ArrowUp' || k === 'w' || (k === ' ' && !Echtzeit.knopfHatFokus(e))) {
         e.preventDefault();
         if (stand.zustand === 'laeuft') schiessen();
         else if (!e.repeat) weiter();
       } else if (k === 'Enter' && !Echtzeit.knopfHatFokus(e)) {
         e.preventDefault();
-        if (stand.zustand === 'bereit') weiter();
+        if (e.repeat) return;
+        if (stand.zustand === 'vorbei') { if (neustartFrei()) nochmal(); }
+        else if (stand.zustand === 'bereit') weiter();
         else pauseUmschalten();
       } else if (k === 'p' || k === 'Escape') {
         pauseUmschalten();
@@ -1516,6 +1574,7 @@
       const k = tasteVon(e);
       if (k === 'ArrowLeft' || k === 'a') tasteL = false;
       else if (k === 'ArrowRight' || k === 'd') tasteR = false;
+      halteZeigen();
     });
 
     anzeigen();
