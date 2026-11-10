@@ -6,7 +6,7 @@
 Eine Zeile je Akzeptanzkriterium. Gepflegt wird der Status in der Spec
 selbst, hier steht er zusammengefasst.
 
-**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 2 zurückgestellt · 665 fertig
+**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 3 zurückgestellt · 665 fertig
 
 ## Nach Spezifikation
 
@@ -25,7 +25,7 @@ selbst, hier steht er zusammengefasst.
 | [Damen](10-raetsel/queens.md)                      | -         | -       | -     | -              | 26     |
 | [Mini-Sudoku](10-raetsel/sudoku.md)                | -         | -       | -     | 1              | 22     |
 | [Tango](10-raetsel/tango.md)                       | -         | -       | -     | -              | 21     |
-| [Weg](10-raetsel/zip.md)                           | -         | -       | -     | -              | 27     |
+| [Weg](10-raetsel/zip.md)                           | -         | -       | -     | 1              | 27     |
 | [Galgenmännchen](20-wortspiele/galgen.md)          | -         | -       | -     | -              | 16     |
 | [Wördle](20-wortspiele/wordle.md)                  | -         | -       | -     | -              | 28     |
 | [Schafkopf](30-brett-und-karten/schafkopf.md)      | -         | -       | -     | -              | 53     |
@@ -55,11 +55,12 @@ selbst, hier steht er zusammengefasst.
 | doodle | [AC-4](50-geschick/doodle.md)  | Erlaubnis auf dem iPhone | Steuerung |
 | doodle | [AC-20](50-geschick/doodle.md) | Geräusche                | Klang     |
 
-## Zurückgestellt (2)
+## Zurückgestellt (3)
 
 | Spec      | AC                                   | Titel                       | Anmerkung                                    |
 | --------- | ------------------------------------ | --------------------------- | -------------------------------------------- |
 | sudoku    | [AC-11](10-raetsel/sudoku.md)        | Hinweis räumt Fehler zuerst | ersetzt durch AC-19                          |
+| zip       | [AC-22](10-raetsel/zip.md)           | Weg anfassen                | verwirrte Kinder, ersetzt durch AC-28        |
 | verraeter | [AC-13](40-zu-mehreren/verraeter.md) | Stimmen übers Netz sammeln  | braucht eine Verbindung zwischen den Geräten |
 
 ## Fertig (665)
@@ -328,12 +329,12 @@ selbst, hier steht er zusammengefasst.
 | zip           | [AC-19](10-raetsel/zip.md)                  | Merklinien aus dem Hinweis             | Hinweise und Erzeugung                          |
 | zip           | [AC-20](10-raetsel/zip.md)                  | Altes Rätsel wird ersetzt              | Hinweise und Erzeugung                          |
 | zip           | [AC-21](10-raetsel/zip.md)                  | Stufe und Ende ohne Lesen              | Ende, Speicher und Statistik                    |
-| zip           | [AC-22](10-raetsel/zip.md)                  | Weg anfassen                           | Eingabe                                         |
 | zip           | [AC-23](10-raetsel/zip.md)                  | Rückgängig                             | Eingabe                                         |
 | zip           | [AC-24](10-raetsel/zip.md)                  | Tippen in gerader Linie                | Eingabe                                         |
 | zip           | [AC-25](10-raetsel/zip.md)                  | Tastatur                               | Eingabe                                         |
 | zip           | [AC-26](10-raetsel/zip.md)                  | Das Brett zeigt die Lage               | Eingabe                                         |
 | zip           | [AC-27](10-raetsel/zip.md)                  | Brett nach Fenster                     | Eingabe                                         |
+| zip           | [AC-28](10-raetsel/zip.md)                  | Rückwärts nur Feld für Feld            | Eingabe                                         |
 | galgen        | [AC-1](20-wortspiele/galgen.md)             | Wort aus der Wördle-Liste              | Regeln und Eingabe                              |
 | galgen        | [AC-2](20-wortspiele/galgen.md)             | Treffer an allen Stellen               | Regeln und Eingabe                              |
 | galgen        | [AC-3](20-wortspiele/galgen.md)             | Tafel und Tastatur                     | Regeln und Eingabe                              |

@@ -1,34 +1,48 @@
 /* Handling, das leicht wieder verloren geht: Fehler lassen sich billig
    zurücknehmen, Eingaben überleben, eine Hilfe bleibt eingeschaltet.
-   Specs: 10-raetsel/zip.md AC-22/23, 10-raetsel/queens.md AC-22/25,
+   Specs: 10-raetsel/zip.md AC-23/28, 10-raetsel/queens.md AC-22/25,
    10-raetsel/nonogramm.md,
    40-zu-mehreren/runde.md, 50-geschick/bubbles.md AC-14 bis 16,
    60-kinder/tiere.md AC-22 */
 
 import { test, expect, oeffnen, gespeichert, blattSchliessen } from './helfer.mjs';
 
-test('Weg: ein Feld auf dem Weg anfassen kürzt ihn, Rückgängig und Von vorn holen ihn zurück', async ({ page }) => {
+test('Weg: zurück geht es nur Feld für Feld, Rückgängig und Von vorn holen den Weg zurück', async ({ page }) => {
   await oeffnen(page, '#/spiel/zip');
   await blattSchliessen(page);
   const weg = (await gespeichert(page)).stand.zip.loesung;
   const feld = (i) => page.locator('.p-feld').nth(weg[i]);
   const laenge = async () => (await gespeichert(page)).stand.zip.pfad.length;
+  const mitte = async (i) => {
+    const r = await feld(i).boundingBox();
+    return [r.x + r.width / 2, r.y + r.height / 2];
+  };
 
   const rueck = page.getByRole('button', { name: 'Rückgängig', exact: true });
   await expect(rueck).toBeDisabled();
   for (let i = 0; i <= 8; i += 1) await feld(i).click();
   expect(await laenge()).toBe(9);
 
-  // Weit hinten anfassen, nicht nur auf dem vorletzten Feld.
+  // Ein Tipp weit hinten reißt den Weg nicht mehr ab (AC-22 zurückgestellt).
   await feld(3).click();
-  expect(await laenge()).toBe(4);
-  await rueck.click();
   expect(await laenge()).toBe(9);
+  // Das vorletzte Feld nimmt einen Schritt zurück.
+  await feld(7).click();
+  expect(await laenge()).toBe(8);
+
+  // Rückwärts über den Weg ziehen nimmt Feld für Feld zurück (AC-28).
+  await page.mouse.move(...(await mitte(7)));
+  await page.mouse.down();
+  for (let i = 6; i >= 4; i -= 1) await page.mouse.move(...(await mitte(i)), { steps: 3 });
+  await page.mouse.up();
+  expect(await laenge()).toBe(5);
+  await rueck.click();
+  expect(await laenge()).toBe(8);
 
   await page.getByRole('button', { name: 'Von vorn', exact: true }).click();
   expect(await laenge()).toBe(0);
   await rueck.click();
-  expect(await laenge()).toBe(9);
+  expect(await laenge()).toBe(8);
 });
 
 test('Damen: die Leiste bleibt beim ersten Tipp stehen, ein Strich zeichnet sofort und speichert einmal', async ({ page }) => {

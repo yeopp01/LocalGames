@@ -1,7 +1,7 @@
 # Weg
 
 **Datei:** [`spiele/zip.js`](../../spiele/zip.js)
-**Stand:** 27/27 fertig
+**Stand:** 27/28 fertig · 1 zurückgestellt
 
 ## Zweck
 
@@ -37,20 +37,24 @@ mit dem Finger oder der Maus, auf „schwer" stehen Mauern im Weg.
   nachgeholt.
 - **AC-6** `fertig` **Schritte zurücknehmen** — Zurückziehen auf das vorletzte
   Feld nimmt einen Schritt zurück; „Von vorn" leert den Weg.
-- **AC-22** `fertig` **Weg anfassen** — Tippen oder Ziehen auf ein beliebiges
-  Feld des Wegs kürzt ihn bis dorthin, auch weit hinten und auch mitten im
-  Ziehen. Von dort geht es im selben Zug weiter.
+- **AC-22** `zurueckgestellt` (verwirrte Kinder, ersetzt durch AC-28) **Weg anfassen** — Tippen oder Ziehen auf ein beliebiges Feld des Wegs kürzt ihn bis
+  dorthin, auch weit hinten und auch mitten im Ziehen.
+- **AC-28** `fertig` **Rückwärts nur Feld für Feld** — Zurück geht es nur über
+  das vorletzte Feld: Wer den Weg rückwärts abfährt, nimmt ihn Schritt für
+  Schritt zurück, ein schneller Wisch zurück in gerader Linie holt Übersprungenes
+  nach. Ein Tipp auf das vorletzte Feld nimmt einen Schritt zurück, ein Tipp auf
+  ein Feld weiter hinten tut nichts.
 - **AC-23** `fertig` **Rückgängig** — „Rückgängig" macht die letzte Geste
   ungeschehen (Aufsetzen bis Loslassen, Knopf, Taste oder Hinweis), holt also
-  auch einen abgeschnittenen Weg und „Von vorn" zurück. Der Verlauf lebt nur im
+  auch ein langes Zurückziehen und „Von vorn" zurück. Der Verlauf lebt nur im
   Speicher; nach dem Neuladen nimmt der Knopf das letzte Feld zurück. Ohne Weg
   und Verlauf ist er gesperrt, „Von vorn" ohne Weg ebenso.
 - **AC-24** `fertig` **Tippen in gerader Linie** — Ein angetipptes Feld in
   derselben Zeile oder Spalte wie die Spitze holt den Weg Feld für Feld dorthin.
   Er hält an einer Mauer, einem besuchten Feld oder einer Zahl außer der Reihe.
 - **AC-25** `fertig` **Tastatur** — Die Pfeiltasten führen die Spitze, ein Pfeil
-  auf das vorletzte Feld nimmt einen Schritt zurück, weiter hinten schneidet ein
-  Pfeil nichts ab. Am leeren Brett setzt ein Pfeil auf die 1. Rücktaste heißt
+  auf das vorletzte Feld nimmt einen Schritt zurück, auf ein Feld weiter hinten
+  tut ein Pfeil nichts. Am leeren Brett setzt ein Pfeil auf die 1. Rücktaste heißt
   „Rückgängig".
 - **AC-26** `fertig` **Das Brett zeigt die Lage** — Felder, auf die es von der
   Spitze aus gehen kann, tragen einen leisen Punkt; die nächste Zahl einen Ring,

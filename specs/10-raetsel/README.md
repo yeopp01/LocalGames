@@ -15,6 +15,6 @@ die Lösung zu schauen.
 | [Damen](queens.md)          | 26/26 fertig                    |
 | [Mini-Sudoku](sudoku.md)    | 22/23 fertig · 1 zurückgestellt |
 | [Tango](tango.md)           | 21/21 fertig                    |
-| [Weg](zip.md)               | 27/27 fertig                    |
+| [Weg](zip.md)               | 27/28 fertig · 1 zurückgestellt |
 
 <!-- board:end -->

@@ -432,7 +432,7 @@
 
     /* Der Verlauf hält den Weg vor jeder Geste fest. Eine Geste ist alles von
        Aufsetzen bis Loslassen, ein Knopf oder eine Taste. So holt „Rückgängig"
-       auch zurück, was ein Griff weit nach hinten oder „Von vorn" abgeschnitten
+       auch zurück, was ein langes Zurückziehen oder „Von vorn" weggenommen
        hat – deshalb braucht beides keine Rückfrage. Er lebt nur im Speicher: Nach
        dem Neuladen nimmt „Rückgängig" einfach das letzte Feld zurück. */
     let verlauf = [];
@@ -522,18 +522,24 @@
     /* Ein Feld in gerader Linie zur Spitze wird Feld für Feld angesteuert – ob
        ein schneller Wisch dazwischen Felder übersprungen hat oder ob jemand es
        einfach angetippt hat. Das hält an, wo es nicht weitergeht. Über Eck
-       passiert nichts, da wären zwei Wege denkbar. */
-    function nachziehen(i) {
+       passiert nichts, da wären zwei Wege denkbar. Beim Zurückziehen über den
+       eigenen Weg holt nur ein Wisch Übersprungenes nach, Antippen nimmt
+       höchstens einen Schritt zurück. */
+    function nachziehen(i, imZug) {
       const pfad = stand.pfad;
       const k = stand.kanten;
-      if (!pfad.length || pfad.includes(i)) { anfassen(i); return; }
+      const aufWeg = pfad.includes(i);
+      if (!pfad.length || (aufWeg && !imZug)) { anfassen(i); return; }
       const letzter = pfad[pfad.length - 1];
+      if (i === letzter) return;
       const z1 = Math.floor(letzter / k); const s1 = letzter % k;
       const z2 = Math.floor(i / k); const s2 = i % k;
       if (z1 !== z2 && s1 !== s2) return;
       const schritt = z1 === z2 ? Math.sign(s2 - s1) : Math.sign(z2 - z1) * k;
       for (let j = letzter + schritt; ; j += schritt) {
-        if (stand.pfad.includes(j) || !anfassen(j) || j === i) return;
+        const zurueck = j === stand.pfad[stand.pfad.length - 2];
+        if (aufWeg !== zurueck) return;
+        if (!anfassen(j) || j === i) return;
       }
     }
 
@@ -551,7 +557,7 @@
         const i = feldUnter(p);
         if (i < 0 || i === letztesFeld) continue;
         letztesFeld = i;
-        nachziehen(i);
+        nachziehen(i, true);
       }
     };
 
@@ -579,8 +585,6 @@
       const sp = (kopf % k) + pfeil[1];
       if (z < 0 || z >= k || sp < 0 || sp >= k) return;
       const ziel = z * k + sp;
-      // Nur der Schritt zurück: ein Pfeil soll nicht weit hinten abschneiden.
-      if (pfad.includes(ziel) && ziel !== pfad[pfad.length - 2]) return;
       alsGeste(() => anfassen(ziel));
     };
     window.addEventListener('keydown', beiTaste);
@@ -621,10 +625,13 @@
       const letzter = pfad[pfad.length - 1];
       if (i === letzter) return true;
 
-      // Ein Feld auf dem Weg anfassen heißt: von dort aus weitermachen.
+      /* Zurück geht es nur Schritt für Schritt über das vorletzte Feld. Ein
+         Weg, der beim Antippen eines alten Feldes weit hinten abreißt, hat
+         Kinder mehr verwirrt als ihnen geholfen. */
       const platz = pfad.indexOf(i);
       if (platz >= 0) {
-        stand.pfad = pfad.slice(0, platz + 1);
+        if (platz !== pfad.length - 2) return false;
+        pfad.pop();
         s.fuehlen();
         sichern();
         zeichnen();
@@ -1069,7 +1076,7 @@
       d.append(el('p', 'notiz', 'Ziehe einen Weg, der bei der 1 beginnt und die Zahlen der Reihe nach abklappert – 1, dann 2, dann 3 und so fort.'));
       d.append(el('p', 'notiz', 'Der Weg muss am Ende jedes einzelne Feld genau einmal berührt haben und bei der höchsten Zahl enden. Kein Feld bleibt frei, keines wird zweimal betreten.'));
       d.append(el('p', 'notiz', 'Gezogen wird mit dem Finger oder der Maus über benachbarte Felder – nur waagerecht und senkrecht, nicht über Eck. Tippen geht auch: Ein Feld in gerader Linie zur Spitze holt den Weg dorthin. Am Rechner gehen auch die Pfeiltasten.'));
-      d.append(el('p', 'notiz', 'Vertan? Tipp oder fass ein beliebiges Feld auf dem Weg an: Von dort geht es weiter, der Rest ist weg. Auch das nimmt „Rückgängig" wieder zurück, ebenso „Von vorn".'));
+      d.append(el('p', 'notiz', 'Vertan? Fahr den Weg einfach rückwärts zurück, Feld für Feld. „Rückgängig" nimmt den letzten Zug zurück, „Von vorn" fängt neu an – auch das lässt sich rückgängig machen.'));
       d.append(el('p', 'notiz', 'Auf „schwer" stehen dicke Striche zwischen manchen Feldern: Da ist eine Mauer, dort kommt der Weg nicht durch. Sie verraten mehr, als sie verbieten – deshalb braucht die schwere Stufe weniger Zahlen als früher.'));
       d.append(el('p', 'notiz', 'Guter Anfang: Ecken und Ränder. Ein Eckfeld hat nur zwei Nachbarn, der Weg muss dort also fast zwangsläufig durch.'));
       s.blatt({ titel: 'Weg', inhalt: d, aktionen: [{ text: 'Los' }] });
