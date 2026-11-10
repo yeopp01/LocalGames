@@ -1856,21 +1856,26 @@ button.k-feld { cursor: pointer; }
 
 .q-gitter,
 .q-mini {
-  /* Sanfte Flächen statt satter: Die Dame und das Kreuz liegen tiefschwarz
-     darauf und bleiben lesbar, ohne dass sie einen eigenen Hof bräuchten. */
-  --q-g0: #F1AC9C;
-  --q-g1: #A3C2EE;
-  --q-g2: #AFD8A6;
-  --q-g3: #F3DC86;
-  --q-g4: #C7B4E8;
-  --q-g5: #93D8D0;
-  --q-g6: #F3B8D2;
-  --q-g7: #D2BEA6;
+  /* Mitteltöne: so kräftig, dass das Brett Farbe hat, und so hell, dass Dame
+     und Kreuz tiefschwarz darauf lesbar bleiben (Kontrast mindestens 6 : 1),
+     ohne eigenen Hof. Die satten Töne davor kamen auf 2,7 : 1, das Pastell
+     danach las sich gut, sah aber ausgewaschen aus – erst recht unter dem
+     Schleier, der mitten im Spiel auf den meisten Feldern liegt. */
+  --q-g0: #E9795A;
+  --q-g1: #6FA3E8;
+  --q-g2: #7CC46E;
+  --q-g3: #EFC94A;
+  --q-g4: #A98BE0;
+  --q-g5: #4FC4B8;
+  --q-g6: #E884BC;
+  --q-g7: #BE9668;
   --q-zeichen: #1B1815;
-  --q-grenze: rgba(27, 24, 21, .68);
-  --q-linie: rgba(27, 24, 21, .1);
-  --q-schleier: rgba(255, 255, 255, .36);
+  --q-grenze: #1B1815;
+  --q-linie: rgba(27, 24, 21, .14);
+  --q-schleier: rgba(255, 255, 255, .2);
+  --q-rahmen: 0 0 0 2px #1B1815;
   --q-fehler: #B3261E;
+  --q-fehler-grund: rgba(255, 255, 255, .68);
 }
 /* Dunkel ist es umgekehrt: Pastell würde auf dem dunklen Grund blenden, also
    gedeckte Flächen mit hellem Zeichen. Die Grenzen sind dunkel wie das Papier –
@@ -1890,7 +1895,9 @@ button.k-feld { cursor: pointer; }
     --q-grenze: #0C0A09;
     --q-linie: rgba(0, 0, 0, .2);
     --q-schleier: rgba(12, 10, 9, .34);
+    --q-rahmen: 0 0 0 1px var(--karte-rand);
     --q-fehler: #FF9C8A;
+    --q-fehler-grund: rgba(12, 10, 9, .5);
   }
 }
 
@@ -1900,7 +1907,7 @@ button.k-feld { cursor: pointer; }
   display: grid;
   grid-template-columns: repeat(var(--kanten), var(--zelle));
   border-radius: 14px;
-  box-shadow: 0 0 0 1px var(--karte-rand), var(--schatten);
+  box-shadow: var(--q-rahmen), var(--schatten);
   overflow: hidden;
   /* Beim Streichen über das Damenbrett soll die Seite nicht mitscrollen. */
   touch-action: none;
@@ -1919,11 +1926,15 @@ button.k-feld { cursor: pointer; }
   line-height: 1;
   padding: 0;
 }
-.q-feld { cursor: pointer; outline-offset: -4px; transition: background-color .12s ease; }
+.q-feld { cursor: pointer; outline-offset: -4px; transition: background-color .12s ease, filter .08s ease; }
+/* Das Zeichen kommt erst beim Loslassen – bis dahin kann es noch ein Strich
+   werden. Damit das Brett trotzdem schon beim Aufsetzen antwortet, wird das
+   berührte Feld eine Spur dunkler. */
+.q-gitter[data-fertig='nein'] .q-feld:active { filter: brightness(.9); }
 .q-feld[data-grenze-rechts='ja'],
-.q-mini-feld[data-grenze-rechts='ja'] { border-right: 2px solid var(--q-grenze); }
+.q-mini-feld[data-grenze-rechts='ja'] { border-right: 3px solid var(--q-grenze); }
 .q-feld[data-grenze-unten='ja'],
-.q-mini-feld[data-grenze-unten='ja'] { border-bottom: 2px solid var(--q-grenze); }
+.q-mini-feld[data-grenze-unten='ja'] { border-bottom: 3px solid var(--q-grenze); }
 .q-feld[data-rand-rechts='ja'],
 .q-mini-feld[data-rand-rechts='ja'] { border-right: 0; }
 .q-feld[data-rand-unten='ja'],
@@ -1945,7 +1956,13 @@ button.k-feld { cursor: pointer; }
 @media (hover: hover) {
   .q-gitter[data-fertig='nein'] .q-feld:hover { background: linear-gradient(rgba(255, 255, 255, .22), rgba(255, 255, 255, .22)), var(--gebiet); }
 }
-.q-feld[data-fehler='ja'] { color: var(--q-fehler); box-shadow: 0 0 0 3px var(--q-fehler) inset; }
+/* Rot auf dem roten Gebiet ging unter: Das Feld im Konflikt tritt darum hinter
+   einen dichten Schleier zurück, auf dem das Rot auf jeder Farbe steht. */
+.q-feld[data-fehler='ja'] {
+  color: var(--q-fehler);
+  background: linear-gradient(var(--q-fehler-grund), var(--q-fehler-grund)), var(--gebiet);
+  box-shadow: 0 0 0 3px var(--q-fehler) inset;
+}
 
 .q-gitter[data-fertig='ja'] .q-feld { cursor: default; }
 /* Gelöst: Eine Welle läuft über die Damen. */
@@ -1962,6 +1979,22 @@ button.k-feld { cursor: pointer; }
 }
 .q-lage[data-fehler='ja'] { color: var(--rost); font-weight: 600; }
 .q-lage[hidden] { display: none; }
+/* Auf dem Handy bricht der Starttext in zwei Zeilen. Ohne den Platz dafür
+   rutschte die Leiste nach dem ersten Tipp eine Zeile nach oben – genau unter
+   den Finger, der gerade tippt. */
+@media (max-width: 520px) {
+  .q-lage { min-height: 2.9em; }
+}
+
+/* Auf dem Handy ist unter dem Brett Platz: Die drei Knöpfe, die man im Spiel
+   braucht, teilen sich die Brettbreite und sind hoch genug für den Daumen.
+   Der Schalter rutscht dabei in eine eigene Zeile – als vierte Pille sah er
+   dort aus wie übrig geblieben, darum steht er überall als leise Zeile da. */
+@media (max-width: 520px) and (min-height: 640px) {
+  .q-leiste .knopf:not(.q-schalter) { flex: 1 1 0; min-height: 46px; padding-inline: 6px; font-size: 14px; }
+}
+.leiste .knopf.q-schalter,
+.leiste .knopf.q-schalter:hover:not(:disabled) { background: transparent; box-shadow: none; color: var(--tinte-leise); font-weight: 600; }
 
 /* Der Schalter zeigt seinen Stand als kleinen Kippschalter. */
 .q-schalter { display: inline-flex; gap: 8px; align-items: center; }
@@ -1985,7 +2018,7 @@ button.k-feld { cursor: pointer; }
   display: grid;
   grid-template-columns: repeat(var(--kanten), var(--zelle));
   border-radius: 12px;
-  box-shadow: 0 0 0 1px var(--karte-rand);
+  box-shadow: var(--q-rahmen);
   overflow: hidden;
   margin: 14px auto 6px;
   width: max-content;

@@ -6,7 +6,7 @@
 Eine Zeile je Akzeptanzkriterium. Gepflegt wird der Status in der Spec
 selbst, hier steht er zusammengefasst.
 
-**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 2 zurückgestellt · 660 fertig
+**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 2 zurückgestellt · 664 fertig
 
 ## Nach Spezifikation
 
@@ -22,7 +22,7 @@ selbst, hier steht er zusammengefasst.
 | [Minenfeld](10-raetsel/minen.md)                   | -         | -       | -     | -              | 15     |
 | [Nonogramm](10-raetsel/nonogramm.md)               | -         | -       | -     | -              | 20     |
 | [Riegel](10-raetsel/pins.md)                       | -         | -       | -     | -              | 30     |
-| [Damen](10-raetsel/queens.md)                      | -         | -       | -     | -              | 22     |
+| [Damen](10-raetsel/queens.md)                      | -         | -       | -     | -              | 26     |
 | [Mini-Sudoku](10-raetsel/sudoku.md)                | -         | -       | -     | 1              | 22     |
 | [Tango](10-raetsel/tango.md)                       | -         | -       | -     | -              | 21     |
 | [Weg](10-raetsel/zip.md)                           | -         | -       | -     | -              | 27     |
@@ -62,7 +62,7 @@ selbst, hier steht er zusammengefasst.
 | sudoku    | [AC-11](10-raetsel/sudoku.md)        | Hinweis räumt Fehler zuerst | ersetzt durch AC-19                          |
 | verraeter | [AC-13](40-zu-mehreren/verraeter.md) | Stimmen übers Netz sammeln  | braucht eine Verbindung zwischen den Geräten |
 
-## Fertig (660)
+## Fertig (664)
 
 | Spec          | AC                                          | Titel                                  | Anmerkung                                       |
 | ------------- | ------------------------------------------- | -------------------------------------- | ----------------------------------------------- |
@@ -259,6 +259,10 @@ selbst, hier steht er zusammengefasst.
 | queens        | [AC-20](10-raetsel/queens.md)               | Von vorn ohne Rückfrage                | Eingabe                                         |
 | queens        | [AC-21](10-raetsel/queens.md)               | Am Rechner per Tastatur                | Eingabe                                         |
 | queens        | [AC-22](10-raetsel/queens.md)               | Die Störung wird genannt               | Konflikte und Hinweise                          |
+| queens        | [AC-23](10-raetsel/queens.md)               | Hinweisbild zeigt Abgedecktes          | Konflikte und Hinweise                          |
+| queens        | [AC-24](10-raetsel/queens.md)               | Uhr ruht im Hintergrund                | Ende, Speicher und Statistik                    |
+| queens        | [AC-25](10-raetsel/queens.md)               | Streichen bleibt leicht                | Eingabe                                         |
+| queens        | [AC-26](10-raetsel/queens.md)               | Leiste für den Daumen                  | Eingabe                                         |
 | sudoku        | [AC-1](10-raetsel/sudoku.md)                | Sechs mal sechs                        | Feld und Stufen                                 |
 | sudoku        | [AC-2](10-raetsel/sudoku.md)                | Drei Stufen wählbar                    | Feld und Stufen                                 |
 | sudoku        | [AC-3](10-raetsel/sudoku.md)                | Vorgaben genau nach Stufe              | Feld und Stufen                                 |

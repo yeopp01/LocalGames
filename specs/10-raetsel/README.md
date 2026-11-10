@@ -12,7 +12,7 @@ die Lösung zu schauen.
 | [Minenfeld](minen.md)       | 15/15 fertig                    |
 | [Nonogramm](nonogramm.md)   | 20/20 fertig                    |
 | [Riegel](pins.md)           | 30/30 fertig                    |
-| [Damen](queens.md)          | 22/22 fertig                    |
+| [Damen](queens.md)          | 26/26 fertig                    |
 | [Mini-Sudoku](sudoku.md)    | 22/23 fertig · 1 zurückgestellt |
 | [Tango](tango.md)           | 21/21 fertig                    |
 | [Weg](zip.md)               | 27/27 fertig                    |

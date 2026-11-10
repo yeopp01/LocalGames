@@ -428,7 +428,11 @@
       return frisch('leicht');
     }
 
-    const zeitJetzt = () => stand.verbraucht + (stand.fertig ? 0 : Date.now() - stand.seit);
+    /* Liegt das Handy gesperrt in der Tasche oder ist ein anderer Tab vorn,
+       spielt niemand: Die Uhr ruht dann wie bei geschlossener App. Sonst
+       stünde die Mittagspause in der Bestzeit. */
+    let ruht = document.hidden;
+    const zeitJetzt = () => stand.verbraucht + (stand.fertig || ruht ? 0 : Date.now() - stand.seit);
 
     function sichern() {
       if (!stand.fertig) {
@@ -447,7 +451,7 @@
     lage.setAttribute('aria-live', 'polite');
     const endeKasten = el('div', 'ende-kasten');
     endeKasten.hidden = true;
-    const leiste = el('div', 'leiste');
+    const leiste = el('div', 'leiste q-leiste');
     wurzel.append(kopf, gitter, lage, endeKasten, leiste);
 
     const zurueckKnopf = s.leistenKnopf('Rückgängig', 'rueckgaengig', zurueckNehmen);
@@ -577,7 +581,9 @@
       if (zieht && !zieht.gemerkt) { zieht.gemerkt = true; schrittMerken(); }
       stand.feld[i] = wert;
       s.fuehlen(4);
-      sichern();
+      /* Gezeichnet wird jedes Feld sofort, gespeichert der ganze Strich erst
+         beim Loslassen: Der Rahmen schreibt bei jedem Merken den ganzen Bestand,
+         und bei ein paar tausend Partien kostet das je Feld so viel wie ein Bild. */
       zeichnen();
     }
 
@@ -622,6 +628,7 @@
       if (!zieht) return;
       zieht = null;
       if (gemaltGerade) {
+        sichern();
         letztesFeld = -1;
         // Der Klick, der zum Strich gehört, kommt gleich noch und wird verschluckt.
         // Danach darf das Merkmal nicht liegen bleiben, sonst schluckt es die Tastatur.
@@ -668,10 +675,10 @@
        darum verschwinden diese Kreuze sofort wieder, wenn die Dame weicht,
        die sie verursacht hat. Eine falsch gesetzte Dame hinterlässt also
        keinen Scherbenhaufen. */
-    function abgedeckt() {
+    function abgedeckt(auchOhneSchalter = false) {
       const k = stand.kanten;
       const raus = new Set();
-      if (!stand.autoKreuze) return raus;
+      if (!stand.autoKreuze && !auchOhneSchalter) return raus;
 
       for (let i = 0; i < k * k; i += 1) {
         if (stand.feld[i] !== DAME) continue;
@@ -886,6 +893,10 @@
            Fenster soll man nicht scrollen müssen, um das Bild zu sehen und zu antworten. */
         const platz = Math.min(320, window.innerWidth - 64, Math.max(180, window.innerHeight - 400));
         g.style.setProperty('--zelle', Math.floor(platz / k) + 'px');
+        /* Was gesetzte Damen abdecken, steht auch hier als Kreuz – der Hinweis
+           rechnet damit, ob der Schalter an ist oder nicht. Ohne diese Kreuze
+           sähe „nur ein Feld bleibt übrig" im Bild nach vier freien Feldern aus. */
+        const gedeckt = abgedeckt(true);
         for (let i = 0; i < k * k; i += 1) {
           const f = el('div', 'q-mini-feld');
           f.style.setProperty('--gebiet', FARBEN[stand.gebiet[i] % FARBEN.length]);
@@ -896,7 +907,7 @@
           if (sp === k - 1) f.dataset.randRechts = 'ja';
           if (z === k - 1) f.dataset.randUnten = 'ja';
           if (stand.feld[i] === DAME) f.innerHTML = DAME_BILD;
-          else if (stand.feld[i] === KREUZ) { f.innerHTML = KREUZ_BILD; f.dataset.rolle = 'schon'; }
+          else if (stand.feld[i] === KREUZ || gedeckt.has(i)) { f.innerHTML = KREUZ_BILD; f.dataset.rolle = 'schon'; }
           if (kandidaten && kandidaten.includes(i)) { f.innerHTML = DAME_BILD; f.dataset.rolle = 'kandidat'; }
           if (kreuze && kreuze.includes(i)) { f.innerHTML = KREUZ_BILD; f.dataset.rolle = 'raus'; }
           if (dame === i) { f.innerHTML = DAME_BILD; f.dataset.rolle = 'ziel'; }
@@ -1200,6 +1211,19 @@
     const beiGroesse = () => masseSetzen();
     window.addEventListener('resize', beiGroesse);
 
+    const beiSicht = () => {
+      if (stand.fertig) return;
+      if (document.hidden) {
+        sichern();
+        ruht = true;
+      } else {
+        ruht = false;
+        stand.seit = Date.now();
+        kopfZeichnen();
+      }
+    };
+    document.addEventListener('visibilitychange', beiSicht);
+
     gitterBauen();
     sichern();
     zeichnen();
@@ -1209,6 +1233,7 @@
       ende: () => {
         clearInterval(uhr);
         window.removeEventListener('resize', beiGroesse);
+        document.removeEventListener('visibilitychange', beiSicht);
         window.removeEventListener('keydown', beiTaste);
         window.removeEventListener('pointermove', beiBewegung);
         window.removeEventListener('pointerup', losgelassen);

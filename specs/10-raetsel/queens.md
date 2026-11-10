@@ -1,7 +1,7 @@
 # Damen
 
 **Datei:** [`spiele/queens.js`](../../spiele/queens.js)
-**Stand:** 22/22 fertig
+**Stand:** 26/26 fertig
 
 ## Zweck
 
@@ -22,8 +22,10 @@ werden muss.
   bietet alle drei Stufen an; nach einem gelösten Rätsel stehen sie als Knöpfe
   unter dem Ergebnis, die gespielte als „Nochmal".
 - **AC-3** `fertig` **Gebiete klar getrennt** — Jedes Gebiet hat seine Farbe, an
-  jeder Gebietsgrenze liegt eine kräftigere Linie. Hell sind die Farben sanft mit
-  dunklem Zeichen, dunkel gedeckt mit hellem Zeichen. Das Brett ist so groß, wie
+  jeder Gebietsgrenze liegt eine drei Pixel starke Linie in Tinte, hell umläuft
+  dieselbe Tinte das ganze Brett. Hell sind die Farben kräftige Mitteltöne mit
+  dunklem Zeichen (Kontrast mindestens 6 : 1), dunkel gedeckt mit hellem Zeichen.
+  Ausgekreuzte Felder treten nur leicht zurück und behalten ihre Farbe. Das Brett ist so groß, wie
   Breite und Höhe des Fensters es erlauben, und passt samt Knöpfen auf 6 × 6 ohne
   Scrollen ins Fenster (Handy, 1366 × 700, 1000 × 560). Ein Feld ist mindestens
   40 Pixel groß, wo die Breite es hergibt; beim Ändern der Fenstergröße wird neu
@@ -56,16 +58,26 @@ werden muss.
   Feld, Enter und Leertaste schalten weiter wie ein Tipp, D setzt die Dame, X das
   Kreuz, Entf oder 0 leert das Feld. Rücktaste und Strg+Z sind „Rückgängig". Bei
   offenem Blatt bleiben die Tasten beim Blatt.
+- **AC-25** `fertig` **Streichen bleibt leicht** — Beim Streichen bekommt jedes
+  Feld sein Kreuz in dem Moment, in dem der Finger es erreicht; in den Speicher
+  geschrieben wird der ganze Strich einmal beim Loslassen. Ein berührtes Feld wird
+  schon beim Aufsetzen eine Spur dunkler, noch bevor das Zeichen kommt.
+- **AC-26** `fertig` **Leiste für den Daumen** — Auf dem Handy im Hochformat teilen
+  sich „Rückgängig", „Von vorn" und „Hinweis" die Breite des Bretts in einer Zeile
+  und sind 46 Pixel hoch; der Schalter „Auto-Kreuze" steht als leise Zeile
+  darunter. Auf breiten Fenstern steht alles in einer Zeile.
 
 ### Konflikte und Hinweise
 
 - **AC-8** `fertig` **Konflikte rot umrandet** — Stehen zwei Damen in derselben
   Zeile, Spalte oder Farbe oder berühren sie sich, sind beide sofort rot
-  umrandet – ohne dass jemand den Hinweis drückt.
+  umrandet – ohne dass jemand den Hinweis drückt. Das Feld darunter hellt dabei
+  auf (dunkel: dunkelt ab), damit das Rot auch auf dem roten Gebiet zu lesen ist.
 - **AC-22** `fertig` **Die Störung wird genannt** — Unter dem Brett steht in einem
   Satz, was stört („Zwei Damen in Spalte 1."). Liegt nichts auf dem Brett, sagt
   dieselbe Zeile, was Tippen und Streichen tun. Die Zeile hält ihren Platz, die
-  Knöpfe springen nicht.
+  Knöpfe springen nicht – auch nicht auf dem Handy, wo der Starttext zwei Zeilen
+  braucht.
 - **AC-9** `fertig` **Hinweis nennt seinen Schluss** — Der Hinweis kennt genau
   zwei Schlüsse: „Nur ein Feld bleibt übrig" (eine Zeile, Spalte oder Farbe hat
   nur noch einen möglichen Platz) und „Das fällt so oder so weg" (jede noch
@@ -84,6 +96,10 @@ werden muss.
 - **AC-11** `fertig` **Hinweise werden gezählt** — Jedes Hinweisblatt mit Schluss
   oder Fehlerbefund zählt als Hinweis, auch wenn man ihn nicht übernimmt. Das
   Blatt zu störenden Damen und „nichts Zwingendes" zählen nicht.
+- **AC-23** `fertig` **Hinweisbild zeigt Abgedecktes** — Das kleine Brett im
+  Hinweis trägt auf jedem Feld, das eine gesetzte Dame abdeckt, ein blasses Kreuz
+  wie auf eigenen Kreuzen – auch bei ausgeschaltetem Schalter „Auto-Kreuze". So
+  ist im Bild zu sehen, warum nur ein Feld übrig bleibt.
 
 ### Erzeugung
 
@@ -113,6 +129,10 @@ werden muss.
   nach Zurück, Neuladen oder Neustart unverändert wieder da, samt Kreuzen,
   Verlauf, Hinweiszahl und verbrauchter Zeit; die Zeit mit geschlossener App
   zählt nicht mit. Ein gelöstes Rätsel wird nicht wiederhergestellt.
+- **AC-24** `fertig` **Uhr ruht im Hintergrund** — Ist das Fenster verborgen
+  (gesperrtes Handy, anderer Tab, App im Hintergrund), steht die Uhr; sie läuft
+  weiter, sobald das Spiel wieder zu sehen ist. Beim Verbergen wird der Stand
+  gespeichert.
 - **AC-17** `fertig` **Partie in der Statistik** — Jedes gelöste Rätsel wird mit
   `gewonnen: true`, `dauer`, `stufe` und `hilfen` notiert; ein abgebrochenes
   wird nicht notiert. Die Statistik zeigt „Bestzeit 6×6", „7×7" und „8×8" aus
@@ -133,7 +153,8 @@ werden muss.
 | ---- | ----------------------------------------------------- | ---------------------------------------------------------------------------- |
 | RF-1 | Streichzug endet auf einem anderen Feld als begonnen  | Der nächste Streichzug setzt auch auf seinem ersten Feld ein Kreuz.          |
 | RF-2 | Gespeicherter Stand aus einer Fassung ohne Verlauf    | Das Rätsel lädt, Rückgängig beginnt mit leerem Verlauf.                      |
-| RF-3 | „Kreuze automatisch" aus, Hinweis gedrückt            | Der Hinweis rechnet trotzdem mit allem, was gesetzte Damen abdecken.         |
+| RF-3 | „Kreuze automatisch" aus, Hinweis gedrückt            | Der Hinweis rechnet trotzdem mit allem, was gesetzte Damen abdecken, und zeigt es im kleinen Brett als Kreuze. |
+| RF-8 | Maus wird außerhalb des Fensters losgelassen          | Die Kreuze des Strichs stehen da; gespeichert werden sie mit dem nächsten Zug, beim Verbergen oder Verlassen. |
 | RF-4 | Nach einem gelösten Rätsel das Spiel neu öffnen       | Es beginnt ein frisches Rätsel der Stufe leicht.                             |
 | RF-5 | Fenster wird während der Partie schmaler              | Die Felder werden kleiner, Spielstand und Tastaturfokus bleiben.             |
 | RF-6 | Eigenes Kreuz auf einem Feld, das keine Dame trägt    | Gilt als Notiz; der Hinweis rechnet es als ausgeschlossen und meldet nichts. |
@@ -143,6 +164,22 @@ werden muss.
 
 Anders als im Schach schlagen sich die Damen nicht über die ganze Diagonale –
 nur die acht direkten Nachbarfelder sind tabu.
+
+Die Gebietsfarben hatten drei Fassungen. Die satten Töne der ersten ließen das
+schwarze Zeichen auf Blau und Violett kaum lesen. Das Pastell danach las sich
+gut, sah aber ausgewaschen aus, zumal ein weißer Schleier von 36 % auf jedem
+ausgekreuzten Feld lag – mitten im Spiel also auf fast allen. Jetzt sind es
+Mitteltöne mit einem Schleier von 20 %. Nachgerechnet mit einem Wegwerf-Skript
+(Kontrast der Tinte nach WCAG, Abstand des ähnlichsten Farbpaars als ΔE im
+Lab-Raum, mittlere Buntheit):
+
+| Fassung              | Kontrast Tinte, kleinster | ähnlichstes Paar | Buntheit |
+| -------------------- | ------------------------- | ---------------- | -------- |
+| satt                 | 2,7 : 1                   | 26               | 44       |
+| Pastell              | 9,4 : 1                   | 17               | 28       |
+| Pastell, Schleier    | 11,9 : 1                  | 11               | 17       |
+| Mitteltöne           | 6,2 : 1                   | 27               | 47       |
+| Mitteltöne, Schleier | 7,7 : 1                   | 22               | 38       |
 
 Der Erzeuger setzt zuerst die Damen (benachbarte Zeilen mindestens zwei
 Spalten auseinander) und lässt von jeder aus ein Gebiet wachsen. Zufällig
