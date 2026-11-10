@@ -6,7 +6,7 @@
 Eine Zeile je Akzeptanzkriterium. Gepflegt wird der Status in der Spec
 selbst, hier steht er zusammengefasst.
 
-**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 2 zurückgestellt · 664 fertig
+**Gesamt:** 2 in arbeit · 0 geplant · 0 offen · 2 zurückgestellt · 665 fertig
 
 ## Nach Spezifikation
 
@@ -15,7 +15,7 @@ selbst, hier steht er zusammengefasst.
 | [Auswahl und Navigation](00-rahmen/auswahl.md)     | -         | -       | -     | -              | 18     |
 | [Datenschutz](00-rahmen/datenschutz.md)            | -         | -       | -     | -              | 11     |
 | [Offline und Versionen](00-rahmen/offline.md)      | -         | -       | -     | -              | 14     |
-| [Spielschnittstelle](00-rahmen/schnittstelle.md)   | -         | -       | -     | -              | 16     |
+| [Spielschnittstelle](00-rahmen/schnittstelle.md)   | -         | -       | -     | -              | 17     |
 | [Sicherung](00-rahmen/sicherung.md)                | -         | -       | -     | -              | 14     |
 | [Statistik](00-rahmen/statistik.md)                | -         | -       | -     | -              | 14     |
 | [Zahlencode](10-raetsel/mastermind.md)             | -         | -       | -     | -              | 19     |
@@ -62,7 +62,7 @@ selbst, hier steht er zusammengefasst.
 | sudoku    | [AC-11](10-raetsel/sudoku.md)        | Hinweis räumt Fehler zuerst | ersetzt durch AC-19                          |
 | verraeter | [AC-13](40-zu-mehreren/verraeter.md) | Stimmen übers Netz sammeln  | braucht eine Verbindung zwischen den Geräten |
 
-## Fertig (664)
+## Fertig (665)
 
 | Spec          | AC                                          | Titel                                  | Anmerkung                                       |
 | ------------- | ------------------------------------------- | -------------------------------------- | ----------------------------------------------- |
@@ -125,6 +125,7 @@ selbst, hier steht er zusammengefasst.
 | schnittstelle | [AC-14](00-rahmen/schnittstelle.md)         | Spiel, das beim Start wirft            | Anmeldung                                       |
 | schnittstelle | [AC-15](00-rahmen/schnittstelle.md)         | Stufen und Zeichen ohne Lesen          | Urteil und Auswertung                           |
 | schnittstelle | [AC-16](00-rahmen/schnittstelle.md)         | Bausteine für gutes Handling           | Urteil und Auswertung                           |
+| schnittstelle | [AC-17](00-rahmen/schnittstelle.md)         | Antippen erst nach einer Berührung     | Urteil und Auswertung                           |
 | sicherung     | [AC-1](00-rahmen/sicherung.md)              | Sichern an zwei Stellen                | Sichern                                         |
 | sicherung     | [AC-2](00-rahmen/sicherung.md)              | Datei mit allen Partien                | Sichern                                         |
 | sicherung     | [AC-3](00-rahmen/sicherung.md)              | Laufende Partien bleiben daheim        | Sichern                                         |

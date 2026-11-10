@@ -264,9 +264,16 @@ const Rahmen = (() => {
      --brett in styles.css. */
   const brettKante = (reserve = 240) => Math.max(260, Math.min(window.innerWidth - 28, window.innerHeight - reserve, 532));
 
-  /* Ein kurzes Antippen in der Hand. Wo das Gerät es nicht kann, passiert nichts. */
+  /* Ein kurzes Antippen in der Hand. Wo das Gerät es nicht kann, passiert nichts.
+
+     Auch nicht, solange noch niemand die Seite berührt hat: Der Browser sperrt
+     den Ruf dann ohnehin und schreibt dafür jedes Mal einen Fehler in die
+     Konsole – etwa wenn nach dem Neuladen zuerst der Rechner zieht. Kennt ein
+     Browser die Auskunft nicht, bleibt es beim Versuch. */
   const fuehlen = (ms = 8) => {
-    if (typeof navigator.vibrate === 'function') navigator.vibrate(ms);
+    if (typeof navigator.vibrate !== 'function') return;
+    if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
+    navigator.vibrate(ms);
   };
 
   /* Die Knöpfe unter einer beendeten Partie, in der Reihenfolge der Stufen,

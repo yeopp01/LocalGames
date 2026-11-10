@@ -1,5 +1,5 @@
 /* Vier gewinnt: was der Rechner nie tun darf.
-   Spec: 30-brett-und-karten/viergewinnt.md */
+   Spec: 30-brett-und-karten/viergewinnt.md, 00-rahmen/schnittstelle.md AC-17 */
 
 import { test, expect, oeffnen, kachel, gespeichert, blattSchliessen } from './helfer.mjs';
 
@@ -27,6 +27,35 @@ test('der Rechner blockt eine offene Drohung auch auf leicht, jedes Mal', async 
     await expect(steine(page, 'er')).toHaveCount(3);
     expect((await gespeichert(page)).stand.viergewinnt.brett[38], `Durchgang ${i + 1}`).toBe(2);
   }
+});
+
+/* Der Test darüber wurde gelegentlich rot: Zog der Rechner nach dem Laden,
+   bevor irgendwer die Seite berührt hatte, sperrte der Browser das Antippen in
+   der Hand und schrieb einen Fehler in die Konsole. Meist fiel das nicht auf,
+   weil schon die erste Abfrage von Playwright als Berührung gilt – nur unter
+   Last kam sie zu spät. Darum hier mit eigener Auskunft statt der echten:
+   Solange niemand berührt hat, darf der Rahmen gar nicht erst rufen
+   (schnittstelle.md AC-17). */
+test('der Rechner zieht nach dem Laden, ohne in der Hand anzutippen, solange niemand die Seite berührt hat', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.__beruehrt = false;
+    window.__angetippt = 0;
+    Object.defineProperty(Navigator.prototype, 'userActivation', {
+      configurable: true,
+      get: () => ({ hasBeenActive: window.__beruehrt, isActive: window.__beruehrt }),
+    });
+    Navigator.prototype.vibrate = function vibrate() { window.__angetippt += 1; return true; };
+  });
+  const angetippt = () => page.evaluate(() => window.__angetippt);
+
+  await oeffnen(page, '#/spiel/viergewinnt', { stand: { viergewinnt: drohung('leicht') } });
+  await expect(steine(page, 'er')).toHaveCount(3);
+  expect(await angetippt()).toBe(0);
+
+  // Nach der ersten Berührung ist das Antippen wieder da.
+  await page.evaluate(() => { window.__beruehrt = true; });
+  await spalte(page, 1).click();
+  await expect.poll(angetippt).toBeGreaterThan(0);
 });
 
 test('beim Überlegen auf schwer bleibt die Seite bedienbar', async ({ page }) => {

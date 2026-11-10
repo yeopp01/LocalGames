@@ -1,7 +1,7 @@
 # Spielschnittstelle
 
 **Datei:** [`app.js`](../../app.js)
-**Stand:** 16/16 fertig
+**Stand:** 17/17 fertig
 
 ## Zweck
 
@@ -102,6 +102,12 @@ Rahmen ein Spiel kennen muss.
   die Leiste unter dem Brett, `bildzeichen` kennt dafür auch `rueckgaengig`,
   `leeren`, `hinweis` und `notiz`. `sitzung.fuehlen(ms)` gibt ein kurzes Antippen
   in der Hand und tut nichts, wo das Gerät es nicht kann.
+- **AC-17** `fertig` **Antippen erst nach einer Berührung** — Solange noch
+  niemand die Seite berührt hat, ruft `sitzung.fuehlen` das Gerät gar nicht: Der
+  Browser sperrt das Rütteln dann ohnehin und schreibt dafür jedes Mal einen
+  Fehler in die Konsole – etwa wenn nach dem Neuladen zuerst der Rechner zieht.
+  Nach der ersten Berührung ist das Antippen da. Kennt ein Browser die Auskunft
+  `navigator.userActivation` nicht, bleibt es beim Versuch.
 
 ## Randfälle
 
