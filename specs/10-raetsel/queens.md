@@ -23,9 +23,10 @@ werden muss.
   unter dem Ergebnis, die gespielte als „Nochmal".
 - **AC-3** `fertig` **Gebiete klar getrennt** — Jedes Gebiet hat seine Farbe, an
   jeder Gebietsgrenze liegt eine drei Pixel starke Linie in Tinte, hell umläuft
-  dieselbe Tinte das ganze Brett. Hell sind die Farben kräftige Mitteltöne mit
-  dunklem Zeichen (Kontrast mindestens 6 : 1), dunkel gedeckt mit hellem Zeichen.
-  Ausgekreuzte Felder treten nur leicht zurück und behalten ihre Farbe. Das Brett ist so groß, wie
+  dieselbe Tinte das ganze Brett. Die Farben sind satt und tragen hell wie dunkel
+  ein schwarzes Zeichen (Kontrast mindestens 4,7 : 1). Ausgekreuzte Felder werden
+  eine Spur dunkler statt heller: Sie treten zurück und bleiben satt, die freien
+  Felder leuchten. Das Brett ist so groß, wie
   Breite und Höhe des Fensters es erlauben, und passt samt Knöpfen auf 6 × 6 ohne
   Scrollen ins Fenster (Handy, 1366 × 700, 1000 × 560). Ein Feld ist mindestens
   40 Pixel groß, wo die Breite es hergibt; beim Ändern der Fenstergröße wird neu
@@ -72,7 +73,7 @@ werden muss.
 - **AC-8** `fertig` **Konflikte rot umrandet** — Stehen zwei Damen in derselben
   Zeile, Spalte oder Farbe oder berühren sie sich, sind beide sofort rot
   umrandet – ohne dass jemand den Hinweis drückt. Das Feld darunter hellt dabei
-  auf (dunkel: dunkelt ab), damit das Rot auch auf dem roten Gebiet zu lesen ist.
+  auf, damit das Rot auch auf dem roten Gebiet zu lesen ist.
 - **AC-22** `fertig` **Die Störung wird genannt** — Unter dem Brett steht in einem
   Satz, was stört („Zwei Damen in Spalte 1."). Liegt nichts auf dem Brett, sagt
   dieselbe Zeile, was Tippen und Streichen tun. Die Zeile hält ihren Platz, die
@@ -165,21 +166,28 @@ werden muss.
 Anders als im Schach schlagen sich die Damen nicht über die ganze Diagonale –
 nur die acht direkten Nachbarfelder sind tabu.
 
-Die Gebietsfarben hatten drei Fassungen. Die satten Töne der ersten ließen das
-schwarze Zeichen auf Blau und Violett kaum lesen. Das Pastell danach las sich
-gut, sah aber ausgewaschen aus, zumal ein weißer Schleier von 36 % auf jedem
-ausgekreuzten Feld lag – mitten im Spiel also auf fast allen. Jetzt sind es
-Mitteltöne mit einem Schleier von 20 %. Nachgerechnet mit einem Wegwerf-Skript
-(Kontrast der Tinte nach WCAG, Abstand des ähnlichsten Farbpaars als ΔE im
-Lab-Raum, mittlere Buntheit):
+Die Gebietsfarben hatten vier Fassungen. Die dunklen satten Töne der ersten
+ließen das schwarze Zeichen auf Blau und Violett kaum lesen. Das Pastell danach
+las sich gut, sah aber ausgewaschen aus, zumal ein weißer Schleier von 36 % auf
+jedem ausgekreuzten Feld lag – mitten im Spiel also auf fast allen. Mitteltöne
+mit einem Schleier von 20 % wirkten immer noch pastellig: Der Kontrast von
+mindestens 6 : 1 erzwang helle Farben, und der Schleier blieb weiß. Jetzt sind
+es volle Farben, und Ausgekreuztes wird mit 13 % Tinte dunkler (dunkel 20 %)
+statt heller. Dafür reicht dem Zeichen 4,7 : 1, auf einem ausgekreuzten Feld dem
+Kreuz 3,8 : 1 (dunkel 3,3 : 1) – beides sind große Zeichen, keine Schrift.
+Nachgerechnet mit einem Wegwerf-Skript (Kontrast der Tinte nach WCAG, Abstand
+des ähnlichsten Farbpaars fremder Gebiete als ΔE im Lab-Raum, mittlere
+Buntheit):
 
-| Fassung              | Kontrast Tinte, kleinster | ähnlichstes Paar | Buntheit |
-| -------------------- | ------------------------- | ---------------- | -------- |
-| satt                 | 2,7 : 1                   | 26               | 44       |
-| Pastell              | 9,4 : 1                   | 17               | 28       |
-| Pastell, Schleier    | 11,9 : 1                  | 11               | 17       |
-| Mitteltöne           | 6,2 : 1                   | 27               | 47       |
-| Mitteltöne, Schleier | 7,7 : 1                   | 22               | 38       |
+| Fassung                   | Kontrast Tinte, kleinster | ähnlichstes Paar | Buntheit |
+| ------------------------- | ------------------------- | ---------------- | -------- |
+| dunkel satt               | 2,7 : 1                   | 26               | 44       |
+| Pastell                   | 9,4 : 1                   | 17               | 28       |
+| Pastell, Schleier         | 11,9 : 1                  | 11               | 17       |
+| Mitteltöne                | 6,2 : 1                   | 27               | 47       |
+| Mitteltöne, Schleier      | 7,7 : 1                   | 22               | 38       |
+| volle Farben              | 4,7 : 1                   | 34               | 58       |
+| volle Farben, ausgekreuzt | 3,8 : 1                   | 31               | –        |
 
 Der Erzeuger setzt zuerst die Damen (benachbarte Zeilen mindestens zwei
 Spalten auseinander) und lässt von jeder aus ein Gebiet wachsen. Zufällig
